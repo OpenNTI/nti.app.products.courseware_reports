@@ -11,7 +11,7 @@ tests_require = [
 ]
 
 setup(
-	name='nti.app.products.courseware_reports',
+	name='nti.app.products.coursewarereports',
 	version=VERSION,
 	author='NextThought',
 	author_email='ntiserverdev@nextthought.com',
@@ -35,9 +35,9 @@ setup(
 	namespace_packages=['nti', 'nti.app', 'nti.app.products'],
 	install_requires=[
 		'setuptools',
-		'nti.app.products.courseware',
-		'nti.app.products.gradebook',
-		'nti.app.assessment'
+		#'nti.app.products.courseware',
+		#'nti.app.products.gradebook',
+		#'nti.app.assessment'
 		# undeclared dep on nti.dataserver
 	],
 	extras_require={
