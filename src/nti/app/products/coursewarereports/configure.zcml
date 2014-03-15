@@ -8,4 +8,13 @@
 	<include package="zope.security" file="meta.zcml" />
 	<include package="zope.component" />
 
+
+
+	<include file="meta.zcml" package="zope.security" />
+
+	<permission
+		id="nti.actions.courseware.view_reports"
+		title="View reports" />
+
+
 </configure>
