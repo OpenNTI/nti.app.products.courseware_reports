@@ -8,7 +8,7 @@
 		  author="NextThought"
 		  xmlns:tal="http://xml.zope.org/namespaces/tal">>
 
-	<template pagesize="letter" leftMargin="72" showBoundary="1">
+	<template pagesize="letter" leftMargin="72" showBoundary="0">
 		<pageTemplate id="main">
 			<frame id="first" x1="0.5in" y1="0.5in" width="7in" height="10in"/>
 		</pageTemplate>
@@ -38,10 +38,15 @@
 			<lines>
 				<line strokeColor="red" symbol="FilledCircle"/>
 			</lines>
-			<xValueAxis valueMin="0" valueMax="5" valueStep="1">
+			<xValueAxis valueMin="0" valueMax="5" valueStep="1"
+						tal:attributes="valueMin options/forum_objects_by_week_number_value_min;
+										valueMax options/forum_objects_by_week_number_value_max"
+						tal:condition="options/forum_objects_by_week_number">
 				<labels fontName="Helvetica"/>
 			</xValueAxis>
-			<yValueAxis valueMin="0" valueMax="7" valueStep="1">
+			<yValueAxis valueMin="0" valueMax="7" valueStep="1"
+						tal:attributes="valueMax options/forum_objects_by_week_number_max"
+						tal:condition="options/forum_objects_by_week_number">
 				<labels fontName="Helvetica"/>
 			</yValueAxis>
 			<lineLabels font="Roman-Bold" fontSize="10">
@@ -59,27 +64,55 @@
 				</text>
 			</texts>
 			<data>
-				<series>
+				<series tal:condition="False">
 				1    1
 				2    2
 				2.5  1
 				3    3
 				4    5
 				</series>
+				<series tal:condition="options/forum_objects_by_week_number"
+						tal:content="options/forum_objects_by_week_number_series">
+				</series>
 			</data>
 		</linePlot>
 		</illustration>
 
 		<h1 spaceBefore=".5in">Discussions Created</h1>
-		<blockTable style='default'>
-
+		<blockTable style='default' tal:condition="options/topics_created">
 			<tr>
 				<td>Discussion Name</td><td>Forum Name</td><td>Date</td>
 			</tr>
-			<tr tal:repeat="item options/items">
-				<td tal:content="item/Title">The Topic Name</td>
-				<td tal:content="item/__parent__/Title">Forum Name</td>
-				<td tal:content="item/created">Created Date</td>
+			<tr tal:repeat="item options/topics_created">
+				<td tal:content="item/topic_name">The Topic Name</td>
+				<td tal:content="item/forum_name">Forum Name</td>
+				<td tal:content="item/created/date">Created Date</td>
+			</tr>
+			<tr tal:condition="False">
+				<td>The Topic Name</td>
+				<td>Forum Name</td>
+				<td>Created Date</td>
+			</tr>
+
+			<tr tal:condition="False">
+				<td>The Topic Name</td>
+				<td>Forum Name</td>
+				<td>Created Date</td>
+			</tr>
+		</blockTable>
+		<para tal:condition="not:options/topics_created">
+			This user has not created any discussions.
+		</para>
+
+		<h1 spaceBefore=".5in">Comments Created</h1>
+		<blockTable style='default'>
+			<tr>
+				<td>Discussion Name</td><td>Forum Name</td><td>Comment Count</td>
+			</tr>
+			<tr tal:repeat="item options/comment_count_by_topic">
+				<td tal:content="python:item[0].__parent__.title">The Forum Name</td>
+				<td tal:content="python:item[0].title">Topic Name</td>
+				<td tal:content="python:item[1]">Comment Count</td>
 			</tr>
 			<tr tal:condition="False">
 				<td>The Topic Name</td>
@@ -99,9 +132,9 @@
 			<tr>
 				<td>Assessment Title</td><td>Attempts</td>
 			</tr>
-			<tr tal:repeat="item options/items">
-				<td tal:content="item/Title">The Assessment Title</td>
-				<td tal:content="item/count">Times Taken</td>
+			<tr tal:repeat="item options/self_assessment_title_to_count">
+				<td tal:content="python:item[0]">The Assessment Title</td>
+				<td tal:content="python:item[1]">Times Taken</td>
 			</tr>
 			<tr tal:condition="False">
 				<td>The Topic Name</td>
@@ -120,10 +153,10 @@
 			<tr>
 				<td>Assignment Name</td><td>Date</td><td>Grade</td>
 			</tr>
-			<tr tal:repeat="item options/items">
-				<td tal:content="item/Title">The Assignment Name</td>
-				<td tal:content="item/__parent__/Title">Date</td>
-				<td tal:content="item/grade">A+</td>
+			<tr tal:repeat="item options/assignments">
+				<td tal:content="item/title">The Assignment Name</td>
+				<td tal:content="item/submitted/date">Date</td>
+				<td tal:content="item/grade_value">A+</td>
 			</tr>
 			<tr tal:condition="False">
 				<td>Chortle</td>
