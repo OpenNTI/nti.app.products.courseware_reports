@@ -177,15 +177,21 @@ class StudentParticipationReportPdf(AbstractAuthenticatedView):
 		options['forum_objects_by_day'] = forum_objects_by_day
 		options['forum_objects_by_week_number'] = forum_objects_by_week_number
 
-		def as_series():
-			rows = ['%d    %d' % (k,forum_objects_by_week_number.get(k, 0))
-					for k in range(forum_objects_by_week_number.minKey() - 1,
-								   forum_objects_by_week_number.maxKey() + 1)]
-			return '\n'.join(rows)
-		options['forum_objects_by_week_number_series'] = as_series
-		options['forum_objects_by_week_number_max'] = max(forum_objects_by_week_number.values()) + 1
-		options['forum_objects_by_week_number_value_min'] = forum_objects_by_week_number.minKey() - 1
-		options['forum_objects_by_week_number_value_max'] = forum_objects_by_week_number.maxKey() + 1
+		if forum_objects_by_week_number:
+			def as_series():
+				rows = ['%d    %d' % (k,forum_objects_by_week_number.get(k, 0))
+						for k in range(forum_objects_by_week_number.minKey() - 1,
+									   forum_objects_by_week_number.maxKey() + 1)]
+				return '\n'.join(rows)
+			options['forum_objects_by_week_number_series'] = as_series
+			options['forum_objects_by_week_number_max'] = max(forum_objects_by_week_number.values()) + 1
+			options['forum_objects_by_week_number_value_min'] = forum_objects_by_week_number.minKey() - 1
+			options['forum_objects_by_week_number_value_max'] = forum_objects_by_week_number.maxKey() + 1
+		else:
+			options['forum_objects_by_week_number_series'] = ''
+			options['forum_objects_by_week_number_max'] = 0
+			options['forum_objects_by_week_number_value_min'] = 0
+			options['forum_objects_by_week_number_value_max'] = 0
 
 	def _build_self_assessment_data(self, options):
 		md_catalog = self.md_catalog
