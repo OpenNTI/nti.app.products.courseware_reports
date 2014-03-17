@@ -8,6 +8,8 @@ __docformat__ = "restructuredtext en"
 
 logger = __import__('logging').getLogger(__name__)
 
+from . import MessageFactory as _
+
 from zope import component
 
 from itertools import groupby
@@ -39,6 +41,7 @@ from nti.app.products.gradebook.interfaces import IGrade
 from nti.dataserver.interfaces import IUser
 
 from nti.dataserver.contenttypes.forums.interfaces import ICommunityBoard
+from nti.dataserver.contenttypes.forums.interfaces import ICommunityForum
 from nti.dataserver.contenttypes.forums.interfaces import ITopic
 from nti.dataserver.contenttypes.forums.interfaces import IGeneralForumComment
 
@@ -288,5 +291,82 @@ class StudentParticipationReportPdf(AbstractAuthenticatedView):
 
 		# Table of assignment history and grades for all assignments in course
 		self._build_assignment_data(options)
+
+		return options
+
+import heapq
+from reportlab.lib import colors
+
+@view_config(route_name='objects.generic.traversal',
+			 context=ICommunityForum,
+			 request_method='GET',
+			 permission=ACT_READ,
+			 name='ForumParticipationReport.pdf',
+			 renderer="templates/ForumParticipationReport.rml")
+class ForumParticipationReportPdf(AbstractAuthenticatedView):
+
+	class TopCommenters(object):
+		total = 0
+		def __init__(self):
+			self._data = BTrees.family64.OI.BTree()
+
+		def _get_largest(self):
+			# Returns the top commenter names, up to (arbitrarily) 15
+			# of them, with the next being 'everyone else'
+			# In typical data, 'everyone else' far overwhelms
+			# the top 15 commenters, so we are giving it a small value
+			# (one-eigth of the pie),
+			# but including it as a percentage in its label
+			# TODO: Better way to do this?
+			largest = heapq.nlargest(15, self._data.items(), key=lambda x: x[1])
+			# Give percentages to the usernames
+			largest = [('%s (%0.1f%%)' % (x[0],(x[1] / self.total) * 100), x[1]) for x in largest]
+			if len(self._data) > len(largest):
+				# We didn't account for everyone, we need to
+				largest_total = sum( (x[1] for x in largest) )
+				remainder = self.total - largest_total
+				# TODO: Localize and map this
+				percent = (remainder / self.total) * 100
+				largest.append( ('Others (%0.1f%%)' % percent, largest_total // 8) )
+			return largest
+
+		def __iter__(self):
+			return (x[0] for x in self._get_largest())
+
+		def __bool__(self):
+			return bool(self._data)
+		__nonzero__ = __bool__
+
+		def series(self):
+			return ' '.join( ('%d' % x[1] for x in self._get_largest()) )
+
+		def incr_username(self, username):
+			self.total += 1
+			if username in self._data:
+				self._data[username] += 1
+			else:
+				self._data[username] = 0
+
+
+	def _build_top_commenters(self, options):
+		top_commenters = self.TopCommenters()
+		for topic in self.context.values():
+			for comment in topic.values():
+				top_commenters.incr_username(comment.creator)
+		options['top_commenters'] = top_commenters
+		# Obviously we'll want better color choices than "random"
+		options['top_commenters_colors'] = colors.getAllNamedColors().keys()
+
+	def __call__(self):
+		"""
+		Return the `options` dictionary for formatting. The dictionary will
+		have the following keys:
+
+		top_commenters
+			A sequence of usernames, plus the `series` representing their
+			contribution to the forum.
+		"""
+		options = dict()
+		self._build_top_commenters(options)
 
 		return options
