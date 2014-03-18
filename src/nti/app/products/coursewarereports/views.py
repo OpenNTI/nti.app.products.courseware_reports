@@ -38,6 +38,7 @@ from nti.assessment.interfaces import IQuestionSet
 from nti.contenttypes.courses.interfaces import ICourseInstance
 from nti.app.products.courseware.interfaces import ICourseInstanceEnrollment
 from nti.app.products.gradebook.interfaces import IGrade
+from nti.app.products.gradebook.interfaces import IGradeBook
 from nti.dataserver.interfaces import IUser
 
 from nti.dataserver.contenttypes.forums.interfaces import ICommunityBoard
@@ -97,6 +98,9 @@ _CommonBuckets = namedtuple('_CommonBuckets',
 import heapq
 class _TopCreators(object):
 	total = 0
+	title = ''
+	max_contributors = None
+
 	def __init__(self):
 		self._data = BTrees.family64.OI.BTree()
 
@@ -143,6 +147,22 @@ class _TopCreators(object):
 
 	def get(self, key, default=None):
 		return self._data.get(key, default)
+
+	def average_count(self):
+		if self.total:
+			return self.total / len(self._data)
+		return 0
+
+	def average_count_str(self):
+		return "%0.1f" % self.average_count()
+
+	def percent_contributed(self):
+		if self.max_contributors is None:
+			return 100
+		return (len(self.keys()) / self.max_contributors) * 100.0
+
+	def percent_contributed_str(self):
+		return "%0.1f" % self.percent_contributed()
 
 def _common_buckets(objects):
 	"""
@@ -229,6 +249,13 @@ def _build_buckets_options(options, buckets):
 		options['forum_objects_by_week_number_value_min'] = 0
 		options['forum_objects_by_week_number_value_max'] = 0
 
+FORUM_OBJECT_MIMETYPES = ['application/vnd.nextthought.forums.generalforumcomment',
+						  'application/vnd.nextthought.forums.communityforumcomment',
+						  'application/vnd.nextthought.forums.communitytopic']
+
+ENGAGEMENT_OBJECT_MIMETYPES = ['application/vnd.nextthought.note',
+							   'application/vnd.nextthought.highlight']
+
 @view_config(route_name='objects.generic.traversal',
 			 context=ICourseInstanceEnrollment,
 			 request_method='GET',
@@ -237,9 +264,6 @@ def _build_buckets_options(options, buckets):
 			 renderer="templates/StudentParticipationReport.rml")
 class StudentParticipationReportPdf(AbstractAuthenticatedView):
 
-	FORUM_OBJECT_MIMETYPES = ['application/vnd.nextthought.forums.generalforumcomment',
-							  'application/vnd.nextthought.forums.communityforumcomment',
-							  'application/vnd.nextthought.forums.communitytopic']
 
 	TopicCreated = namedtuple('TopicCreated',
 							  ('topic', 'topic_name', 'forum_name', 'created'))
@@ -275,7 +299,7 @@ class StudentParticipationReportPdf(AbstractAuthenticatedView):
 		# all the objects in the course discussion board. This could be further improved
 		# by applying a time limit to the objects the user created.
 		intids_created_by_student = self.intids_created_by_student
-		intids_of_forum_objects = md_catalog['mimeType'].apply({'any_of': self.FORUM_OBJECT_MIMETYPES})
+		intids_of_forum_objects = md_catalog['mimeType'].apply({'any_of': FORUM_OBJECT_MIMETYPES})
 		# We could apply based on createdTime to be no less than the start time of the
 		# course
 		intids_of_forum_objects_created_by_student = md_catalog.family.IF.intersection(intids_created_by_student, intids_of_forum_objects)
@@ -537,5 +561,234 @@ class TopicParticipationReportPdf(ForumParticipationReportPdf):
 		options['top_creators'] = dict()
 #		self._build_comment_count_by_topic(options)
 		self._build_user_stats(options)
+
+		return options
+
+from nti.dataserver.users import Entity
+from nti.dataserver.interfaces import IEnumerableEntityContainer
+import numbers
+from nti.contentlibrary.interfaces import IContentPackageLibrary
+
+@view_config(route_name='objects.generic.traversal',
+			 context=ICourseInstance,
+			 request_method='GET',
+			 permission=ACT_READ,
+			 name='CourseSummaryReport.pdf',
+			 renderer="templates/CourseSummaryReport.rml")
+class CourseSummaryReportPdf(AbstractAuthenticatedView):
+
+	@property
+	def course(self):
+		return self.context
+
+	@Lazy
+	def md_catalog(self):
+		return component.getUtility(ICatalog,CATALOG_NAME)
+	@Lazy
+	def uidutil(self):
+		return component.getUtility(IIntIds)
+	@Lazy
+	def intids_created_by_students(self):
+		return self.md_catalog['creator'].apply({'any_of': self.all_student_usernames})
+
+	@Lazy
+	def for_credit_student_usernames(self):
+		restricted_id = self.course.LegacyScopes['restricted']
+		restricted = Entity.get_entity(restricted_id) if restricted_id else None
+
+		restricted_usernames = ({x for x in IEnumerableEntityContainer(restricted).iter_usernames()}
+								if restricted is not None
+								else set())
+		return restricted_usernames
+
+	@Lazy
+	def open_student_usernames(self):
+		return self.all_student_usernames - self.for_credit_student_usernames
+
+	@Lazy
+	def all_student_usernames(self):
+		everyone = self.course.legacy_community
+		everyone_usernames = {x for x in IEnumerableEntityContainer(everyone).iter_usernames()}
+		student_usernames = everyone_usernames - {x.id for x in self.course.instructors}
+		return student_usernames
+
+	@Lazy
+	def all_user_intids(self):
+		ids = BTrees.family64.II.TreeSet()
+		ids.update( IEnumerableEntityContainer(self.course.legacy_community).iter_intids() )
+		return ids
+
+	def _build_enrollment_info(self, options):
+
+		options['count_for_credit'] = len(self.for_credit_student_usernames)
+		options['count_open'] = len(self.open_student_usernames)
+		options['count_total'] = options['count_for_credit'] + options['count_open']
+
+	def _build_self_assessment_data(self, options):
+		md_catalog = self.md_catalog
+		self_assessments = _get_self_assessments_for_course(self.course)
+		self_assessment_containerids = {x.__parent__.ntiid for x in self_assessments}
+		self_assessment_qsids = {x.ntiid: x for x in self_assessments}
+		# We can find the self-assessments the student submitted in a few ways
+		# one would be to look at the user's contained data for each containerID
+		# of the self assessment and see if there is an IQAssessedQuestionSet.
+		# Another would be to find all IQAssessedQuestionSets the user has completed
+		# using the catalog and match them up by IDs. This might be slightly slower, but it
+		# has the advantage of not knowing anything about storage.
+		intids_of_submitted_qsets = md_catalog['mimeType'].apply({'any_of': ('application/vnd.nextthought.assessment.assessedquestionset',)})
+		intids_of_submitted_qsets_by_students = md_catalog.family.IF.intersection( intids_of_submitted_qsets,
+																				   self.intids_created_by_students )
+		# As opposed to what we do for the individual student, we first
+		# filter these by container ids. Unfortunately, for the bigger courses,
+		# it makes almost no difference in performance (since they have the most submissions).
+		# We can probably do a lot better by staying at the intid level, at the cost of
+		# some complexity, as we just need three aggregate numbers.
+		intids_of_objects_in_qs_containers = md_catalog['containerId'].apply({'any_of': self_assessment_containerids})
+		intids_in_containers = md_catalog.family.IF.intersection(intids_of_objects_in_qs_containers,
+																 intids_of_submitted_qsets_by_students )
+		#qsets_by_student_in_course = [x for x in ResultSet(intids_of_submitted_qsets_by_students, self.uidutil)
+		#							  if x.questionSetId in self_assessment_qsids]
+		qsets_by_student_in_course = ResultSet(intids_in_containers, self.uidutil)
+
+		title_to_count = dict()
+
+		def _title_of_qs(qs):
+			if qs.title:
+				return qs.title
+			return qs.__parent__.title
+
+		for asm in self_assessments:
+			title = _title_of_qs(asm)
+			accum = _TopCreators()
+			accum.title = title
+			accum.max_contributors = len(self.all_student_usernames)
+			title_to_count[asm.ntiid] = accum
+
+		for submission in qsets_by_student_in_course:
+			asm = self_assessment_qsids[submission.questionSetId]
+			title_to_count[asm.ntiid].incr_username(submission.creator)
+
+		options['self_assessment_data'] = sorted(title_to_count.values(),
+												 key=lambda x: x.title)
+
+	def _build_engagement_data(self, options):
+		md_catalog = self.md_catalog
+		intersection = md_catalog.family.IF.intersection
+
+		intids_of_notes = md_catalog['mimeType'].apply({'any_of': ('application/vnd.nextthought.note',)})
+		intids_of_hls = md_catalog['mimeType'].apply({'any_of': ('application/vnd.nextthought.highlight',)})
+
+		intids_of_notes = intersection( intids_of_notes,
+										self.intids_created_by_students )
+		intids_of_hls = intersection( intids_of_hls,
+									  self.intids_created_by_students )
+
+		all_notes = intids_of_notes
+		all_hls = intids_of_hls
+
+		lib = component.getUtility(IContentPackageLibrary)
+		containers_in_course = lib.childrenOfNTIID(self.course.legacy_content_package.ntiid)
+		# TODO: Is this getting everything? All the embedded containers, etc?
+		containers_in_course = [x.ntiid for x in containers_in_course]
+
+		intids_of_objects_in_course_containers = md_catalog['containerId'].apply({'any_of': containers_in_course})
+
+		intids_of_notes = intersection( intids_of_notes,
+										intids_of_objects_in_course_containers )
+		intids_of_hls = intersection( intids_of_hls,
+									  intids_of_objects_in_course_containers )
+
+		data = dict()
+		data['Notes'] = len(intids_of_notes)
+		data['Highlights'] = len(intids_of_hls)
+		data['Discussions'] = sum( (len(forum) for forum in self.course.Discussions.values()) )
+		data['Discussion Comments'] = sum( (sum((len(topic) for topic in forum.values()))
+											for forum in self.course.Discussions.values()) )
+
+		options['engagement_data'] = sorted(data.items())
+
+		outline = self.course.Outline
+		def _recur(node, accum):
+			ntiid = getattr(node, 'ContentNTIID', getattr(node, '_v_ContentNTIID', None))
+			if ntiid:
+				accum.add(ntiid)
+			for n in node.values():
+				_recur(n, accum)
+
+		data = list()
+
+		stat = namedtuple('Stat',
+						  ('title', 'note_count', 'hl_count'))
+
+
+
+		for unit in outline.values():
+			for lesson in unit.values():
+				ntiids = set()
+				_recur(lesson, ntiids)
+				for x in list(ntiids):
+					try:
+						kid = lib.pathToNTIID(x)[-1]
+						ntiids.update( kid.embeddedContainerNTIIDs )
+					except TypeError:
+						pass
+
+					for kid in lib.childrenOfNTIID(x):
+						ntiids.add(kid.ntiid)
+						ntiids.update(kid.embeddedContainerNTIIDs)
+				ntiids.discard(None)
+				local_notes = md_catalog['containerId'].apply({'any_of': ntiids})
+				local_notes = intersection(local_notes, all_notes)
+				local_hls = md_catalog['containerId'].apply({'any_of': ntiids})
+				local_hls = intersection(local_hls, all_hls)
+
+				data.append( stat( lesson.title, len(local_notes), len(local_hls)) )
+
+		# Keep these in lesson order
+		options['placed_engagement_data'] = data
+
+	AssignmentStat = namedtuple('AssignmentStat',
+								('title', 'count', 'avg_grade', 'attempted', 'for_credit_attempted'))
+
+	def _build_assignment_data(self, options):
+		gradebook = IGradeBook(self.course)
+		assignment_catalog = ICourseAssignmentCatalog(self.course)
+
+		count_all_students = len(self.all_student_usernames)
+		count_credit_students = len(self.for_credit_student_usernames)
+
+		stats = list()
+		for asg in assignment_catalog.iter_assignments():
+			column = gradebook.getColumnForAssignmentId(asg.ntiid)
+
+			count = len(column)
+			keys = set(column)
+
+			total_grade_points = sum( (x.value if isinstance(x.value, numbers.Number) else float(x.value.split()[0])
+									   for x in column.values()) )
+			avg_grade = total_grade_points / count
+			avg_grade_s = '%0.1f' % avg_grade
+
+			per_attempted = (count / count_all_students) * 100.0
+			per_attempted_s = '%0.1f' % per_attempted
+
+			# TODO: Case sensitivity issue?
+			for_credit_atempted = self.for_credit_student_usernames.intersection(keys)
+			for_credit_per = (len(for_credit_atempted) / count_credit_students) * 100.0
+			for_credit_per_s = '%0.1f' % for_credit_per
+
+			stat = self.AssignmentStat( asg.title, count, avg_grade_s, per_attempted_s, for_credit_per_s )
+
+			stats.append(stat)
+
+		stats.sort(key=lambda x: x.title)
+		options['assignment_data'] = stats
+
+	def __call__(self):
+		options = dict()
+		self._build_engagement_data(options)
+		self._build_enrollment_info(options)
+		self._build_self_assessment_data(options)
+		self._build_assignment_data(options)
 
 		return options

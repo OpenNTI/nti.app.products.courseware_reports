@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE document SYSTEM "rml_1_0.dtd">
+<document filename="ForumParticipationReport.pdf"
+		  invariant="1"
+		  compression="1"
+		  title="Forum Participation Report"
+		  creator="NextThought"
+		  author="NextThought"
+		  xmlns:tal="http://xml.zope.org/namespaces/tal">>
+
+	<template pagesize="letter" leftMargin="72" showBoundary="0">
+		<pageTemplate id="main">
+			<frame id="first" x1="0.5in" y1="0.5in" width="7in" height="10in"/>
+		</pageTemplate>
+	</template>
+
+	<stylesheet> <!-- These will all be macros -->
+		<paraStyle name="h1" fontName="Helvetica-Bold" fontSize="11" leading="12"/>
+		<paraStyle name="h2" fontName="Helvetica-Bold" fontSize="11" leading="20" spaceBefore="12"/>
+		<paraStyle name="normal" fontName="Helvetica" fontSize="11"
+				   leading="12" spaceBefore="10"/>
+		<paraStyle name="sendTo" leftIndent="0.5in" parent="normal"
+				   spaceBefore="10" spaceAfter="2"/>
+		<blockTableStyle id="default">
+			<lineStyle start="0,0" stop="-1,-1" kind="innergrid" thickness="0.25"
+					   colorName="black"/>
+		</blockTableStyle>
+	</stylesheet>
+
+	<story firstPageTemplate="main">
+		<img src="[nti.appserver]/templates/coppa_consent_header.png"
+			 width="3.5in"
+			 height="0.55in"
+			 align="left"/>
+		<h1>Enrollment</h1>
+		<illustration width="6in" height="6in">
+		<pieChart dx="0in" dy="0in" dwidth="6in" dheight="6in" x="1in" y="0" width="4in"
+				  height="4in"
+				  checkLabelOverlap='false'
+				  tal:condition="options/count_open">
+			<labels>
+				<label>Open Enrolled (${options/count_open})</label>
+				<label>For Credit (${options/count_for_credit})</label>
+			</labels>
+			<slices>
+				<slice />
+				<slice popout="10" />
+			</slices>
+			<data>
+				<series>
+					${options/count_open}
+					${options/count_for_credit}
+				</series>
+			</data>
+		</pieChart>
+		</illustration>
+
+
+		<h1 spaceBefore=".5in">Self-Assessments Taken</h1>
+		<blockTable style='default'>
+			<tr>
+				<td>Assessment Title</td>
+				<td>Total Attempts</td>
+				<td>Average Attempts</td>
+				<td>Percent Attempted</td>
+			</tr>
+			<tr tal:repeat="item options/self_assessment_data">
+				<td tal:content="item/title">The Assessment Title</td>
+				<td align="decimal" tal:content="item/total">Times Taken</td>
+				<td align="decimal" tal:content="item/average_count_str">Average Taken</td>
+				<td align="decimal" tal:content="item/percent_contributed_str">Percent Attempted</td>
+			</tr>
+			<tr tal:condition="False">
+				<td>The Topic Name</td>
+				<td>Forum Name</td>
+				<td>Taken</td>
+				<td>Percent</td>
+			</tr>
+
+			<tr tal:condition="False">
+				<td>The Topic Name</td>
+				<td>Forum Name</td>
+				<td>Taken</td>
+				<td>Percent</td>
+			</tr>
+		</blockTable>
+
+		<h1 spaceBefore=".5in" keepWithNext='true'>Assignments Taken</h1>
+		<blockTable style='default'>
+			<tr>
+				<td>Assignment Title</td>
+				<td>Total Attempts</td>
+				<td>Average Grade</td>
+				<td>Percent Attempted</td>
+				<td>For-credit Attempted</td>
+			</tr>
+			<tr tal:repeat="item options/assignment_data">
+				<td tal:content="item/title">The Assessment Title</td>
+				<td align="decimal" tal:content="item/count">Times Taken</td>
+				<td align="decimal" tal:content="item/avg_grade">Average Grade</td>
+				<td align="decimal" tal:content="item/attempted">Percent attempted</td>
+				<td align="decimal" tal:content="item/for_credit_attempted">Percent attempted</td>
+			</tr>
+			<tr tal:condition="False">
+				<td>The Topic Name</td>
+				<td>Total Attempts</td>
+				<td>Forum Name</td>
+				<td>Taken</td>
+			</tr>
+
+			<tr tal:condition="False">
+				<td>The Topic Name</td>
+				<td>Total Attempts</td>
+				<td>Forum Name</td>
+				<td>Taken</td>
+			</tr>
+		</blockTable>
+
+		<h1 spaceBefore=".5in" keepWithNext='true'>Engagement</h1>
+		<blockTable style='default'>
+			<tr>
+				<td>Type</td>
+				<td>Number</td>
+			</tr>
+			<tr tal:repeat="item options/engagement_data">
+				<td tal:content="python:item[0]">Notes</td>
+				<td align="decimal" tal:content="python:item[1]">25</td>
+			</tr>
+			<tr tal:condition="False">
+				<td>Forum Name</td>
+				<td>Taken</td>
+			</tr>
+			<tr tal:condition="False">
+				<td>The Topic Name</td>
+				<td>Total Attempts</td>
+			</tr>
+		</blockTable>
+
+		<h1 spaceBefore=".5in" keepWithNext='true'>Engagement By Place</h1>
+		<blockTable style='default'>
+			<tr>
+				<td>Place</td>
+				<td>Notes</td>
+				<td>Highlights</td>
+			</tr>
+			<tr tal:repeat="item options/placed_engagement_data">
+				<td tal:content="item/title">Title</td>
+				<td align="decimal" tal:content="item/note_count">Notes</td>
+				<td align="decimal" tal:content="item/hl_count">25</td>
+			</tr>
+			<tr tal:condition="False">
+				<td>Forum Name</td>
+				<td>Taken</td>
+			</tr>
+			<tr tal:condition="False">
+				<td>The Topic Name</td>
+				<td>Total Attempts</td>
+			</tr>
+		</blockTable>
+
+	</story>
+</document>
