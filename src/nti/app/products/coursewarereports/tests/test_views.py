@@ -72,3 +72,34 @@ class TestForumParticipationReport(ApplicationLayerTest):
 
 		res = self.testapp.get(report_href)
 		assert_that( res, has_property('content_type', 'application/pdf'))
+
+
+class TestTopicParticipationReport(ApplicationLayerTest):
+
+	layer = InstructedCourseApplicationTestLayer
+
+	@WithSharedApplicationMockDS(users=True,testapp=True,default_authenticate=True)
+	def test_application_view_empty_report(self):
+		# Trivial test to make sure we can fetch the report even with
+		# no data.
+
+		# This only works in the OU environment because that's where the purchasables are
+		extra_env = self.testapp.extra_environ or {}
+		extra_env.update( {b'HTTP_ORIGIN': b'http://janux.ou.edu'} )
+		self.testapp.extra_environ = extra_env
+
+		enrollment_res = self.testapp.post_json( '/dataserver2/users/sjohnson@nextthought.com/Courses/EnrolledCourses',
+								'CLC 3403',
+								status=201 )
+
+		board_href = enrollment_res.json_body['CourseInstance']['Discussions']['href']
+		forum_href = board_href + '/Forum'
+
+		# Create a topic
+		res = self.testapp.post_json( forum_href,{'Class': 'Post', 'body': ['My body'], 'title': 'my title'} )
+		topic_href = res.json_body['href']
+
+		report_href = topic_href + '/TopicParticipationReport.pdf'
+
+		res = self.testapp.get(report_href)
+		assert_that( res, has_property('content_type', 'application/pdf'))

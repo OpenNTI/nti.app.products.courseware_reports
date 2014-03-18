@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <!DOCTYPE document SYSTEM "rml_1_0.dtd">
-<document filename="StudentParticipationReport.pdf"
+<document filename="TopicParticipationReport.pdf"
 		  invariant="1"
 		  compression="1"
-		  title="Student Participation Report"
+		  title="Topic Participation Report"
 		  creator="NextThought"
 		  author="NextThought"
 		  xmlns:tal="http://xml.zope.org/namespaces/tal">>
@@ -32,6 +32,35 @@
 			 width="3.5in"
 			 height="0.55in"
 			 align="left"/>
+		<illustration width="6in" height="6in">
+		<pieChart dx="0in" dy="0in" dwidth="6in" dheight="6in" x="1in" y="0" width="4in"
+				  height="4in"
+				  checkLabelOverlap='false'
+				  tal:condition="options/top_commenters">
+			<labels>
+				<label tal:repeat="item options/top_commenters"
+					   tal:content="item">User1</label>
+				<label tal:condition="False">User2</label>
+				<label tal:condition="False">User3</label>
+			</labels>
+			<slices>
+				<!-- The last element is the "everyone else"; it has a
+				larger percent then its slice size indicates, so draw
+				attention to that by popping it out -->
+				<slice tal:repeat="item options/top_commenters"
+					   tal:attributes="popout python:10 if repeat.item.end else 0;
+									   fillColor python:options['top_commenters_colors'][repeat.item.number]" />
+			</slices>
+			<data>
+				<series tal:content="options/top_commenters/series">
+					100
+					75
+					25
+				</series>
+			</data>
+		</pieChart>
+		</illustration>
+
 		<illustration width="6in" height="4in"> <!-- This could be shared -->
 		<linePlot dx="0in" dy="0in" dwidth="6in" dheight="4in" x="0" y="0" width="5in"
 					height="3in" joinedLines="true" lineLabelFormat="%2.0f"
@@ -41,12 +70,14 @@
 			</lines>
 			<xValueAxis valueMin="0" valueMax="5" valueStep="1"
 						tal:attributes="valueMin options/forum_objects_by_week_number_value_min;
-										valueMax options/forum_objects_by_week_number_value_max"
+										valueMax options/forum_objects_by_week_number_value_max;
+										valueStep options/forum_objects_by_week_number_x_step"
 						tal:condition="options/forum_objects_by_week_number">
 				<labels fontName="Helvetica"/>
 			</xValueAxis>
 			<yValueAxis valueMin="0" valueMax="7" valueStep="1"
-						tal:attributes="valueMax options/forum_objects_by_week_number_max"
+						tal:attributes="valueMax options/forum_objects_by_week_number_max;
+										valueStep options/forum_objects_by_week_number_y_step"
 						tal:condition="options/forum_objects_by_week_number">
 				<labels fontName="Helvetica"/>
 			</yValueAxis>
@@ -77,63 +108,16 @@
 		</linePlot>
 		</illustration>
 
-		<h1 spaceBefore=".5in">Discussions Created</h1>
-		<blockTable style='default' tal:condition="options/topics_created">
-			<tr>
-				<td>Discussion Name</td><td>Forum Name</td><td>Date</td>
-			</tr>
-			<tr tal:repeat="item options/topics_created">
-				<td tal:content="item/topic_name">The Topic Name</td>
-				<td tal:content="item/forum_name">Forum Name</td>
-				<td tal:content="item/created/date">Created Date</td>
-			</tr>
-			<tr tal:condition="False">
-				<td>The Topic Name</td>
-				<td>Forum Name</td>
-				<td>Created Date</td>
-			</tr>
+		<!-- We'll probably want to flow this one through two colums? -->
 
-			<tr tal:condition="False">
-				<td>The Topic Name</td>
-				<td>Forum Name</td>
-				<td>Created Date</td>
-			</tr>
-		</blockTable>
-		<para tal:condition="not:options/topics_created">
-			This user has not created any discussions.
-		</para>
-
-		<h1 spaceBefore=".5in">Comments Created</h1>
+		<h1 spaceBefore=".5in">User Stats</h1>
 		<blockTable style='default'>
 			<tr>
-				<td>Discussion Name</td><td>Forum Name</td><td>Comment Count</td>
+				<td>Username</td><td>Comments</td>
 			</tr>
-			<tr tal:repeat="item options/comment_count_by_topic">
-				<td tal:content="python:item[0].__parent__.title">The Forum Name</td>
-				<td tal:content="python:item[0].title">Topic Name</td>
-				<td tal:content="python:item[1]">Comment Count</td>
-			</tr>
-			<tr tal:condition="False">
-				<td>The Topic Name</td>
-				<td>Forum Name</td>
-				<td>Created Date</td>
-			</tr>
-
-			<tr tal:condition="False">
-				<td>The Topic Name</td>
-				<td>Forum Name</td>
-				<td>Created Date</td>
-			</tr>
-		</blockTable>
-
-		<h1 spaceBefore=".5in">Self-Assessments Taken</h1>
-		<blockTable style='default'>
-			<tr>
-				<td>Assessment Title</td><td>Attempts</td>
-			</tr>
-			<tr tal:repeat="item options/self_assessment_title_to_count">
-				<td tal:content="python:item[0]">The Assessment Title</td>
-				<td tal:content="python:item[1]">Times Taken</td>
+			<tr tal:repeat="item options/user_stats">
+				<td tal:content="item/username">The Assessment Title</td>
+				<td tal:content="item/total_comment_count">Times Taken</td>
 			</tr>
 			<tr tal:condition="False">
 				<td>The Topic Name</td>
@@ -146,29 +130,6 @@
 			</tr>
 		</blockTable>
 
-		<h1 spaceBefore=".5in">Assignments</h1>
-		<blockTable style='default'>
-
-			<tr>
-				<td>Assignment Name</td><td>Date</td><td>Grade</td>
-			</tr>
-			<tr tal:repeat="item options/assignments">
-				<td tal:content="item/title">The Assignment Name</td>
-				<td tal:content="item/submitted/date">Date</td>
-				<td tal:content="item/grade_value">A+</td>
-			</tr>
-			<tr tal:condition="False">
-				<td>Chortle</td>
-				<td>-</td>
-				<td></td>
-			</tr>
-
-			<tr tal:condition="False">
-				<td>Making Sound</td>
-				<td>2014-10-22</td>
-				<td>B+</td>
-			</tr>
-		</blockTable>
 
 	</story>
 </document>

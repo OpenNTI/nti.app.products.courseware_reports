@@ -42,6 +42,7 @@ from nti.dataserver.interfaces import IUser
 
 from nti.dataserver.contenttypes.forums.interfaces import ICommunityBoard
 from nti.dataserver.contenttypes.forums.interfaces import ICommunityForum
+from nti.dataserver.contenttypes.forums.interfaces import ICommunityHeadlineTopic
 from nti.dataserver.contenttypes.forums.interfaces import ITopic
 from nti.dataserver.contenttypes.forums.interfaces import IGeneralForumComment
 
@@ -89,6 +90,144 @@ def _get_self_assessments_for_course(course):
 	# Now remove the forbidden
 	result = [x for x in result if x.ntiid not in qsids_to_strip]
 	return result
+
+_CommonBuckets = namedtuple('_CommonBuckets',
+					  ('count_by_day', 'count_by_week_number', 'top_creators'))
+
+import heapq
+class _TopCreators(object):
+	total = 0
+	def __init__(self):
+		self._data = BTrees.family64.OI.BTree()
+
+	def _get_largest(self):
+		# Returns the top commenter names, up to (arbitrarily) 15
+		# of them, with the next being 'everyone else'
+		# In typical data, 'everyone else' far overwhelms
+		# the top 15 commenters, so we are giving it a small value
+		# (one-eigth of the pie),
+		# but including it as a percentage in its label
+		# TODO: Better way to do this?
+		largest = heapq.nlargest(15, self._data.items(), key=lambda x: x[1])
+		# Give percentages to the usernames
+		largest = [('%s (%0.1f%%)' % (x[0],(x[1] / self.total) * 100), x[1]) for x in largest]
+		if len(self._data) > len(largest):
+			# We didn't account for everyone, we need to
+			largest_total = sum( (x[1] for x in largest) )
+			remainder = self.total - largest_total
+			# TODO: Localize and map this
+			percent = (remainder / self.total) * 100
+			largest.append( ('Others (%0.1f%%)' % percent, largest_total // 8) )
+		return largest
+
+	def __iter__(self):
+		return (x[0] for x in self._get_largest())
+
+	def __bool__(self):
+		return bool(self._data)
+	__nonzero__ = __bool__
+
+	def series(self):
+		return ' '.join( ('%d' % x[1] for x in self._get_largest()) )
+
+	def incr_username(self, username):
+		self.total += 1
+		if username in self._data:
+			self._data[username] += 1
+		else:
+			self._data[username] = 1
+
+
+	def keys(self):
+		return self._data.keys()
+
+	def get(self, key, default=None):
+		return self._data.get(key, default)
+
+def _common_buckets(objects):
+	"""
+	Given a list of :class:`ICreated` objects,
+	return a :class:`_CommonBuckets` containing three members:
+	a map from a normalized timestamp for each day to the number of
+	objects created that day, and a map from an ISO week number
+	to the number of objects created that week,
+	and an instance of :class:`_TopCreators`.
+
+	The argument can be an iterable sequence, we sort a copy.
+
+	"""
+	# Group the forum objects by day
+	day_normalizer = TimestampNormalizer(TimestampNormalizer.RES_DAY)
+	day_key = lambda x: int(day_normalizer.value(x.createdTime))
+
+	objects = sorted(objects, key=day_key)
+
+	forum_objects_by_day = BTrees.family64.II.BTree()
+	forum_objects_by_week_number = BTrees.family64.II.BTree()
+	top_creators = _TopCreators()
+
+	for k, g in groupby(objects, day_key):
+		group = list(g)
+		count = len(group)
+		for o in group:
+			top_creators.incr_username(o.creator)
+
+		forum_objects_by_day[k] = count
+
+		year_num, week_num, _ = datetime.utcfromtimestamp(k).isocalendar()
+		# Because sometimes forums can wrap around years (e.g, start
+		# in the fall of 2013, run through the spring of 2014),
+		# we use week numbers that include the year so everything
+		# stays in order.
+		# NOTE: This is still not correct, leading to a large gap
+		# between years (as the weeks from 52 to 100 do not exist)
+		week_num = year_num * 100 + week_num
+		if week_num in forum_objects_by_week_number:
+			forum_objects_by_week_number[week_num] += count
+		else:
+			forum_objects_by_week_number[week_num] = count
+
+	return _CommonBuckets(forum_objects_by_day, forum_objects_by_week_number, top_creators)
+
+def _build_buckets_options(options, buckets):
+	forum_objects_by_week_number = buckets.count_by_week_number
+	forum_objects_by_day = buckets.count_by_day
+
+	options['forum_objects_by_day'] = forum_objects_by_day
+	options['forum_objects_by_week_number'] = forum_objects_by_week_number
+
+	if forum_objects_by_week_number:
+		def as_series():
+			rows = ['%d    %d' % (k,forum_objects_by_week_number.get(k, 0))
+					for k in range(forum_objects_by_week_number.minKey(),
+								   forum_objects_by_week_number.maxKey() + 1)
+					if k in forum_objects_by_week_number]
+			return '\n'.join(rows)
+		options['forum_objects_by_week_number_series'] = as_series
+		options['forum_objects_by_week_number_max'] = _max = max(forum_objects_by_week_number.values()) + 1
+		options['forum_objects_by_week_number_value_min'] = forum_objects_by_week_number.minKey() - 1
+		options['forum_objects_by_week_number_value_max'] = forum_objects_by_week_number.maxKey() + 1
+		if _max > 30:
+			# If we have too many values, we have to pick how often we label, otherwise
+			# they won't all fit on the chart and we wind up with overlapping unreadable
+			# blur.
+			step = _max // 10
+		else:
+			step = 1
+		options['forum_objects_by_week_number_y_step'] = step
+
+		# How many weeks elapsed?
+		if forum_objects_by_week_number.maxKey() - forum_objects_by_week_number.minKey() > 10:
+			step = (forum_objects_by_week_number.maxKey() - forum_objects_by_week_number.minKey()) // 5
+		else:
+			step = 1
+		options['forum_objects_by_week_number_x_step'] = step
+
+	else:
+		options['forum_objects_by_week_number_series'] = ''
+		options['forum_objects_by_week_number_max'] = 0
+		options['forum_objects_by_week_number_value_min'] = 0
+		options['forum_objects_by_week_number_value_max'] = 0
 
 @view_config(route_name='objects.generic.traversal',
 			 context=ICourseInstanceEnrollment,
@@ -144,22 +283,8 @@ class StudentParticipationReportPdf(AbstractAuthenticatedView):
 													 uidutil )
 		forum_objects_created_by_student_in_course = [x for x in forum_objects_created_by_student
 													  if find_interface(x, ICommunityBoard) == course_board]
-		# Group the forum objects by day
-		day_normalizer = TimestampNormalizer(TimestampNormalizer.RES_DAY)
-		day_key = lambda x: int(day_normalizer.value(x.createdTime))
-		forum_objects_created_by_student_in_course.sort(key=day_key)
-
-		forum_objects_by_day = BTrees.family64.II.BTree()
-		forum_objects_by_week_number = BTrees.family64.II.BTree()
-		for k, g in groupby(forum_objects_created_by_student_in_course, day_key):
-			count = len(list(g))
-			forum_objects_by_day[k] = count
-
-			week_num = datetime.utcfromtimestamp(k).isocalendar()[1]
-			if week_num in forum_objects_by_week_number:
-				forum_objects_by_week_number[week_num] += count
-			else:
-				forum_objects_by_week_number[week_num] = count
+		# Group the forum objects by day and week
+		time_buckets = _common_buckets(forum_objects_created_by_student_in_course)
 
 		# Tabular breakdown of what topics the user created in what forum
 		# and how many comments in which topics (could be bulkData or actual blockTable)
@@ -177,24 +302,7 @@ class StudentParticipationReportPdf(AbstractAuthenticatedView):
 		options['total_forum_objects_created'] = len(forum_objects_created_by_student_in_course)
 		options['comment_count_by_topic'] = sorted(comment_count_by_topic.items(),
 												   key=lambda x: (x[0].__parent__.title, x[0].title))
-		options['forum_objects_by_day'] = forum_objects_by_day
-		options['forum_objects_by_week_number'] = forum_objects_by_week_number
-
-		if forum_objects_by_week_number:
-			def as_series():
-				rows = ['%d    %d' % (k,forum_objects_by_week_number.get(k, 0))
-						for k in range(forum_objects_by_week_number.minKey() - 1,
-									   forum_objects_by_week_number.maxKey() + 1)]
-				return '\n'.join(rows)
-			options['forum_objects_by_week_number_series'] = as_series
-			options['forum_objects_by_week_number_max'] = max(forum_objects_by_week_number.values()) + 1
-			options['forum_objects_by_week_number_value_min'] = forum_objects_by_week_number.minKey() - 1
-			options['forum_objects_by_week_number_value_max'] = forum_objects_by_week_number.maxKey() + 1
-		else:
-			options['forum_objects_by_week_number_series'] = ''
-			options['forum_objects_by_week_number_max'] = 0
-			options['forum_objects_by_week_number_value_min'] = 0
-			options['forum_objects_by_week_number_value_max'] = 0
+		_build_buckets_options(options, time_buckets)
 
 	def _build_self_assessment_data(self, options):
 		md_catalog = self.md_catalog
@@ -294,7 +402,7 @@ class StudentParticipationReportPdf(AbstractAuthenticatedView):
 
 		return options
 
-import heapq
+
 from reportlab.lib import colors
 
 @view_config(route_name='objects.generic.traversal',
@@ -305,57 +413,115 @@ from reportlab.lib import colors
 			 renderer="templates/ForumParticipationReport.rml")
 class ForumParticipationReportPdf(AbstractAuthenticatedView):
 
-	class TopCommenters(object):
-		total = 0
-		def __init__(self):
-			self._data = BTrees.family64.OI.BTree()
+	TopicStats = namedtuple('TopicStats',
+							('title', 'creator', 'created', 'comment_count', 'distinct_user_count'))
 
-		def _get_largest(self):
-			# Returns the top commenter names, up to (arbitrarily) 15
-			# of them, with the next being 'everyone else'
-			# In typical data, 'everyone else' far overwhelms
-			# the top 15 commenters, so we are giving it a small value
-			# (one-eigth of the pie),
-			# but including it as a percentage in its label
-			# TODO: Better way to do this?
-			largest = heapq.nlargest(15, self._data.items(), key=lambda x: x[1])
-			# Give percentages to the usernames
-			largest = [('%s (%0.1f%%)' % (x[0],(x[1] / self.total) * 100), x[1]) for x in largest]
-			if len(self._data) > len(largest):
-				# We didn't account for everyone, we need to
-				largest_total = sum( (x[1] for x in largest) )
-				remainder = self.total - largest_total
-				# TODO: Localize and map this
-				percent = (remainder / self.total) * 100
-				largest.append( ('Others (%0.1f%%)' % percent, largest_total // 8) )
-			return largest
-
-		def __iter__(self):
-			return (x[0] for x in self._get_largest())
-
-		def __bool__(self):
-			return bool(self._data)
-		__nonzero__ = __bool__
-
-		def series(self):
-			return ' '.join( ('%d' % x[1] for x in self._get_largest()) )
-
-		def incr_username(self, username):
-			self.total += 1
-			if username in self._data:
-				self._data[username] += 1
-			else:
-				self._data[username] = 0
-
+	UserStats = namedtuple('UserStats',
+						   ('username', 'topics_created', 'total_comment_count'))
 
 	def _build_top_commenters(self, options):
-		top_commenters = self.TopCommenters()
-		for topic in self.context.values():
-			for comment in topic.values():
-				top_commenters.incr_username(comment.creator)
-		options['top_commenters'] = top_commenters
+		def _all_comments():
+			for topic in self.context.values():
+				for comment in topic.values():
+					yield comment
+		buckets = _common_buckets(_all_comments())
+		options['top_commenters'] = buckets.top_creators
 		# Obviously we'll want better color choices than "random"
 		options['top_commenters_colors'] = colors.getAllNamedColors().keys()
+		_build_buckets_options(options, buckets)
+
+	def _build_comment_count_by_topic(self, options):
+		comment_count_by_topic = list()
+		top_creators = _TopCreators()
+		for topic in self.context.values():
+			count = len(topic)
+			user_count = len({c.creator for c in topic.values()})
+			creator = topic.creator
+			created = topic.created
+			comment_count_by_topic.append( self.TopicStats( topic.title, creator, created, count, user_count ))
+
+			top_creators.incr_username(topic.creator)
+
+		comment_count_by_topic.sort( key=lambda x: (x.created, x.title) )
+		options['comment_count_by_topic'] = comment_count_by_topic
+		if self.context:
+			options['most_popular_topic'] = max(self.context.values(), key=len)
+			options['least_popular_topic'] = min(self.context.values(), key=len)
+		else:
+			options['most_popular_topic'] = options['least_popular_topic'] = None
+		options['top_creators'] = top_creators
+
+
+	def _build_user_stats(self, options):
+		commenters = options['top_commenters']
+		creators = options['top_creators']
+
+		everyone_that_did_something = set(commenters.keys()) | set(creators.keys())
+
+		user_stats = list()
+		only_one = 0
+		for uname in sorted(everyone_that_did_something):
+			stat = self.UserStats(uname, creators.get(uname, 0), commenters.get(uname, 0) )
+			user_stats.append(stat)
+			if stat.total_comment_count == 1:
+				only_one += 1
+
+		options['user_stats'] = user_stats
+		if user_stats:
+			options['percent_users_comment_more_than_once'] = "%0.2f" % (((len(user_stats) - only_one) / len(user_stats)) * 100.0)
+		else:
+			options['percent_users_comment_more_than_once'] = '0.0'
+
+	def __call__(self):
+		"""
+		Return the `options` dictionary for formatting. The dictionary will
+		have the following keys:
+
+		top_commenters
+			A sequence of usernames, plus the `series` representing their
+			contribution to the forum.
+
+		top_commenters_colors
+			A sequence of colors to use in the pie chart for top commenters.
+
+		comment_count_by_topic
+			A sequence, sorted by created date and title, giving the `title`,
+			`creator`, `created` datetime, `comment_count` and `distinct_user_count`
+			participating in each topic.
+
+		top_creators
+			As with top_commenters, a sequence of usernames and the `series`
+			representing their contribution of new topics.
+
+		most/least_popular_topic
+			The topic objects with the most and least activity, or None.
+
+		user_stats
+			A sequence sorted by username, of objects with `username`,
+			`topics_created` and `total_comment_count`.
+		"""
+		options = dict()
+		self._build_top_commenters(options)
+		self._build_comment_count_by_topic(options)
+		self._build_user_stats(options)
+
+		return options
+
+
+@view_config(route_name='objects.generic.traversal',
+			 context=ICommunityHeadlineTopic,
+			 request_method='GET',
+			 permission=ACT_READ,
+			 name='TopicParticipationReport.pdf',
+			 renderer="templates/TopicParticipationReport.rml")
+class TopicParticipationReportPdf(ForumParticipationReportPdf):
+
+	def _build_top_commenters(self, options):
+		buckets = _common_buckets(self.context.values())
+		options['top_commenters'] = buckets.top_creators
+		# Obviously we'll want better color choices than "random"
+		options['top_commenters_colors'] = colors.getAllNamedColors().keys()
+		_build_buckets_options(options, buckets)
 
 	def __call__(self):
 		"""
@@ -368,5 +534,8 @@ class ForumParticipationReportPdf(AbstractAuthenticatedView):
 		"""
 		options = dict()
 		self._build_top_commenters(options)
+		options['top_creators'] = dict()
+#		self._build_comment_count_by_topic(options)
+		self._build_user_stats(options)
 
 		return options

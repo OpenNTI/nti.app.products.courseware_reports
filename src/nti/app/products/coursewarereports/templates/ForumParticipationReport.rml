@@ -14,7 +14,7 @@
 		</pageTemplate>
 	</template>
 
-	<stylesheet>
+	<stylesheet> <!-- These will all be macros -->
 		<paraStyle name="h1" fontName="Helvetica-Bold" fontSize="11" leading="12"/>
 		<paraStyle name="h2" fontName="Helvetica-Bold" fontSize="11" leading="20" spaceBefore="12"/>
 		<paraStyle name="normal" fontName="Helvetica" fontSize="11"
@@ -32,6 +32,7 @@
 			 width="3.5in"
 			 height="0.55in"
 			 align="left"/>
+		<h1>Top Commenters</h1>
 		<illustration width="6in" height="6in">
 		<pieChart dx="0in" dy="0in" dwidth="6in" dheight="6in" x="1in" y="0" width="4in"
 				  height="4in"
@@ -60,6 +61,153 @@
 			</data>
 		</pieChart>
 		</illustration>
+
+		<h1 spaceBefore="0.5in" keepWithNext="true">Activity Over Time</h1>
+		<illustration width="6in" height="4in"> <!-- This could be shared -->
+		<linePlot dx="0in" dy="0in" dwidth="6in" dheight="4in" x="0" y="0" width="5in"
+					height="3in" joinedLines="true" lineLabelFormat="%2.0f"
+					tal:condition="options/forum_objects_by_week_number">
+			<lines>
+				<line strokeColor="red" symbol="FilledCircle"/>
+			</lines>
+			<xValueAxis valueMin="0" valueMax="5" valueStep="1"
+						tal:attributes="valueMin options/forum_objects_by_week_number_value_min;
+										valueMax options/forum_objects_by_week_number_value_max;
+										valueStep options/forum_objects_by_week_number_x_step"
+						tal:condition="options/forum_objects_by_week_number">
+				<labels fontName="Helvetica"/>
+			</xValueAxis>
+			<yValueAxis valueMin="0" valueMax="7" valueStep="1"
+						tal:attributes="valueMax options/forum_objects_by_week_number_max;
+										valueStep options/forum_objects_by_week_number_y_step"
+						tal:condition="options/forum_objects_by_week_number">
+				<labels fontName="Helvetica"/>
+			</yValueAxis>
+			<lineLabels font="Roman-Bold" fontSize="10">
+			</lineLabels>
+			<texts >
+				<text x="2.5in" y="-0.5in" textAnchor="middle"
+					  fontName="Helvetica-Bold" fontSize="13"
+					  fillColor="black" >
+					Week Number
+				</text>
+				<text x="1.5in" y="0.3in" angle="90" textAnchor="middle"
+					  fontName="Helvetica-Bold" fontSize="13"
+					  fillColor="red">
+					Participation
+				</text>
+			</texts>
+			<data>
+				<series tal:condition="options/forum_objects_by_week_number"
+						tal:content="options/forum_objects_by_week_number_series">
+				1    1
+				2    2
+				2.5  1
+				3    3
+				4    5
+				</series>
+			</data>
+		</linePlot>
+		</illustration>
+
+		<h1  spaceBefore="0.5in" keepWithNext="true">Top Discussion Creators</h1>
+		<illustration width="6in" height="6in">
+		<pieChart dx="0in" dy="0in" dwidth="6in" dheight="6in" x="1in" y="0" width="4in"
+				  height="4in"
+				  checkLabelOverlap='false'
+				  tal:condition="options/top_creators">
+			<labels>
+				<label tal:repeat="item options/top_creators"
+					   tal:content="item">User1</label>
+				<label tal:condition="False">User2</label>
+				<label tal:condition="False">User3</label>
+			</labels>
+			<slices>
+				<!-- The last element is the "everyone else"; it has a
+				larger percent then its slice size indicates, so draw
+				attention to that by popping it out -->
+				<slice tal:repeat="item options/top_creators"
+					   tal:attributes="popout python:10 if repeat.item.end else 0;
+									   fillColor python:options['top_commenters_colors'][repeat.item.number]" />
+			</slices>
+			<data>
+				<series tal:content="options/top_creators/series">
+					100
+					75
+					25
+				</series>
+			</data>
+		</pieChart>
+		</illustration>
+
+		<para spaceBefore=".5in" tal:condition="options/most_popular_topic">
+			The most popular discussion was &#8220;${options/most_popular_topic/title}&#8221;
+			with ${python:len(options['most_popular_topic'])} comments;
+			the least popular discussion was &#8220;${options/least_popular_topic/title}&#8221;.
+			There are ${options/top_commenters/total} total comments in this forum, across
+			${python:len(context)} discussions, for an average comment count of ${python:options['top_commenters'].total // len(context)}
+			per discussion. ${options/percent_users_comment_more_than_once}% of users contributed
+			more than one comment.
+		</para>
+
+		<h1 spaceBefore=".5in">Comments Created</h1>
+		<blockTable style='default'
+					colWidths="40% 21% 15% 12% 12%" >
+			<tr>
+				<td><para>Discussion Name</para></td>
+				<td>Creator</td>
+				<td>Created Date</td>
+				<td><para>Comments</para></td>
+				<td><para>Distinct Users</para></td>
+			</tr>
+			<tr tal:repeat="item options/comment_count_by_topic">
+				<td> <para tal:content="item/title">Forum title</para></td>
+				<td tal:content="item/creator">Steve</td>
+				<td align="right" tal:content="item/created/date">2014-01-01</td>
+				<td align="decimal" tal:content="item/comment_count">25</td>
+				<td align="decimal" tal:content="item/distinct_user_count">3</td>
+			</tr>
+			<tr tal:condition="False">
+				<td>The Topic Name</td>
+				<td>Forum Name</td>
+				<td>Created Date</td>
+				<td>1</td>
+				<td>2</td>
+			</tr>
+
+			<tr tal:condition="False">
+				<td>The Topic Name</td>
+				<td>Forum Name</td>
+				<td>Created Date</td>
+				<td>1</td>
+				<td>2</td>
+			</tr>
+		</blockTable>
+
+		<!-- We'll probably want to flow this one through two colums? -->
+
+		<h1 spaceBefore=".5in">User Stats</h1>
+		<blockTable style='default'>
+			<tr>
+				<td>Username</td><td>Discussions Created</td><td>Comments</td>
+			</tr>
+			<tr tal:repeat="item options/user_stats">
+				<td tal:content="item/username">The Assessment Title</td>
+				<td tal:content="item/topics_created">Times Taken</td>
+				<td tal:content="item/total_comment_count">Times Taken</td>
+			</tr>
+			<tr tal:condition="False">
+				<td>The Topic Name</td>
+				<td>Forum Name</td>
+				<td>Forum Name</td>
+			</tr>
+
+			<tr tal:condition="False">
+				<td>The Topic Name</td>
+				<td>Forum Name</td>
+				<td>Forum Name</td>
+			</tr>
+		</blockTable>
 
 	</story>
 </document>
