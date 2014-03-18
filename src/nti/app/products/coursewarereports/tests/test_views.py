@@ -43,7 +43,11 @@ class TestStudentParticipationReport(ApplicationLayerTest):
 
 		enrollment_href = enrollment_res.json_body['href']
 		view_href = enrollment_href + '/StudentParticipationReport.pdf'
-
+		
+		res = self.testapp.get(view_href)
+		assert_that( res, has_property('content_type', 'application/pdf'))
+		
+		view_href = self.require_link_href_with_rel(enrollment_res.json_body, 'report-StudentParticipationReport.pdf')
 		res = self.testapp.get(view_href)
 		assert_that( res, has_property('content_type', 'application/pdf'))
 
