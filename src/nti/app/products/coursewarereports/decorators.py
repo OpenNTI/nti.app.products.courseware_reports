@@ -23,7 +23,6 @@ from . import MessageFactory as _
 LINKS = ext_interfaces.StandardExternalFields.LINKS
 from nti.dataserver.links import Link
 
-@component.adapter(ICourseInstanceEnrollment)
 @interface.implementer(ext_interfaces.IExternalMappingDecorator)
 @component.adapter(ICourseInstanceEnrollment, IRequest)
 class _StudentParticipationReport(AbstractAuthenticatedRequestAwareDecorator):

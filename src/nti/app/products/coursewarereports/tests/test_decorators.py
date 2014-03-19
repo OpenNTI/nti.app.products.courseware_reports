@@ -16,7 +16,7 @@ from hamcrest import *
 LINKS = ext_interfaces.StandardExternalFields.LINKS
 from nti.dataserver.links import Link
 
-class TestDecorators (unittest.TestCase ):
+class TestDecorators(unittest.TestCase):
 
 		def test_decorator( self ):
 			spr = _StudentParticipationReport( object(), None )
