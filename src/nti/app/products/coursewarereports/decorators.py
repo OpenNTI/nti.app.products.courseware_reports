@@ -29,4 +29,4 @@ class _StudentParticipationReport(AbstractAuthenticatedRequestAwareDecorator):
 		links.append( Link( context,
 							rel='report-StudentParticipationReport.pdf',
 							elements=('StudentParticipationReport.pdf',),
-							title=_('StudentParticipationReport.pdf')) )	
+							title=_('Student Participation Report')) )	

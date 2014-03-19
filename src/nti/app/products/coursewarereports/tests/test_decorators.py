@@ -9,19 +9,22 @@ from nti.testing import base
 from nti.app.products.coursewarereports.decorators import _StudentParticipationReport
 from nti.externalization import interfaces as ext_interfaces
 
-from hamcrest import assert_that
-from hamcrest import has_property
+import unittest
+
+from hamcrest import *
 
 LINKS = ext_interfaces.StandardExternalFields.LINKS
 from nti.dataserver.links import Link
 
-def test_decorator():
-		spr = _StudentParticipationReport( object(), None )
-		result = {}
-		spr._do_decorate_external( object(), result )
+class TestDecorators (unittest.TestCase ):
+
+		def test_decorator( self ):
+			spr = _StudentParticipationReport( object(), None )
+			result = {}
+			spr._do_decorate_external( object(), result )
 		
-		assert( result is not None )
+			assert( result is not None )
+			assert_that( result, is_( not_none() ) )
 		
-		for lnk in result.get('Links'):
-			assert( lnk is not None )
-			assert( lnk.rel == 'report-StudentParticipationReport.pdf' )
+			assert_that( result, has_entry( 'Links',
+									contains( has_property( 'rel', 'report-StudentParticipationReport.pdf' ))))

@@ -16,6 +16,7 @@ logger = __import__('logging').getLogger(__name__)
 
 from hamcrest import assert_that
 from hamcrest import has_property
+from hamcrest import contains_string
 
 from nti.app.testing.application_webtest import ApplicationLayerTest
 from nti.app.testing.decorators import WithSharedApplicationMockDS
@@ -41,15 +42,11 @@ class TestStudentParticipationReport(ApplicationLayerTest):
 												 'CLC 3403',
 												 status=201 )
 
-		enrollment_href = enrollment_res.json_body['href']
-		view_href = enrollment_href + '/StudentParticipationReport.pdf'
+		view_href = self.require_link_href_with_rel( enrollment_res.json_body, 'report-StudentParticipationReport.pdf' )
+		assert_that( view_href, contains_string( 'users/sjohnson%40nextthought.com' ) )
 		
-		res = self.testapp.get(view_href)
-		assert_that( res, has_property('content_type', 'application/pdf'))
-		
-		view_href = self.require_link_href_with_rel(enrollment_res.json_body, 'report-StudentParticipationReport.pdf')
-		res = self.testapp.get(view_href)
-		assert_that( res, has_property('content_type', 'application/pdf'))
+		res = self.testapp.get( view_href )
+		assert_that( res, has_property('content_type', 'application/pdf') )
 
 
 class TestForumParticipationReport(ApplicationLayerTest):
