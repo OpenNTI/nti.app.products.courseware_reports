@@ -15,7 +15,10 @@ from . import VIEW_FORUM_PARTICIPATION
 from . import VIEW_COURSE_SUMMARY
 from . import VIEW_ASSIGNMENT_SUMMARY
 
+from .interfaces import IPDFReportView
+
 from zope import component
+from zope import interface
 
 from six import string_types
 from numbers import Number
@@ -270,6 +273,7 @@ ENGAGEMENT_OBJECT_MIMETYPES = ['application/vnd.nextthought.note',
 @view_defaults(route_name='objects.generic.traversal',
 			   request_method='GET',
 			   permission=ACT_READ)
+@interface.implementer(IPDFReportView)
 class _AbstractReportView(AbstractAuthenticatedView):
 
 	@property

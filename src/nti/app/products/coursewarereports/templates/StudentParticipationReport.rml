@@ -6,15 +6,17 @@
 		  title="Student Participation Report"
 		  creator="NextThought"
 		  author="NextThought"
-		  xmlns:tal="http://xml.zope.org/namespaces/tal">>
+		  xmlns:tal="http://xml.zope.org/namespaces/tal"
+		  xmlns:metal="http://xml.zope.org/namespaces/metal">
 
-	<template pagesize="letter" leftMargin="72" showBoundary="0">
+	<template pagesize="letter" leftMargin="72" showBoundary="0"
+			  metal:use-macro="macro:template">
 		<pageTemplate id="main">
 			<frame id="first" x1="0.5in" y1="0.5in" width="7in" height="10in"/>
 		</pageTemplate>
 	</template>
 
-	<stylesheet>
+	<stylesheet metal:use-macro="macro:stylesheet">
 		<paraStyle name="h1" fontName="Helvetica-Bold" fontSize="11" leading="12"/>
 		<paraStyle name="h2" fontName="Helvetica-Bold" fontSize="11" leading="20" spaceBefore="12"/>
 		<paraStyle name="normal" fontName="Helvetica" fontSize="11"
@@ -31,7 +33,8 @@
 		<img src="[nti.appserver]/templates/coppa_consent_header.png"
 			 width="3.5in"
 			 height="0.55in"
-			 align="left"/>
+			 align="left"
+			 metal:use-macro="macro:header" />
 		<illustration width="6in" height="4in"> <!-- This could be shared -->
 		<linePlot dx="0in" dy="0in" dwidth="6in" dheight="4in" x="0" y="0" width="5in"
 					height="3in" joinedLines="true" lineLabelFormat="%2.0f"
