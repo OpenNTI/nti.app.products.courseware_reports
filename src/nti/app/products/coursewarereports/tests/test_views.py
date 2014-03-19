@@ -28,9 +28,13 @@ from .. import VIEW_FORUM_PARTICIPATION
 from .. import VIEW_TOPIC_PARTICIPATION
 from .. import VIEW_COURSE_SUMMARY
 
+from nti.app.assessment.tests import RegisterAssignmentsForEveryoneLayer
+from nti.app.assessment.tests import RegisterAssignmentLayerMixin
+
+
 class TestStudentParticipationReport(ApplicationLayerTest):
 
-	layer = InstructedCourseApplicationTestLayer
+	layer = RegisterAssignmentsForEveryoneLayer
 
 	@WithSharedApplicationMockDS(users=True,testapp=True,default_authenticate=True)
 	def test_application_view_empty_report(self):
@@ -131,9 +135,6 @@ class TestCourseSummaryReport(ApplicationLayerTest):
 
 		res = self.testapp.get(course_href + '/' + VIEW_COURSE_SUMMARY )
 		assert_that( res, has_property('content_type', 'application/pdf'))
-
-from nti.app.assessment.tests import RegisterAssignmentsForEveryoneLayer
-from nti.app.assessment.tests import RegisterAssignmentLayerMixin
 
 
 from nti.externalization.externalization import to_external_object

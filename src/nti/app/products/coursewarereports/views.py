@@ -17,6 +17,9 @@ from . import VIEW_ASSIGNMENT_SUMMARY
 
 from zope import component
 
+from six import string_types
+from numbers import Number
+
 from itertools import groupby
 from collections import namedtuple
 from collections import defaultdict
@@ -258,7 +261,8 @@ def _build_buckets_options(options, buckets):
 
 FORUM_OBJECT_MIMETYPES = ['application/vnd.nextthought.forums.generalforumcomment',
 						  'application/vnd.nextthought.forums.communityforumcomment',
-						  'application/vnd.nextthought.forums.communitytopic']
+						  'application/vnd.nextthought.forums.communitytopic',
+						  'application/vnd.nextthought.forums.communityheadlinetopic']
 
 ENGAGEMENT_OBJECT_MIMETYPES = ['application/vnd.nextthought.note',
 							   'application/vnd.nextthought.highlight']
@@ -327,7 +331,7 @@ class StudentParticipationReportPdf(_AbstractReportView):
 	TopicCreated = namedtuple('TopicCreated',
 							  ('topic', 'topic_name', 'forum_name', 'created'))
 	AssignmentInfo = namedtuple('AssignmentInfo',
-								('title', 'submitted', 'grade_value'))
+								('title', 'submitted', 'grade_value', 'history'))
 
 	@Lazy
 	def student_user(self):
@@ -424,11 +428,20 @@ class StudentParticipationReportPdf(_AbstractReportView):
 			history_item = histories.get(assignment.ntiid)
 			if history_item:
 				grade_value = getattr(IGrade(history_item, None), 'value', '')
+				# Convert the webapp's "number - letter" scheme to a number, iff
+				# the letter scheme is empty
+				if grade_value and isinstance(grade_value, string_types) and grade_value.endswith(' -'):
+					try:
+						grade_value = float(grade_value.split()[0])
+					except ValueError:
+						pass
+				if isinstance(grade_value, Number):
+					grade_value = '%0.1f' % grade_value
 				submitted = history_item.created
 			else:
 				grade_value = ''
 				submitted = ''
-			asg_data.append(self.AssignmentInfo(assignment.title, submitted, grade_value))
+			asg_data.append(self.AssignmentInfo(assignment.title, submitted, grade_value, history_item))
 
 		asg_data.sort(key=lambda x: x.title)
 		options['assignments'] = asg_data
@@ -610,7 +623,6 @@ class TopicParticipationReportPdf(ForumParticipationReportPdf):
 
 from nti.dataserver.users import Entity
 from nti.dataserver.interfaces import IEnumerableEntityContainer
-import numbers
 from nti.contentlibrary.interfaces import IContentPackageLibrary
 from numpy import asarray
 from numpy import average
@@ -629,7 +641,7 @@ def _assignment_stat_for_column(self, column):
 	count = len(column)
 	keys = set(column)
 
-	grade_points = [x.value if isinstance(x.value, numbers.Number) else float(x.value.split()[0])
+	grade_points = [x.value if isinstance(x.value, Number) else float(x.value.split()[0])
 					for x in column.values()
 					if x.value]
 
@@ -882,7 +894,7 @@ class AssignmentSummaryReportPdf(_AbstractReportView):
 							response = None
 						else:
 							response = question_part.choices[response]
-							if isinstance(response, basestring):
+							if isinstance(response, string_types):
 								response = IPlainTextContentFragment(response)
 					if response is not None:
 						submissions[question_submission.questionId].append(response)

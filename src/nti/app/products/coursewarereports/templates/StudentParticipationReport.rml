@@ -150,12 +150,16 @@
 		<blockTable style='default'>
 
 			<tr>
-				<td>Assignment Name</td><td>Date</td><td>Grade</td>
+				<td>Assignment Name</td>
+				<td>Date Submitted</td>
+				<td>Grade</td>
+				<td>Feedback Count</td>
 			</tr>
 			<tr tal:repeat="item options/assignments">
 				<td tal:content="item/title">The Assignment Name</td>
-				<td tal:content="item/submitted/date">Date</td>
+				<td tal:content="item/submitted/date | default"></td>
 				<td tal:content="item/grade_value">A+</td>
+				<td tal:content="item/history/FeedbackCount | default"></td>
 			</tr>
 			<tr tal:condition="False">
 				<td>Chortle</td>
