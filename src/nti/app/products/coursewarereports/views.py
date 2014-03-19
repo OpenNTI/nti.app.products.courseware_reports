@@ -13,6 +13,7 @@ from . import VIEW_STUDENT_PARTICIPATION
 from . import VIEW_TOPIC_PARTICIPATION
 from . import VIEW_FORUM_PARTICIPATION
 from . import VIEW_COURSE_SUMMARY
+from . import VIEW_ASSIGNMENT_SUMMARY
 
 from zope import component
 
@@ -23,6 +24,7 @@ from datetime import datetime
 
 import BTrees
 from pyramid.view import view_config
+from pyramid.view import view_defaults
 from pyramid.traversal import find_interface
 
 from zope.catalog.interfaces import ICatalog
@@ -43,6 +45,7 @@ from nti.contenttypes.courses.interfaces import ICourseInstance
 from nti.app.products.courseware.interfaces import ICourseInstanceEnrollment
 from nti.app.products.gradebook.interfaces import IGrade
 from nti.app.products.gradebook.interfaces import IGradeBook
+from nti.app.products.gradebook.interfaces import IGradeBookEntry
 from nti.dataserver.interfaces import IUser
 
 from nti.dataserver.contenttypes.forums.interfaces import ICommunityBoard
@@ -260,13 +263,65 @@ FORUM_OBJECT_MIMETYPES = ['application/vnd.nextthought.forums.generalforumcommen
 ENGAGEMENT_OBJECT_MIMETYPES = ['application/vnd.nextthought.note',
 							   'application/vnd.nextthought.highlight']
 
-@view_config(route_name='objects.generic.traversal',
-			 context=ICourseInstanceEnrollment,
-			 request_method='GET',
-			 permission=ACT_READ,
+@view_defaults(route_name='objects.generic.traversal',
+			   request_method='GET',
+			   permission=ACT_READ)
+class _AbstractReportView(AbstractAuthenticatedView):
+
+	@property
+	def course(self):
+		return ICourseInstance(self.context)
+
+	@Lazy
+	def md_catalog(self):
+		return component.getUtility(ICatalog,CATALOG_NAME)
+	@Lazy
+	def uidutil(self):
+		return component.getUtility(IIntIds)
+
+	@Lazy
+	def intids_created_by_students(self):
+		return self.md_catalog['creator'].apply({'any_of': self.all_student_usernames})
+
+	@Lazy
+	def for_credit_student_usernames(self):
+		restricted_id = self.course.LegacyScopes['restricted']
+		restricted = Entity.get_entity(restricted_id) if restricted_id else None
+
+		restricted_usernames = ({x for x in IEnumerableEntityContainer(restricted).iter_usernames()}
+								if restricted is not None
+								else set())
+		return restricted_usernames
+
+	@Lazy
+	def open_student_usernames(self):
+		return self.all_student_usernames - self.for_credit_student_usernames
+
+	@Lazy
+	def all_student_usernames(self):
+		everyone = self.course.legacy_community
+		everyone_usernames = {x for x in IEnumerableEntityContainer(everyone).iter_usernames()}
+		student_usernames = everyone_usernames - {x.id for x in self.course.instructors}
+		return student_usernames
+
+	@Lazy
+	def count_all_students(self):
+		return len(self.all_student_usernames)
+	@Lazy
+	def count_credit_students(self):
+		return len(self.for_credit_student_usernames)
+
+	@Lazy
+	def all_user_intids(self):
+		ids = BTrees.family64.II.TreeSet()
+		ids.update( IEnumerableEntityContainer(self.course.legacy_community).iter_intids() )
+		return ids
+
+
+@view_config(context=ICourseInstanceEnrollment,
 			 name=VIEW_STUDENT_PARTICIPATION,
 			 renderer="templates/StudentParticipationReport.rml")
-class StudentParticipationReportPdf(AbstractAuthenticatedView):
+class StudentParticipationReportPdf(_AbstractReportView):
 
 
 	TopicCreated = namedtuple('TopicCreated',
@@ -275,17 +330,8 @@ class StudentParticipationReportPdf(AbstractAuthenticatedView):
 								('title', 'submitted', 'grade_value'))
 
 	@Lazy
-	def course(self):
-		return ICourseInstance(self.context)
-	@Lazy
 	def student_user(self):
 		return IUser(self.context)
-	@Lazy
-	def md_catalog(self):
-		return component.getUtility(ICatalog,CATALOG_NAME)
-	@Lazy
-	def uidutil(self):
-		return component.getUtility(IIntIds)
 	@Lazy
 	def intids_created_by_student(self):
 		return self.md_catalog['creator'].apply({'any_of': (self.context.Username,)})
@@ -433,13 +479,10 @@ class StudentParticipationReportPdf(AbstractAuthenticatedView):
 
 from reportlab.lib import colors
 
-@view_config(route_name='objects.generic.traversal',
-			 context=ICommunityForum,
-			 request_method='GET',
-			 permission=ACT_READ,
+@view_config(context=ICommunityForum,
 			 name=VIEW_FORUM_PARTICIPATION,
 			 renderer="templates/ForumParticipationReport.rml")
-class ForumParticipationReportPdf(AbstractAuthenticatedView):
+class ForumParticipationReportPdf(_AbstractReportView):
 
 	TopicStats = namedtuple('TopicStats',
 							('title', 'creator', 'created', 'comment_count', 'distinct_user_count'))
@@ -536,10 +579,7 @@ class ForumParticipationReportPdf(AbstractAuthenticatedView):
 		return options
 
 
-@view_config(route_name='objects.generic.traversal',
-			 context=ICommunityHeadlineTopic,
-			 request_method='GET',
-			 permission=ACT_READ,
+@view_config(context=ICommunityHeadlineTopic,
 			 name=VIEW_TOPIC_PARTICIPATION,
 			 renderer="templates/TopicParticipationReport.rml")
 class TopicParticipationReportPdf(ForumParticipationReportPdf):
@@ -572,55 +612,67 @@ from nti.dataserver.users import Entity
 from nti.dataserver.interfaces import IEnumerableEntityContainer
 import numbers
 from nti.contentlibrary.interfaces import IContentPackageLibrary
+from numpy import asarray
+from numpy import average
+from numpy import median
+from numpy import std
+from numpy import var
 
-@view_config(route_name='objects.generic.traversal',
-			 context=ICourseInstance,
-			 request_method='GET',
-			 permission=ACT_READ,
+
+_AssignmentStat = namedtuple('_AssignmentStat',
+							 ('title', 'count',
+							  'avg_grade', 'median_grade',
+							  'std_grade', 'var_grade',
+							  'attempted', 'for_credit_attempted'))
+
+def _assignment_stat_for_column(self, column):
+	count = len(column)
+	keys = set(column)
+
+	grade_points = [x.value if isinstance(x.value, numbers.Number) else float(x.value.split()[0])
+					for x in column.values()
+					if x.value]
+
+	if grade_points:
+		grade_points = asarray(grade_points)
+		avg_grade = average(grade_points)
+		avg_grade_s = '%0.1f' % avg_grade
+
+		median_grade = median(grade_points)
+		median_grade_s = '%0.1f' % median_grade
+
+		std_grade = std(grade_points)
+		std_grade_s = '%0.1f' % std_grade
+		var_grade = var(grade_points)
+	else:
+		avg_grade_s = median_grade_s = std_grade_s = var_grade = 'N/A'
+
+	if self.count_all_students:
+		per_attempted = (count / self.count_all_students) * 100.0
+		per_attempted_s = '%0.1f' % per_attempted
+	else:
+		per_attempted_s = 'N/A'
+
+	# TODO: Case sensitivity issue?
+	for_credit_atempted = self.for_credit_student_usernames.intersection(keys)
+	if self.count_credit_students:
+		for_credit_per = (len(for_credit_atempted) / self.count_credit_students) * 100.0
+		for_credit_per_s = '%0.1f' % for_credit_per
+	else:
+		for_credit_per_s = 'N/A'
+
+	stat = _AssignmentStat( column.displayName, count,
+							avg_grade_s, median_grade_s,
+							std_grade_s, var_grade,
+							per_attempted_s, for_credit_per_s )
+
+	return stat
+
+@view_config(context=ICourseInstance,
 			 name=VIEW_COURSE_SUMMARY,
 			 renderer="templates/CourseSummaryReport.rml")
-class CourseSummaryReportPdf(AbstractAuthenticatedView):
+class CourseSummaryReportPdf(_AbstractReportView):
 
-	@property
-	def course(self):
-		return self.context
-
-	@Lazy
-	def md_catalog(self):
-		return component.getUtility(ICatalog,CATALOG_NAME)
-	@Lazy
-	def uidutil(self):
-		return component.getUtility(IIntIds)
-	@Lazy
-	def intids_created_by_students(self):
-		return self.md_catalog['creator'].apply({'any_of': self.all_student_usernames})
-
-	@Lazy
-	def for_credit_student_usernames(self):
-		restricted_id = self.course.LegacyScopes['restricted']
-		restricted = Entity.get_entity(restricted_id) if restricted_id else None
-
-		restricted_usernames = ({x for x in IEnumerableEntityContainer(restricted).iter_usernames()}
-								if restricted is not None
-								else set())
-		return restricted_usernames
-
-	@Lazy
-	def open_student_usernames(self):
-		return self.all_student_usernames - self.for_credit_student_usernames
-
-	@Lazy
-	def all_student_usernames(self):
-		everyone = self.course.legacy_community
-		everyone_usernames = {x for x in IEnumerableEntityContainer(everyone).iter_usernames()}
-		student_usernames = everyone_usernames - {x.id for x in self.course.instructors}
-		return student_usernames
-
-	@Lazy
-	def all_user_intids(self):
-		ids = BTrees.family64.II.TreeSet()
-		ids.update( IEnumerableEntityContainer(self.course.legacy_community).iter_intids() )
-		return ids
 
 	def _build_enrollment_info(self, options):
 
@@ -724,8 +776,6 @@ class CourseSummaryReportPdf(AbstractAuthenticatedView):
 		stat = namedtuple('Stat',
 						  ('title', 'note_count', 'hl_count'))
 
-
-
 		for unit in outline.values():
 			for lesson in unit.values():
 				ntiids = set()
@@ -751,39 +801,15 @@ class CourseSummaryReportPdf(AbstractAuthenticatedView):
 		# Keep these in lesson order
 		options['placed_engagement_data'] = data
 
-	AssignmentStat = namedtuple('AssignmentStat',
-								('title', 'count', 'avg_grade', 'attempted', 'for_credit_attempted'))
 
 	def _build_assignment_data(self, options):
 		gradebook = IGradeBook(self.course)
 		assignment_catalog = ICourseAssignmentCatalog(self.course)
 
-		count_all_students = len(self.all_student_usernames)
-		count_credit_students = len(self.for_credit_student_usernames)
-
 		stats = list()
 		for asg in assignment_catalog.iter_assignments():
 			column = gradebook.getColumnForAssignmentId(asg.ntiid)
-
-			count = len(column)
-			keys = set(column)
-
-			total_grade_points = sum( (x.value if isinstance(x.value, numbers.Number) else float(x.value.split()[0])
-									   for x in column.values()) )
-			avg_grade = total_grade_points / count
-			avg_grade_s = '%0.1f' % avg_grade
-
-			per_attempted = (count / count_all_students) * 100.0
-			per_attempted_s = '%0.1f' % per_attempted
-
-			# TODO: Case sensitivity issue?
-			for_credit_atempted = self.for_credit_student_usernames.intersection(keys)
-			for_credit_per = (len(for_credit_atempted) / count_credit_students) * 100.0
-			for_credit_per_s = '%0.1f' % for_credit_per
-
-			stat = self.AssignmentStat( asg.title, count, avg_grade_s, per_attempted_s, for_credit_per_s )
-
-			stats.append(stat)
+			stats.append(_assignment_stat_for_column(self, column))
 
 		stats.sort(key=lambda x: x.title)
 		options['assignment_data'] = stats
@@ -795,4 +821,28 @@ class CourseSummaryReportPdf(AbstractAuthenticatedView):
 		self._build_self_assessment_data(options)
 		self._build_assignment_data(options)
 
+		return options
+
+from nti.app.assessment.interfaces import IUsersCourseAssignmentHistoryItem
+
+@view_config(context=IGradeBookEntry,
+			 name=VIEW_ASSIGNMENT_SUMMARY,
+			 renderer="templates/AssignmentSummaryReport.rml")
+class AssignmentSummaryReportPdf(_AbstractReportView):
+
+
+	def _build_assignment_data(self, options):
+		stats = [_assignment_stat_for_column(self, self.context)]
+		options['assignment_data'] = stats
+
+	def _build_question_data(self, options):
+		column = self.context
+		for grade in column.values():
+			history = IUsersCourseAssignmentHistoryItem(grade)
+
+
+	def __call__(self):
+		options = dict()
+		self._build_assignment_data(options)
+		self._build_question_data(options)
 		return options

@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE document SYSTEM "rml_1_0.dtd">
+<document filename="ForumParticipationReport.pdf"
+		  invariant="1"
+		  compression="1"
+		  title="Forum Participation Report"
+		  creator="NextThought"
+		  author="NextThought"
+		  xmlns:tal="http://xml.zope.org/namespaces/tal">>
+
+	<template pagesize="letter" leftMargin="72" showBoundary="0">
+		<pageTemplate id="main">
+			<frame id="first" x1="0.5in" y1="0.5in" width="7in" height="10in"/>
+		</pageTemplate>
+	</template>
+
+	<stylesheet> <!-- These will all be macros -->
+		<paraStyle name="h1" fontName="Helvetica-Bold" fontSize="11" leading="12"/>
+		<paraStyle name="h2" fontName="Helvetica-Bold" fontSize="11" leading="20" spaceBefore="12"/>
+		<paraStyle name="normal" fontName="Helvetica" fontSize="11"
+				   leading="12" spaceBefore="10"/>
+		<paraStyle name="sendTo" leftIndent="0.5in" parent="normal"
+				   spaceBefore="10" spaceAfter="2"/>
+		<blockTableStyle id="default">
+			<lineStyle start="0,0" stop="-1,-1" kind="innergrid" thickness="0.25"
+					   colorName="black"/>
+		</blockTableStyle>
+	</stylesheet>
+
+	<story firstPageTemplate="main">
+		<img src="[nti.appserver]/templates/coppa_consent_header.png"
+			 width="3.5in"
+			 height="0.55in"
+			 align="left"/>
+
+
+		<h1 spaceBefore=".5in" keepWithNext='true'>Assignments Taken</h1>
+		<blockTable style='default'>
+			<tr>
+				<td><para>Assignment Title</para></td>
+				<td><para>Total Attempts</para></td>
+				<td><para>Average Grade</para></td>
+				<td><para>Median Grade</para></td>
+				<td><para>STD Grade</para></td>
+				<td><para>Percent Attempted</para></td>
+				<td><para>For-credit Attempted</para></td>
+			</tr>
+			<tr tal:repeat="item options/assignment_data">
+				<td><para tal:content="item/title">The Assessment Title</para></td>
+				<td align="decimal" tal:content="item/count">Times Taken</td>
+				<td align="decimal" tal:content="item/avg_grade">Average Grade</td>
+				<td align="decimal" tal:content="item/median_grade">Mean Grade</td>
+				<td align="decimal" tal:content="item/std_grade">STD Grade</td>
+				<td align="decimal" tal:content="item/attempted">Percent attempted</td>
+				<td align="decimal" tal:content="item/for_credit_attempted">Percent attempted</td>
+			</tr>
+			<tr tal:condition="False">
+				<td>The Topic Name</td>
+				<td>Total Attempts</td>
+				<td>Forum Name</td>
+				<td>Forum Name</td>
+				<td>Taken</td>
+			</tr>
+
+			<tr tal:condition="False">
+				<td>The Topic Name</td>
+				<td>Total Attempts</td>
+				<td>Forum Name</td>
+				<td>Forum Name</td>
+				<td>Taken</td>
+			</tr>
+		</blockTable>
+
+	</story>
+</document>

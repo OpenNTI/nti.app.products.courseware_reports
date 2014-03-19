@@ -12,6 +12,7 @@ VIEW_STUDENT_PARTICIPATION = "StudentParticipationReport.pdf"
 VIEW_FORUM_PARTICIPATION = "ForumParticipationReport.pdf"
 VIEW_TOPIC_PARTICIPATION = "TopicParticipationReport.pdf"
 VIEW_COURSE_SUMMARY = "CourseSummaryReport.pdf"
+VIEW_ASSIGNMENT_SUMMARY = 'AssignmentSummaryReport.pdf'
 
 import zope.i18nmessageid
 MessageFactory = zope.i18nmessageid.MessageFactory('nti.app.products.coursewarereports')

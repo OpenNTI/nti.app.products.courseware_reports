@@ -91,13 +91,17 @@
 				<td>Assignment Title</td>
 				<td>Total Attempts</td>
 				<td>Average Grade</td>
+				<td>Median Grade</td>
+				<td>STD Grade</td>
 				<td>Percent Attempted</td>
 				<td>For-credit Attempted</td>
 			</tr>
 			<tr tal:repeat="item options/assignment_data">
-				<td tal:content="item/title">The Assessment Title</td>
+				<td><para tal:content="item/title">The Assessment Title</para></td>
 				<td align="decimal" tal:content="item/count">Times Taken</td>
 				<td align="decimal" tal:content="item/avg_grade">Average Grade</td>
+				<td align="decimal" tal:content="item/median_grade">Mean Grade</td>
+				<td align="decimal" tal:content="item/std_grade">STD Grade</td>
 				<td align="decimal" tal:content="item/attempted">Percent attempted</td>
 				<td align="decimal" tal:content="item/for_credit_attempted">Percent attempted</td>
 			</tr>
@@ -105,12 +109,14 @@
 				<td>The Topic Name</td>
 				<td>Total Attempts</td>
 				<td>Forum Name</td>
+				<td>Forum Name</td>
 				<td>Taken</td>
 			</tr>
 
 			<tr tal:condition="False">
 				<td>The Topic Name</td>
 				<td>Total Attempts</td>
+				<td>Forum Name</td>
 				<td>Forum Name</td>
 				<td>Taken</td>
 			</tr>

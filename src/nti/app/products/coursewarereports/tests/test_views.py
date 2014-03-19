@@ -48,10 +48,10 @@ class TestStudentParticipationReport(ApplicationLayerTest):
 
 		view_href = self.require_link_href_with_rel( enrollment_res.json_body, 'report-%s' % VIEW_STUDENT_PARTICIPATION )
 		assert_that( view_href, contains_string( 'users/sjohnson%40nextthought.com' ) )
-		
-		res = self.testapp.get( view_href )
-		assert_that( res, has_property('content_type', 'application/pdf') )
 
+
+		res = self.testapp.get(view_href)
+		assert_that( res, has_property('content_type', 'application/pdf'))
 
 class TestForumParticipationReport(ApplicationLayerTest):
 
@@ -130,4 +130,75 @@ class TestCourseSummaryReport(ApplicationLayerTest):
 		course_href = enrollment_res.json_body['CourseInstance']['href']
 
 		res = self.testapp.get(course_href + '/' + VIEW_COURSE_SUMMARY )
+		assert_that( res, has_property('content_type', 'application/pdf'))
+
+from nti.app.assessment.tests import RegisterAssignmentsForEveryoneLayer
+from nti.app.assessment.tests import RegisterAssignmentLayerMixin
+
+
+from nti.externalization.externalization import to_external_object
+from nti.assessment.submission import AssignmentSubmission
+from nti.assessment.submission import QuestionSetSubmission
+
+
+class TestAssignmentSummaryReport(RegisterAssignmentLayerMixin,
+								  ApplicationLayerTest):
+
+	layer = RegisterAssignmentsForEveryoneLayer
+
+	@WithSharedApplicationMockDS(users=True,testapp=True,default_authenticate=True)
+	def test_application_view_empty_report(self):
+		# Trivial test to make sure we can fetch the report even with
+		# no data.
+
+		# This only works in the OU environment because that's where the purchasables are
+		extra_env = self.testapp.extra_environ or {}
+		extra_env.update( {b'HTTP_ORIGIN': b'http://janux.ou.edu'} )
+		self.testapp.extra_environ = extra_env
+
+		enrollment_res = self.testapp.post_json( '/dataserver2/users/sjohnson@nextthought.com/Courses/EnrolledCourses',
+								'CLC 3403',
+								status=201 )
+
+		course_href = enrollment_res.json_body['CourseInstance']['href']
+		gradebook_href = course_href + '/GradeBook'
+		part_href = gradebook_href + '/default'
+		entry_href = part_href + '/Assignment 1'
+		report_href = entry_href + '/AssignmentSummaryReport.pdf'
+
+		res = self.testapp.get(report_href)
+		assert_that( res, has_property('content_type', 'application/pdf'))
+
+		# Also fetch the course report too since it will now have empty rows
+		res = self.testapp.get(course_href + '/CourseSummaryReport.pdf')
+		assert_that( res, has_property('content_type', 'application/pdf'))
+
+
+	@WithSharedApplicationMockDS(users=True,testapp=True,default_authenticate=True)
+	def test_application_view_report(self):
+		# This only works in the OU environment because that's where the purchasables are
+		extra_env = self.testapp.extra_environ or {}
+		extra_env.update( {b'HTTP_ORIGIN': b'http://janux.ou.edu'} )
+		self.testapp.extra_environ = extra_env
+
+		enrollment_res = self.testapp.post_json( '/dataserver2/users/sjohnson@nextthought.com/Courses/EnrolledCourses',
+								'CLC 3403',
+								status=201 )
+
+		course_href = enrollment_res.json_body['CourseInstance']['href']
+		gradebook_href = course_href + '/GradeBook'
+		part_href = gradebook_href + '/default'
+		entry_href = part_href + '/Assignment 1'
+		report_href = entry_href + '/AssignmentSummaryReport.pdf'
+
+
+		# Sends an assignment through the application by posting to the assignment
+		qs_submission = QuestionSetSubmission(questionSetId=self.question_set_id)
+		submission = AssignmentSubmission(assignmentId=self.assignment_id, parts=(qs_submission,))
+
+		ext_obj = to_external_object( submission )
+
+		self.testapp.post_json( '/dataserver2/Objects/' + self.assignment_id,
+								ext_obj)
+		res = self.testapp.get(report_href)
 		assert_that( res, has_property('content_type', 'application/pdf'))
