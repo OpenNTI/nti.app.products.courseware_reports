@@ -9,6 +9,9 @@ __docformat__ = "restructuredtext en"
 logger = __import__('logging').getLogger(__name__)
 
 from zope import interface
+from zope import component
+
+from pyramid.interfaces import IRequest
 
 from nti.externalization import interfaces as ext_interfaces
 from nti.app.products.courseware.interfaces import ICourseInstanceEnrollment
@@ -22,6 +25,7 @@ from nti.dataserver.links import Link
 
 @component.adapter(ICourseInstanceEnrollment)
 @interface.implementer(ext_interfaces.IExternalMappingDecorator)
+@component.adapter(ICourseInstanceEnrollment, IRequest)
 class _StudentParticipationReport(AbstractAuthenticatedRequestAwareDecorator):
 	"""
 	A link to return the student participation report.

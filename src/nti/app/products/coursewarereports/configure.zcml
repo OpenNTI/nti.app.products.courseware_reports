@@ -10,19 +10,14 @@
 	<include package="zope.security" file="meta.zcml" />
 	<include package="zope.component" />
 
-
-
 	<include file="meta.zcml" package="zope.security" />
 
 	<permission
 		id="nti.actions.courseware.view_reports"
 		title="View reports" />
 	
-	<!-- A subscriber for getting the StudentParticipationReport link -->
+	<!-- A subscriber for getting the Student Participation Report from course enrollment records -->
 	<subscriber factory=".decorators._StudentParticipationReport"
 				provides="nti.externalization.interfaces.IExternalMappingDecorator" />
-				
-				for="nti.app.products.courseware.interfaces.ICourseInstanceEnrollment
-					 pyramid.interfaces.IRequest"/>
 
 </configure>
