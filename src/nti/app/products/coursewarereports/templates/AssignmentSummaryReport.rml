@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <!DOCTYPE document SYSTEM "rml_1_0.dtd">
-<document filename="ForumParticipationReport.pdf"
+<document filename="AssignmentSummaryReport.pdf"
 		  invariant="1"
 		  compression="1"
-		  title="Forum Participation Report"
+		  title="Assignment Summary Report"
 		  creator="NextThought"
 		  author="NextThought"
 		  xmlns:tal="http://xml.zope.org/namespaces/tal">>
@@ -70,6 +70,39 @@
 				<td>Taken</td>
 			</tr>
 		</blockTable>
+
+
+		<tal:block tal:repeat="item options/question_stats">
+			<h2 spaceBefore=".5in" keepWithNext='true' tal:content="item/title">Question Number</h2>
+			<para tal:content="item/content">The content of the question.</para>
+			<blockTable>
+				<tr>
+					<td>Average Score</td>
+					<td tal:content="item/avg_score">75%
+					</td>
+				</tr>
+			</blockTable>
+			<h3 keepWithNext="true" tal:condition="item/submission_counts">Common Incorrect Answers</h3>
+			<illustration width="4in" height="4in" tal:condition="item/submission_counts">
+				<pieChart dx="0in" dy="0in" dwidth="4in" dheight="4in" x="1in" y="0" width="3in"
+						  height="3in"
+						  checkLabelOverlap='true'
+						  >
+					<labels>
+						<!--!  (${item/submission_counts/?key}) gets the count, is it useful? -->
+						<label tal:repeat="key item/submission_counts">${python:key[0:20] + '...' if isinstance(key,basestring) and len(key) > 15 else key}</label>
+					</labels>
+					<data>
+						<series>
+							<tal:block tal:repeat="value item/submission_counts/values">
+								${value}
+							</tal:block>
+						</series>
+					</data>
+				</pieChart>
+			</illustration>
+
+		</tal:block>
 
 	</story>
 </document>

@@ -824,21 +824,113 @@ class CourseSummaryReportPdf(_AbstractReportView):
 		return options
 
 from nti.app.assessment.interfaces import IUsersCourseAssignmentHistoryItem
+from nti.assessment.interfaces import IQAssessedQuestionSet
+from nti.assessment.interfaces import IQMultipleChoicePart
+from nti.assessment.interfaces import IQMultipleChoiceMultipleAnswerPart
+from nti.contentfragments.interfaces import IPlainTextContentFragment
+from collections import Counter
 
 @view_config(context=IGradeBookEntry,
 			 name=VIEW_ASSIGNMENT_SUMMARY,
 			 renderer="templates/AssignmentSummaryReport.rml")
 class AssignmentSummaryReportPdf(_AbstractReportView):
 
+	QuestionStat = namedtuple('QuestionStat',
+							  ('title', 'content', 'avg_score',
+							   'submission_counts',
+							   ))
 
 	def _build_assignment_data(self, options):
 		stats = [_assignment_stat_for_column(self, self.context)]
 		options['assignment_data'] = stats
 
 	def _build_question_data(self, options):
+		assignment = component.getUtility(IQAssignment, name=self.context.AssignmentId)
+
+		ordered_questions = []
+		qids_to_q = {}
+		for apart in assignment.parts:
+			for q in apart.question_set.questions:
+				ordered_questions.append(q)
+				qids_to_q[q.ntiid] = q
+
 		column = self.context
+		submissions = defaultdict(list)
+		assessed_values = defaultdict(list)
 		for grade in column.values():
-			history = IUsersCourseAssignmentHistoryItem(grade)
+			try:
+				history = IUsersCourseAssignmentHistoryItem(grade)
+			except TypeError: # Deleted user
+				continue
+
+			submission = history.Submission
+			pending = history.pendingAssessment
+			for set_submission in submission.parts:
+				for question_submission in set_submission.questions:
+					if len(question_submission.parts) != 1:
+						continue
+					question = qids_to_q[question_submission.questionId]
+					question_part = question.parts[0]
+					response = question_submission.parts[0]
+					if (IQMultipleChoicePart.providedBy(question_part)
+						and not IQMultipleChoiceMultipleAnswerPart.providedBy(question_part)
+						and isinstance(response, int)):
+						# convert int indexes into actual values; elide
+						# the right answer so we only show incorrect answers
+						__traceback_info__ = response
+						if question_part.solutions[0].value == response:
+							response = None
+						else:
+							response = question_part.choices[response]
+							if isinstance(response, basestring):
+								response = IPlainTextContentFragment(response)
+					if response is not None:
+						submissions[question_submission.questionId].append(response)
+
+			for maybe_assessed in pending.parts:
+				if not IQAssessedQuestionSet.providedBy(maybe_assessed):
+					continue
+				for assessed_question in maybe_assessed.questions:
+					if len(assessed_question.parts) != 1:
+						continue
+					assessed_part = assessed_question.parts[0]
+					assessed_values[assessed_question.questionId].append( assessed_part.assessedValue )
+
+		options['xxx'] = submissions
+
+		question_stats = []
+		for i, q in enumerate(ordered_questions):
+			assessed_value = assessed_values.get(q.ntiid, ())
+			if assessed_value:
+				avg_assessed = average(assessed_value)
+				avg_assessed = avg_assessed * 100.0
+				avg_assessed_s = '%0.1f' % avg_assessed
+			else:
+				avg_assessed_s = 'N/A'
+
+			submission = submissions.get(q.ntiid, ())
+			try:
+				# If this gets big, we'll need to do something different,
+				# like just showing top-answers
+				# Arbitrary picking how many
+				submission_counts = Counter(submission)
+				if len(submission_counts) > 20:
+					submission_counts = dict(submission_counts.most_common(20))
+			except TypeError:
+				# Dictionary or list submissions
+				submission_counts = dict()
+
+			title = i + 1
+			content = IPlainTextContentFragment(q.content)
+			if not content:
+				content = IPlainTextContentFragment(q.parts[0].content)
+			most_common_incorrect_response = ''
+			most_common_correct_response = ''
+
+			stat = self.QuestionStat(title, content, avg_assessed_s, submission_counts )
+			question_stats.append(stat)
+
+		options['question_stats'] = question_stats
 
 
 	def __call__(self):
