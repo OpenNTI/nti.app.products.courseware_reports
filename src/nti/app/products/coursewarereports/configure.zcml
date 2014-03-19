@@ -19,10 +19,26 @@
 		id="nti.actions.courseware.view_reports"
 		title="View reports" />
 
-	<!-- A subscriber for getting the Student Participation Report from course enrollment records -->
+	<!-- A subscriber for getting the student participation report from course enrollment records -->
 	<subscriber factory=".decorators._StudentParticipationReport"
 				provides="nti.externalization.interfaces.IExternalMappingDecorator" />
-
+				
+	<!-- A subscriber for getting the forum participation report from the forums -->
+	<subscriber factory=".decorators._ForumParticipationReport"
+				provides="nti.externalization.interfaces.IExternalMappingDecorator" />
+				
+	<!-- A subscriber for getting the topic participation report from the topic -->
+	<subscriber factory=".decorators._TopicParticipationReport"
+				provides="nti.externalization.interfaces.IExternalMappingDecorator" />
+				
+	<!-- A subscriber for getting the course summary report from the course info tab -->
+	<subscriber factory=".decorators._CourseSummaryReport"
+				provides="nti.externalization.interfaces.IExternalMappingDecorator" />
+				
+	<!-- A subscriber for getting the assignment summary report from the gradebook -->
+	<subscriber factory=".decorators._AssignmentSummaryReport"
+				provides="nti.externalization.interfaces.IExternalMappingDecorator" />				
+												
 
 	<!-- Default macros for the reports -->
 	<!--
