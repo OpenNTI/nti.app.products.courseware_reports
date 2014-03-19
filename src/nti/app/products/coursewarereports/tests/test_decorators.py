@@ -13,6 +13,8 @@ import unittest
 
 from hamcrest import *
 
+from .. import VIEW_STUDENT_PARTICIPATION
+
 LINKS = ext_interfaces.StandardExternalFields.LINKS
 from nti.dataserver.links import Link
 
@@ -27,4 +29,4 @@ class TestDecorators(unittest.TestCase):
 			assert_that( result, is_( not_none() ) )
 		
 			assert_that( result, has_entry( 'Links',
-									contains( has_property( 'rel', 'report-StudentParticipationReport.pdf' ))))
+									contains( has_property( 'rel', 'report-%s' % VIEW_STUDENT_PARTICIPATION ))))

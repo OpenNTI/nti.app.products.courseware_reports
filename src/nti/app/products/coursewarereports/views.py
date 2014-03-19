@@ -9,6 +9,10 @@ __docformat__ = "restructuredtext en"
 logger = __import__('logging').getLogger(__name__)
 
 from . import MessageFactory as _
+from . import VIEW_STUDENT_PARTICIPATION
+from . import VIEW_TOPIC_PARTICIPATION
+from . import VIEW_FORUM_PARTICIPATION
+from . import VIEW_COURSE_SUMMARY
 
 from zope import component
 
@@ -260,7 +264,7 @@ ENGAGEMENT_OBJECT_MIMETYPES = ['application/vnd.nextthought.note',
 			 context=ICourseInstanceEnrollment,
 			 request_method='GET',
 			 permission=ACT_READ,
-			 name='StudentParticipationReport.pdf',
+			 name=VIEW_STUDENT_PARTICIPATION,
 			 renderer="templates/StudentParticipationReport.rml")
 class StudentParticipationReportPdf(AbstractAuthenticatedView):
 
@@ -433,7 +437,7 @@ from reportlab.lib import colors
 			 context=ICommunityForum,
 			 request_method='GET',
 			 permission=ACT_READ,
-			 name='ForumParticipationReport.pdf',
+			 name=VIEW_FORUM_PARTICIPATION,
 			 renderer="templates/ForumParticipationReport.rml")
 class ForumParticipationReportPdf(AbstractAuthenticatedView):
 
@@ -536,7 +540,7 @@ class ForumParticipationReportPdf(AbstractAuthenticatedView):
 			 context=ICommunityHeadlineTopic,
 			 request_method='GET',
 			 permission=ACT_READ,
-			 name='TopicParticipationReport.pdf',
+			 name=VIEW_TOPIC_PARTICIPATION,
 			 renderer="templates/TopicParticipationReport.rml")
 class TopicParticipationReportPdf(ForumParticipationReportPdf):
 
@@ -573,7 +577,7 @@ from nti.contentlibrary.interfaces import IContentPackageLibrary
 			 context=ICourseInstance,
 			 request_method='GET',
 			 permission=ACT_READ,
-			 name='CourseSummaryReport.pdf',
+			 name=VIEW_COURSE_SUMMARY,
 			 renderer="templates/CourseSummaryReport.rml")
 class CourseSummaryReportPdf(AbstractAuthenticatedView):
 

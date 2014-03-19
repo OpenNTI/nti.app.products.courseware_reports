@@ -23,6 +23,10 @@ from nti.app.testing.decorators import WithSharedApplicationMockDS
 
 from nti.app.products.courseware.tests import InstructedCourseApplicationTestLayer
 
+from .. import VIEW_STUDENT_PARTICIPATION
+from .. import VIEW_FORUM_PARTICIPATION
+from .. import VIEW_TOPIC_PARTICIPATION
+from .. import VIEW_COURSE_SUMMARY
 
 class TestStudentParticipationReport(ApplicationLayerTest):
 
@@ -42,7 +46,7 @@ class TestStudentParticipationReport(ApplicationLayerTest):
 												 'CLC 3403',
 												 status=201 )
 
-		view_href = self.require_link_href_with_rel( enrollment_res.json_body, 'report-StudentParticipationReport.pdf' )
+		view_href = self.require_link_href_with_rel( enrollment_res.json_body, 'report-%s' % VIEW_STUDENT_PARTICIPATION )
 		assert_that( view_href, contains_string( 'users/sjohnson%40nextthought.com' ) )
 		
 		res = self.testapp.get( view_href )
@@ -69,7 +73,7 @@ class TestForumParticipationReport(ApplicationLayerTest):
 
 		board_href = enrollment_res.json_body['CourseInstance']['Discussions']['href']
 		forum_href = board_href + '/Forum'
-		report_href = forum_href + '/ForumParticipationReport.pdf'
+		report_href = forum_href + '/' + VIEW_FORUM_PARTICIPATION
 
 		res = self.testapp.get(report_href)
 		assert_that( res, has_property('content_type', 'application/pdf'))
@@ -100,7 +104,7 @@ class TestTopicParticipationReport(ApplicationLayerTest):
 		res = self.testapp.post_json( forum_href,{'Class': 'Post', 'body': ['My body'], 'title': 'my title'} )
 		topic_href = res.json_body['href']
 
-		report_href = topic_href + '/TopicParticipationReport.pdf'
+		report_href = topic_href + '/' + VIEW_TOPIC_PARTICIPATION
 
 		res = self.testapp.get(report_href)
 		assert_that( res, has_property('content_type', 'application/pdf'))
@@ -125,5 +129,5 @@ class TestCourseSummaryReport(ApplicationLayerTest):
 
 		course_href = enrollment_res.json_body['CourseInstance']['href']
 
-		res = self.testapp.get(course_href + '/CourseSummaryReport.pdf')
+		res = self.testapp.get(course_href + '/' + VIEW_COURSE_SUMMARY )
 		assert_that( res, has_property('content_type', 'application/pdf'))

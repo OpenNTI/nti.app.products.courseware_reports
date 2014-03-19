@@ -19,6 +19,7 @@ from nti.app.products.courseware.interfaces import ICourseInstanceEnrollment
 from nti.app.renderers.decorators import AbstractAuthenticatedRequestAwareDecorator
 
 from . import MessageFactory as _
+from . import VIEW_STUDENT_PARTICIPATION
 
 LINKS = ext_interfaces.StandardExternalFields.LINKS
 from nti.dataserver.links import Link
@@ -32,7 +33,7 @@ class _StudentParticipationReport(AbstractAuthenticatedRequestAwareDecorator):
 	def _do_decorate_external( self, context, result_map ):
 		links = result_map.setdefault( LINKS, [] )
 		links.append( Link( context,
-							rel='report-StudentParticipationReport.pdf',
-							elements=('StudentParticipationReport.pdf',),
+							rel='report-%s' % VIEW_STUDENT_PARTICIPATION,
+							elements=(VIEW_STUDENT_PARTICIPATION,),
 							title=_('Student Participation Report')) )	
 		
