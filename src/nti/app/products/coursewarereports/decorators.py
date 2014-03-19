@@ -11,6 +11,7 @@ logger = __import__('logging').getLogger(__name__)
 from zope import interface
 
 from nti.externalization import interfaces as ext_interfaces
+from nti.app.products.courseware.interfaces import ICourseInstanceEnrollment
 
 from nti.app.renderers.decorators import AbstractAuthenticatedRequestAwareDecorator
 
@@ -19,6 +20,7 @@ from . import MessageFactory as _
 LINKS = ext_interfaces.StandardExternalFields.LINKS
 from nti.dataserver.links import Link
 
+@component.adapter(ICourseInstanceEnrollment)
 @interface.implementer(ext_interfaces.IExternalMappingDecorator)
 class _StudentParticipationReport(AbstractAuthenticatedRequestAwareDecorator):
 	"""
@@ -30,3 +32,4 @@ class _StudentParticipationReport(AbstractAuthenticatedRequestAwareDecorator):
 							rel='report-StudentParticipationReport.pdf',
 							elements=('StudentParticipationReport.pdf',),
 							title=_('Student Participation Report')) )	
+		

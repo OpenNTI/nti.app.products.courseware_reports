@@ -18,8 +18,10 @@
 		id="nti.actions.courseware.view_reports"
 		title="View reports" />
 	
+	<!-- A subscriber for getting the StudentParticipationReport link -->
 	<subscriber factory=".decorators._StudentParticipationReport"
-				provides="nti.externalization.interfaces.IExternalMappingDecorator"
+				provides="nti.externalization.interfaces.IExternalMappingDecorator" />
+				
 				for="nti.app.products.courseware.interfaces.ICourseInstanceEnrollment
 					 pyramid.interfaces.IRequest"/>
 
