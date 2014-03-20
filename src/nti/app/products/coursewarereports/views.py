@@ -532,7 +532,9 @@ class ForumParticipationReportPdf(_AbstractReportView):
 		courses = ICourseAdministrativeLevel(community)
 		if courses:
 			# Assuming only one
-			return list(courses.values())[0]
+			course = list(courses.values())[0]
+			assert course.Discussions == board
+			return course
 
 	@property
 	def course(self):
@@ -628,8 +630,7 @@ class ForumParticipationReportPdf(_AbstractReportView):
 
 
 @view_config(context=ICommunityHeadlineTopic,
-			 name=VIEW_TOPIC_PARTICIPATION,
-			 renderer="templates/TopicParticipationReport.rml")
+			 name=VIEW_TOPIC_PARTICIPATION)
 class TopicParticipationReportPdf(ForumParticipationReportPdf):
 
 	report_title = _('Topic Participation Report')

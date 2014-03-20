@@ -59,33 +59,7 @@
 
 		<h1>Top Commenters</h1>
 		<hr width="100%" />
-		<illustration width="6in" height="6in">
-		<pieChart dx="0in" dy="0in" dwidth="6in" dheight="6in" x="1in" y="0" width="4in"
-				  height="4in"
-				  checkLabelOverlap='false'
-				  tal:condition="options/top_commenters">
-			<labels>
-				<label tal:repeat="item options/top_commenters"
-					   tal:content="item">User1</label>
-				<label tal:condition="False">User2</label>
-				<label tal:condition="False">User3</label>
-			</labels>
-			<slices>
-				<!-- The last element is the "everyone else"; it has a
-				larger percent then its slice size indicates, so draw
-				attention to that by popping it out -->
-				<slice tal:repeat="item options/top_commenters"
-					   tal:attributes="popout python:10 if repeat.item.end else 0;
-									   fillColor python:options['top_commenters_colors'][repeat.item.number]" />
-			</slices>
-			<data>
-				<series tal:content="options/top_commenters/series">
-					100
-					75
-					25
-				</series>
-			</data>
-		</pieChart>
+		<illustration width="6in" height="6in" metal:use-macro="macro:forum_top_commenters">
 		</illustration>
 
 		<nextPage />

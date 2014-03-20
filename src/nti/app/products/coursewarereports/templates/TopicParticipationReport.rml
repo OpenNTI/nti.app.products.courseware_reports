@@ -1,115 +1,28 @@
-<?xml version="1.0" encoding="utf-8" ?>
-<!DOCTYPE document SYSTEM "rml_1_0.dtd">
-<document filename="TopicParticipationReport.pdf"
-		  invariant="1"
-		  compression="1"
-		  title="Topic Participation Report"
-		  creator="NextThought"
-		  author="NextThought"
-		  xmlns:tal="http://xml.zope.org/namespaces/tal"
-		  xmlns:metal="http://xml.zope.org/namespaces/metal">
+<metal:block
+	xmlns:tal="http://xml.zope.org/namespaces/tal"
+	xmlns:metal="http://xml.zope.org/namespaces/metal"
+	tal:define="options view/options">
 
-	<template pagesize="letter" leftMargin="72" showBoundary="0"
-			  metal:use-macro="macro:template">
-		<pageTemplate id="main">
-			<frame id="first" x1="0.5in" y1="0.5in" width="7in" height="10in"/>
-		</pageTemplate>
-	</template>
-
-	<stylesheet metal:use-macro="macro:stylesheet">
-		<paraStyle name="h1" fontName="Helvetica-Bold" fontSize="11" leading="12"/>
-		<paraStyle name="h2" fontName="Helvetica-Bold" fontSize="11" leading="20" spaceBefore="12"/>
-		<paraStyle name="normal" fontName="Helvetica" fontSize="11"
-				   leading="12" spaceBefore="10"/>
-		<paraStyle name="sendTo" leftIndent="0.5in" parent="normal"
-				   spaceBefore="10" spaceAfter="2"/>
-		<blockTableStyle id="default">
-			<lineStyle start="0,0" stop="-1,-1" kind="innergrid" thickness="0.25"
-					   colorName="black"/>
-		</blockTableStyle>
-	</stylesheet>
-
-	<story firstPageTemplate="cover">
-		<img src="[nti.appserver]/templates/coppa_consent_header.png"
-			 width="3.5in"
-			 height="0.55in"
-			 align="left"
-			 metal:use-macro="macro:rpt_header" />
-		<illustration width="6in" height="6in">
-		<pieChart dx="0in" dy="0in" dwidth="6in" dheight="6in" x="1in" y="0" width="4in"
-				  height="4in"
-				  checkLabelOverlap='false'
-				  tal:condition="options/top_commenters">
-			<labels>
-				<label tal:repeat="item options/top_commenters"
-					   tal:content="item">User1</label>
-				<label tal:condition="False">User2</label>
-				<label tal:condition="False">User3</label>
-			</labels>
-			<slices>
-				<!-- The last element is the "everyone else"; it has a
-				larger percent then its slice size indicates, so draw
-				attention to that by popping it out -->
-				<slice tal:repeat="item options/top_commenters"
-					   tal:attributes="popout python:10 if repeat.item.end else 0;
-									   fillColor python:options['top_commenters_colors'][repeat.item.number]" />
-			</slices>
-			<data>
-				<series tal:content="options/top_commenters/series">
-					100
-					75
-					25
-				</series>
-			</data>
-		</pieChart>
+		<h1 spaceBefore="0.5in" keepWithNext="true">Activity Over Time</h1>
+		<hr width="100%" spaceAfter="0.5in"/>
+		<illustration width="5in" height="3in"
+				  metal:use-macro="macro:forum_participation_over_time">
 		</illustration>
 
-		<illustration width="6in" height="4in"> <!-- This could be shared -->
-		<linePlot dx="0in" dy="0in" dwidth="6in" dheight="4in" x="0" y="0" width="5in"
-					height="3in" joinedLines="true" lineLabelFormat="%2.0f"
-					tal:condition="options/forum_objects_by_week_number">
-			<lines>
-				<line strokeColor="red" symbol="FilledCircle"/>
-			</lines>
-			<xValueAxis valueMin="0" valueMax="5" valueStep="1"
-						tal:attributes="valueMin options/forum_objects_by_week_number_value_min;
-										valueMax options/forum_objects_by_week_number_value_max;
-										valueStep options/forum_objects_by_week_number_x_step"
-						tal:condition="options/forum_objects_by_week_number">
-				<labels fontName="Helvetica"/>
-			</xValueAxis>
-			<yValueAxis valueMin="0" valueMax="7" valueStep="1"
-						tal:attributes="valueMax options/forum_objects_by_week_number_max;
-										valueStep options/forum_objects_by_week_number_y_step"
-						tal:condition="options/forum_objects_by_week_number">
-				<labels fontName="Helvetica"/>
-			</yValueAxis>
-			<lineLabels font="Roman-Bold" fontSize="10">
-			</lineLabels>
-			<texts >
-				<text x="2.5in" y="-0.5in" textAnchor="middle"
-					  fontName="Helvetica-Bold" fontSize="13"
-					  fillColor="black" >
-					Week Number
-				</text>
-				<text x="1.5in" y="0.3in" angle="90" textAnchor="middle"
-					  fontName="Helvetica-Bold" fontSize="13"
-					  fillColor="red">
-					Participation
-				</text>
-			</texts>
-			<data>
-				<series tal:condition="options/forum_objects_by_week_number"
-						tal:content="options/forum_objects_by_week_number_series">
-				1    1
-				2    2
-				2.5  1
-				3    3
-				4    5
-				</series>
-			</data>
-		</linePlot>
+		<para spaceBefore=".6in" tal:condition="options/top_commenters">
+			This topic has ${options/top_commenters/total} comments by
+			${python:len(options['top_commenters'].keys())} distinct users.
+			It was created on ${context/created/date} and it's most recent activity was on
+			${context/NewestDescendant/created/date}.
+		</para>
+
+		<nextPage />
+
+		<h1>Top Commenters</h1>
+		<hr width="100%" />
+		<illustration width="6in" height="6in" metal:use-macro="macro:forum_top_commenters">
 		</illustration>
+		<nextPage />
 
 		<!-- We'll probably want to flow this one through two colums? -->
 
@@ -133,6 +46,4 @@
 			</tr>
 		</blockTable>
 
-
-	</story>
-</document>
+</metal:block>

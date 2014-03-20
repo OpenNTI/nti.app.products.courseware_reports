@@ -107,6 +107,18 @@
 		permission="zope.Public"
 		manager=".interfaces.IPDFReportHeaderManager" />
 
+	<!-- Topic participation report -->
+	<z3c:template
+		template="templates/TopicParticipationReport.rml"
+		for=".views.TopicParticipationReportPdf"
+		layer="pyramid.interfaces.IRequest" />
+	<browser:viewlet
+		name="forum_info_content_provider"
+		template="templates/forum_info_content_provider.rml"
+		view=".views.TopicParticipationReportPdf"
+		layer="pyramid.interfaces.IRequest"
+		permission="zope.Public"
+		manager=".interfaces.IPDFReportHeaderManager" />
 
 	<!-- Default macros for the reports -->
 	<!--
@@ -148,6 +160,12 @@
 	<z3c:macro
 		template="templates/std_report_macros.pt"
 		name="forum_participation_over_time"
+		for="zope.interface.Interface"
+		view="zope.interface.Interface"
+		layer="pyramid.interfaces.IRequest" />
+	<z3c:macro
+		template="templates/std_report_macros.pt"
+		name="forum_top_commenters"
 		for="zope.interface.Interface"
 		view="zope.interface.Interface"
 		layer="pyramid.interfaces.IRequest" />
