@@ -11,7 +11,14 @@
 
 	<template pagesize="letter" leftMargin="72" showBoundary="0"
 			  metal:define-macro="template">
-		<pageTemplate id="main">
+		<pageTemplate id="cover" autoNextTemplate="main">
+			<frame id="main_header"
+				   x1="0.5in" y1="9.5in"
+				   width="7in" height="1in"
+				   showBoundary="0" />
+			<frame id="first" x1="0.5in" y1="0.5in" width="7in" height="9in"/>
+		</pageTemplate>
+		<pageTemplate id="main"> <!-- Deprecated? -->
 			<frame id="first" x1="0.5in" y1="0.5in" width="7in" height="10in"/>
 		</pageTemplate>
 	</template>
@@ -27,14 +34,24 @@
 			<lineStyle start="0,0" stop="-1,-1" kind="innergrid" thickness="0.25"
 					   colorName="black"/>
 		</blockTableStyle>
+
+		<blockTableStyle id="header_table">
+		</blockTableStyle>
 	</stylesheet>
 
-	<story firstPageTemplate="main">
-		<tal:block metal:define-macro="header">
+	<story firstPageTemplate="cover">
 		<img src="[nti.appserver]/templates/coppa_consent_header.png"
 			 width="3.5in"
 			 height="0.55in"
-			 align="left"/>
+			 align="left"
+			 metal:define-macro="header_graphic" />
+
+		<tal:block metal:define-macro="header">
+			<img metal:use-macro="macro:header_graphic" />
+			<blockTable alignment='right' style="header_table"
+						tal:content="structure provider:header_table">
+			</blockTable>
+			<nextFrame />
 		</tal:block>
 
 	</story>

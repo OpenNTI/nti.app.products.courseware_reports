@@ -29,12 +29,12 @@
 		</blockTableStyle>
 	</stylesheet>
 
-	<story firstPageTemplate="main">
+	<story firstPageTemplate="cover">
 		<img src="[nti.appserver]/templates/coppa_consent_header.png"
 			 width="3.5in"
 			 height="0.55in"
 			 align="left"
-			 metal:use-macro="macro:header" />
+			 metal:use-macro="macro:rpt_header" />
 
 		<h1 spaceBefore=".5in" keepWithNext='true'>Assignments Taken</h1>
 		<blockTable style='default'>

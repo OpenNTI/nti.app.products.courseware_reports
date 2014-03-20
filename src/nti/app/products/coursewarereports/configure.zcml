@@ -22,23 +22,23 @@
 	<!-- A subscriber for getting the student participation report from course enrollment records -->
 	<subscriber factory=".decorators._StudentParticipationReport"
 				provides="nti.externalization.interfaces.IExternalMappingDecorator" />
-				
+
 	<!-- A subscriber for getting the forum participation report from the forums -->
 	<subscriber factory=".decorators._ForumParticipationReport"
 				provides="nti.externalization.interfaces.IExternalMappingDecorator" />
-				
+
 	<!-- A subscriber for getting the topic participation report from the topic -->
 	<subscriber factory=".decorators._TopicParticipationReport"
 				provides="nti.externalization.interfaces.IExternalMappingDecorator" />
-				
+
 	<!-- A subscriber for getting the course summary report from the course info tab -->
 	<subscriber factory=".decorators._CourseSummaryReport"
 				provides="nti.externalization.interfaces.IExternalMappingDecorator" />
-				
+
 	<!-- A subscriber for getting the assignment summary report from the gradebook -->
 	<subscriber factory=".decorators._AssignmentSummaryReport"
-				provides="nti.externalization.interfaces.IExternalMappingDecorator" />				
-												
+				provides="nti.externalization.interfaces.IExternalMappingDecorator" />
+
 
 	<!-- Default macros for the reports -->
 	<!--
@@ -48,10 +48,23 @@
 	-->
 	<z3c:macro
 		template="templates/std_report_macros.pt"
-		name="header"
+		name="header_graphic"
 		for="zope.interface.Interface"
 		view=".interfaces.IPDFReportView"
 		layer="pyramid.interfaces.IRequest" />
+	<!--
+		 The name `header` is already taken with a registration that
+		 conflicts with ours in sub-sites (ou, mathcounts). It should be made more
+		 specific...
+	-->
+	<z3c:macro
+		template="templates/std_report_macros.pt"
+		name="rpt_header"
+		macro="header"
+		for="zope.interface.Interface"
+		view=".interfaces.IPDFReportView"
+		layer="pyramid.interfaces.IRequest" />
+
 	<z3c:macro
 		template="templates/std_report_macros.pt"
 		name="stylesheet"
@@ -66,5 +79,20 @@
 		layer="pyramid.interfaces.IRequest" />
 
 
+	<!-- A default header_table that does nothing -->
+	<adapter name="header_table"
+			 for="zope.interface.Interface
+				  pyramid.interfaces.IRequest
+				  zope.interface.Interface"
+			 provides="zope.contentprovider.interfaces.IContentProvider"
+			 factory=".contentproviders.DummyContentProvider" />
+
+	<!-- Header table for student-enrollment views -->
+	<adapter name="header_table"
+			 for="nti.app.products.courseware.interfaces.ICourseInstanceEnrollment
+				  pyramid.interfaces.IRequest
+				  .interfaces.IPDFReportView"
+			 provides="zope.contentprovider.interfaces.IContentProvider"
+			 factory=".contentproviders.StudentInfoContentProvider" />
 
 </configure>

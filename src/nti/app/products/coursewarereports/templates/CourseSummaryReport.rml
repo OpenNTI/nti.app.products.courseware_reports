@@ -29,12 +29,12 @@
 		</blockTableStyle>
 	</stylesheet>
 
-	<story firstPageTemplate="main">
+	<story firstPageTemplate="cover">
 		<img src="[nti.appserver]/templates/coppa_consent_header.png"
 			 width="3.5in"
 			 height="0.55in"
 			 align="left"
-			 metal:use-macro="macro:header" />
+			 metal:use-macro="macro:rpt_header" />
 		<h1>Enrollment</h1>
 		<illustration width="6in" height="6in">
 		<pieChart dx="0in" dy="0in" dwidth="6in" dheight="6in" x="1in" y="0" width="4in"

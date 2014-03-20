@@ -35,6 +35,10 @@ setup(
 	namespace_packages=['nti', 'nti.app', 'nti.app.products'],
 	install_requires=[
 		'setuptools',
+		'zope.contentprovider',
+		'z3c.macro',
+		'z3c.rml',
+		'zope.viewlet'
 		#'nti.app.products.courseware',
 		#'nti.app.products.gradebook',
 		#'nti.app.assessment'

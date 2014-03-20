@@ -29,12 +29,14 @@
 		</blockTableStyle>
 	</stylesheet>
 
-	<story firstPageTemplate="main">
+	<story firstPageTemplate="cover">
 		<img src="[nti.appserver]/templates/coppa_consent_header.png"
 			 width="3.5in"
 			 height="0.55in"
 			 align="left"
-			 metal:use-macro="macro:header" />
+			 metal:use-macro="macro:rpt_header" />
+
+
 		<illustration width="6in" height="4in"> <!-- This could be shared -->
 		<linePlot dx="0in" dy="0in" dwidth="6in" dheight="4in" x="0" y="0" width="5in"
 					height="3in" joinedLines="true" lineLabelFormat="%2.0f"
