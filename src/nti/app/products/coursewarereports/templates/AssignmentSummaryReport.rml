@@ -1,42 +1,11 @@
-<?xml version="1.0" encoding="utf-8" ?>
-<!DOCTYPE document SYSTEM "rml_1_0.dtd">
-<document filename="AssignmentSummaryReport.pdf"
-		  invariant="1"
-		  compression="1"
-		  title="Assignment Summary Report"
-		  creator="NextThought"
-		  author="NextThought"
-		  xmlns:tal="http://xml.zope.org/namespaces/tal"
-		  xmlns:metal="http://xml.zope.org/namespaces/metal">
+<metal:block
+	xmlns:tal="http://xml.zope.org/namespaces/tal"
+	xmlns:metal="http://xml.zope.org/namespaces/metal"
+	tal:define="options view/options">
 
-	<template pagesize="letter" leftMargin="72" showBoundary="0"
-			  metal:use-macro="macro:template">
-		<pageTemplate id="main">
-			<frame id="first" x1="0.5in" y1="0.5in" width="7in" height="10in"/>
-		</pageTemplate>
-	</template>
 
-	<stylesheet metal:use-macro="macro:stylesheet">
-		<paraStyle name="h1" fontName="Helvetica-Bold" fontSize="11" leading="12"/>
-		<paraStyle name="h2" fontName="Helvetica-Bold" fontSize="11" leading="20" spaceBefore="12"/>
-		<paraStyle name="normal" fontName="Helvetica" fontSize="11"
-				   leading="12" spaceBefore="10"/>
-		<paraStyle name="sendTo" leftIndent="0.5in" parent="normal"
-				   spaceBefore="10" spaceAfter="2"/>
-		<blockTableStyle id="default">
-			<lineStyle start="0,0" stop="-1,-1" kind="innergrid" thickness="0.25"
-					   colorName="black"/>
-		</blockTableStyle>
-	</stylesheet>
-
-	<story firstPageTemplate="cover">
-		<img src="[nti.appserver]/templates/coppa_consent_header.png"
-			 width="3.5in"
-			 height="0.55in"
-			 align="left"
-			 metal:use-macro="macro:rpt_header" />
-
-		<h1 spaceBefore=".5in" keepWithNext='true'>Assignments Taken</h1>
+		<h1 spaceBefore=".2in" keepWithNext='true'>Assignments Taken</h1>
+		<hr width="100%" spaceAfter="0.2in"/>
 		<blockTable style='default'>
 			<tr>
 				<td><para>Assignment Title</para></td>
@@ -73,20 +42,20 @@
 			</tr>
 		</blockTable>
 
-
+		<h1 spaceBefore=".2in">Question Breakdown</h1>
+		<hr width="100%" />
 		<tal:block tal:repeat="item options/question_stats">
-			<h2 spaceBefore=".5in" keepWithNext='true' tal:content="item/title">Question Number</h2>
+			<keepTogether>
+			<h2 spaceBefore=".3in" keepWithNext='true' tal:content="item/title">Question Number</h2>
 			<para tal:content="item/content">The content of the question.</para>
-			<blockTable>
+			<blockTable alignment="left">
 				<tr>
 					<td>Average Score</td>
-					<td tal:content="item/avg_score">75%
-					</td>
+					<td align="decimal" tal:content="item/avg_score">75% </td>
 				</tr>
 			</blockTable>
-			<h3 keepWithNext="true" tal:condition="item/submission_counts">Common Incorrect Answers</h3>
 			<illustration width="4in" height="4in" tal:condition="item/submission_counts">
-				<pieChart dx="0in" dy="0in" dwidth="4in" dheight="4in" x="1in" y="0" width="3in"
+				<pieChart dx="1.5in" dy="0.8in" dwidth="4in" dheight="4in" x="1in" y="0" width="3in"
 						  height="3in"
 						  checkLabelOverlap='true'
 						  >
@@ -101,10 +70,15 @@
 							</tal:block>
 						</series>
 					</data>
+					<texts >
+						<text x="2.5in" y="-0.5in" textAnchor="middle"
+							  fontName="Helvetica-Bold" fontSize="13"
+							  fillColor="black" >
+							Common Incorrect Answers
+						</text>
+					</texts>
 				</pieChart>
 			</illustration>
-
+			</keepTogether>
 		</tal:block>
-
-	</story>
-</document>
+</metal:block>

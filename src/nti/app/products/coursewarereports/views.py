@@ -885,8 +885,7 @@ from nti.contentfragments.interfaces import IPlainTextContentFragment
 from collections import Counter
 
 @view_config(context=IGradeBookEntry,
-			 name=VIEW_ASSIGNMENT_SUMMARY,
-			 renderer="templates/AssignmentSummaryReport.rml")
+			 name=VIEW_ASSIGNMENT_SUMMARY)
 class AssignmentSummaryReportPdf(_AbstractReportView):
 
 	report_title = _('Assignment Summary Report')

@@ -134,6 +134,20 @@
 		permission="zope.Public"
 		manager=".interfaces.IPDFReportHeaderManager" />
 
+	<!-- Assignment summary report -->
+
+	<z3c:template
+		template="templates/AssignmentSummaryReport.rml"
+		for=".views.AssignmentSummaryReportPdf"
+		layer="pyramid.interfaces.IRequest" />
+	<browser:viewlet
+		name="assignment_info_content_provider"
+		template="templates/assignment_info_content_provider.rml"
+		view=".views.AssignmentSummaryReportPdf"
+		layer="pyramid.interfaces.IRequest"
+		permission="zope.Public"
+		manager=".interfaces.IPDFReportHeaderManager" />
+
 
 	<!-- Default macros for the reports -->
 	<!--
