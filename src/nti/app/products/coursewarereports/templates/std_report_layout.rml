@@ -36,6 +36,7 @@
 		<blockTableStyle id="default">
 			<lineStyle start="0,0" stop="-1,-1" kind="innergrid" thickness="0.25"
 					   colorName="black"/>
+			<blockRightPadding start="0,0" stop="-1,-1" length="3mm"/>
 		</blockTableStyle>
 	</stylesheet>
 

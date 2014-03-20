@@ -120,6 +120,21 @@
 		permission="zope.Public"
 		manager=".interfaces.IPDFReportHeaderManager" />
 
+	<!-- Course summary report -->
+
+	<z3c:template
+		template="templates/CourseSummaryReport.rml"
+		for=".views.CourseSummaryReportPdf"
+		layer="pyramid.interfaces.IRequest" />
+	<browser:viewlet
+		name="course_info_content_provider"
+		template="templates/course_info_content_provider.rml"
+		view=".views.CourseSummaryReportPdf"
+		layer="pyramid.interfaces.IRequest"
+		permission="zope.Public"
+		manager=".interfaces.IPDFReportHeaderManager" />
+
+
 	<!-- Default macros for the reports -->
 	<!--
 		 NOTE: There is probably a better, more modern way

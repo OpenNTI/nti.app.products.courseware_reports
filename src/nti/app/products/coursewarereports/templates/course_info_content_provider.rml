@@ -1,0 +1,4 @@
+<tr>
+	<td>Course:</td>
+	<td tal:content="context/__name__">CLC 3400</td>
+</tr>

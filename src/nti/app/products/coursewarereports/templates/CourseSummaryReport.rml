@@ -1,43 +1,12 @@
-<?xml version="1.0" encoding="utf-8" ?>
-<!DOCTYPE document SYSTEM "rml_1_0.dtd">
-<document filename="ForumParticipationReport.pdf"
-		  invariant="1"
-		  compression="1"
-		  title="Forum Participation Report"
-		  creator="NextThought"
-		  author="NextThought"
-		  xmlns:tal="http://xml.zope.org/namespaces/tal"
-		  xmlns:metal="http://xml.zope.org/namespaces/metal">
+<metal:block
+	xmlns:tal="http://xml.zope.org/namespaces/tal"
+	xmlns:metal="http://xml.zope.org/namespaces/metal"
+	tal:define="options view/options">
 
-	<template pagesize="letter" leftMargin="72" showBoundary="0"
-			  metal:use-macro="macro:template">
-		<pageTemplate id="main">
-			<frame id="first" x1="0.5in" y1="0.5in" width="7in" height="10in"/>
-		</pageTemplate>
-	</template>
-
-	<stylesheet metal:use-macro="macro:stylesheet">
-		<paraStyle name="h1" fontName="Helvetica-Bold" fontSize="11" leading="12"/>
-		<paraStyle name="h2" fontName="Helvetica-Bold" fontSize="11" leading="20" spaceBefore="12"/>
-		<paraStyle name="normal" fontName="Helvetica" fontSize="11"
-				   leading="12" spaceBefore="10"/>
-		<paraStyle name="sendTo" leftIndent="0.5in" parent="normal"
-				   spaceBefore="10" spaceAfter="2"/>
-		<blockTableStyle id="default">
-			<lineStyle start="0,0" stop="-1,-1" kind="innergrid" thickness="0.25"
-					   colorName="black"/>
-		</blockTableStyle>
-	</stylesheet>
-
-	<story firstPageTemplate="cover">
-		<img src="[nti.appserver]/templates/coppa_consent_header.png"
-			 width="3.5in"
-			 height="0.55in"
-			 align="left"
-			 metal:use-macro="macro:rpt_header" />
 		<h1>Enrollment</h1>
-		<illustration width="6in" height="6in">
-		<pieChart dx="0in" dy="0in" dwidth="6in" dheight="6in" x="1in" y="0" width="4in"
+		<hr width="100%" />
+		<illustration width="5in" height="5in">
+		<pieChart dx="0in" dy="0in" dwidth="5in" dheight="5in" x="1in" y="0" width="4in"
 				  height="4in"
 				  checkLabelOverlap='false'
 				  tal:condition="options/count_open">
@@ -57,10 +26,19 @@
 			</data>
 		</pieChart>
 		</illustration>
+		<para spaceBefore="0.5in">
+			There are ${options/count_total} students enrolled in this
+			course.
+		</para>
+
+		<condPageBreak height="3in" />
 
 
-		<h1 spaceBefore=".5in">Self-Assessments Taken</h1>
-		<blockTable style='default'>
+		<h1 spaceBefore="1in">Assignments and Assessments</h1>
+		<hr width="100%" />
+
+		<h2 spaceBefore=".5in">Self-Assessments Taken</h2>
+		<blockTable style='default' tal:condition="options/self_assessment_data">
 			<tr>
 				<td>Assessment Title</td>
 				<td>Total Attempts</td>
@@ -87,17 +65,21 @@
 				<td>Percent</td>
 			</tr>
 		</blockTable>
+		<para tal:condition="not:options/self_assessment_data">
+			This course contains no self-assessments.
+		</para>
 
-		<h1 spaceBefore=".5in" keepWithNext='true'>Assignments Taken</h1>
-		<blockTable style='default'>
+
+		<h2 spaceBefore=".5in" keepWithNext='true'>Assignments Taken</h2>
+		<blockTable style='default' tal:condition="options/assignment_data">
 			<tr>
-				<td>Assignment Title</td>
-				<td>Total Attempts</td>
-				<td>Average Grade</td>
-				<td>Median Grade</td>
-				<td>STD Grade</td>
-				<td>Percent Attempted</td>
-				<td>For-credit Attempted</td>
+				<td><para>Assignment Title</para></td>
+				<td><para>Total Attempts</para></td>
+				<td><para>Average Grade</para></td>
+				<td><para>Median Grade</para></td>
+				<td><para>STD Grade</para></td>
+				<td><para>Percent Attempted</para></td>
+				<td><para>For-credit Attempted</para></td>
 			</tr>
 			<tr tal:repeat="item options/assignment_data">
 				<td><para tal:content="item/title">The Assessment Title</para></td>
@@ -124,9 +106,16 @@
 				<td>Taken</td>
 			</tr>
 		</blockTable>
+		<para tal:condition="not:options/assignment_data">
+			This course contains no assignments.
+		</para>
 
-		<h1 spaceBefore=".5in" keepWithNext='true'>Engagement</h1>
-		<blockTable style='default'>
+		<nextPage />
+
+		<h1>Engagement</h1>
+		<hr width="100%" />
+
+		<blockTable style='default' alignment="left">
 			<tr>
 				<td>Type</td>
 				<td>Number</td>
@@ -144,8 +133,26 @@
 				<td>Total Attempts</td>
 			</tr>
 		</blockTable>
+		<illustration width="4in" height="4in">
+		<pieChart dx="1.5in" dy="0.9in" dwidth="4in" dheight="4in" x="1in" y="0" width="4in"
+				  height="4in"
+				  checkLabelOverlap='false'
+				  tal:condition="options/count_open">
+			<labels>
+				<label tal:repeat="item options/engagement_data">${python:item[0]}</label>
+			</labels>
+			<data>
+				<!-- Deals very badly with 0 size slices -->
+				<series>
+					<tal:block tal:repeat="item options/engagement_data">
+					${python:(item[1] or 1.1)}
+					</tal:block>
+				</series>
+			</data>
+		</pieChart>
+		</illustration>
 
-		<h1 spaceBefore=".5in" keepWithNext='true'>Engagement By Place</h1>
+		<h2 spaceBefore=".5in" keepWithNext='true'>Engagement By Place</h2>
 		<blockTable style='default'>
 			<tr>
 				<td>Place</td>
@@ -167,5 +174,4 @@
 			</tr>
 		</blockTable>
 
-	</story>
-</document>
+</metal:block>

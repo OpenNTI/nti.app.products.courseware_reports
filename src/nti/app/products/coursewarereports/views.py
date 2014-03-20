@@ -723,8 +723,7 @@ def _assignment_stat_for_column(self, column):
 	return stat
 
 @view_config(context=ICourseInstance,
-			 name=VIEW_COURSE_SUMMARY,
-			 renderer="templates/CourseSummaryReport.rml")
+			 name=VIEW_COURSE_SUMMARY)
 class CourseSummaryReportPdf(_AbstractReportView):
 
 	report_title = _('Course Summary Report')
