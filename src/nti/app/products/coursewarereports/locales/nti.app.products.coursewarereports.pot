@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: nti.app.products.coursewarereports 0.0.0\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2014-03-19 08:59-0500\n"
+"POT-Creation-Date: 2014-03-20 11:19-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,11 +18,27 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 1.3\n"
 
-#: src/nti/app/products/coursewarereports/configure.zcml:17
+#: src/nti/app/products/coursewarereports/configure.zcml:28
 msgid "View reports"
 msgstr ""
 
-#: src/nti/app/products/coursewarereports/decorators.py:32
-msgid "StudentParticipationReport.pdf"
+#: src/nti/app/products/coursewarereports/decorators.py:49
+msgid "Student Participation Report"
+msgstr ""
+
+#: src/nti/app/products/coursewarereports/decorators.py:62
+msgid "Forum Participation Report"
+msgstr ""
+
+#: src/nti/app/products/coursewarereports/decorators.py:75
+msgid "Topic Participation Report"
+msgstr ""
+
+#: src/nti/app/products/coursewarereports/decorators.py:88
+msgid "Course Summary Report"
+msgstr ""
+
+#: src/nti/app/products/coursewarereports/decorators.py:101
+msgid "Assignment Summary Report"
 msgstr ""
 
