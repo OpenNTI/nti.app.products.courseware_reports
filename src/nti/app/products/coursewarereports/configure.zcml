@@ -13,6 +13,10 @@
 	<include package="zope.component" />
 
 	<include file="meta.zcml" package="zope.security" />
+
+	<!-- This should happen early -->
+	<include package="nti.app.pyramid_zope" />
+
 	<include package="z3c.macro" file="meta.zcml" /> <!-- z3c:macro -->
 	<include package="z3c.macro" />
 
@@ -24,6 +28,7 @@
 
 	<include package="zope.viewlet" file="meta.zcml" /> <!-- zope:viewlet/Manager -->
 	<include package="zope.viewlet" />
+
 
 	<permission
 		id="nti.actions.courseware.view_reports"
@@ -76,7 +81,7 @@
 		permission="zope.Public"
 		provides=".interfaces.IPDFReportHeaderManager" />
 
-	<!-- Participation report -->
+	<!-- Student participation report -->
 	<z3c:template
 		template="templates/student_participation_report.rml"
 		for=".views.StudentParticipationReportPdf"
@@ -88,6 +93,20 @@
 		layer="pyramid.interfaces.IRequest"
 		permission="zope.Public"
 		manager=".interfaces.IPDFReportHeaderManager" />
+
+	<!-- Forum participation report -->
+	<z3c:template
+		template="templates/ForumParticipationReport.rml"
+		for=".views.ForumParticipationReportPdf"
+		layer="pyramid.interfaces.IRequest" />
+	<browser:viewlet
+		name="forum_info_content_provider"
+		template="templates/forum_info_content_provider.rml"
+		view=".views.ForumParticipationReportPdf"
+		layer="pyramid.interfaces.IRequest"
+		permission="zope.Public"
+		manager=".interfaces.IPDFReportHeaderManager" />
+
 
 	<!-- Default macros for the reports -->
 	<!--
@@ -125,6 +144,12 @@
 		name="template"
 		for="zope.interface.Interface"
 		view=".interfaces.IPDFReportView"
+		layer="pyramid.interfaces.IRequest" />
+	<z3c:macro
+		template="templates/std_report_macros.pt"
+		name="forum_participation_over_time"
+		for="zope.interface.Interface"
+		view="zope.interface.Interface"
 		layer="pyramid.interfaces.IRequest" />
 
 

@@ -34,7 +34,6 @@ from pyramid.view import view_defaults
 from pyramid.traversal import find_interface
 
 from z3c.pagelet.browser import BrowserPagelet
-from nti.app.pyramid_zope.z3c_zpt import ViewPageTemplateFile
 
 from zope.catalog.interfaces import ICatalog
 from zope.catalog.catalog import ResultSet
@@ -51,6 +50,7 @@ from nti.assessment.interfaces import IQAssignment
 from nti.assessment.interfaces import IQuestionSet
 
 from nti.contenttypes.courses.interfaces import ICourseInstance
+from nti.contenttypes.courses.interfaces import ICourseAdministrativeLevel
 from nti.app.products.courseware.interfaces import ICourseInstanceEnrollment
 from nti.app.products.gradebook.interfaces import IGrade
 from nti.app.products.gradebook.interfaces import IGradeBook
@@ -281,6 +281,16 @@ ENGAGEMENT_OBJECT_MIMETYPES = ['application/vnd.nextthought.note',
 class _AbstractReportView(AbstractAuthenticatedView,
 						  BrowserPagelet):
 
+	def __init__(self, context, request):
+		self.options = {}
+		# Our two parents take different arguments
+		AbstractAuthenticatedView.__init__(self, request)
+		BrowserPagelet.__init__(self, context, request)
+
+		if request.view_name:
+			self.filename = request.view_name
+
+
 	@property
 	def course(self):
 		return ICourseInstance(self.context)
@@ -335,11 +345,12 @@ class _AbstractReportView(AbstractAuthenticatedView,
 			 name=VIEW_STUDENT_PARTICIPATION)
 class StudentParticipationReportPdf(_AbstractReportView):
 
+	report_title = _('Student Participation Report')
 
 	TopicCreated = namedtuple('TopicCreated',
 							  ('topic', 'topic_name', 'forum_name', 'created'))
 	AssignmentInfo = namedtuple('AssignmentInfo',
-								('title', 'submitted', 'grade_value', 'history'))
+								('title', 'submitted', 'grade_value', 'history', 'due_date'))
 
 	@Lazy
 	def student_user(self):
@@ -449,9 +460,11 @@ class StudentParticipationReportPdf(_AbstractReportView):
 			else:
 				grade_value = ''
 				submitted = ''
-			asg_data.append(self.AssignmentInfo(assignment.title, submitted, grade_value, history_item))
+			asg_data.append(self.AssignmentInfo(assignment.title, submitted,
+												grade_value, history_item,
+												assignment.available_for_submission_ending))
 
-		asg_data.sort(key=lambda x: x.title)
+		asg_data.sort(key=lambda x: (x.due_date, x.title))
 		options['assignments'] = asg_data
 
 
@@ -486,7 +499,7 @@ class StudentParticipationReportPdf(_AbstractReportView):
 		"""
 		# Collect data and return it in a form to be rendered
 		# (a dictionary containing data and callable objects)
-		options = dict()
+		options = self.options
 		self._build_forum_data(options)
 
 		# Each self-assessment and how many times taken (again bulkData)
@@ -494,6 +507,7 @@ class StudentParticipationReportPdf(_AbstractReportView):
 
 		# Table of assignment history and grades for all assignments in course
 		self._build_assignment_data(options)
+
 		self.options = options
 		return options
 
@@ -501,15 +515,28 @@ class StudentParticipationReportPdf(_AbstractReportView):
 from reportlab.lib import colors
 
 @view_config(context=ICommunityForum,
-			 name=VIEW_FORUM_PARTICIPATION,
-			 renderer="templates/ForumParticipationReport.rml")
+			 name=VIEW_FORUM_PARTICIPATION)
 class ForumParticipationReportPdf(_AbstractReportView):
+
+	report_title = _('Forum Participation Report')
 
 	TopicStats = namedtuple('TopicStats',
 							('title', 'creator', 'created', 'comment_count', 'distinct_user_count'))
 
 	UserStats = namedtuple('UserStats',
 						   ('username', 'topics_created', 'total_comment_count'))
+
+	def _course_from_forum(self, forum):
+		board = forum.__parent__
+		community = board.__parent__
+		courses = ICourseAdministrativeLevel(community)
+		if courses:
+			# Assuming only one
+			return list(courses.values())[0]
+
+	@property
+	def course(self):
+		return self._course_from_forum(self.context)
 
 	def _build_top_commenters(self, options):
 		def _all_comments():
@@ -592,7 +619,7 @@ class ForumParticipationReportPdf(_AbstractReportView):
 			A sequence sorted by username, of objects with `username`,
 			`topics_created` and `total_comment_count`.
 		"""
-		options = dict()
+		options = self.options
 		self._build_top_commenters(options)
 		self._build_comment_count_by_topic(options)
 		self._build_user_stats(options)
@@ -604,6 +631,12 @@ class ForumParticipationReportPdf(_AbstractReportView):
 			 name=VIEW_TOPIC_PARTICIPATION,
 			 renderer="templates/TopicParticipationReport.rml")
 class TopicParticipationReportPdf(ForumParticipationReportPdf):
+
+	report_title = _('Topic Participation Report')
+
+	@property
+	def course(self):
+		return self._course_from_forum(self.context.__parent__)
 
 	def _build_top_commenters(self, options):
 		buckets = _common_buckets(self.context.values())
@@ -621,7 +654,7 @@ class TopicParticipationReportPdf(ForumParticipationReportPdf):
 			A sequence of usernames, plus the `series` representing their
 			contribution to the forum.
 		"""
-		options = dict()
+		options = self.options
 		self._build_top_commenters(options)
 		options['top_creators'] = dict()
 #		self._build_comment_count_by_topic(options)
@@ -693,6 +726,7 @@ def _assignment_stat_for_column(self, column):
 			 renderer="templates/CourseSummaryReport.rml")
 class CourseSummaryReportPdf(_AbstractReportView):
 
+	report_title = _('Course Summary Report')
 
 	def _build_enrollment_info(self, options):
 
@@ -835,7 +869,7 @@ class CourseSummaryReportPdf(_AbstractReportView):
 		options['assignment_data'] = stats
 
 	def __call__(self):
-		options = dict()
+		options = self.options
 		self._build_engagement_data(options)
 		self._build_enrollment_info(options)
 		self._build_self_assessment_data(options)
@@ -854,6 +888,8 @@ from collections import Counter
 			 name=VIEW_ASSIGNMENT_SUMMARY,
 			 renderer="templates/AssignmentSummaryReport.rml")
 class AssignmentSummaryReportPdf(_AbstractReportView):
+
+	report_title = _('Assignment Summary Report')
 
 	QuestionStat = namedtuple('QuestionStat',
 							  ('title', 'content', 'avg_score',
@@ -954,7 +990,7 @@ class AssignmentSummaryReportPdf(_AbstractReportView):
 
 
 	def __call__(self):
-		options = dict()
+		options = self.options
 		self._build_assignment_data(options)
 		self._build_question_data(options)
 		return options

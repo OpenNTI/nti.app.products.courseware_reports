@@ -3,52 +3,13 @@
 	xmlns:metal="http://xml.zope.org/namespaces/metal"
 	tal:define="options view/options">
 
-		<illustration width="6in" height="4in"> <!-- This could be shared -->
-		<linePlot dx="0in" dy="0in" dwidth="6in" dheight="4in" x="0" y="0" width="5in"
-					height="3in" joinedLines="true" lineLabelFormat="%2.0f"
-					tal:condition="options/forum_objects_by_week_number">
-			<lines>
-				<line strokeColor="red" symbol="FilledCircle"/>
-			</lines>
-			<xValueAxis valueMin="0" valueMax="5" valueStep="1"
-						tal:attributes="valueMin options/forum_objects_by_week_number_value_min;
-										valueMax options/forum_objects_by_week_number_value_max"
-						tal:condition="options/forum_objects_by_week_number">
-				<labels fontName="Helvetica"/>
-			</xValueAxis>
-			<yValueAxis valueMin="0" valueMax="7" valueStep="1"
-						tal:attributes="valueMax options/forum_objects_by_week_number_max"
-						tal:condition="options/forum_objects_by_week_number">
-				<labels fontName="Helvetica"/>
-			</yValueAxis>
-			<lineLabels font="Roman-Bold" fontSize="10">
-			</lineLabels>
-			<texts >
-				<text x="2.5in" y="-0.5in" textAnchor="middle"
-					  fontName="Helvetica-Bold" fontSize="13"
-					  fillColor="black" >
-					Week Number
-				</text>
-				<text x="1.5in" y="0.3in" angle="90" textAnchor="middle"
-					  fontName="Helvetica-Bold" fontSize="13"
-					  fillColor="red">
-					Participation
-				</text>
-			</texts>
-			<data>
-				<series tal:condition="options/forum_objects_by_week_number"
-						tal:content="options/forum_objects_by_week_number_series">
-				1    1
-				2    2
-				2.5  1
-				3    3
-				4    5
-				</series>
-			</data>
-		</linePlot>
-		</illustration>
+	<h1>Forum Participation</h1>
+	<hr width="100%" spaceAfter=".5in"/>
+	<illustration width="5in" height="3in"
+				  metal:use-macro="macro:forum_participation_over_time">
+	</illustration>
 
-		<h1 spaceBefore=".5in">Discussions Created</h1>
+	<h2 spaceBefore=".5in">Discussions Created</h2>
 		<blockTable style='default' tal:condition="options/topics_created">
 			<tr>
 				<td>Discussion Name</td><td>Forum Name</td><td>Date</td>
@@ -74,8 +35,8 @@
 			This user has not created any discussions.
 		</para>
 
-		<h1 spaceBefore=".5in">Comments Created</h1>
-		<blockTable style='default'>
+		<h2 spaceBefore=".5in">Comments Created</h2>
+		<blockTable style='default' tal:condition="options/comment_count_by_topic">
 			<tr>
 				<td>Discussion Name</td><td>Forum Name</td><td>Comment Count</td>
 			</tr>
@@ -96,9 +57,14 @@
 				<td>Created Date</td>
 			</tr>
 		</blockTable>
+		<para tal:condition="not:options/comment_count_by_topic">
+			This user has not created any comments.
+		</para>
 
-		<h1 spaceBefore=".5in">Self-Assessments Taken</h1>
-		<blockTable style='default'>
+		<h1 spaceBefore="1in">Assignments and Assessments</h1>
+		<hr width="100%" />
+		<h2 spaceBefore=".5in">Self-Assessments Taken</h2>
+		<blockTable style='default' tal:condition="options/self_assessment_title_to_count">
 			<tr>
 				<td>Assessment Title</td><td>Attempts</td>
 			</tr>
@@ -116,19 +82,23 @@
 				<td>Forum Name</td>
 			</tr>
 		</blockTable>
+		<para tal:condition="not:options/self_assessment_title_to_count">
+			This course contains no self-assessments.
+		</para>
 
-		<h1 spaceBefore=".5in">Assignments</h1>
-		<blockTable style='default'>
-
+		<h2 spaceBefore=".5in">Assignments</h2>
+		<blockTable style='default' tal:condition="options/assignments">
 			<tr>
 				<td>Assignment Name</td>
 				<td>Date Submitted</td>
+				<td>Date Due</td>
 				<td>Grade</td>
 				<td>Feedback Count</td>
 			</tr>
 			<tr tal:repeat="item options/assignments">
 				<td tal:content="item/title">The Assignment Name</td>
 				<td tal:content="item/submitted/date | default"></td>
+				<td tal:content="item/due_date/date | default"></td>
 				<td tal:content="item/grade_value">A+</td>
 				<td tal:content="item/history/FeedbackCount | default"></td>
 			</tr>
@@ -144,4 +114,7 @@
 				<td>B+</td>
 			</tr>
 		</blockTable>
+		<para tal:condition="not:options/assignments">
+			This course contains no assignments.
+		</para>
 </metal:block>

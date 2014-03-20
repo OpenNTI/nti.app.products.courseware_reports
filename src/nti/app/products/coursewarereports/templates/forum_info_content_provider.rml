@@ -1,0 +1,8 @@
+<tr>
+	<td>Forum:</td>
+	<td tal:content="context/title">title</td>
+</tr>
+<tr>
+	<td>Course:</td>
+	<td tal:content="view/__parent__/course/__name__">Course</td>
+</tr>

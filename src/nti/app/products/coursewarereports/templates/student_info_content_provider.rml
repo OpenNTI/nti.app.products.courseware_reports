@@ -1,4 +1,8 @@
 <tr>
-	<td>Username</td>
+	<td>Username:</td>
 	<td tal:content="context/Username">Username</td>
+</tr>
+<tr>
+	<td>Course:</td>
+	<td tal:content="context/_private_course_instance/__name__">CLC 3400</td>
 </tr>
