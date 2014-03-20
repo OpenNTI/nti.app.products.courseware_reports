@@ -1,5 +1,6 @@
 <!-- -*- mode: nxml -*- -->
 <configure	xmlns="http://namespaces.zope.org/zope"
+			xmlns:browser="http://namespaces.zope.org/browser"
 			xmlns:i18n="http://namespaces.zope.org/i18n"
 			xmlns:ext="http://nextthought.com/ntp/ext"
 			xmlns:zcml="http://namespaces.zope.org/zcml"
@@ -14,6 +15,15 @@
 	<include file="meta.zcml" package="zope.security" />
 	<include package="z3c.macro" file="meta.zcml" /> <!-- z3c:macro -->
 	<include package="z3c.macro" />
+
+	<!-- z3c:template/layout -->
+	<include package="z3c.template" file="meta.zcml" />
+	<!-- It has no standard configure.zcml -->
+
+	<include package="z3c.pagelet" /> <!-- pagelet contentprovider -->
+
+	<include package="zope.viewlet" file="meta.zcml" /> <!-- zope:viewlet/Manager -->
+	<include package="zope.viewlet" />
 
 	<permission
 		id="nti.actions.courseware.view_reports"
@@ -39,6 +49,45 @@
 	<subscriber factory=".decorators._AssignmentSummaryReport"
 				provides="nti.externalization.interfaces.IExternalMappingDecorator" />
 
+	<!-- Default layout for reports -->
+	<!--
+		NOTE: Not really necessary, each report view
+		is going to have to specify this as its view template,
+		unfortunately.
+		We should work towards being able to use the normal
+		template/layout rendering steps.
+	-->
+	<z3c:layout
+		template="templates/std_report_layout.rml"
+		for=".interfaces.IPDFReportView"
+		layer="pyramid.interfaces.IRequest"
+		/>
+
+	<!--
+		Report views must extend BrowserPagelet or implement IPagelet
+		and provide a render() method. If they extend BrowserPagelet
+		they can define a template attribute that is callable (often
+		template = getViewTemplate() as a class attribute) or they can
+		have a content template registered.
+	-->
+
+	<browser:viewletManager
+		name="header_manager"
+		permission="zope.Public"
+		provides=".interfaces.IPDFReportHeaderManager" />
+
+	<!-- Participation report -->
+	<z3c:template
+		template="templates/student_participation_report.rml"
+		for=".views.StudentParticipationReportPdf"
+		layer="pyramid.interfaces.IRequest" />
+	<browser:viewlet
+		name="student_info_content_provider"
+		template="templates/student_info_content_provider.rml"
+		view=".views.StudentParticipationReportPdf"
+		layer="pyramid.interfaces.IRequest"
+		permission="zope.Public"
+		manager=".interfaces.IPDFReportHeaderManager" />
 
 	<!-- Default macros for the reports -->
 	<!--
@@ -86,13 +135,5 @@
 				  zope.interface.Interface"
 			 provides="zope.contentprovider.interfaces.IContentProvider"
 			 factory=".contentproviders.DummyContentProvider" />
-
-	<!-- Header table for student-enrollment views -->
-	<adapter name="header_table"
-			 for="nti.app.products.courseware.interfaces.ICourseInstanceEnrollment
-				  pyramid.interfaces.IRequest
-				  .interfaces.IPDFReportView"
-			 provides="zope.contentprovider.interfaces.IContentProvider"
-			 factory=".contentproviders.StudentInfoContentProvider" />
 
 </configure>

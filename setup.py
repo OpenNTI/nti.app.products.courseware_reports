@@ -34,10 +34,13 @@ setup(
 	package_dir={'': 'src'},
 	namespace_packages=['nti', 'nti.app', 'nti.app.products'],
 	install_requires=[
+		'nti.app.pyramid_zope',
 		'setuptools',
-		'zope.contentprovider',
 		'z3c.macro',
+		'z3c.pagelet',
 		'z3c.rml',
+		'z3c.template',
+		'zope.contentprovider',
 		'zope.viewlet'
 		#'nti.app.products.courseware',
 		#'nti.app.products.gradebook',

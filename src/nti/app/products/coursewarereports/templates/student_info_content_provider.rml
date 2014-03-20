@@ -1,0 +1,4 @@
+<tr>
+	<td>Username</td>
+	<td tal:content="context/Username">Username</td>
+</tr>

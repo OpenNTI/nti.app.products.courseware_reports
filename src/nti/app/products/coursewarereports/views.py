@@ -33,6 +33,9 @@ from pyramid.view import view_config
 from pyramid.view import view_defaults
 from pyramid.traversal import find_interface
 
+from z3c.pagelet.browser import BrowserPagelet
+from nti.app.pyramid_zope.z3c_zpt import ViewPageTemplateFile
+
 from zope.catalog.interfaces import ICatalog
 from zope.catalog.catalog import ResultSet
 
@@ -271,10 +274,12 @@ ENGAGEMENT_OBJECT_MIMETYPES = ['application/vnd.nextthought.note',
 							   'application/vnd.nextthought.highlight']
 
 @view_defaults(route_name='objects.generic.traversal',
+			   renderer="templates/std_report_layout.rml",
 			   request_method='GET',
 			   permission=ACT_READ)
 @interface.implementer(IPDFReportView)
-class _AbstractReportView(AbstractAuthenticatedView):
+class _AbstractReportView(AbstractAuthenticatedView,
+						  BrowserPagelet):
 
 	@property
 	def course(self):
@@ -327,8 +332,7 @@ class _AbstractReportView(AbstractAuthenticatedView):
 
 
 @view_config(context=ICourseInstanceEnrollment,
-			 name=VIEW_STUDENT_PARTICIPATION,
-			 renderer="templates/StudentParticipationReport.rml")
+			 name=VIEW_STUDENT_PARTICIPATION)
 class StudentParticipationReportPdf(_AbstractReportView):
 
 
@@ -490,7 +494,7 @@ class StudentParticipationReportPdf(_AbstractReportView):
 
 		# Table of assignment history and grades for all assignments in course
 		self._build_assignment_data(options)
-
+		self.options = options
 		return options
 
 

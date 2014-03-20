@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE document SYSTEM "rml_1_0.dtd">
+<document filename="AssignmentSummaryReport.pdf"
+		  invariant="1"
+		  compression="1"
+		  title="Assignment Summary Report"
+		  creator="NextThought"
+		  author="NextThought"
+		  xmlns:tal="http://xml.zope.org/namespaces/tal"
+		  xmlns:metal="http://xml.zope.org/namespaces/metal">
+
+	<template pagesize="letter" leftMargin="72" showBoundary="0"
+			  metal:use-macro="macro:template">
+		<pageTemplate id="main">
+			<frame id="first" x1="0.5in" y1="0.5in" width="7in" height="10in"/>
+		</pageTemplate>
+	</template>
+
+	<stylesheet metal:use-macro="macro:stylesheet">
+		<paraStyle name="h1" fontName="Helvetica-Bold" fontSize="11" leading="12"/>
+		<paraStyle name="h2" fontName="Helvetica-Bold" fontSize="11" leading="20" spaceBefore="12"/>
+		<paraStyle name="normal" fontName="Helvetica" fontSize="11"
+				   leading="12" spaceBefore="10"/>
+		<paraStyle name="sendTo" leftIndent="0.5in" parent="normal"
+				   spaceBefore="10" spaceAfter="2"/>
+		<blockTableStyle id="default">
+			<lineStyle start="0,0" stop="-1,-1" kind="innergrid" thickness="0.25"
+					   colorName="black"/>
+		</blockTableStyle>
+	</stylesheet>
+
+	<story firstPageTemplate="cover">
+		<img metal:use-macro="macro:header_graphic" />
+		<blockTable alignment='right' style="header_table"
+					tal:content="structure provider:header_manager">
+		</blockTable>
+		<nextFrame />
+
+		<metal:block tal:content="structure provider:pagelet">
+			RML Content
+		</metal:block>
+
+	</story>
+</document>

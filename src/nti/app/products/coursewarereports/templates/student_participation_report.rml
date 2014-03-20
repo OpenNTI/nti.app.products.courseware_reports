@@ -1,41 +1,7 @@
-<?xml version="1.0" encoding="utf-8" ?>
-<!DOCTYPE document SYSTEM "rml_1_0.dtd">
-<document filename="StudentParticipationReport.pdf"
-		  invariant="1"
-		  compression="1"
-		  title="Student Participation Report"
-		  creator="NextThought"
-		  author="NextThought"
-		  xmlns:tal="http://xml.zope.org/namespaces/tal"
-		  xmlns:metal="http://xml.zope.org/namespaces/metal">
-
-	<template pagesize="letter" leftMargin="72" showBoundary="0"
-			  metal:use-macro="macro:template">
-		<pageTemplate id="main">
-			<frame id="first" x1="0.5in" y1="0.5in" width="7in" height="10in"/>
-		</pageTemplate>
-	</template>
-
-	<stylesheet metal:use-macro="macro:stylesheet">
-		<paraStyle name="h1" fontName="Helvetica-Bold" fontSize="11" leading="12"/>
-		<paraStyle name="h2" fontName="Helvetica-Bold" fontSize="11" leading="20" spaceBefore="12"/>
-		<paraStyle name="normal" fontName="Helvetica" fontSize="11"
-				   leading="12" spaceBefore="10"/>
-		<paraStyle name="sendTo" leftIndent="0.5in" parent="normal"
-				   spaceBefore="10" spaceAfter="2"/>
-		<blockTableStyle id="default">
-			<lineStyle start="0,0" stop="-1,-1" kind="innergrid" thickness="0.25"
-					   colorName="black"/>
-		</blockTableStyle>
-	</stylesheet>
-
-	<story firstPageTemplate="cover">
-		<img src="[nti.appserver]/templates/coppa_consent_header.png"
-			 width="3.5in"
-			 height="0.55in"
-			 align="left"
-			 metal:use-macro="macro:rpt_header" />
-
+<metal:block
+	xmlns:tal="http://xml.zope.org/namespaces/tal"
+	xmlns:metal="http://xml.zope.org/namespaces/metal"
+	tal:define="options view/options">
 
 		<illustration width="6in" height="4in"> <!-- This could be shared -->
 		<linePlot dx="0in" dy="0in" dwidth="6in" dheight="4in" x="0" y="0" width="5in"
@@ -178,6 +144,4 @@
 				<td>B+</td>
 			</tr>
 		</blockTable>
-
-	</story>
-</document>
+</metal:block>

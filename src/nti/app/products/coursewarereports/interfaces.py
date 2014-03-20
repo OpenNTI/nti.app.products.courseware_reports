@@ -13,6 +13,8 @@ logger = __import__('logging').getLogger(__name__)
 
 from zope import interface
 
+from zope.viewlet.interfaces import IViewletManager
+
 from zope.security.permission import Permission
 
 # Until we have true pluggable auth-folders that we traverse through
@@ -29,4 +31,9 @@ class IPDFReportView(interface.Interface):
 
 	In this way, we have a distinct way of registering :mod:`z3c.macro``
 	definitions.
+	"""
+
+class IPDFReportHeaderManager(IViewletManager):
+	"""
+	Viewlet manager for the headers of pdf reports.
 	"""

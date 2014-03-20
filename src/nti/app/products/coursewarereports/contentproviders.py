@@ -16,21 +16,8 @@ from zope import interface
 from zope.contentprovider.interfaces import IContentProvider
 from zope.contentprovider.provider import ContentProviderBase
 
+@interface.implementer(IContentProvider)
 class DummyContentProvider(ContentProviderBase):
 
 	def render(self, *args, **kwargs):
 		return "<tr><td/></tr>"
-
-@interface.implementer(IContentProvider)
-class StudentInfoContentProvider(ContentProviderBase):
-	# XXX maybe this should be a macro? Unless we can get
-	# all the way to zope.viewlet and/or z3c.layout
-	# using zope.viewlet.SimpleViewletClass should let us
-	# use templates
-	def render(self, *args, **kwargs):
-		rows = []
-		# No need to escape Username, we don't allow invalid
-		# characters
-		rows.append( '<tr><td>Username</td><td>%s</td></tr>' % self.context.Username)
-
-		return '\n'.join(rows)
