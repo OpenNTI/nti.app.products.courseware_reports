@@ -77,18 +77,18 @@
 				<td><para>Total Attempts</para></td>
 				<td><para>Average Grade</para></td>
 				<td><para>Median Grade</para></td>
-				<td><para>STD Grade</para></td>
-				<td><para>Percent Attempted</para></td>
-				<td><para>For-credit Attempted</para></td>
+				<td><para>Standard Deviation</para></td>
+				<td><para>Attempted (%)</para></td>
+				<td><para>Credit Attempted (%)</para></td>
 			</tr>
 			<tr tal:repeat="item options/assignment_data">
 				<td><para tal:content="item/title">The Assessment Title</para></td>
-				<td align="decimal" tal:content="item/count">Times Taken</td>
-				<td align="decimal" tal:content="item/avg_grade">Average Grade</td>
-				<td align="decimal" tal:content="item/median_grade">Mean Grade</td>
-				<td align="decimal" tal:content="item/std_grade">STD Grade</td>
-				<td align="decimal" tal:content="item/attempted">Percent attempted</td>
-				<td align="decimal" tal:content="item/for_credit_attempted">Percent attempted</td>
+				<td align="centre" tal:content="item/count">Times Taken</td>
+				<td align="centre" tal:content="item/avg_grade">Average Grade</td>
+				<td align="centre" tal:content="item/median_grade">Mean Grade</td>
+				<td align="center" tal:content="item/std_grade">Standard Deviation</td>
+				<td align="center" tal:content="item/attempted">Percent attempted</td>
+				<td align="center" tal:content="item/for_credit_attempted">Percent attempted</td>
 			</tr>
 			<tr tal:condition="False">
 				<td>The Topic Name</td>

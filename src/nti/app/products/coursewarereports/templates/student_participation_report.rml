@@ -12,7 +12,9 @@
 	<h2 spaceBefore="1in">Discussions Created</h2>
 		<blockTable style='default' tal:condition="options/topics_created">
 			<tr>
-				<td>Discussion Name</td><td>Forum Name</td><td>Date</td>
+				<td><para>Discussion Name</para></td>
+				<td><para>Forum Name</para></td>
+				<td><para>Date</para></td>
 			</tr>
 			<tr tal:repeat="item options/topics_created">
 				<td tal:content="item/topic_name">The Topic Name</td>
@@ -20,15 +22,15 @@
 				<td tal:content="item/created/date">Created Date</td>
 			</tr>
 			<tr tal:condition="False">
-				<td>The Topic Name</td>
-				<td>Forum Name</td>
-				<td>Created Date</td>
+				<td><para>The Topic Name</para></td>
+				<td><para>Forum Name</para></td>
+				<td><para>Created Date</para></td>
 			</tr>
 
 			<tr tal:condition="False">
-				<td>The Topic Name</td>
-				<td>Forum Name</td>
-				<td>Created Date</td>
+				<td><para>The Topic Name</para></td>
+				<td><para>Forum Name</para></td>
+				<td><para>Created Date</para></td>
 			</tr>
 		</blockTable>
 		<para tal:condition="not:options/topics_created">
@@ -38,7 +40,9 @@
 		<h2 spaceBefore=".5in">Comments Created</h2>
 		<blockTable style='default' tal:condition="options/comment_count_by_topic">
 			<tr>
-				<td>Discussion Name</td><td>Forum Name</td><td>Comment Count</td>
+				<td><para>Discussion Name</para></td>
+				<td><para>Forum Name</para></td>
+				<td><para>Comment Count</para></td>
 			</tr>
 			<tr tal:repeat="item options/comment_count_by_topic">
 				<td tal:content="python:item[0].__parent__.title">The Forum Name</td>
@@ -46,15 +50,15 @@
 				<td tal:content="python:item[1]">Comment Count</td>
 			</tr>
 			<tr tal:condition="False">
-				<td>The Topic Name</td>
-				<td>Forum Name</td>
-				<td>Created Date</td>
+				<td><para>The Topic Name</para></td>
+				<td><para>Forum Name</para></td>
+				<td><para>Created Date</para></td>
 			</tr>
 
 			<tr tal:condition="False">
-				<td>The Topic Name</td>
-				<td>Forum Name</td>
-				<td>Created Date</td>
+				<td><para>The Topic Name</para></td>
+				<td><para>Forum Name</para></td>
+				<td><para>Created Date</para></td>
 			</tr>
 		</blockTable>
 		<para tal:condition="not:options/comment_count_by_topic">
