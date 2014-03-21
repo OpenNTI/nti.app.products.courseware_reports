@@ -9,7 +9,7 @@
 				  metal:use-macro="macro:forum_participation_over_time">
 	</illustration>
 
-	<h2 spaceBefore=".5in">Discussions Created</h2>
+	<h2 spaceBefore="1in">Discussions Created</h2>
 		<blockTable style='default' tal:condition="options/topics_created">
 			<tr>
 				<td>Discussion Name</td><td>Forum Name</td><td>Date</td>

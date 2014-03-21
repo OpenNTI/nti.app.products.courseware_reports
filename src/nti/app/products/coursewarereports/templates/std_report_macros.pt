@@ -57,34 +57,33 @@
 		</tal:block>
 
 	<illustration width="5in" height="3in" metal:define-macro="forum_participation_over_time">
-		<linePlot dx="0.5in" dy="0in"
+		<barChart dx="0.5in" dy="0in"
 				  dwidth="5in" dheight="3in"
 				  x="0" y="0"
 				  width="5in"
-				  height="3in" joinedLines="true" lineLabelFormat="%2.0f"
+				  height="3in" direction="vertical" barLabelFormat="%2.0f"
 				  tal:condition="options/forum_objects_by_week_number">
-			<lines>
-				<line strokeColor="red" symbol="FilledCircle"/>
-			</lines>
-			<xValueAxis valueMin="0" valueMax="5" valueStep="1"
-						tal:attributes="valueMin options/forum_objects_by_week_number_value_min;
-										valueMax options/forum_objects_by_week_number_value_max"
+			<categoryAxis tickShift="True"
+						tal:attributes="categoryNames options/forum_objects_by_week_number_categories"
 						tal:condition="options/forum_objects_by_week_number">
 				<labels fontName="Helvetica"/>
-			</xValueAxis>
-			<yValueAxis valueMin="0" valueMax="7" valueStep="1"
+			</categoryAxis>
+			<valueAxis valueMin="0" valueMax="15" valueStep="1"
 						tal:attributes="valueMax options/forum_objects_by_week_number_max;
 										valueStep options/forum_objects_by_week_number_y_step"
 						tal:condition="options/forum_objects_by_week_number">
 				<labels fontName="Helvetica"/>
-			</yValueAxis>
-			<lineLabels font="Roman-Bold" fontSize="10">
-			</lineLabels>
+			</valueAxis>
 			<texts >
 				<text x="2.5in" y="-0.5in" textAnchor="middle"
 					  fontName="Helvetica-Bold" fontSize="13"
 					  fillColor="black" >
 					Week Number
+				</text>
+				<text x="2.5in" y="-0.75in" textAnchor="middle"
+					  fontName="Helvetica-Bold" fontSize="13"
+					  fillColor="black" >
+					(${options/forum_objects_by_week_number_category_subheader})
 				</text>
 				<text x="1.5in" y="0.3in" angle="90" textAnchor="middle"
 					  fontName="Helvetica-Bold" fontSize="13"
@@ -95,17 +94,13 @@
 			<data>
 				<series tal:condition="options/forum_objects_by_week_number"
 						tal:content="options/forum_objects_by_week_number_series">
-				1    1
-				2    2
-				2.5  1
-				3    3
-				4    5
+			
 				</series>
 			</data>
-		</linePlot>
+		</barChart>
 	</illustration>
 
-		<illustration width="6in" height="6in" metal:define-macro="forum_top_commenters">
+	<illustration width="6in" height="6in" metal:define-macro="forum_top_commenters">
 		<pieChart dx="0in" dy="0in" dwidth="6in" dheight="6in" x="1in" y="0" width="4in"
 				  height="4in"
 				  checkLabelOverlap='false'

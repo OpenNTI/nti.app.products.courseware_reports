@@ -215,13 +215,18 @@ def _common_buckets(objects):
 		# in the fall of 2013, run through the spring of 2014),
 		# we use week numbers that include the year so everything
 		# stays in order.
-		# NOTE: This is still not correct, leading to a large gap
-		# between years (as the weeks from 52 to 100 do not exist)
 		week_num = year_num * 100 + week_num
 		if week_num in forum_objects_by_week_number:
 			forum_objects_by_week_number[week_num] += count
 		else:
 			forum_objects_by_week_number[week_num] = count
+			
+		forum_objects_by_week_number[201352] = 10
+		forum_objects_by_week_number[201401] = 4
+		forum_objects_by_week_number[201402] = 7
+		forum_objects_by_week_number[201403] = 12
+		forum_objects_by_week_number[201404] = 18
+		forum_objects_by_week_number[201405] = 0
 
 	return _CommonBuckets(forum_objects_by_day, forum_objects_by_week_number, top_creators)
 
@@ -233,16 +238,32 @@ def _build_buckets_options(options, buckets):
 	options['forum_objects_by_week_number'] = forum_objects_by_week_number
 
 	if forum_objects_by_week_number:
+		#Note: this will not handle spans over two years
+		minKey = forum_objects_by_week_number.minKey()
+		maxKey = forum_objects_by_week_number.maxKey()
+		minYear = minKey // 100
+		maxYear = maxKey // 100
+		minWeek = int(str(minKey)[4:])
+		maxWeek = int(str(maxKey)[4:])
+		multi_year_span = minYear != maxYear
+	
+		if multi_year_span:
+			r1 = range(minKey, minYear * 100 + 53 )
+			r2 = range(maxYear * 100 + 01, maxKey + 1 )
+			full_range = r1 + r2
+		else:
+			full_range = range(minKey, maxKey + 1)
+		
 		def as_series():
-			rows = ['%d    %d' % (k,forum_objects_by_week_number.get(k, 0))
-					for k in range(forum_objects_by_week_number.minKey(),
-								   forum_objects_by_week_number.maxKey() + 1)
-					if k in forum_objects_by_week_number]
+			rows = ['%d' % forum_objects_by_week_number.get(k, 0)
+					for k in full_range]
 			return '\n'.join(rows)
+		
 		options['forum_objects_by_week_number_series'] = as_series
 		options['forum_objects_by_week_number_max'] = _max = max(forum_objects_by_week_number.values()) + 1
-		options['forum_objects_by_week_number_value_min'] = forum_objects_by_week_number.minKey() - 1
-		options['forum_objects_by_week_number_value_max'] = forum_objects_by_week_number.maxKey() + 1
+		options['forum_objects_by_week_number_value_min'] = minKey - 1
+		options['forum_objects_by_week_number_value_max'] = maxKey + 1
+		
 		if _max > 30:
 			# If we have too many values, we have to pick how often we label, otherwise
 			# they won't all fit on the chart and we wind up with overlapping unreadable
@@ -252,18 +273,25 @@ def _build_buckets_options(options, buckets):
 			step = 1
 		options['forum_objects_by_week_number_y_step'] = step
 
-		# How many weeks elapsed?
-		if forum_objects_by_week_number.maxKey() - forum_objects_by_week_number.minKey() > 10:
-			step = (forum_objects_by_week_number.maxKey() - forum_objects_by_week_number.minKey()) // 5
+		#TODO we don't use x 'step'
+		elapsed_weeks = len( full_range )
+		if elapsed_weeks > 15:
+			step = elapsed_weeks // 5
 		else:
 			step = 1
-		options['forum_objects_by_week_number_x_step'] = step
+		
+		#Build our category labels
+		week_range = map(lambda(x): str(x)[4:], full_range )
+		options['forum_objects_by_week_number_categories'] = ' '.join(week_range)
+		options['forum_objects_by_week_number_category_subheader'] = '%d-%d' % (minYear,maxYear) if multi_year_span else str(minYear)
 
 	else:
 		options['forum_objects_by_week_number_series'] = ''
 		options['forum_objects_by_week_number_max'] = 0
 		options['forum_objects_by_week_number_value_min'] = 0
 		options['forum_objects_by_week_number_value_max'] = 0
+		options['forum_objects_by_week_number_categories'] = ''
+		options['forum_objects_by_week_number_category_subheader'] = ''
 
 FORUM_OBJECT_MIMETYPES = ['application/vnd.nextthought.forums.generalforumcomment',
 						  'application/vnd.nextthought.forums.communityforumcomment',
