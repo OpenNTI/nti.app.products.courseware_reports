@@ -220,13 +220,6 @@ def _common_buckets(objects):
 			forum_objects_by_week_number[week_num] += count
 		else:
 			forum_objects_by_week_number[week_num] = count
-			
-		forum_objects_by_week_number[201352] = 10
-		forum_objects_by_week_number[201401] = 4
-		forum_objects_by_week_number[201402] = 7
-		forum_objects_by_week_number[201403] = 12
-		forum_objects_by_week_number[201404] = 18
-		forum_objects_by_week_number[201405] = 0
 
 	return _CommonBuckets(forum_objects_by_day, forum_objects_by_week_number, top_creators)
 
