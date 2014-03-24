@@ -536,7 +536,11 @@ class StudentParticipationReportPdf(_AbstractReportView):
 												grade_value, history_item,
 												assignment.available_for_submission_ending))
 
-		asg_data.sort(key=lambda x: (x.due_date, x.title))
+		#Handle null due_dates
+		import datetime
+		current_time = datetime.datetime.now()
+		
+		asg_data.sort(key=lambda x: (x.due_date if x.due_date else current_time, x.title))
 		options['assignments'] = asg_data
 
 
