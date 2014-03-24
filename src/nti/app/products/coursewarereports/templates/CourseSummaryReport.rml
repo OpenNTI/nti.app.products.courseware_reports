@@ -122,36 +122,59 @@
 		<h1>Engagement</h1>
 		<hr width="100%" />
 
+		<h2 spaceBefore=".5in" keepWithNext='true'>For-Credit Engagement</h2>
 		<blockTable style='default' alignment="left">
 			<tr>
 				<td>Type</td>
 				<td>Number</td>
 			</tr>
-			<tr tal:repeat="item options/engagement_data">
+			<tr tal:repeat="item options/engagement_data_for_credit">
 				<td tal:content="python:item[0]">Notes</td>
 				<td align="decimal" tal:content="python:item[1]">25</td>
 			</tr>
-			<tr tal:condition="False">
-				<td>Forum Name</td>
-				<td>Taken</td>
-			</tr>
-			<tr tal:condition="False">
-				<td>The Topic Name</td>
-				<td>Total Attempts</td>
-			</tr>
 		</blockTable>
-		<illustration width="4in" height="4in">
-		<pieChart dx="1.5in" dy="0.9in" dwidth="4in" dheight="4in" x="1in" y="0" width="4in"
-				  height="4in"
+		<illustration width=".5in" height=".5in">
+		<pieChart dx="2.5in" dy="0in" dwidth="2in" dheight="2in" x="1in" y="0" width="2in"
+				  height="2in"
 				  checkLabelOverlap='false'
 				  tal:condition="options/count_open">
 			<labels>
-				<label tal:repeat="item options/engagement_data">${python:item[0]}</label>
+				<label tal:repeat="item options/engagement_data_for_credit">${python:item[0]}</label>
 			</labels>
 			<data>
 				<!-- Deals very badly with 0 size slices -->
 				<series>
-					<tal:block tal:repeat="item options/engagement_data">
+					<tal:block tal:repeat="item options/engagement_data_for_credit">
+					${python:(item[1] or 1.1)}
+					</tal:block>
+				</series>
+			</data>
+		</pieChart>
+		</illustration>
+		
+		<h2 spaceBefore=".7in" keepWithNext='true'>Non-Credit Engagement</h2>
+		<blockTable style='default' alignment="left">
+			<tr>
+				<td>Type</td>
+				<td>Number</td>
+			</tr>
+			<tr tal:repeat="item options/engagement_data_non_credit">
+				<td tal:content="python:item[0]">Notes</td>
+				<td align="decimal" tal:content="python:item[1]">25</td>
+			</tr>
+		</blockTable>
+		<illustration width=".3in" height=".3in">
+		<pieChart dx="2.5in" dy="0in" dwidth="2in" dheight="2in" x="1in" y="0" width="2in"
+				  height="2in"
+				  checkLabelOverlap='false'
+				  tal:condition="options/count_open">
+			<labels>
+				<label tal:repeat="item options/engagement_data_non_credit">${python:item[0]}</label>
+			</labels>
+			<data>
+				<!-- Deals very badly with 0 size slices -->
+				<series>
+					<tal:block tal:repeat="item options/engagement_data_non_credit">
 					${python:(item[1] or 1.1)}
 					</tal:block>
 				</series>
@@ -171,14 +194,6 @@
 				<td align="decimal" tal:content="item/note_count">Notes</td>
 				<td align="decimal" tal:content="item/hl_count">25</td>
 			</tr>
-			<tr tal:condition="False">
-				<td>Forum Name</td>
-				<td>Taken</td>
-			</tr>
-			<tr tal:condition="False">
-				<td>The Topic Name</td>
-				<td>Total Attempts</td>
-			</tr>
 		</blockTable>
 
 		<setNextTemplate name="two_charts" />
@@ -197,7 +212,7 @@
 							  metal:use-macro="macro:forum_participation_over_time">
 				</illustration>
 
-				<h2 spaceBefore="0.5in" keepWithNext="true">Top Commenters in &#8220;${forum_data/forum/title}&#8221;</h2>
+				<h2 spaceBefore="0.7in" keepWithNext="true">Top Commenters in &#8220;${forum_data/forum/title}&#8221;</h2>
 				<hr width="100%" />
 				<illustration width="3in" height="3in"
 							  tal:define="top_commenters forum_data/top_commenters;
