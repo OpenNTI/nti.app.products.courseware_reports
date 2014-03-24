@@ -40,16 +40,20 @@
 		<h2 spaceBefore=".5in">Self-Assessments Taken</h2>
 		<blockTable style='default' tal:condition="options/self_assessment_data">
 			<tr>
-				<td>Assessment Title</td>
-				<td>Total Attempts</td>
-				<td>Average Attempts</td>
-				<td>Percent Attempted</td>
+				<td align="center"><para>Assessment Title</para></td>
+				<td align="center"><para>For-Credit Attempts</para></td>
+				<td align="center"><para>Non-Credit Attempts</para></td>
+				<td align="center"><para>Total Attempts</para></td>
+				<td align="center"><para>Average Attempts</para></td>
+				<td align="center"><para>Attempted (%)</para></td>
 			</tr>
 			<tr tal:repeat="item options/self_assessment_data">
 				<td tal:content="item/title">The Assessment Title</td>
-				<td align="decimal" tal:content="item/total">Times Taken</td>
-				<td align="decimal" tal:content="item/average_count_str">Average Taken</td>
-				<td align="decimal" tal:content="item/percent_contributed_str">Percent Attempted</td>
+				<td align="center" tal:content="item/for_credit_total">For-Credit Attempts</td>
+				<td align="center" tal:content="item/non_credit_total">Non-Credit Attempts</td>
+				<td align="center" tal:content="item/total">Total Attempts</td>
+				<td align="center" tal:content="item/average_count_str">Average Taken</td>
+				<td align="center" tal:content="item/percent_contributed_str">Percent Attempted</td>
 			</tr>
 			<tr tal:condition="False">
 				<td>The Topic Name</td>
@@ -73,37 +77,40 @@
 		<h2 spaceBefore=".5in" keepWithNext='true'>Assignments Taken</h2>
 		<blockTable style='default' tal:condition="options/assignment_data">
 			<tr>
-				<td><para>Assignment Title</para></td>
-				<td><para>Total Attempts</para></td>
-				<td><para>Average Grade</para></td>
-				<td><para>Median Grade</para></td>
-				<td><para>Standard Deviation</para></td>
-				<td><para>Attempted (%)</para></td>
-				<td><para>Credit Attempted (%)</para></td>
+				<td align="center"><para>Assignment Title</para></td>
+				<td align="center"><para>For-Credit Attempts</para></td>
+				<td align="center"><para>Non-Credit Attempts</para></td>
+				<td align="center"><para>Total Attempts</para></td>
+				<td align="center"><para>Attempted (%)</para></td>
+				<td align="center"><para>For-Credit Attempted (%)</para></td>
 			</tr>
 			<tr tal:repeat="item options/assignment_data">
 				<td><para tal:content="item/title">The Assessment Title</para></td>
-				<td align="centre" tal:content="item/count">Times Taken</td>
-				<td align="centre" tal:content="item/avg_grade">Average Grade</td>
-				<td align="centre" tal:content="item/median_grade">Mean Grade</td>
-				<td align="center" tal:content="item/std_grade">Standard Deviation</td>
-				<td align="center" tal:content="item/attempted">Percent attempted</td>
-				<td align="center" tal:content="item/for_credit_attempted">Percent attempted</td>
+				<td align="center" tal:content="item/for_credit_total">For-Credit Attempts</td>
+				<td align="center" tal:content="item/non_credit_total">Non-Credit Attempts</td>
+				<td align="center" tal:content="item/total">Total Attempts</td>
+				<td align="center" tal:content="item/attempted_perc">Percent attempted</td>
+				<td align="center" tal:content="item/for_credit_attempted_perc">Percent attempted</td>
 			</tr>
-			<tr tal:condition="False">
-				<td>The Topic Name</td>
-				<td>Total Attempts</td>
-				<td>Forum Name</td>
-				<td>Forum Name</td>
-				<td>Taken</td>
+		</blockTable>
+		
+		<h2 spaceBefore=".5in" keepWithNext='true'>Assignment Results</h2>
+		<blockTable style='default' tal:condition="options/assignment_data">
+			<tr>
+				<td align="center"><para>Assignment Title</para></td>
+				<td align="center"><para>For-Credit Average</para></td>
+				<td align="center"><para>Non-Credit Average</para></td>
+				<td align="center"><para>Average</para></td>
+				<td align="center"><para>Median</para></td>
+				<td align="center"><para>Standard Deviation</para></td>
 			</tr>
-
-			<tr tal:condition="False">
-				<td>The Topic Name</td>
-				<td>Total Attempts</td>
-				<td>Forum Name</td>
-				<td>Forum Name</td>
-				<td>Taken</td>
+			<tr tal:repeat="item options/assignment_data">
+				<td><para tal:content="item/title">The Assessment Title</para></td>
+				<td align="center" tal:content="item/for_credit_avg_grade">For-Credit Average</td>
+				<td align="center" tal:content="item/non_credit_avg_grade">Non-Credit Average</td>
+				<td align="center" tal:content="item/avg_grade">Average</td>
+				<td align="center" tal:content="item/median_grade">Median</td>
+				<td align="center" tal:content="item/std_dev_grade">Standard Deviation</td>
 			</tr>
 		</blockTable>
 		<para tal:condition="not:options/assignment_data">
