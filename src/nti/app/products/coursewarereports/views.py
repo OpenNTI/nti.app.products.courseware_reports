@@ -188,7 +188,6 @@ class _TopCreators(object):
 		else:
 			self._data[username] = 1
 
-
 	def keys(self):
 		return self._data.keys()
 
@@ -891,7 +890,7 @@ class CourseSummaryReportPdf(_AbstractReportView):
 
 		for submission in qsets_by_student_in_course:
 			asm = self_assessment_qsids[submission.questionSetId]
-			title_to_count[asm.ntiid].incr_username(submission.creator)
+			title_to_count[asm.ntiid].incr_username(submission.creator.username)
 
 		options['self_assessment_data'] = sorted(title_to_count.values(),
 												 key=lambda x: x.title)
