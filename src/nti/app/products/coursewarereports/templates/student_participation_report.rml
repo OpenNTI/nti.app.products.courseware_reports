@@ -6,6 +6,7 @@
 	<h1>Forum Participation</h1>
 	<hr width="100%" spaceAfter=".5in"/>
 	<illustration width="5in" height="3in"
+				  tal:define="forum_stat options/student_forum_participation"
 				  metal:use-macro="macro:forum_participation_over_time">
 	</illustration>
 
@@ -47,7 +48,7 @@
 			<tr tal:repeat="item options/comment_count_by_topic">
 				<td tal:content="python:item[0].__parent__.title">The Forum Name</td>
 				<td tal:content="python:item[0].title">Topic Name</td>
-				<td tal:content="python:item[1]">Comment Count</td>
+				<td align="decimal" tal:content="python:item[1]">Comment Count</td>
 			</tr>
 			<tr tal:condition="False">
 				<td><para>The Topic Name</para></td>
@@ -74,7 +75,7 @@
 			</tr>
 			<tr tal:repeat="item options/self_assessment_title_to_count">
 				<td tal:content="python:item[0]">The Assessment Title</td>
-				<td tal:content="python:item[1]">Times Taken</td>
+				<td align="decimal" tal:content="python:item[1]">Times Taken</td>
 			</tr>
 			<tr tal:condition="False">
 				<td>The Topic Name</td>
@@ -103,8 +104,8 @@
 				<td tal:content="item/title">The Assignment Name</td>
 				<td tal:content="item/submitted/date | default"></td>
 				<td tal:content="item/due_date/date | default"></td>
-				<td tal:content="item/grade_value">A+</td>
-				<td tal:content="item/history/FeedbackCount | default"></td>
+				<td align="decimal" tal:content="item/grade_value">A+</td>
+				<td align="decimal" tal:content="item/history/FeedbackCount | default"></td>
 			</tr>
 			<tr tal:condition="False">
 				<td>Chortle</td>

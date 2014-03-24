@@ -21,9 +21,9 @@
 				<td align="decimal" tal:content="item/count">Times Taken</td>
 				<td align="decimal" tal:content="item/avg_grade">Average Grade</td>
 				<td align="decimal" tal:content="item/median_grade">Mean Grade</td>
-				<td align="decimal" tal:content="item/std_grade">Standard Deviation</td>
-				<td align="decimal" tal:content="item/attempted">Percent attempted</td>
-				<td align="decimal" tal:content="item/for_credit_attempted">Percent attempted</td>
+				<td align="decimal" tal:content="item/std_dev_grade">Standard Deviation</td>
+				<td align="decimal" tal:content="item/attempted_perc">Percent attempted</td>
+				<td align="decimal" tal:content="item/for_credit_attempted_perc">Percent attempted</td>
 			</tr>
 			<tr tal:condition="False">
 				<td>The Topic Name</td>

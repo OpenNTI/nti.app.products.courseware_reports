@@ -56,22 +56,24 @@
 			<nextFrame />
 		</tal:block>
 
-	<illustration width="5in" height="3in" metal:define-macro="forum_participation_over_time">
+	<illustration width="5in" height="3in"
+				  metal:define-macro="forum_participation_over_time">
+		<!--! To use, define a variable 'forum_stat' around the invocation -->
 		<barChart dx="0.5in" dy="0in"
 				  dwidth="5in" dheight="3in"
 				  x="0" y="0"
 				  width="5in"
 				  height="3in" direction="vertical" barLabelFormat="%2.0f"
-				  tal:condition="options/forum_objects_by_week_number">
+				  tal:condition="forum_stat/forum_objects_by_week_number">
 			<categoryAxis tickShift="True"
-						tal:attributes="categoryNames options/forum_objects_by_week_number_categories"
-						tal:condition="options/forum_objects_by_week_number">
+						tal:attributes="categoryNames forum_stat/forum_objects_by_week_number_categories"
+						tal:condition="forum_stat/forum_objects_by_week_number">
 				<labels fontName="Helvetica"/>
 			</categoryAxis>
 			<valueAxis valueMin="0" valueMax="15" valueStep="1"
-						tal:attributes="valueMax options/forum_objects_by_week_number_max;
-										valueStep options/forum_objects_by_week_number_y_step"
-						tal:condition="options/forum_objects_by_week_number">
+						tal:attributes="valueMax forum_stat/forum_objects_by_week_number_max;
+										valueStep forum_stat/forum_objects_by_week_number_y_step"
+						tal:condition="forum_stat/forum_objects_by_week_number">
 				<labels fontName="Helvetica"/>
 			</valueAxis>
 			<texts >
@@ -83,7 +85,7 @@
 				<text x="2.5in" y="-0.75in" textAnchor="middle"
 					  fontName="Helvetica-Bold" fontSize="13"
 					  fillColor="black" >
-					(${options/forum_objects_by_week_number_category_subheader})
+					(${forum_stat/forum_objects_by_week_number_category_subheader})
 				</text>
 				<text x="1.5in" y="0.3in" angle="90" textAnchor="middle"
 					  fontName="Helvetica-Bold" fontSize="13"
@@ -92,9 +94,8 @@
 				</text>
 			</texts>
 			<data>
-				<series tal:condition="options/forum_objects_by_week_number"
-						tal:content="options/forum_objects_by_week_number_series">
-			
+				<series tal:condition="forum_stat/forum_objects_by_week_number"
+						tal:content="forum_stat/forum_objects_by_week_number_series">
 				</series>
 			</data>
 		</barChart>

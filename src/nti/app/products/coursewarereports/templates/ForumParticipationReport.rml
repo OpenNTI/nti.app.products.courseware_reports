@@ -6,7 +6,8 @@
 		<h1 spaceBefore="0.5in" keepWithNext="true">Activity Over Time</h1>
 		<hr width="100%" spaceAfter="0.5in"/>
 		<illustration width="5in" height="3in"
-				  metal:use-macro="macro:forum_participation_over_time">
+					  tal:define="forum_stat options/all_forum_participation"
+					  metal:use-macro="macro:forum_participation_over_time">
 		</illustration>
 
 
@@ -107,9 +108,9 @@
 				<td>Username</td><td>Discussions Created</td><td>Comments</td>
 			</tr>
 			<tr tal:repeat="item options/user_stats">
-				<td tal:content="item/username">The Assessment Title</td>
-				<td tal:content="item/topics_created">Times Taken</td>
-				<td tal:content="item/total_comment_count">Times Taken</td>
+				<td tal:content="item/username">jamadden</td>
+				<td align="decimal" tal:content="item/topics_created">1</td>
+				<td align="decimal" tal:content="item/total_comment_count">3</td>
 			</tr>
 			<tr tal:condition="False">
 				<td>The Topic Name</td>

@@ -115,23 +115,28 @@ import heapq
 class _TopCreators(object):
 	"""Accumulate stats in three parts: for credit students, tourists, and aggregate"""
 	total = 0
-	for_credit_total = 0
-	non_credit_total = 0
 	title = ''
 	max_contributors = None
 
 	def __init__(self,for_credit_students):
 		self._for_credit_students = for_credit_students
 		self._data = BTrees.family64.OI.BTree()
-		self._for_credit_data = BTrees.family64.OI.BTree()
+
+	@property
+	def _for_credit_data(self):
+		return {username: i for username, i in self._data.items() if username in self._for_credit_students}
+
+	@property
+	def _non_credit_data(self):
+		return {username: i for username, i in self._data.items() if username not in self._for_credit_students}
 
 	def _get_largest(self):
-		return self._do_get_largest(self._data,self.non_credit_total)
-		
+		return self._do_get_largest(self._non_credit_data, self.non_credit_total)
+
 	def _get_for_credit_largest(self):
-		return self._do_get_largest(self._for_credit_data,self.for_credit_total)
-		
-	def _do_get_largest(self,data,total_to_change):		
+		return self._do_get_largest(self._for_credit_data, self.for_credit_total)
+
+	def _do_get_largest(self,data,total_to_change):
 		# Returns the top commenter names, up to (arbitrarily) 15
 		# of them, with the next being 'everyone else'
 		# In typical data, 'everyone else' far overwhelms
@@ -161,23 +166,27 @@ class _TopCreators(object):
 	def series(self):
 		return ' '.join( ('%d' % x[1] for x in self._get_largest()) )
 
+	@property
+	def for_credit_total(self):
+		data = self._for_credit_data
+		if data:
+			return sum(data.values())
+		return 0
+
+	@property
+	def non_credit_total(self):
+		data = self._non_credit_data
+		if data:
+			return sum(data.values())
+		return 0
+
 	def incr_username(self, username):
 		self.total += 1
-		
-		#TODO better way to do this?
+
 		if username in self._data:
-			self.non_credit_total += 1
 			self._data[username] += 1
-		elif username in self._for_credit_data:
-			self.for_credit_total += 1
-			self._for_credit_data[username] += 1	
 		else:
-			if username in self._for_credit_students:
-				self.for_credit_total += 1
-				self._for_credit_data[username] = 1
-			else:
-				self.non_credit_total += 1
-				self._data[username] = 1
+			self._data[username] = 1
 
 
 	def keys(self):
@@ -246,6 +255,13 @@ def _common_buckets(objects,for_credit_students):
 
 	return _CommonBuckets(forum_objects_by_day, forum_objects_by_week_number, top_creators)
 
+ForumObjectsStat = namedtuple('ForumObjectsStat',
+							  ('forum_objects_by_day', 'forum_objects_by_week_number',
+							   'forum_objects_by_week_number_series', 'forum_objects_by_week_number_max',
+							   'forum_objects_by_week_number_value_min', 'forum_objects_by_week_number_value_max',
+							   'forum_objects_by_week_number_categories', 'forum_objects_by_week_number_category_subheader',
+							   'forum_objects_by_week_number_y_step'))
+
 def _build_buckets_options(options, buckets):
 	forum_objects_by_week_number = buckets.count_by_week_number
 	forum_objects_by_day = buckets.count_by_day
@@ -255,33 +271,33 @@ def _build_buckets_options(options, buckets):
 
 	if forum_objects_by_week_number:
 		#TODO we should think about having minimum data points (12 weeks?), to keep the chart consistent across views
-		
+
 		#Note: this will not handle spans over two years
 		minKey = forum_objects_by_week_number.minKey()
 		maxKey = forum_objects_by_week_number.maxKey()
 		minYear = minKey // 100
 		maxYear = maxKey // 100
-		minWeek = int(str(minKey)[4:])
-		maxWeek = int(str(maxKey)[4:])
+		#minWeek = int(str(minKey)[4:])
+		#maxWeek = int(str(maxKey)[4:])
 		multi_year_span = minYear != maxYear
-	
+
 		if multi_year_span:
 			r1 = range(minKey, minYear * 100 + 53 )
 			r2 = range(maxYear * 100 + 01, maxKey + 1 )
 			full_range = r1 + r2
 		else:
 			full_range = range(minKey, maxKey + 1)
-		
+
 		def as_series():
 			rows = ['%d' % forum_objects_by_week_number.get(k, 0)
 					for k in full_range]
 			return '\n'.join(rows)
-		
+
 		options['forum_objects_by_week_number_series'] = as_series
 		options['forum_objects_by_week_number_max'] = _max = max(forum_objects_by_week_number.values()) + 1
 		options['forum_objects_by_week_number_value_min'] = minKey - 1
 		options['forum_objects_by_week_number_value_max'] = maxKey + 1
-		
+
 		if _max > 30:
 			# If we have too many values, we have to pick how often we label, otherwise
 			# they won't all fit on the chart and we wind up with overlapping unreadable
@@ -297,7 +313,7 @@ def _build_buckets_options(options, buckets):
 			step = elapsed_weeks // 5
 		else:
 			step = 1
-		
+
 		#Build our category labels
 		week_range = map(lambda(x): str(x)[4:], full_range )
 		options['forum_objects_by_week_number_categories'] = ' '.join(week_range)
@@ -310,6 +326,9 @@ def _build_buckets_options(options, buckets):
 		options['forum_objects_by_week_number_value_max'] = 0
 		options['forum_objects_by_week_number_categories'] = ''
 		options['forum_objects_by_week_number_category_subheader'] = ''
+
+	return ForumObjectsStat( *[options.get(x)
+							   for x in ForumObjectsStat._fields] )
 
 FORUM_OBJECT_MIMETYPES = ['application/vnd.nextthought.forums.generalforumcomment',
 						  'application/vnd.nextthought.forums.communityforumcomment',
@@ -445,7 +464,8 @@ class StudentParticipationReportPdf(_AbstractReportView):
 		options['total_forum_objects_created'] = len(forum_objects_created_by_student_in_course)
 		options['comment_count_by_topic'] = sorted(comment_count_by_topic.items(),
 												   key=lambda x: (x[0].__parent__.title, x[0].title))
-		_build_buckets_options(options, time_buckets)
+		stat = _build_buckets_options(options, time_buckets)
+		options['student_forum_participation'] = stat
 
 	def _build_self_assessment_data(self, options):
 		md_catalog = self.md_catalog
@@ -538,9 +558,8 @@ class StudentParticipationReportPdf(_AbstractReportView):
 			A list of tuples (topic, count) giving the number of comments the user
 			created. Sorted by forum name and topic name.
 
-		forum_objects_by_week_number
-			A BTree mapping the ISO week number to the number of objects the user
-			created in forums that week.
+		student_forum_participation
+			A :class:`ForumObjectsStat`
 
 		"""
 		# Collect data and return it in a form to be rendered
@@ -591,11 +610,13 @@ class ForumParticipationReportPdf(_AbstractReportView):
 			for topic in self.context.values():
 				for comment in topic.values():
 					yield comment
-		buckets = _common_buckets(_all_comments(),self.for_credit_student_usernames)
+		buckets = _common_buckets(_all_comments(), self.for_credit_student_usernames)
 		options['top_commenters'] = buckets.top_creators
 		# Obviously we'll want better color choices than "random"
 		options['top_commenters_colors'] = colors.getAllNamedColors().keys()
-		_build_buckets_options(options, buckets)
+
+		all_forum_stat = _build_buckets_options(options, buckets)
+		options['all_forum_participation'] = all_forum_stat
 
 	def _build_comment_count_by_topic(self, options):
 		comment_count_by_topic = list()
@@ -686,11 +707,13 @@ class TopicParticipationReportPdf(ForumParticipationReportPdf):
 		return self._course_from_forum(self.context.__parent__)
 
 	def _build_top_commenters(self, options):
-		buckets = _common_buckets(self.context.values(),self.for_credit_student_usernames)
+		buckets = _common_buckets(self.context.values(), self.for_credit_student_usernames)
 		options['top_commenters'] = buckets.top_creators
 		# Obviously we'll want better color choices than "random"
 		options['top_commenters_colors'] = colors.getAllNamedColors().keys()
-		_build_buckets_options(options, buckets)
+		all_forum_stat = _build_buckets_options(options, buckets)
+		options['all_forum_participation'] = all_forum_stat
+
 
 	def __call__(self):
 		"""
@@ -723,71 +746,82 @@ _AssignmentStat = namedtuple('_AssignmentStat',
 							 ('title', 'count',
 							  'total', 'for_credit_total',
 							  'non_credit_total',
-							  'avg_grade', 'for_credit_avg_grade', 
-							  'non_credit_avg_grade', 'median_grade', 'std_dev_grade', 
+							  'avg_grade', 'for_credit_avg_grade',
+							  'non_credit_avg_grade', 'median_grade', 'std_dev_grade',
 							  'attempted_perc', 'for_credit_attempted_perc' ))
 
 def _assignment_stat_for_column(self, column):
 	count = len(column)
 	keys = set(column)
 
-	#TODO Case sensitivity issue?
+	# TODO Case sensitivity issue?
 	for_credit_keys = self.for_credit_student_usernames.intersection(keys)
-	for_credit_grade_points = []
-	non_credit_grade_points = []
+	for_credit_grade_points = list()
+	non_credit_grade_points = list()
+	all_grade_points = list()
 
-	#Separate credit and non-credit	
-	for x,y in column.items():
-		gp = y.value if isinstance(y.value, Number) else float(y.value.split()[0])
-		if x in for_credit_keys:
-			for_credit_grade_points.append(gp)
+	# Separate credit and non-credit
+	for username, grade in column.items():
+		if grade.value is None:
+			continue
+
+		grade = grade.value if isinstance(grade.value, Number) else float(grade.value.split()[0])
+		all_grade_points.append( grade )
+		if username in for_credit_keys:
+			for_credit_grade_points.append(grade)
 		else:
-			non_credit_grade_points.append(gp)
+			non_credit_grade_points.append(grade)
 
-	for_credit_total = len( for_credit_grade_points )
-	non_credit_total = len( non_credit_grade_points )
+	for_credit_total = len(for_credit_grade_points)
+	non_credit_total = len(non_credit_grade_points)
 	total = for_credit_total + non_credit_total
 
-	#Credit
-	if for_credit_grade_points:
-		for_credit_grade_points = asarray(for_credit_grade_points)
+	for_credit_grade_points = asarray(for_credit_grade_points)
+	non_credit_grade_points = asarray(non_credit_grade_points)
+	all_grade_points = asarray(all_grade_points)
+
+	# Credit
+	if for_credit_total:
 		for_credit_avg_grade = average(for_credit_grade_points)
 		for_credit_avg_grade_s = '%0.1f' % for_credit_avg_grade
 	else:
-		for_credit_avg_grade_s = 'N/A'	
-	
-	#Non-credit
-	if non_credit_grade_points:
-		non_credit_grade_points = asarray(non_credit_grade_points)
+		for_credit_avg_grade_s = 'N/A'
+
+	# Non-credit
+	if non_credit_total:
 		non_credit_avg_grade = average(non_credit_grade_points)
 		non_credit_avg_grade_s = '%0.1f' % non_credit_avg_grade
 	else:
 		non_credit_avg_grade_s = 'N/A'
 
-	#Aggregate
-	if for_credit_grade_points and non_credit_grade_points:
-		agg_array = for_credit_grade_points + non_credit_grade_points
+	# Aggregate
+	if for_credit_total and non_credit_total:
+		agg_array = all_grade_points
 		agg_avg_grade = average(agg_array)
 		avg_grade_s = '%0.1f' % agg_avg_grade
 		median_grade = median(agg_avg_grade)
-		std_dev_grade = std(agg_avg_grade)
-	elif for_credit_grade_points:
+		std_dev_grade = std(agg_array)
+	elif for_credit_total:
 		avg_grade_s = for_credit_avg_grade_s
 		median_grade = median(for_credit_grade_points)
 		std_dev_grade = std(for_credit_grade_points)
-	elif non_credit_grade_points:
+	elif non_credit_total:
 		avg_grade_s = non_credit_avg_grade_s
 		median_grade = median(non_credit_grade_points)
 		std_dev_grade = std(non_credit_grade_points)
 	else:
-		avg_grade_s = median_grade = std_dev_grade = 'N/A'
+		avg_grade_s = 'N/A'
+		median_grade = std_dev_grade = 0
+
+	median_grade_s = '%0.1f' % median_grade
+	std_dev_grade_s = '%0.1f' % std_dev_grade
 
 	if self.count_all_students:
 		per_attempted = (count / self.count_all_students) * 100.0
 		per_attempted_s = '%0.1f' % per_attempted
 	else:
 		per_attempted_s = 'N/A'
-		
+
 	if self.count_credit_students:
 		for_credit_per = (len(for_credit_keys) / self.count_credit_students) * 100.0
 		for_credit_per_s = '%0.1f' % for_credit_per
@@ -796,9 +830,9 @@ def _assignment_stat_for_column(self, column):
 
 	stat = _AssignmentStat( column.displayName, count, total,
 							for_credit_total, non_credit_total,
-							avg_grade_s, for_credit_avg_grade_s, 
-							non_credit_avg_grade_s, median_grade,
-							std_dev_grade,
+							avg_grade_s, for_credit_avg_grade_s,
+							non_credit_avg_grade_s,
+							median_grade_s,	std_dev_grade_s,
 							per_attempted_s, for_credit_per_s )
 
 	return stat

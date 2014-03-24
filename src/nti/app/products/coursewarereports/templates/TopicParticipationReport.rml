@@ -6,7 +6,8 @@
 		<h1 spaceBefore="0.5in" keepWithNext="true">Activity Over Time</h1>
 		<hr width="100%" spaceAfter="0.5in"/>
 		<illustration width="5in" height="3in"
-				  metal:use-macro="macro:forum_participation_over_time">
+					  tal:define="forum_stat options/all_forum_participation"
+					  metal:use-macro="macro:forum_participation_over_time">
 		</illustration>
 
 		<para spaceBefore="1.2in" tal:condition="options/top_commenters">

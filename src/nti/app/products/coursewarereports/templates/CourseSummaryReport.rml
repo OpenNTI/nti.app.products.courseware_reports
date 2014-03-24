@@ -49,11 +49,11 @@
 			</tr>
 			<tr tal:repeat="item options/self_assessment_data">
 				<td tal:content="item/title">The Assessment Title</td>
-				<td align="center" tal:content="item/for_credit_total">For-Credit Attempts</td>
-				<td align="center" tal:content="item/non_credit_total">Non-Credit Attempts</td>
-				<td align="center" tal:content="item/total">Total Attempts</td>
-				<td align="center" tal:content="item/average_count_str">Average Taken</td>
-				<td align="center" tal:content="item/percent_contributed_str">Percent Attempted</td>
+				<td align="decimal" tal:content="item/for_credit_total">For-Credit Attempts</td>
+				<td align="decimal" tal:content="item/non_credit_total">Non-Credit Attempts</td>
+				<td align="decimal" tal:content="item/total">Total Attempts</td>
+				<td align="decimal" tal:content="item/average_count_str">Average Taken</td>
+				<td align="decimal" tal:content="item/percent_contributed_str">Percent Attempted</td>
 			</tr>
 			<tr tal:condition="False">
 				<td>The Topic Name</td>
@@ -86,14 +86,14 @@
 			</tr>
 			<tr tal:repeat="item options/assignment_data">
 				<td><para tal:content="item/title">The Assessment Title</para></td>
-				<td align="center" tal:content="item/for_credit_total">For-Credit Attempts</td>
-				<td align="center" tal:content="item/non_credit_total">Non-Credit Attempts</td>
-				<td align="center" tal:content="item/total">Total Attempts</td>
-				<td align="center" tal:content="item/attempted_perc">Percent attempted</td>
-				<td align="center" tal:content="item/for_credit_attempted_perc">Percent attempted</td>
+				<td align="decimal" tal:content="item/for_credit_total">For-Credit Attempts</td>
+				<td align="decimal" tal:content="item/non_credit_total">Non-Credit Attempts</td>
+				<td align="decimal" tal:content="item/total">Total Attempts</td>
+				<td align="decimal" tal:content="item/attempted_perc">Percent attempted</td>
+				<td align="decimal" tal:content="item/for_credit_attempted_perc">Percent attempted</td>
 			</tr>
 		</blockTable>
-		
+
 		<h2 spaceBefore=".5in" keepWithNext='true'>Assignment Results</h2>
 		<blockTable style='default' tal:condition="options/assignment_data">
 			<tr>
@@ -106,11 +106,11 @@
 			</tr>
 			<tr tal:repeat="item options/assignment_data">
 				<td><para tal:content="item/title">The Assessment Title</para></td>
-				<td align="center" tal:content="item/for_credit_avg_grade">For-Credit Average</td>
-				<td align="center" tal:content="item/non_credit_avg_grade">Non-Credit Average</td>
-				<td align="center" tal:content="item/avg_grade">Average</td>
-				<td align="center" tal:content="item/median_grade">Median</td>
-				<td align="center" tal:content="item/std_dev_grade">Standard Deviation</td>
+				<td align="decimal" tal:content="item/for_credit_avg_grade">For-Credit Average</td>
+				<td align="decimal" tal:content="item/non_credit_avg_grade">Non-Credit Average</td>
+				<td align="decimal" tal:content="item/avg_grade">Average</td>
+				<td align="decimal" tal:content="item/median_grade">Median</td>
+				<td align="decimal" tal:content="item/std_dev_grade">Standard Deviation</td>
 			</tr>
 		</blockTable>
 		<para tal:condition="not:options/assignment_data">
