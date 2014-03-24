@@ -55,19 +55,6 @@
 				<td align="decimal" tal:content="item/average_count_str">Average Taken</td>
 				<td align="decimal" tal:content="item/percent_contributed_str">Percent Attempted</td>
 			</tr>
-			<tr tal:condition="False">
-				<td>The Topic Name</td>
-				<td>Forum Name</td>
-				<td>Taken</td>
-				<td>Percent</td>
-			</tr>
-
-			<tr tal:condition="False">
-				<td>The Topic Name</td>
-				<td>Forum Name</td>
-				<td>Taken</td>
-				<td>Percent</td>
-			</tr>
 		</blockTable>
 		<para tal:condition="not:options/self_assessment_data">
 			This course contains no self-assessments.
