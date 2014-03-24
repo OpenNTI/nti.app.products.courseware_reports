@@ -113,30 +113,41 @@ _CommonBuckets = namedtuple('_CommonBuckets',
 
 import heapq
 class _TopCreators(object):
+	"""Accumulate stats in three parts: for credit students, tourists, and aggregate"""
 	total = 0
+	for_credit_total = 0
+	non_credit_total = 0
 	title = ''
 	max_contributors = None
 
-	def __init__(self):
+	def __init__(self,for_credit_students):
+		self._for_credit_students = for_credit_students
 		self._data = BTrees.family64.OI.BTree()
+		self._for_credit_data = BTrees.family64.OI.BTree()
 
 	def _get_largest(self):
+		return self._do_get_largest(self._data,self.non_credit_total)
+		
+	def _get_for_credit_largest(self):
+		return self._do_get_largest(self._for_credit_data,self.for_credit_total)
+		
+	def _do_get_largest(self,data,total_to_change):		
 		# Returns the top commenter names, up to (arbitrarily) 15
 		# of them, with the next being 'everyone else'
 		# In typical data, 'everyone else' far overwhelms
 		# the top 15 commenters, so we are giving it a small value
-		# (one-eigth of the pie),
+		# (one-eighth of the pie),
 		# but including it as a percentage in its label
 		# TODO: Better way to do this?
-		largest = heapq.nlargest(15, self._data.items(), key=lambda x: x[1])
+		largest = heapq.nlargest(15, data.items(), key=lambda x: x[1])
 		# Give percentages to the usernames
 		largest = [('%s (%0.1f%%)' % (x[0],(x[1] / self.total) * 100), x[1]) for x in largest]
-		if len(self._data) > len(largest):
+		if len(data) > len(largest):
 			# We didn't account for everyone, we need to
 			largest_total = sum( (x[1] for x in largest) )
-			remainder = self.total - largest_total
+			remainder = total_to_change - largest_total
 			# TODO: Localize and map this
-			percent = (remainder / self.total) * 100
+			percent = (remainder / total_to_change) * 100
 			largest.append( ('Others (%0.1f%%)' % percent, largest_total // 8) )
 		return largest
 
@@ -152,10 +163,21 @@ class _TopCreators(object):
 
 	def incr_username(self, username):
 		self.total += 1
+		
+		#TODO better way to do this?
 		if username in self._data:
+			self.non_credit_total += 1
 			self._data[username] += 1
+		elif username in self._for_credit_data:
+			self.for_credit_total += 1
+			self._for_credit_data[username] += 1	
 		else:
-			self._data[username] = 1
+			if username in self._for_credit_students:
+				self.for_credit_total += 1
+				self._for_credit_data[username] = 1
+			else:
+				self.non_credit_total += 1
+				self._data[username] = 1
 
 
 	def keys(self):
@@ -173,6 +195,7 @@ class _TopCreators(object):
 		return "%0.1f" % self.average_count()
 
 	def percent_contributed(self):
+		#FIXME update this for credit/non-credit
 		if self.max_contributors is None:
 			return 100
 		return (len(self.keys()) / self.max_contributors) * 100.0
@@ -180,7 +203,7 @@ class _TopCreators(object):
 	def percent_contributed_str(self):
 		return "%0.1f" % self.percent_contributed()
 
-def _common_buckets(objects):
+def _common_buckets(objects,for_credit_students):
 	"""
 	Given a list of :class:`ICreated` objects,
 	return a :class:`_CommonBuckets` containing three members:
@@ -200,7 +223,7 @@ def _common_buckets(objects):
 
 	forum_objects_by_day = BTrees.family64.II.BTree()
 	forum_objects_by_week_number = BTrees.family64.II.BTree()
-	top_creators = _TopCreators()
+	top_creators = _TopCreators(for_credit_students)
 
 	for k, g in groupby(objects, day_key):
 		group = list(g)
@@ -231,6 +254,8 @@ def _build_buckets_options(options, buckets):
 	options['forum_objects_by_week_number'] = forum_objects_by_week_number
 
 	if forum_objects_by_week_number:
+		#TODO we should think about having minimum data points (12 weeks?), to keep the chart consistent across views
+		
 		#Note: this will not handle spans over two years
 		minKey = forum_objects_by_week_number.minKey()
 		maxKey = forum_objects_by_week_number.maxKey()
@@ -402,7 +427,7 @@ class StudentParticipationReportPdf(_AbstractReportView):
 		forum_objects_created_by_student_in_course = [x for x in forum_objects_created_by_student
 													  if find_interface(x, ICommunityBoard) == course_board]
 		# Group the forum objects by day and week
-		time_buckets = _common_buckets(forum_objects_created_by_student_in_course)
+		time_buckets = _common_buckets(forum_objects_created_by_student_in_course,self.for_credit_student_usernames)
 
 		# Tabular breakdown of what topics the user created in what forum
 		# and how many comments in which topics (could be bulkData or actual blockTable)
@@ -566,7 +591,7 @@ class ForumParticipationReportPdf(_AbstractReportView):
 			for topic in self.context.values():
 				for comment in topic.values():
 					yield comment
-		buckets = _common_buckets(_all_comments())
+		buckets = _common_buckets(_all_comments(),self.for_credit_student_usernames)
 		options['top_commenters'] = buckets.top_creators
 		# Obviously we'll want better color choices than "random"
 		options['top_commenters_colors'] = colors.getAllNamedColors().keys()
@@ -574,7 +599,7 @@ class ForumParticipationReportPdf(_AbstractReportView):
 
 	def _build_comment_count_by_topic(self, options):
 		comment_count_by_topic = list()
-		top_creators = _TopCreators()
+		top_creators = _TopCreators(self.for_credit_student_usernames)
 		for topic in self.context.values():
 			count = len(topic)
 			user_count = len({c.creator for c in topic.values()})
@@ -661,7 +686,7 @@ class TopicParticipationReportPdf(ForumParticipationReportPdf):
 		return self._course_from_forum(self.context.__parent__)
 
 	def _build_top_commenters(self, options):
-		buckets = _common_buckets(self.context.values())
+		buckets = _common_buckets(self.context.values(),self.for_credit_student_usernames)
 		options['top_commenters'] = buckets.top_creators
 		# Obviously we'll want better color choices than "random"
 		options['top_commenters_colors'] = colors.getAllNamedColors().keys()
@@ -790,7 +815,7 @@ class CourseSummaryReportPdf(_AbstractReportView):
 
 		for asm in self_assessments:
 			title = _title_of_qs(asm)
-			accum = _TopCreators()
+			accum = _TopCreators(self.for_credit_student_usernames)
 			accum.title = title
 			accum.max_contributors = len(self.all_student_usernames)
 			title_to_count[asm.ntiid] = accum
