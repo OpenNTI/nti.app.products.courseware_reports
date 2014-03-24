@@ -749,7 +749,7 @@ from numpy import var
 
 
 _AssignmentStat = namedtuple('_AssignmentStat',
-							 ('title', 'count',
+							 ('title', 'count', 'due_date',
 							  'total', 'for_credit_total',
 							  'non_credit_total',
 							  'avg_grade', 'for_credit_avg_grade',
@@ -834,7 +834,7 @@ def _assignment_stat_for_column(self, column):
 	else:
 		for_credit_per_s = 'N/A'
 
-	stat = _AssignmentStat( column.displayName, count, total,
+	stat = _AssignmentStat( column.displayName, count, column.DueDate, total,
 							for_credit_total, non_credit_total,
 							avg_grade_s, for_credit_avg_grade_s,
 							non_credit_avg_grade_s,
@@ -929,14 +929,46 @@ class CourseSummaryReportPdf(_AbstractReportView):
 		intids_of_hls = intersection( intids_of_hls,
 									  intids_of_objects_in_course_containers )
 
+		#Separate credit and non-credit
+		for_credit_students = self.for_credit_student_usernames
+		
+		notes = ResultSet(intids_of_notes, self.uidutil)
+		for_credit_note_count = sum( 1 for x in notes if x.creator.username in for_credit_students )
+		
+		highlights = ResultSet(intids_of_hls, self.uidutil)
+		for_credit_highlight_count = sum( 1 for x in highlights if x.creator.username in for_credit_students )
+		
+		for_credit_discussion_count = 0
+		total_discussion_count = 0
+		for_credit_comment_count = 0
+		total_comment_count = 0
+		
+		for forum in self.course.Discussions.values():
+			for discussion in forum.values():
+				total_discussion_count += 1
+				if discussion.creator.username in for_credit_students:
+					for_credit_discussion_count += 1
+				for topic in discussion.values():
+					total_comment_count += 1
+					if topic.creator.username in for_credit_students:
+						for_credit_comment_count += 1
+						
+						
 		data = dict()
-		data['Notes'] = len(intids_of_notes)
-		data['Highlights'] = len(intids_of_hls)
-		data['Discussions'] = sum( (len(forum) for forum in self.course.Discussions.values()) )
-		data['Discussion Comments'] = sum( (sum((len(topic) for topic in forum.values()))
-											for forum in self.course.Discussions.values()) )
+		data['Notes'] = for_credit_note_count
+		data['Highlights'] = for_credit_highlight_count
+		data['Discussions'] = for_credit_discussion_count
+		data['Discussion Comments'] = for_credit_comment_count
 
-		options['engagement_data'] = sorted(data.items())
+		options['engagement_data_for_credit'] = sorted(data.items())
+
+		data = dict()
+		data['Notes'] = len(intids_of_notes) - for_credit_note_count
+		data['Highlights'] = len(intids_of_hls) - for_credit_highlight_count
+		data['Discussions'] = total_discussion_count - for_credit_discussion_count
+		data['Discussion Comments'] = total_comment_count - for_credit_comment_count
+		
+		options['engagement_data_non_credit'] = sorted(data.items())
 
 		outline = self.course.Outline
 		def _recur(node, accum):
@@ -986,7 +1018,7 @@ class CourseSummaryReportPdf(_AbstractReportView):
 			column = gradebook.getColumnForAssignmentId(asg.ntiid)
 			stats.append(_assignment_stat_for_column(self, column))
 
-		stats.sort(key=lambda x: x.title)
+		stats.sort(key=lambda x: (x.due_date, x.title))
 		options['assignment_data'] = stats
 
 
