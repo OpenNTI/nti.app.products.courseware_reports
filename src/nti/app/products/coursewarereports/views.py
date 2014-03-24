@@ -70,6 +70,13 @@ from nti.app.base.abstract_views import AbstractAuthenticatedView
 
 from nti.dataserver.authorization import ACT_READ
 
+# XXX: Fix a unicode decode issue.
+# TODO: Make this a formal patch
+import reportlab.platypus.paragraph
+class _SplitText(unicode):
+	pass
+reportlab.platypus.paragraph._SplitText = _SplitText
+
 def _get_self_assessments_for_course(course):
 	"""
 	Given an :class:`.ICourseInstance`, return a list of all
@@ -131,7 +138,7 @@ class _TopCreators(object):
 		return {username: i for username, i in self._data.items() if username not in self._for_credit_students}
 
 	def _get_largest(self):
-		return self._do_get_largest(self._non_credit_data, self.non_credit_total)
+		return self._do_get_largest(self._data, self.total)
 
 	def _get_for_credit_largest(self):
 		return self._do_get_largest(self._for_credit_data, self.for_credit_total)
@@ -237,7 +244,7 @@ def _common_buckets(objects,for_credit_students):
 		group = list(g)
 		count = len(group)
 		for o in group:
-			top_creators.incr_username(o.creator)
+			top_creators.incr_username(o.creator.username)
 
 		forum_objects_by_day[k] = count
 
@@ -314,7 +321,7 @@ def _build_buckets_options(options, buckets):
 			step = 1
 
 		#Build our category labels
-		week_range = map(lambda(x): str(x)[4:], full_range )
+		week_range = [str(x)[4:] for x in full_range]
 		options['forum_objects_by_week_number_categories'] = ' '.join(week_range)
 		options['forum_objects_by_week_number_category_subheader'] = '%d-%d' % (minYear,maxYear) if multi_year_span else str(minYear)
 
@@ -982,13 +989,30 @@ class CourseSummaryReportPdf(_AbstractReportView):
 		stats.sort(key=lambda x: x.title)
 		options['assignment_data'] = stats
 
+
+	def _build_top_commenters(self, options):
+
+		forum_stats = dict()
+
+		for key, forum in self.course.Discussions.items():
+			forum_stat = forum_stats[key] = dict()
+			forum_stat['forum'] = forum
+			forum_view = ForumParticipationReportPdf(forum, self.request)
+			forum_view.options = forum_stat
+			forum_view.for_credit_student_usernames = self.for_credit_student_usernames
+
+			forum_view()
+
+		options['forum_stats'] = [x[1] for x in sorted(forum_stats.items())]
+
+
 	def __call__(self):
 		options = self.options
 		self._build_engagement_data(options)
 		self._build_enrollment_info(options)
 		self._build_self_assessment_data(options)
 		self._build_assignment_data(options)
-
+		self._build_top_commenters(options)
 		return options
 
 from nti.app.assessment.interfaces import IUsersCourseAssignmentHistoryItem

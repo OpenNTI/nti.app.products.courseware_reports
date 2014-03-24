@@ -24,6 +24,13 @@
 		<pageTemplate id="main"> <!-- Deprecated? -->
 			<frame id="first" x1="0.5in" y1="0.5in" width="7in" height="10in"/>
 		</pageTemplate>
+
+
+		<pageTemplate id="two_charts">
+			<frame id="two_charts_main" x1="0.5in" y1="0.5in" width="7in" height="10in"/>
+			<frame id="callout" x1="6in" y1="6.5in" width="2in" height="2.5in" showBoundary="0" />
+		</pageTemplate>
+
 	</template>
 
 	<stylesheet metal:use-macro="macro:stylesheet">

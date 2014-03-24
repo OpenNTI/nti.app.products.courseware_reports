@@ -21,7 +21,10 @@
 
 		<h1>Top Commenters</h1>
 		<hr width="100%" />
-		<illustration width="6in" height="6in" metal:use-macro="macro:forum_top_commenters">
+		<illustration width="6in" height="6in"
+					  tal:define="top_commenters options/top_commenters;
+								  top_commenters_colors options/top_commenters_colors"
+					  metal:use-macro="macro:forum_top_commenters">
 		</illustration>
 		<nextPage />
 
