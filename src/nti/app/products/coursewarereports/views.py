@@ -1014,7 +1014,6 @@ class CourseSummaryReportPdf(_AbstractReportView):
 		assignment_catalog = ICourseAssignmentCatalog(self.course)
 
 		stats = list()
-		from IPython.core.debugger import Tracer; Tracer()()
 		for asg in assignment_catalog.iter_assignments():
 			column = gradebook.getColumnForAssignmentId(asg.ntiid)
 			stats.append(_assignment_stat_for_column(self, column))
