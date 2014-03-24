@@ -1014,11 +1014,16 @@ class CourseSummaryReportPdf(_AbstractReportView):
 		assignment_catalog = ICourseAssignmentCatalog(self.course)
 
 		stats = list()
+		from IPython.core.debugger import Tracer; Tracer()()
 		for asg in assignment_catalog.iter_assignments():
 			column = gradebook.getColumnForAssignmentId(asg.ntiid)
 			stats.append(_assignment_stat_for_column(self, column))
 
-		stats.sort(key=lambda x: (x.due_date, x.title))
+		#Handle null dates
+		import datetime
+		current_time = datetime.datetime.now()
+		
+		stats.sort(key=lambda x: (x.due_date if x.due_date else current_time, x.title))
 		options['assignment_data'] = stats
 
 
