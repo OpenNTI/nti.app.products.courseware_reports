@@ -721,49 +721,84 @@ from numpy import var
 
 _AssignmentStat = namedtuple('_AssignmentStat',
 							 ('title', 'count',
-							  'avg_grade', 'median_grade',
-							  'std_grade', 'var_grade',
-							  'attempted', 'for_credit_attempted'))
+							  'total', 'for_credit_total',
+							  'non_credit_total',
+							  'avg_grade', 'for_credit_avg_grade', 
+							  'non_credit_avg_grade', 'median_grade', 'std_dev_grade', 
+							  'attempted_perc', 'for_credit_attempted_perc' ))
 
 def _assignment_stat_for_column(self, column):
 	count = len(column)
 	keys = set(column)
 
-	grade_points = [x.value if isinstance(x.value, Number) else float(x.value.split()[0])
-					for x in column.values()
-					if x.value]
+	#TODO Case sensitivity issue?
+	for_credit_keys = self.for_credit_student_usernames.intersection(keys)
+	for_credit_grade_points = []
+	non_credit_grade_points = []
 
-	if grade_points:
-		grade_points = asarray(grade_points)
-		avg_grade = average(grade_points)
-		avg_grade_s = '%0.1f' % avg_grade
+	#Separate credit and non-credit	
+	for x,y in column.items():
+		gp = y.value if isinstance(y.value, Number) else float(y.value.split()[0])
+		if x in for_credit_keys:
+			for_credit_grade_points.append(gp)
+		else:
+			non_credit_grade_points.append(gp)
 
-		median_grade = median(grade_points)
-		median_grade_s = '%0.1f' % median_grade
+	for_credit_total = len( for_credit_grade_points )
+	non_credit_total = len( non_credit_grade_points )
+	total = for_credit_total + non_credit_total
 
-		std_grade = std(grade_points)
-		std_grade_s = '%0.1f' % std_grade
-		var_grade = var(grade_points)
+	#Credit
+	if for_credit_grade_points:
+		for_credit_grade_points = asarray(for_credit_grade_points)
+		for_credit_avg_grade = average(for_credit_grade_points)
+		for_credit_avg_grade_s = '%0.1f' % for_credit_avg_grade
 	else:
-		avg_grade_s = median_grade_s = std_grade_s = var_grade = 'N/A'
+		for_credit_avg_grade_s = 'N/A'	
+	
+	#Non-credit
+	if non_credit_grade_points:
+		non_credit_grade_points = asarray(non_credit_grade_points)
+		non_credit_avg_grade = average(non_credit_grade_points)
+		non_credit_avg_grade_s = '%0.1f' % non_credit_avg_grade
+	else:
+		non_credit_avg_grade_s = 'N/A'
+
+	#Aggregate
+	if for_credit_grade_points and non_credit_grade_points:
+		agg_array = for_credit_grade_points + non_credit_grade_points
+		agg_avg_grade = average(agg_array)
+		avg_grade_s = '%0.1f' % agg_avg_grade
+		median_grade = median(agg_avg_grade)
+		std_dev_grade = std(agg_avg_grade)
+	elif for_credit_grade_points:
+		avg_grade_s = for_credit_avg_grade_s
+		median_grade = median(for_credit_grade_points)
+		std_dev_grade = std(for_credit_grade_points)
+	elif non_credit_grade_points:
+		avg_grade_s = non_credit_avg_grade_s
+		median_grade = median(non_credit_grade_points)
+		std_dev_grade = std(non_credit_grade_points)
+	else:
+		avg_grade_s = median_grade = std_dev_grade = 'N/A'
 
 	if self.count_all_students:
 		per_attempted = (count / self.count_all_students) * 100.0
 		per_attempted_s = '%0.1f' % per_attempted
 	else:
 		per_attempted_s = 'N/A'
-
-	# TODO: Case sensitivity issue?
-	for_credit_atempted = self.for_credit_student_usernames.intersection(keys)
+		
 	if self.count_credit_students:
-		for_credit_per = (len(for_credit_atempted) / self.count_credit_students) * 100.0
+		for_credit_per = (len(for_credit_keys) / self.count_credit_students) * 100.0
 		for_credit_per_s = '%0.1f' % for_credit_per
 	else:
 		for_credit_per_s = 'N/A'
 
-	stat = _AssignmentStat( column.displayName, count,
-							avg_grade_s, median_grade_s,
-							std_grade_s, var_grade,
+	stat = _AssignmentStat( column.displayName, count, total,
+							for_credit_total, non_credit_total,
+							avg_grade_s, for_credit_avg_grade_s, 
+							non_credit_avg_grade_s, median_grade,
+							std_dev_grade,
 							per_attempted_s, for_credit_per_s )
 
 	return stat
