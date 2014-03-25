@@ -536,12 +536,7 @@ class StudentParticipationReportPdf(_AbstractReportView):
 												grade_value, history_item,
 												assignment.available_for_submission_ending))
 
-		# Handle null due_dates
-		# FIXME: This puts things without due dates, often things like
-		# 'Final Grade' or 'Midterm Grade' at varying positions, depending on
-		# when the report is generated. That's probably not correct.
-		current_time = datetime.utcnow()
-		asg_data.sort(key=lambda x: (x.due_date or current_time, x.title))
+		asg_data.sort(key=lambda x: (x.due_date is None, x.due_date, x.title))
 		options['assignments'] = asg_data
 
 
@@ -1023,13 +1018,7 @@ class CourseSummaryReportPdf(_AbstractReportView):
 			column = gradebook.getColumnForAssignmentId(asg.ntiid)
 			stats.append(_assignment_stat_for_column(self, column))
 
-		# Handle null dates
-		# FIXME: This puts things without due dates, often things like
-		# 'Final Grade' or 'Midterm Grade' at varying positions, depending on
-		# when the report is generated. That's probably not correct.
-		current_time = datetime.utcnow()
-
-		stats.sort(key=lambda x: (x.due_date or current_time, x.title))
+		stats.sort(key=lambda x: (x.due_date is None, x.due_date, x.title))
 		options['assignment_data'] = stats
 
 
@@ -1093,6 +1082,7 @@ class AssignmentSummaryReportPdf(_AbstractReportView):
 		column = self.context
 		submissions = defaultdict(list)
 		assessed_values = defaultdict(list)
+		
 		for grade in column.values():
 			try:
 				history = IUsersCourseAssignmentHistoryItem(grade)

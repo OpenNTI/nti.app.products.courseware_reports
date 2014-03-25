@@ -8,6 +8,9 @@
 		  author="NextThought">
 
 <template pagesize="letter" leftMargin="72" showBoundary="0">
+	<!--
+	<pageTemplate id="main" pagesize="(595,842)">
+	-->
 	<pageTemplate id="main" pagesize="(595,842)">
 	<frame id="first" x1="1in" y1="4in" width="6in" height="7in"/>
 	<frame id="second" x1="1in" y1="1in" width="4in" height="2.5in"/>
@@ -88,9 +91,9 @@ information collection and sharing practices.
 	  spaceBefore="18"
 	  borderWidth="1pt" borderColor="#000000"
 	  borderPadding="8">
-Child’s username: <b>${context/username}</b><br/>
-Child’s first name: <b>${options/profile/realname}</b><br />
-Parent’s email address: <b>${options/email}</b><br />
+Child���s username: <b>${context/username}</b><br/>
+Child���s first name: <b>${options/profile/realname}</b><br />
+Parent���s email address: <b>${options/email}</b><br />
 
 <font name="Helvetica-Bold" size="12">[ ]</font> Check here if you would like to receive notices from NextThought.
 </para>
