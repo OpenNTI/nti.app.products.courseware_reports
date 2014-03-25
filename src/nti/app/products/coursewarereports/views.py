@@ -536,11 +536,12 @@ class StudentParticipationReportPdf(_AbstractReportView):
 												grade_value, history_item,
 												assignment.available_for_submission_ending))
 
-		#Handle null due_dates
-		import datetime
-		current_time = datetime.datetime.now()
-		
-		asg_data.sort(key=lambda x: (x.due_date if x.due_date else current_time, x.title))
+		# Handle null due_dates
+		# FIXME: This puts things without due dates, often things like
+		# 'Final Grade' or 'Midterm Grade' at varying positions, depending on
+		# when the report is generated. That's probably not correct.
+		current_time = datetime.utcnow()
+		asg_data.sort(key=lambda x: (x.due_date or current_time, x.title))
 		options['assignments'] = asg_data
 
 
@@ -935,18 +936,18 @@ class CourseSummaryReportPdf(_AbstractReportView):
 
 		#Separate credit and non-credit
 		for_credit_students = self.for_credit_student_usernames
-		
+
 		notes = ResultSet(intids_of_notes, self.uidutil)
 		for_credit_note_count = sum( 1 for x in notes if x.creator.username in for_credit_students )
-		
+
 		highlights = ResultSet(intids_of_hls, self.uidutil)
 		for_credit_highlight_count = sum( 1 for x in highlights if x.creator.username in for_credit_students )
-		
+
 		for_credit_discussion_count = 0
 		total_discussion_count = 0
 		for_credit_comment_count = 0
 		total_comment_count = 0
-		
+
 		for forum in self.course.Discussions.values():
 			for discussion in forum.values():
 				total_discussion_count += 1
@@ -956,8 +957,8 @@ class CourseSummaryReportPdf(_AbstractReportView):
 					total_comment_count += 1
 					if topic.creator.username in for_credit_students:
 						for_credit_comment_count += 1
-						
-						
+
+
 		data = dict()
 		data['Notes'] = for_credit_note_count
 		data['Highlights'] = for_credit_highlight_count
@@ -971,7 +972,7 @@ class CourseSummaryReportPdf(_AbstractReportView):
 		data['Highlights'] = len(intids_of_hls) - for_credit_highlight_count
 		data['Discussions'] = total_discussion_count - for_credit_discussion_count
 		data['Discussion Comments'] = total_comment_count - for_credit_comment_count
-		
+
 		options['engagement_data_non_credit'] = sorted(data.items())
 
 		outline = self.course.Outline
@@ -1022,11 +1023,13 @@ class CourseSummaryReportPdf(_AbstractReportView):
 			column = gradebook.getColumnForAssignmentId(asg.ntiid)
 			stats.append(_assignment_stat_for_column(self, column))
 
-		#Handle null dates
-		import datetime
-		current_time = datetime.datetime.now()
-		
-		stats.sort(key=lambda x: (x.due_date if x.due_date else current_time, x.title))
+		# Handle null dates
+		# FIXME: This puts things without due dates, often things like
+		# 'Final Grade' or 'Midterm Grade' at varying positions, depending on
+		# when the report is generated. That's probably not correct.
+		current_time = datetime.utcnow()
+
+		stats.sort(key=lambda x: (x.due_date or current_time, x.title))
 		options['assignment_data'] = stats
 
 
