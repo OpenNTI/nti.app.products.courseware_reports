@@ -9,13 +9,13 @@
 		  xmlns:tal="http://xml.zope.org/namespaces/tal"
 		  xmlns:metal="http://xml.zope.org/namespaces/metal">
 
-	<template pagesize="letter" leftMargin="72" showBoundary="0"
+	<template pagesize="(842,595)" leftMargin="72" showBoundary="0"
 			  metal:define-macro="template">
 		<pageTemplate id="cover" autoNextTemplate="main">
 			<frame id="main_header"
-				   x1="0.5in" y1="9.5in"
+				   x1="0.5in" y1="7in"
 				   width="7in" height="1in"
-				   showBoundary="0" />
+				   showBoundary="1" />
 			<frame id="first" x1="0.5in" y1="0.5in" width="7in" height="9in"/>
 		</pageTemplate>
 		<pageTemplate id="main"> <!-- Deprecated? -->
@@ -24,8 +24,9 @@
 
 		<pageTemplate id="two_charts">
 			<frame id="two_charts_main" x1="0.5in" y1="0.5in" width="7in" height="10in"/>
-			<frame id="callout" x1="6in" y1="1in" width="4in" height="3in" showBoundary="1" />
+			<frame id="callout" x1="6in" y1="1in" width="8in" height="5in" showBoundary="1" />
 		</pageTemplate>
+		
 
 	</template>
 
@@ -50,7 +51,7 @@
 		<image file="[nti.appserver]/templates/coppa_consent_header.png"
 			   width="3.5in"
 			   height="0.55in"
-			   x="0.5in" y="10in"
+			   x="0.5in" y="7in"
 			   align="left"
 			   metal:define-macro="header_graphic" />
 
@@ -62,14 +63,14 @@
 			<nextFrame />
 		</tal:block>
 
-	<illustration width="5in" height="3in"
-				  metal:define-macro="forum_participation_over_time">
+	<illustration width="8in" height="3.7in"
+		  metal:define-macro="forum_participation_over_time">
 		<!--! To use, define a variable 'forum_stat' around the invocation -->
 		<barChart dx="0.5in" dy="0in"
 				  dwidth="5in" dheight="3in"
 				  x="0" y="0"
-				  width="5in"
-				  height="3in" direction="vertical" barLabelFormat="%2.0f"
+				  width="8in"
+				  height="3.7in" direction="vertical" barLabelFormat="%2.0f"
 				  tal:condition="forum_stat/forum_objects_by_week_number">
 			<categoryAxis tickShift="True"
 						tal:attributes="categoryNames forum_stat/forum_objects_by_week_number_categories"
@@ -83,12 +84,12 @@
 				<labels fontName="Helvetica"/>
 			</valueAxis>
 			<texts >
-				<text x="2.5in" y="-0.5in" textAnchor="middle"
+				<text x="4.5in" y="-0.6in" textAnchor="middle"
 					  fontName="Helvetica-Bold" fontSize="11"
 					  fillColor="black" >
 					Week Number (${forum_stat/forum_objects_by_week_number_category_subheader})
 				</text>
-				<text x="1.5in" y="0.3in" angle="90" textAnchor="middle"
+				<text x="2in" y="0.5in" angle="90" textAnchor="middle"
 					  fontName="Helvetica-Bold" fontSize="11"
 					  fillColor="black">
 					Forum Participation

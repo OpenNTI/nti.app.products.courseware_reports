@@ -5,10 +5,13 @@
 
 	<h1>Forum Participation</h1>
 	<hr width="100%" spaceAfter=".5in"/>
+
 	<illustration width="5in" height="3in"
 				  tal:define="forum_stat options/student_forum_participation"
 				  metal:use-macro="macro:forum_participation_over_time">
 	</illustration>
+
+	<nextPage />
 
 	<h2 spaceBefore="1in">Discussions Created</h2>
 		<blockTable style='default' tal:condition="options/topics_created">
@@ -65,13 +68,16 @@
 		<para tal:condition="not:options/comment_count_by_topic">
 			This user has not created any comments.
 		</para>
+		
+		<nextPage />
 
 		<h1 spaceBefore="1in">Assignments and Assessments</h1>
 		<hr width="100%" />
 		<h2 spaceBefore=".5in">Self-Assessments Taken</h2>
 		<blockTable style='default' tal:condition="options/self_assessment_title_to_count">
 			<tr>
-				<td>Assessment Title</td><td>Attempts</td>
+				<td><para>Assessment Title</para></td>
+				<td><para>Attempts</para></td>
 			</tr>
 			<tr tal:repeat="item options/self_assessment_title_to_count">
 				<td tal:content="python:item[0]">The Assessment Title</td>
@@ -94,10 +100,10 @@
 		<h2 spaceBefore=".5in">Assignments</h2>
 		<blockTable style='default' tal:condition="options/assignments">
 			<tr>
-				<td>Assignment Name</td>
-				<td>Date Submitted</td>
-				<td>Date Due</td>
-				<td>Grade</td>
+				<td><para>Assignment Name</para></td>
+				<td><para>Date Submitted</para></td>
+				<td><para>Date Due</para></td>
+				<td><para>Grade</para></td>
 				<td>Feedback Count</td>
 			</tr>
 			<tr tal:repeat="item options/assignments">

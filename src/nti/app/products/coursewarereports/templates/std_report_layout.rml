@@ -10,26 +10,39 @@
 		  xmlns:metal="http://xml.zope.org/namespaces/metal"
 		  tal:attributes="filename view/filename; title view/report_title">
 
-	<template pagesize="letter" leftMargin="72" showBoundary="0">
+	<template pagesize="(842,595)" leftMargin="72" showBoundary="0">
 		<pageTemplate id="cover" autoNextTemplate="main">
 			<pageGraphics>
 				<image metal:use-macro="macro:header_graphic" />
 			</pageGraphics>
 			<frame id="main_header"
-				   x1="0.5in" y1="9.5in"
-				   width="7in" height="1in"
+				   x1="7in" y1="6.8in"
+				   width="4in" height="1in"
 				   showBoundary="0" />
-			<frame id="first" x1="0.5in" y1="0.5in" width="7in" height="9in"/>
+			<frame id="first" x1="0.5in" y1="0.5in" width="10in" height="6in"/>
 		</pageTemplate>
 		<pageTemplate id="main"> <!-- Deprecated? -->
-			<frame id="first" x1="0.5in" y1="0.5in" width="7in" height="10in"/>
+			<frame id="first" x1="0.5in" y1="0.5in" width="10in" height="7.5in"/>
 		</pageTemplate>
 
 
 		<pageTemplate id="two_charts">
-			<frame id="two_charts_main" x1="0.5in" y1="0.5in" width="7in" height="10in"/>
-			<frame id="callout" x1="6in" y1="6.5in" width="2in" height="2.5in" showBoundary="0" />
+			<frame id="two_charts_main" x1="0.5in" y1="0.5in" width="7in" height="8in"/>
+			<frame id="callout" x1="8in" y1="5.5in" width="4in" height="4in" showBoundary="0" />
 		</pageTemplate>
+		
+		<!-- 
+		<pageTemplate id="two_charts">
+			<frame id="two_charts_main" x1="0.5in" y1="0.5in" width="7in" height="10in"/>
+			<frame id="callout" x1="6in" y1="1in" width="8in" height="5in" showBoundary="1" />
+		</pageTemplate>
+		
+				<pageTemplate id="two_charts">
+			<frame id="two_charts_main" x1="0.5in" y1="0.5in" width="7in" height="10in"/>
+			<frame id="callout" x1="6in" y1="1in" width="4in" height="3in" showBoundary="1" />
+		</pageTemplate>
+		
+		-->
 
 	</template>
 

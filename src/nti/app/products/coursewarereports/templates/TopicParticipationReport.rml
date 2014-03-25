@@ -10,7 +10,7 @@
 					  metal:use-macro="macro:forum_participation_over_time">
 		</illustration>
 
-		<para spaceBefore="1.2in" tal:condition="options/top_commenters">
+		<para spaceBefore="1in" tal:condition="options/top_commenters">
 			This topic has ${options/top_commenters/total} comments by
 			${python:len(options['top_commenters'].keys())} distinct users.
 			It was created on ${context/created/date} and it's most recent activity was on
