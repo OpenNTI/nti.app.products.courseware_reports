@@ -29,6 +29,9 @@
 	<include package="zope.viewlet" file="meta.zcml" /> <!-- zope:viewlet/Manager -->
 	<include package="zope.viewlet" />
 
+	<!-- I18N -->
+	<i18n:registerTranslations directory="locales" />
+
 
 	<permission
 		id="nti.actions.courseware.view_reports"
