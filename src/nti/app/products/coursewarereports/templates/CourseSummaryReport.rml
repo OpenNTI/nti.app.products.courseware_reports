@@ -3,10 +3,12 @@
 	xmlns:metal="http://xml.zope.org/namespaces/metal"
 	tal:define="options view/options">
 
-		<h1>Enrollment</h1>
-		<hr width="100%" />
-		<illustration width="5in" height="5in">
-		<pieChart dx="0in" dy="0in" dwidth="5in" dheight="5in" x="1in" y="0" width="4in"
+		<h1 fontSize="30" textColor="#494949" spaceAfter=".7in" fontName="Helvetica">
+			Enrollment Summary
+		</h1>
+
+		<illustration width="4in" height="4in">
+		<pieChart dx="3in" dy="0in" dwidth="4in" dheight="4in" x="1in" y="0" width="4in"
 				  height="4in"
 				  checkLabelOverlap='false'
 				  tal:condition="options/count_open">
@@ -34,10 +36,15 @@
 		<condPageBreak height="3in" />
 
 
-		<h1 spaceBefore="1in">Assignments and Assessments</h1>
+		<h1 fontSize="30" textColor="#494949" spaceBefore="1in" spaceAfter=".2in" fontName="Helvetica" keepWithNext='true'>
+			Assignments and Assessments
+		</h1>
 		<hr width="100%" />
 
-		<h2 spaceBefore=".5in">Self-Assessments Taken</h2>
+		<h2 fontSize="15" textColor="#494949" spaceBefore=".5in" spaceAfter=".3in" fontName="Helvetica" keepWithNext='true'>
+			Self-Assessments Taken
+		</h2>
+
 		<blockTable style='default' tal:condition="options/self_assessment_data">
 			<tr>
 				<td align="center"><para>Assessment Title</para></td>
@@ -61,7 +68,9 @@
 		</para>
 
 
-		<h2 spaceBefore=".3in" keepWithNext='true'>Assignments Taken</h2>
+		<h2 fontSize="15" textColor="#494949" spaceBefore=".5in" spaceAfter=".3in" fontName="Helvetica" keepWithNext='true'>
+			Assignments Taken
+		</h2>
 		<blockTable style='default' tal:condition="options/assignment_data">
 			<tr>
 				<td align="center"><para>Assignment Title</para></td>
@@ -81,7 +90,9 @@
 			</tr>
 		</blockTable>
 
-		<h2 spaceBefore=".3in" keepWithNext='true'>Assignment Results</h2>
+		<h2 fontSize="15" textColor="#494949" spaceBefore=".5in" spaceAfter=".3in" fontName="Helvetica" keepWithNext='true'>
+			Assignment Results
+		</h2>
 		<blockTable style='default' tal:condition="options/assignment_data">
 			<tr>
 				<td align="center"><para>Assignment Title</para></td>
@@ -106,10 +117,14 @@
 
 		<nextPage />
 
-		<h1>Engagement</h1>
+		<h1 fontSize="30" textColor="#494949" spaceBefore=".5in" spaceAfter=".3in" fontName="Helvetica" keepWithNext='true'>
+			Engagement
+		</h1>
 		<hr width="100%" />
 
-		<h2 spaceBefore=".5in" keepWithNext='true'>For-Credit Engagement</h2>
+		<h2 fontSize="15" textColor="#494949" spaceBefore=".5in" spaceAfter=".3in" fontName="Helvetica" keepWithNext='true'>
+			For-Credit Engagement
+		</h2>
 		<blockTable style='default' alignment="left">
 			<tr>
 				<td>Type</td>
@@ -120,11 +135,12 @@
 				<td align="decimal" tal:content="python:item[1]">25</td>
 			</tr>
 		</blockTable>
-		<illustration width=".5in" height=".5in">
-		<pieChart dx="2.5in" dy="0in" dwidth="2in" dheight="2in" x="1in" y="0" width="2in"
-				  height="2in"
-				  checkLabelOverlap='false'
-				  tal:condition="options/count_open">
+		
+		<illustration width="5in" height="1in" >
+		<pieChart dx="3.5in" dy="0in" dwidth="3in" dheight="3in" x="1in" y="0" width="2.5in"
+					height="2.5in"		  
+				  	checkLabelOverlap='false'
+				  	tal:condition="options/count_open">
 			<labels>
 				<label tal:repeat="item options/engagement_data_for_credit">${python:item[0]}</label>
 			</labels>
@@ -139,7 +155,9 @@
 		</pieChart>
 		</illustration>
 		
-		<h2 spaceBefore=".7in" keepWithNext='true'>Non-Credit Engagement</h2>
+		<h2 fontSize="15" textColor="#494949" spaceBefore=".5in" spaceAfter=".3in" fontName="Helvetica" keepWithNext='true'>
+			Non-Credit Engagement
+		</h2>
 		<blockTable style='default' alignment="left">
 			<tr>
 				<td>Type</td>
@@ -150,9 +168,9 @@
 				<td align="decimal" tal:content="python:item[1]">25</td>
 			</tr>
 		</blockTable>
-		<illustration width=".3in" height=".3in">
-		<pieChart dx="2.5in" dy="0in" dwidth="2in" dheight="2in" x="1in" y="0" width="2in"
-				  height="2in"
+		<illustration width="5in" height="1in" >
+		<pieChart dx="3.5in" dy="0in" dwidth="3in" dheight="3in" x="1in" y="0" width="2.5in"
+					height="2.5in"		
 				  checkLabelOverlap='false'
 				  tal:condition="options/count_open">
 			<labels>
@@ -169,7 +187,11 @@
 		</pieChart>
 		</illustration>
 
-		<h2 spaceBefore=".5in" keepWithNext='true'>Engagement By Place</h2>
+		<nextPage />
+
+		<h2 fontSize="15" textColor="#494949" spaceBefore=".5in" spaceAfter=".3in" fontName="Helvetica" keepWithNext='true'>
+			Engagement By Place
+		</h2>
 		<blockTable style='default'>
 			<tr>
 				<td>Place</td>
@@ -186,7 +208,9 @@
 		<setNextTemplate name="two_charts" />
 		<nextPage />
 
-		<h1>Discussions</h1>
+		<h1 fontSize="30" textColor="#494949" spaceBefore=".5in" spaceAfter=".3in" fontName="Helvetica" keepWithNext='true'>
+			Discussions
+		</h1>
 		<hr width="100%" />
 
 		<tal:block tal:repeat="forum_data options/forum_stats">

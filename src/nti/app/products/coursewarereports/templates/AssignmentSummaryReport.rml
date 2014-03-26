@@ -4,8 +4,10 @@
 	tal:define="options view/options">
 
 
-		<h1 spaceBefore=".2in" keepWithNext='true'>Assignments Taken</h1>
-		<hr width="100%" spaceAfter="0.2in"/>
+		<h1 fontSize="15" textColor="#494949" spaceAfter=".3in" fontName="Helvetica" keepWithNext='true'>
+			Assignment Overview
+		</h1>
+		
 		<blockTable style='default'>
 			<tr>
 				<td><para>Assignment Title</para></td>
@@ -25,7 +27,9 @@
 			</tr>
 		</blockTable>
 		
-		<h1 spaceBefore=".3in" keepWithNext='true'>Assignment Results</h1>
+		<h1 fontSize="15" textColor="#494949" spaceBefore=".7in" spaceAfter=".3in" fontName="Helvetica" keepWithNext='true'>
+			Assignment Results
+		</h1>
 		<blockTable style='default'>
 			<tr>
 				<td><para>Assignment Title</para></td>
@@ -45,7 +49,11 @@
 			</tr>
 		</blockTable>
 
-		<h1 spaceBefore=".5in">Question Breakdown</h1>
+		<condPageBreak height="3in" />
+
+		<h1 fontSize="30" textColor="#494949" spaceAfter=".3in" spaceBefore="1in" fontName="Helvetica" keepWithNext='true'>
+			Question Breakdown
+		</h1>
 		<hr width="100%" />
 		<tal:block tal:repeat="item options/question_stats">
 			<keepTogether>

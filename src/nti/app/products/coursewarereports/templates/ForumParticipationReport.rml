@@ -3,15 +3,17 @@
 	xmlns:metal="http://xml.zope.org/namespaces/metal"
 	tal:define="options view/options">
 
-		<h1 spaceBefore="0.5in" keepWithNext="true">Activity Over Time</h1>
-		<hr width="100%" spaceAfter="0.5in"/>
+		<h1 fontSize="30" textColor="#494949" spaceAfter=".7in" fontName="Helvetica">
+			Activity Over Time
+		</h1>
+
 		<illustration width="5in" height="3in"
 					  tal:define="forum_stat options/all_forum_participation"
 					  metal:use-macro="macro:forum_participation_over_time">
 		</illustration>
 
 
-		<para spaceBefore=".8in" tal:condition="options/most_popular_topic">
+		<para spaceBefore=".8in" fontSize="10" textColor="#494949" leading="14"  tal:condition="options/most_popular_topic">
 			The most popular discussion was &#8220;${options/most_popular_topic/title}&#8221;
 			with ${python:len(options['most_popular_topic'])} comments;
 			the least popular discussion was &#8220;${options/least_popular_topic/title}&#8221;.

@@ -3,7 +3,9 @@
 	xmlns:metal="http://xml.zope.org/namespaces/metal"
 	tal:define="options view/options">
 
-	<h1 fontSize="30" textColor="#494949" spaceAfter="1in" fontName="Helvetica">Forum Participation</h1>
+	<h1 fontSize="30" textColor="#494949" spaceAfter="1in" fontName="Helvetica">
+		Activity Over Time
+	</h1>
 	<illustration width="5in" height="3in"
 				  tal:define="forum_stat options/student_forum_participation"
 				  metal:use-macro="macro:forum_participation_over_time">
@@ -11,7 +13,10 @@
 
 	<nextPage />
 
-	<h2 spaceBefore="1in">Discussions Created</h2>
+
+	<h2 fontSize="15" textColor="#494949" spaceAfter="0.3in" fontName="Helvetica">
+		Discussions Created
+	</h2>
 		<blockTable style='default' tal:condition="options/topics_created">
 			<tr>
 				<td><para>Discussion Name</para></td>
@@ -23,44 +28,24 @@
 				<td tal:content="item/forum_name">Forum Name</td>
 				<td tal:content="item/created/date">Created Date</td>
 			</tr>
-			<tr tal:condition="False">
-				<td><para>The Topic Name</para></td>
-				<td><para>Forum Name</para></td>
-				<td><para>Created Date</para></td>
-			</tr>
-
-			<tr tal:condition="False">
-				<td><para>The Topic Name</para></td>
-				<td><para>Forum Name</para></td>
-				<td><para>Created Date</para></td>
-			</tr>
 		</blockTable>
 		<para tal:condition="not:options/topics_created">
 			This user has not created any discussions.
 		</para>
 
-		<h2 spaceBefore=".5in">Comments Created</h2>
+	<h2 fontSize="15" textColor="#494949" spaceAfter="0.3in" spaceBefore="0.5in" fontName="Helvetica">
+		Comments Created
+	</h2>
 		<blockTable style='default' tal:condition="options/comment_count_by_topic">
 			<tr>
-				<td><para>Discussion Name</para></td>
 				<td><para>Forum Name</para></td>
+				<td><para>Discussion Name</para></td>
 				<td><para>Comment Count</para></td>
 			</tr>
 			<tr tal:repeat="item options/comment_count_by_topic">
 				<td tal:content="python:item[0].__parent__.title">The Forum Name</td>
 				<td tal:content="python:item[0].title">Topic Name</td>
 				<td align="decimal" tal:content="python:item[1]">Comment Count</td>
-			</tr>
-			<tr tal:condition="False">
-				<td><para>The Topic Name</para></td>
-				<td><para>Forum Name</para></td>
-				<td><para>Created Date</para></td>
-			</tr>
-
-			<tr tal:condition="False">
-				<td><para>The Topic Name</para></td>
-				<td><para>Forum Name</para></td>
-				<td><para>Created Date</para></td>
 			</tr>
 		</blockTable>
 		<para tal:condition="not:options/comment_count_by_topic">
@@ -69,9 +54,14 @@
 		
 		<nextPage />
 
-		<h1 spaceBefore="1in">Assignments and Assessments</h1>
+	<h1 fontSize="30" textColor="#494949" spaceAfter="0.3in" fontName="Helvetica">
+		Assignments and Assessments
+	</h1>
 		<hr width="100%" />
-		<h2 spaceBefore=".5in">Self-Assessments Taken</h2>
+		
+	<h2 fontSize="15" textColor="#494949" spaceAfter="0.3in" spaceBefore="0.5in" fontName="Helvetica">
+		Self-Assessments
+	</h2>	
 		<blockTable style='default' tal:condition="options/self_assessment_title_to_count">
 			<tr>
 				<td><para>Assessment Title</para></td>
@@ -95,7 +85,9 @@
 			This course contains no self-assessments.
 		</para>
 
-		<h2 spaceBefore=".5in">Assignments</h2>
+	<h2 fontSize="15" textColor="#494949" spaceAfter="0.3in" spaceBefore="0.5in" fontName="Helvetica">
+		Assignments
+	</h2>
 		<blockTable style='default' tal:condition="options/assignments">
 			<tr>
 				<td><para>Assignment Name</para></td>

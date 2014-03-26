@@ -26,7 +26,6 @@
 			<frame id="two_charts_main" x1="0.5in" y1="0.5in" width="7in" height="10in"/>
 			<frame id="callout" x1="6in" y1="1in" width="8in" height="5in" showBoundary="1" />
 		</pageTemplate>
-		
 
 	</template>
 

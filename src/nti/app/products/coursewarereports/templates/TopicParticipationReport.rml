@@ -3,14 +3,16 @@
 	xmlns:metal="http://xml.zope.org/namespaces/metal"
 	tal:define="options view/options">
 
-		<h1 spaceBefore="0.5in" keepWithNext="true">Activity Over Time</h1>
-		<hr width="100%" spaceAfter="0.5in"/>
+		<h1 fontSize="30" textColor="#494949" spaceAfter=".7in" fontName="Helvetica">
+			Activity Over Time
+		</h1>
+
 		<illustration width="5in" height="3in"
 					  tal:define="forum_stat options/all_forum_participation"
 					  metal:use-macro="macro:forum_participation_over_time">
 		</illustration>
 
-		<para spaceBefore="1in" tal:condition="options/top_commenters">
+		<para spaceBefore=".8in" fontSize="10" textColor="#494949" leading="14"  tal:condition="options/top_commenters">
 			This topic has ${options/top_commenters/total} comments by
 			${python:len(options['top_commenters'].keys())} distinct users.
 			It was created on ${context/created/date} and it's most recent activity was on
