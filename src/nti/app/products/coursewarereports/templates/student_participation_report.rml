@@ -3,8 +3,7 @@
 	xmlns:metal="http://xml.zope.org/namespaces/metal"
 	tal:define="options view/options">
 
-	<h1>Forum Participation</h1>
-	<hr width="100%" spaceAfter=".5in"/>
+	<h1 fontSize="30" textColor="#494949" spaceAfter="1in" fontName="Helvetica">Forum Participation</h1>
 	<illustration width="5in" height="3in"
 				  tal:define="forum_stat options/student_forum_participation"
 				  metal:use-macro="macro:forum_participation_over_time">
