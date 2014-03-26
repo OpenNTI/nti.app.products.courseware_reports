@@ -20,6 +20,7 @@ from nti.dataserver.contenttypes.forums.interfaces import ICommunityForum
 from nti.dataserver.contenttypes.forums.interfaces import ICommunityHeadlineTopic
 
 from nti.contenttypes.courses.interfaces import ICourseInstance
+from nti.contenttypes.courses.interfaces import ICourseAdministrativeLevel
 
 from nti.app.products.gradebook.interfaces import IGradeBookEntry
 
@@ -35,9 +36,32 @@ from . import VIEW_ASSIGNMENT_SUMMARY
 LINKS = ext_interfaces.StandardExternalFields.LINKS
 from nti.dataserver.links import Link
 
+from nti.contenttypes.courses.interfaces import is_instructed_by_name
+
+class _AbstractInstructedByDecorator(AbstractAuthenticatedRequestAwareDecorator):
+	# TODO: This needs to go away in favor of the specific permission
+	# when that role is hooked up
+
+	def _course_from_context(self, context):
+		return context
+
+	def _predicate(self, context, result):
+		return is_instructed_by_name(self._course_from_context(context),
+									 self.request.authenticated_userid)
+
+def course_from_forum(forum):
+	board = forum.__parent__
+	community = board.__parent__
+	courses = ICourseAdministrativeLevel(community, None)
+	if courses:
+		# Assuming only one
+		course = list(courses.values())[0]
+		assert course.Discussions == board
+		return course
+
 @interface.implementer(ext_interfaces.IExternalMappingDecorator)
 @component.adapter(ICourseInstanceEnrollment, IRequest)
-class _StudentParticipationReport(AbstractAuthenticatedRequestAwareDecorator):
+class _StudentParticipationReport(_AbstractInstructedByDecorator):
 	"""
 	A link to return the student participation report.
 	"""
@@ -46,37 +70,45 @@ class _StudentParticipationReport(AbstractAuthenticatedRequestAwareDecorator):
 		links.append( Link( context,
 							rel='report-%s' % VIEW_STUDENT_PARTICIPATION,
 							elements=(VIEW_STUDENT_PARTICIPATION,),
-							title=_('Student Participation Report')) )	
-		
+							title=_('Student Participation Report')) )
+
 @interface.implementer(ext_interfaces.IExternalMappingDecorator)
 @component.adapter(ICommunityForum, IRequest)
-class _ForumParticipationReport(AbstractAuthenticatedRequestAwareDecorator):
+class _ForumParticipationReport(_AbstractInstructedByDecorator):
 	"""
 	A link to return the forum participation report.
 	"""
+
+	def _course_from_context(self, context):
+		return course_from_forum(context)
+
 	def _do_decorate_external( self, context, result_map ):
 		links = result_map.setdefault( LINKS, [] )
 		links.append( Link( context,
 							rel='report-%s' % VIEW_FORUM_PARTICIPATION,
 							elements=(VIEW_FORUM_PARTICIPATION,),
 							title=_('Forum Participation Report')) )
-		
+
 @interface.implementer(ext_interfaces.IExternalMappingDecorator)
 @component.adapter(ICommunityHeadlineTopic, IRequest)
-class _TopicParticipationReport(AbstractAuthenticatedRequestAwareDecorator):
+class _TopicParticipationReport(_AbstractInstructedByDecorator):
 	"""
 	A link to return the topic participation report.
 	"""
+
+	def _course_from_context(self, context):
+		return course_from_forum(context.__parent__)
+
 	def _do_decorate_external( self, context, result_map ):
 		links = result_map.setdefault( LINKS, [] )
 		links.append( Link( context,
 							rel='report-%s' % VIEW_TOPIC_PARTICIPATION,
 							elements=(VIEW_TOPIC_PARTICIPATION,),
-							title=_('Topic Participation Report')) )	
-		
+							title=_('Topic Participation Report')) )
+
 @interface.implementer(ext_interfaces.IExternalMappingDecorator)
 @component.adapter(ICourseInstance, IRequest)
-class _CourseSummaryReport(AbstractAuthenticatedRequestAwareDecorator):
+class _CourseSummaryReport(_AbstractInstructedByDecorator):
 	"""
 	A link to return the course summary report.
 	"""
@@ -85,11 +117,11 @@ class _CourseSummaryReport(AbstractAuthenticatedRequestAwareDecorator):
 		links.append( Link( context,
 							rel='report-%s' % VIEW_COURSE_SUMMARY,
 							elements=(VIEW_COURSE_SUMMARY,),
-							title=_('Course Summary Report')) )		
-		
+							title=_('Course Summary Report')) )
+
 @interface.implementer(ext_interfaces.IExternalMappingDecorator)
 @component.adapter(IGradeBookEntry, IRequest)
-class _AssignmentSummaryReport(AbstractAuthenticatedRequestAwareDecorator):
+class _AssignmentSummaryReport(_AbstractInstructedByDecorator):
 	"""
 	A link to return the assignment summary report.
 	"""
@@ -98,4 +130,4 @@ class _AssignmentSummaryReport(AbstractAuthenticatedRequestAwareDecorator):
 		links.append( Link( context,
 							rel='report-%s' % VIEW_ASSIGNMENT_SUMMARY,
 							elements=(VIEW_ASSIGNMENT_SUMMARY,),
-							title=_('Assignment Summary Report')) )									
+							title=_('Assignment Summary Report')) )

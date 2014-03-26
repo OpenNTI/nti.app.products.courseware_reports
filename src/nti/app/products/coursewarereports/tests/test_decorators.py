@@ -40,53 +40,53 @@ class TestDecorators(unittest.TestCase):
 			spr = _StudentParticipationReport( object(), None )
 			result = {}
 			spr._do_decorate_external( object(), result )
-		
+
 			assert( result is not None )
 			assert_that( result, is_( not_none() ) )
-		
+
 			assert_that( result, has_entry( 'Links',
 									contains( has_property( 'rel', 'report-%s' % VIEW_STUDENT_PARTICIPATION ))))
-			
+
 		def test_forum_participation_decorator( self ):
 			spr = _ForumParticipationReport( object(), None )
 			result = {}
 			spr._do_decorate_external( object(), result )
-		
+
 			assert( result is not None )
 			assert_that( result, is_( not_none() ) )
-		
+
 			assert_that( result, has_entry( 'Links',
 									contains( has_property( 'rel', 'report-%s' % VIEW_FORUM_PARTICIPATION ))))
-			
+
 		def test_topic_participation_decorator( self ):
 			spr = _TopicParticipationReport( object(), None )
 			result = {}
 			spr._do_decorate_external( object(), result )
-		
+
 			assert( result is not None )
 			assert_that( result, is_( not_none() ) )
-		
+
 			assert_that( result, has_entry( 'Links',
 									contains( has_property( 'rel', 'report-%s' % VIEW_TOPIC_PARTICIPATION ))))
-			
+
 		def test_course_summary_decorator( self ):
 			spr = _CourseSummaryReport( object(), None )
 			result = {}
 			spr._do_decorate_external( object(), result )
-		
+
 			assert( result is not None )
 			assert_that( result, is_( not_none() ) )
-		
+
 			assert_that( result, has_entry( 'Links',
 									contains( has_property( 'rel', 'report-%s' % VIEW_COURSE_SUMMARY ))))
-			
+
 		def test_assignment_history_decorator( self ):
 			spr = _AssignmentSummaryReport( object(), None )
 			result = {}
 			spr._do_decorate_external( object(), result )
-		
+
 			assert( result is not None )
 			assert_that( result, is_( not_none() ) )
-		
+
 			assert_that( result, has_entry( 'Links',
-									contains( has_property( 'rel', 'report-%s' % VIEW_ASSIGNMENT_SUMMARY ))))												
+									contains( has_property( 'rel', 'report-%s' % VIEW_ASSIGNMENT_SUMMARY ))))

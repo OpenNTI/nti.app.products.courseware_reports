@@ -211,7 +211,7 @@ class _TopCreators(object):
 
 	def percent_contributed(self):
 		#FIXME update this for credit/non-credit
-		if self.max_contributors is None:
+		if not self.max_contributors:
 			return 100
 		return (len(self.keys()) / self.max_contributors) * 100.0
 
@@ -344,6 +344,9 @@ FORUM_OBJECT_MIMETYPES = ['application/vnd.nextthought.forums.generalforumcommen
 ENGAGEMENT_OBJECT_MIMETYPES = ['application/vnd.nextthought.note',
 							   'application/vnd.nextthought.highlight']
 
+from nti.contenttypes.courses.interfaces import is_instructed_by_name
+from pyramid.httpexceptions import HTTPForbidden
+
 @view_defaults(route_name='objects.generic.traversal',
 			   renderer="templates/std_report_layout.rml",
 			   request_method='GET',
@@ -361,6 +364,9 @@ class _AbstractReportView(AbstractAuthenticatedView,
 		if request.view_name:
 			self.filename = request.view_name
 
+	def _check_access(self):
+		if not is_instructed_by_name(self.course, self.request.authenticated_userid):
+			raise HTTPForbidden()
 
 	@property
 	def course(self):
@@ -568,6 +574,7 @@ class StudentParticipationReportPdf(_AbstractReportView):
 			A :class:`ForumObjectsStat`
 
 		"""
+		self._check_access()
 		# Collect data and return it in a form to be rendered
 		# (a dictionary containing data and callable objects)
 		options = self.options
@@ -585,6 +592,8 @@ class StudentParticipationReportPdf(_AbstractReportView):
 
 from reportlab.lib import colors
 
+from .decorators import course_from_forum
+
 @view_config(context=ICommunityForum,
 			 name=VIEW_FORUM_PARTICIPATION)
 class ForumParticipationReportPdf(_AbstractReportView):
@@ -598,14 +607,7 @@ class ForumParticipationReportPdf(_AbstractReportView):
 						   ('username', 'topics_created', 'total_comment_count'))
 
 	def _course_from_forum(self, forum):
-		board = forum.__parent__
-		community = board.__parent__
-		courses = ICourseAdministrativeLevel(community)
-		if courses:
-			# Assuming only one
-			course = list(courses.values())[0]
-			assert course.Discussions == board
-			return course
+		return course_from_forum(forum)
 
 	@property
 	def course(self):
@@ -694,6 +696,7 @@ class ForumParticipationReportPdf(_AbstractReportView):
 			A sequence sorted by username, of objects with `username`,
 			`topics_created` and `total_comment_count`.
 		"""
+		self._check_access()
 		options = self.options
 		self._build_top_commenters(options)
 		self._build_comment_count_by_topic(options)
@@ -730,6 +733,7 @@ class TopicParticipationReportPdf(ForumParticipationReportPdf):
 			A sequence of usernames, plus the `series` representing their
 			contribution to the forum.
 		"""
+		self._check_access()
 		options = self.options
 		self._build_top_commenters(options)
 		options['top_creators'] = dict()
@@ -1039,6 +1043,7 @@ class CourseSummaryReportPdf(_AbstractReportView):
 
 
 	def __call__(self):
+		self._check_access()
 		options = self.options
 		self._build_engagement_data(options)
 		self._build_enrollment_info(options)
@@ -1082,7 +1087,7 @@ class AssignmentSummaryReportPdf(_AbstractReportView):
 		column = self.context
 		submissions = defaultdict(list)
 		assessed_values = defaultdict(list)
-		
+
 		for grade in column.values():
 			try:
 				history = IUsersCourseAssignmentHistoryItem(grade)
@@ -1160,6 +1165,7 @@ class AssignmentSummaryReportPdf(_AbstractReportView):
 
 
 	def __call__(self):
+		self._check_access()
 		options = self.options
 		self._build_assignment_data(options)
 		self._build_question_data(options)

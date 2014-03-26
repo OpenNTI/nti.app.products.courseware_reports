@@ -47,15 +47,17 @@ class TestStudentParticipationReport(ApplicationLayerTest):
 		extra_env.update( {b'HTTP_ORIGIN': b'http://janux.ou.edu'} )
 		self.testapp.extra_environ = extra_env
 
-		enrollment_res = self.testapp.post_json( '/dataserver2/users/sjohnson@nextthought.com/Courses/EnrolledCourses',
+		instructor_environ = self._make_extra_environ(username='harp4162')
+		instructor_environ.update( {b'HTTP_ORIGIN': b'http://janux.ou.edu'} )
+		enrollment_res = self.testapp.post_json( '/dataserver2/users/harp4162/Courses/EnrolledCourses',
 												 'CLC 3403',
-												 status=201 )
+												 status=201,
+												 extra_environ=instructor_environ)
 
 		view_href = self.require_link_href_with_rel( enrollment_res.json_body, 'report-%s' % VIEW_STUDENT_PARTICIPATION )
-		assert_that( view_href, contains_string( 'users/sjohnson%40nextthought.com' ) )
 
 
-		res = self.testapp.get(view_href)
+		res = self.testapp.get(view_href, extra_environ=instructor_environ)
 		assert_that( res, has_property('content_type', 'application/pdf'))
 
 class TestForumParticipationReport(ApplicationLayerTest):
@@ -79,13 +81,14 @@ class TestForumParticipationReport(ApplicationLayerTest):
 
 		board_href = enrollment_res.json_body['CourseInstance']['Discussions']['href']
 		forum_href = board_href + '/Forum'
-		
-		forum_res = self.testapp.get( forum_href )
-		
-		report_href = self.require_link_href_with_rel( forum_res.json_body, 'report-' + VIEW_FORUM_PARTICIPATION ) 
+		instructor_environ = self._make_extra_environ(username='harp4162')
+
+		forum_res = self.testapp.get( forum_href, extra_environ=instructor_environ )
+
+		report_href = self.require_link_href_with_rel( forum_res.json_body, 'report-' + VIEW_FORUM_PARTICIPATION )
 		assert_that( report_href, contains_string( 'CLC3403.ou.nextthought.com' ) )
 
-		res = self.testapp.get(report_href)
+		res = self.testapp.get(report_href, extra_environ=instructor_environ)
 		assert_that( res, has_property('content_type', 'application/pdf') )
 
 class TestTopicParticipationReport(ApplicationLayerTest):
@@ -108,13 +111,14 @@ class TestTopicParticipationReport(ApplicationLayerTest):
 
 		board_href = enrollment_res.json_body['CourseInstance']['Discussions']['href']
 		forum_href = board_href + '/Forum'
-
+		instructor_environ = self._make_extra_environ(username='harp4162')
 		# Create a topic
-		res = self.testapp.post_json( forum_href,{'Class': 'Post', 'body': ['My body'], 'title': 'my title'} )
-		report_href = self.require_link_href_with_rel( res.json_body, 'report-' + VIEW_TOPIC_PARTICIPATION ) 
+		res = self.testapp.post_json( forum_href,{'Class': 'Post', 'body': ['My body'], 'title': 'my title'},
+									  extra_environ=instructor_environ)
+		report_href = self.require_link_href_with_rel( res.json_body, 'report-' + VIEW_TOPIC_PARTICIPATION )
 		assert_that( report_href, contains_string( 'CLC3403.ou.nextthought.com' ) )
 
-		res = self.testapp.get(report_href)
+		res = self.testapp.get(report_href, extra_environ=instructor_environ)
 		assert_that( res, has_property('content_type', 'application/pdf') )
 
 class TestCourseSummaryReport(ApplicationLayerTest):
@@ -131,15 +135,18 @@ class TestCourseSummaryReport(ApplicationLayerTest):
 		extra_env.update( {b'HTTP_ORIGIN': b'http://janux.ou.edu'} )
 		self.testapp.extra_environ = extra_env
 
-		enrollment_res = self.testapp.post_json( '/dataserver2/users/sjohnson@nextthought.com/Courses/EnrolledCourses',
-								'CLC 3403',
-								status=201 )
+		instructor_environ = self._make_extra_environ(username='harp4162')
+		instructor_environ.update( {b'HTTP_ORIGIN': b'http://janux.ou.edu'} )
+		enrollment_res = self.testapp.post_json( '/dataserver2/users/harp4162/Courses/EnrolledCourses',
+												 'CLC 3403',
+												 status=201,
+												 extra_environ=instructor_environ)
 
 		course = enrollment_res.json_body['CourseInstance']
-		report_href = self.require_link_href_with_rel( course, 'report-' + VIEW_COURSE_SUMMARY ) 
+		report_href = self.require_link_href_with_rel( course, 'report-' + VIEW_COURSE_SUMMARY )
 		assert_that( report_href, contains_string( 'CLC3403.ou.nextthought.com' ) )
 
-		res = self.testapp.get(report_href)
+		res = self.testapp.get(report_href, extra_environ=instructor_environ)
 		assert_that( res, has_property('content_type', 'application/pdf') )
 
 
@@ -162,14 +169,15 @@ class TestAssignmentSummaryReport(RegisterAssignmentLayerMixin,
 		extra_env = self.testapp.extra_environ or {}
 		extra_env.update( {b'HTTP_ORIGIN': b'http://janux.ou.edu'} )
 		self.testapp.extra_environ = extra_env
+		instructor_environ = self._make_extra_environ(username='harp4162')
+		res = self.testapp.get( '/dataserver2/users/CLC3403.ou.nextthought.com/LegacyCourses/CLC3403/GradeBook/default',
+								extra_environ=instructor_environ)
 
-		res = self.testapp.get( '/dataserver2/users/CLC3403.ou.nextthought.com/LegacyCourses/CLC3403/GradeBook/default' )
-		
 		assignment = res.json_body['Items']['Assignment 1']
-		report_href = self.require_link_href_with_rel( assignment, 'report-' + VIEW_ASSIGNMENT_SUMMARY ) 
+		report_href = self.require_link_href_with_rel( assignment, 'report-' + VIEW_ASSIGNMENT_SUMMARY )
 		assert_that( report_href, contains_string( 'default/Assignment%201' ) )
 
-		res = self.testapp.get(report_href)
+		res = self.testapp.get(report_href, extra_environ=instructor_environ)
 		assert_that( res, has_property('content_type', 'application/pdf'))
 
 
@@ -179,11 +187,12 @@ class TestAssignmentSummaryReport(RegisterAssignmentLayerMixin,
 		extra_env = self.testapp.extra_environ or {}
 		extra_env.update( {b'HTTP_ORIGIN': b'http://janux.ou.edu'} )
 		self.testapp.extra_environ = extra_env
+		instructor_environ = self._make_extra_environ(username='harp4162')
+		res = self.testapp.get( '/dataserver2/users/CLC3403.ou.nextthought.com/LegacyCourses/CLC3403/GradeBook/default',
+								extra_environ=instructor_environ)
 
-		res = self.testapp.get( '/dataserver2/users/CLC3403.ou.nextthought.com/LegacyCourses/CLC3403/GradeBook/default' )
-		
 		assignment = res.json_body['Items']['Assignment 1']
-		report_href = self.require_link_href_with_rel( assignment, 'report-' + VIEW_ASSIGNMENT_SUMMARY ) 
+		report_href = self.require_link_href_with_rel( assignment, 'report-' + VIEW_ASSIGNMENT_SUMMARY )
 		assert_that( report_href, contains_string( 'default/Assignment%201' ) )
 
 		# Sends an assignment through the application by posting to the assignment
@@ -194,5 +203,5 @@ class TestAssignmentSummaryReport(RegisterAssignmentLayerMixin,
 
 		self.testapp.post_json( '/dataserver2/Objects/' + self.assignment_id,
 								ext_obj)
-		res = self.testapp.get(report_href)
+		res = self.testapp.get(report_href, extra_environ=instructor_environ)
 		assert_that( res, has_property('content_type', 'application/pdf'))
