@@ -5,7 +5,6 @@
 
 	<h1>Forum Participation</h1>
 	<hr width="100%" spaceAfter=".5in"/>
-
 	<illustration width="5in" height="3in"
 				  tal:define="forum_stat options/student_forum_participation"
 				  metal:use-macro="macro:forum_participation_over_time">

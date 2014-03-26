@@ -70,28 +70,35 @@
 				  dwidth="5in" dheight="3in"
 				  x="0" y="0"
 				  width="8in"
-				  height="3.7in" direction="vertical" barLabelFormat="%2.0f"
+				  height="3.7in" direction="vertical" 
+				  barLabelFormat="%2.0f" barWidth="5"
 				  tal:condition="forum_stat/forum_objects_by_week_number">
-			<categoryAxis tickShift="True"
+			<barLabels fillColor="#757474" fontSize="12" boxAnchor="s" dy="3" />
+			<bars>
+				<bar fillColor="#53a2db" strokeColor="#53a2db" />
+			</bars>
+			<categoryAxis visibleTicks="false" strokeColor="#e9e9e9"
 						tal:attributes="categoryNames forum_stat/forum_objects_by_week_number_categories"
 						tal:condition="forum_stat/forum_objects_by_week_number">
-				<labels fontName="Helvetica"/>
+				<labels fontName="Helvetica" fontSize="10" fillColor="#b8b8b8"/>
 			</categoryAxis>
-			<valueAxis valueMin="0" valueMax="15" valueStep="1"
+			<valueAxis 	valueMin="0" valueMax="15" valueStep="1" 
+						visibleTicks="false" visibleAxis="false" visibleGrid="true"
+						gridStrokeWidth="1" gridStrokeColor="#e9e9e9"
 						tal:attributes="valueMax forum_stat/forum_objects_by_week_number_max;
 										valueStep forum_stat/forum_objects_by_week_number_y_step"
 						tal:condition="forum_stat/forum_objects_by_week_number">
-				<labels fontName="Helvetica"/>
+				<labels fontName="Helvetica" fontSize="10" fillColor="#b8b8b8" />
 			</valueAxis>
 			<texts >
-				<text x="4.5in" y="-0.6in" textAnchor="middle"
-					  fontName="Helvetica-Bold" fontSize="11"
-					  fillColor="black" >
+				<text x="4in" y="-0.6in" textAnchor="middle"
+					  fontName="Helvetica-Bold" fontSize="16"
+					  fillColor="#757474" >
 					Week Number (${forum_stat/forum_objects_by_week_number_category_subheader})
 				</text>
 				<text x="2in" y="0.5in" angle="90" textAnchor="middle"
-					  fontName="Helvetica-Bold" fontSize="11"
-					  fillColor="black">
+					  fontName="Helvetica-Bold" fontSize="16"
+					  fillColor="#757474">
 					Forum Participation
 				</text>
 			</texts>
