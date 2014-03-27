@@ -1027,35 +1027,36 @@ class CourseSummaryReportPdf(_AbstractReportView):
 			for n in node.values():
 				_recur(n, accum)
 
-		data = list()
-
-		stat = namedtuple('Stat',
-						  ('title', 'note_count', 'hl_count'))
-
-		for unit in outline.values():
-			for lesson in unit.values():
-				ntiids = set()
-				_recur(lesson, ntiids)
-				for x in list(ntiids):
-					try:
-						kid = lib.pathToNTIID(x)[-1]
-						ntiids.update( kid.embeddedContainerNTIIDs )
-					except TypeError:
-						pass
-
-					for kid in lib.childrenOfNTIID(x):
-						ntiids.add(kid.ntiid)
-						ntiids.update(kid.embeddedContainerNTIIDs)
-				ntiids.discard(None)
-				local_notes = md_catalog['containerId'].apply({'any_of': ntiids})
-				local_notes = intersection(local_notes, all_notes)
-				local_hls = md_catalog['containerId'].apply({'any_of': ntiids})
-				local_hls = intersection(local_hls, all_hls)
-
-				data.append( stat( lesson.title, len(local_notes), len(local_hls)) )
-
-		# Keep these in lesson order
-		options['placed_engagement_data'] = data
+#		Exclude engagement_by_place data until we fully flesh out the details
+# 		data = list()
+# 
+# 		stat = namedtuple('Stat',
+# 						  ('title', 'note_count', 'hl_count'))
+# 
+# 		for unit in outline.values():
+# 			for lesson in unit.values():
+# 				ntiids = set()
+# 				_recur(lesson, ntiids)
+# 				for x in list(ntiids):
+# 					try:
+# 						kid = lib.pathToNTIID(x)[-1]
+# 						ntiids.update( kid.embeddedContainerNTIIDs )
+# 					except TypeError:
+# 						pass
+# 
+# 					for kid in lib.childrenOfNTIID(x):
+# 						ntiids.add(kid.ntiid)
+# 						ntiids.update(kid.embeddedContainerNTIIDs)
+# 				ntiids.discard(None)
+# 				local_notes = md_catalog['containerId'].apply({'any_of': ntiids})
+# 				local_notes = intersection(local_notes, all_notes)
+# 				local_hls = md_catalog['containerId'].apply({'any_of': ntiids})
+# 				local_hls = intersection(local_hls, all_hls)
+# 
+# 				data.append( stat( lesson.title, len(local_notes), len(local_hls)) )
+# 
+# 		# Keep these in lesson order
+# 		options['placed_engagement_data'] = data
 
 
 	def _build_assignment_data(self, options):
