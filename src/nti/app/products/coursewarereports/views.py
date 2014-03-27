@@ -349,6 +349,9 @@ FORUM_OBJECT_MIMETYPES = ['application/vnd.nextthought.forums.generalforumcommen
 ENGAGEMENT_OBJECT_MIMETYPES = ['application/vnd.nextthought.note',
 							   'application/vnd.nextthought.highlight']
 
+_StudentInfo = namedtuple('_StudentInfo',
+					  ('display', 'username'))
+
 from nti.contenttypes.courses.interfaces import is_instructed_by_name
 from pyramid.httpexceptions import HTTPForbidden
 
@@ -443,8 +446,12 @@ class StudentParticipationReportPdf(_AbstractReportView):
 		return self.md_catalog['creator'].apply({'any_of': (self.context.Username,)})
 
 	def _build_user_info(self,options):
-		#from IPython.core.debugger import Tracer; Tracer()(); ##DEBUG##
-		options['user'] = IFriendlyNamed( self.student_user )
+		user = IFriendlyNamed( self.student_user )
+		display_name = user.alias or user.realname or user.username
+		#Do not display username of open students
+		user_name = "" if user.username in self.open_student_usernames else user.username
+	
+		options['user'] = _StudentInfo( display_name, user_name )
 
 	def _build_forum_data(self, options):
 		course = self.course

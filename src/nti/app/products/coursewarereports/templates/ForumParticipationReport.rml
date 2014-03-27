@@ -111,17 +111,6 @@
 				<td align="decimal" tal:content="item/topics_created">1</td>
 				<td align="decimal" tal:content="item/total_comment_count">3</td>
 			</tr>
-			<tr tal:condition="False">
-				<td>The Topic Name</td>
-				<td>Forum Name</td>
-				<td>Forum Name</td>
-			</tr>
-
-			<tr tal:condition="False">
-				<td>The Topic Name</td>
-				<td>Forum Name</td>
-				<td>Forum Name</td>
-			</tr>
 		</blockTable>
 
 </metal:block>

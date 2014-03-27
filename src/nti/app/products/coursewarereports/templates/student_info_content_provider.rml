@@ -1,6 +1,15 @@
-<tr>
+
+<tr tal:condition="view/__parent__/options/user/display">
+	<td>Alias:</td>
+	<td tal:content="view/__parent__/options/user/display">
+		Display name
+	</td>
+</tr>
+<tr tal:condition="view/__parent__/options/user/username">
 	<td>Username:</td>
-	<td tal:content="context/Username">Username</td>
+	<td tal:content="view/__parent__/options/user/username">
+		Username
+	</td>
 </tr>
 <tr>
 	<td>Course:</td>

@@ -17,7 +17,7 @@
 			</pageGraphics>
 			<frame id="main_header"
 				   x1="7in" y1="6.8in"
-				   width="4in" height="1in"
+				   width="4in" height="1.3in"
 				   showBoundary="0" />
 			<frame id="first" x1="0.5in" y1="0.5in" width="10in" height="6in"/>
 		</pageTemplate>
