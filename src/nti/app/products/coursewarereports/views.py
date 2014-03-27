@@ -151,7 +151,7 @@ class _TopCreators(object):
 		# (one-eighth of the pie),
 		# but including it as a percentage in its label
 		# TODO: Better way to do this?
-		largest = heapq.nlargest(15, data.items(), key=lambda x: x[1])
+		largest = heapq.nlargest(10, data.items(), key=lambda x: x[1])
 		# Give percentages to the usernames
 		largest = [('%s (%0.1f%%)' % (x[0],(x[1] / self.total) * 100), x[1]) for x in largest]
 		if len(data) > len(largest):
@@ -218,7 +218,7 @@ class _TopCreators(object):
 	def percent_contributed_str(self):
 		return "%0.1f" % self.percent_contributed()
 
-def _common_buckets(objects,for_credit_students):
+def _common_buckets(objects,for_credit_students,agg_creators=None):
 	"""
 	Given a list of :class:`ICreated` objects,
 	return a :class:`_CommonBuckets` containing three members:
@@ -245,6 +245,8 @@ def _common_buckets(objects,for_credit_students):
 		count = len(group)
 		for o in group:
 			top_creators.incr_username(o.creator.username)
+			if agg_creators is not None:
+				agg_creators.incr_username(o.creator.username)
 
 		forum_objects_by_day[k] = count
 
@@ -600,6 +602,8 @@ class ForumParticipationReportPdf(_AbstractReportView):
 
 	report_title = _('Forum Participation Report')
 
+	agg_creators = None
+
 	TopicStats = namedtuple('TopicStats',
 							('title', 'creator', 'created', 'comment_count', 'distinct_user_count'))
 
@@ -614,11 +618,12 @@ class ForumParticipationReportPdf(_AbstractReportView):
 		return self._course_from_forum(self.context)
 
 	def _build_top_commenters(self, options):
+
 		def _all_comments():
 			for topic in self.context.values():
 				for comment in topic.values():
 					yield comment
-		buckets = _common_buckets(_all_comments(), self.for_credit_student_usernames)
+		buckets = _common_buckets(_all_comments(), self.for_credit_student_usernames,self.agg_creators)
 		options['top_commenters'] = buckets.top_creators
 		# Obviously we'll want better color choices than "random"
 		options['top_commenters_colors'] = colors.getAllNamedColors().keys()
@@ -1029,17 +1034,43 @@ class CourseSummaryReportPdf(_AbstractReportView):
 	def _build_top_commenters(self, options):
 
 		forum_stats = dict()
+		agg_creators = _TopCreators(self.for_credit_student_usernames)
 
 		for key, forum in self.course.Discussions.items():
 			forum_stat = forum_stats[key] = dict()
 			forum_stat['forum'] = forum
 			forum_view = ForumParticipationReportPdf(forum, self.request)
+			forum_view.agg_creators = agg_creators
 			forum_view.options = forum_stat
+			forum_stat['last_modified'] = forum.NewestDescendantCreatedTime
+			forum_stat['discussion_count'] = len( forum.values() )
+			forum_stat['total_comments'] = sum( len(disc) for disc in forum.values() )
 			forum_view.for_credit_student_usernames = self.for_credit_student_usernames
 
 			forum_view()
+		
+		#Need to accumulate these
+		#TODO rework this
+		acc_week = BTrees.family64.II.BTree()
+		
+		#Aggregate weekly numbers
+		for key, stat in forum_stats.items():
+			forum_stat = stat['all_forum_participation']
+			by_week = forum_stat.forum_objects_by_week_number
+			for week,val in by_week.items():
+				if week in acc_week:
+					acc_week[week] += val
+				else:
+					acc_week[week] = val
+			
+		new_buckets = _CommonBuckets(None, acc_week, None)
+		agg_stat = _build_buckets_options({},new_buckets)
+		options['aggregate_forum_stats'] = agg_stat
 
 		options['forum_stats'] = [x[1] for x in sorted(forum_stats.items())]
+		
+		options['aggregate_creators'] = agg_creators
+		options['top_commenters_colors'] = colors.getAllNamedColors().keys()
 
 
 	def __call__(self):

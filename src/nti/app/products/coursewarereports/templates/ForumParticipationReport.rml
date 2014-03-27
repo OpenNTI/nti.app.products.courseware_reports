@@ -41,21 +41,6 @@
 				<td align="decimal" tal:content="item/comment_count">25</td>
 				<td align="decimal" tal:content="item/distinct_user_count">3</td>
 			</tr>
-			<tr tal:condition="False">
-				<td>The Topic Name</td>
-				<td>Forum Name</td>
-				<td>Created Date</td>
-				<td>1</td>
-				<td>2</td>
-			</tr>
-
-			<tr tal:condition="False">
-				<td>The Topic Name</td>
-				<td>Forum Name</td>
-				<td>Created Date</td>
-				<td>1</td>
-				<td>2</td>
-			</tr>
 		</blockTable>
 
 		<nextPage />

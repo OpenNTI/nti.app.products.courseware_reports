@@ -205,7 +205,6 @@
 			</tr>
 		</blockTable>
 
-		<setNextTemplate name="two_charts" />
 		<nextPage />
 
 		<h1 fontSize="30" textColor="#494949" spaceBefore=".5in" spaceAfter=".3in" fontName="Helvetica" keepWithNext='true'>
@@ -213,21 +212,21 @@
 		</h1>
 		<hr width="100%" />
 
-		<tal:block tal:repeat="forum_data options/forum_stats">
-			<tal:block tal:condition="forum_data/all_forum_participation/forum_objects_by_week_number">
-				<h2 spaceBefore="0.5in" keepWithNext="true">Activity Over Time in &#8220;${forum_data/forum/title}&#8221;</h2>
-				<hr width="100%" spaceAfter="0.5in"/>
+		<tal:block tal:condition="options/aggregate_forum_stats/forum_objects_by_week_number">
+			<tal:block tal:define="forum_stat options/aggregate_forum_stats">
+				
+				<h2 spaceBefore="0.5in" keepWithNext="true">Activity Over Time in All Forums</h2>
 
 				<illustration width="5in" height="3in"
-							  tal:define="forum_stat forum_data/all_forum_participation"
 							  metal:use-macro="macro:forum_participation_over_time">
 				</illustration>
 
-				<h2 spaceBefore="0.7in" keepWithNext="true">Top Commenters in &#8220;${forum_data/forum/title}&#8221;</h2>
-				<hr width="100%" />
+				<nextPage />
+
+				<h2 spaceBefore="0.7in" keepWithNext="true">Top Commenters in All Forums</h2>
 				<illustration width="3in" height="3in"
-							  tal:define="top_commenters forum_data/top_commenters;
-										  top_commenters_colors forum_data/top_commenters_colors;
+							  tal:define="top_commenters options/aggregate_creators;
+										  top_commenters_colors options/top_commenters_colors;
 										  top_commenters_ill_width string:4in;
 										  top_commenters_ill_height string:4in;
 										  top_commenters_chart_width string:3in;
@@ -235,30 +234,7 @@
 							  metal:use-macro="macro:forum_top_commenters">
 				</illustration>
 
-				<nextFrame name="callout" />
-				<para tal:condition="forum_data/most_popular_topic">
-					The most popular discussion was
-					&#8220;${forum_data/most_popular_topic/title}&#8221;
-					with
-					${python:len(forum_data['most_popular_topic'])}
-					comments; the least popular discussion was
-					&#8220;${forum_data/least_popular_topic/title}.&#8221;
-					There are ${forum_data/top_commenters/total} total
-					comments in this forum, across
-					${python:len(forum_data['forum'])} discussions,
-					for an average comment count of
-					${python:forum_data['top_commenters'].total //
-					len(forum_data['forum'])} per discussion.
-					${forum_data/percent_users_comment_more_than_once}%
-					of users contributed more than one comment.
-				</para>
-
-
-				<nextPage />
-
 			</tal:block>
-
-
 		</tal:block>
 
 </metal:block>
