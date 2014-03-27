@@ -71,6 +71,8 @@ from nti.app.base.abstract_views import AbstractAuthenticatedView
 
 from nti.dataserver.authorization import ACT_READ
 
+CHART_COLORS = ['#1abc9c', '#3498db', '#3f5770', '#e74c3c', '#af7ac4', '#f1c40f', '#e67e22', '#bcd3c7', '#16a085', '#e364ae', '#c0392b', '#2980b9', '#8e44ad' ]
+
 # XXX: Fix a unicode decode issue.
 # TODO: Make this a formal patch
 import reportlab.platypus.paragraph
@@ -600,8 +602,6 @@ class StudentParticipationReportPdf(_AbstractReportView):
 		return options
 
 
-from reportlab.lib import colors
-
 from .decorators import course_from_forum
 
 @view_config(context=ICommunityForum,
@@ -633,8 +633,7 @@ class ForumParticipationReportPdf(_AbstractReportView):
 					yield comment
 		buckets = _common_buckets(_all_comments(), self.for_credit_student_usernames,self.agg_creators)
 		options['top_commenters'] = buckets.top_creators
-		# Obviously we'll want better color choices than "random"
-		options['top_commenters_colors'] = colors.getAllNamedColors().keys()
+		options['top_commenters_colors'] = CHART_COLORS
 
 		all_forum_stat = _build_buckets_options(options, buckets)
 		options['all_forum_participation'] = all_forum_stat
@@ -731,8 +730,7 @@ class TopicParticipationReportPdf(ForumParticipationReportPdf):
 	def _build_top_commenters(self, options):
 		buckets = _common_buckets(self.context.values(), self.for_credit_student_usernames)
 		options['top_commenters'] = buckets.top_creators
-		# Obviously we'll want better color choices than "random"
-		options['top_commenters_colors'] = colors.getAllNamedColors().keys()
+		options['top_commenters_colors'] = CHART_COLORS
 		all_forum_stat = _build_buckets_options(options, buckets)
 		options['all_forum_participation'] = all_forum_stat
 
@@ -1079,7 +1077,7 @@ class CourseSummaryReportPdf(_AbstractReportView):
 		options['forum_stats'] = [x[1] for x in sorted(forum_stats.items())]
 		
 		options['aggregate_creators'] = agg_creators
-		options['top_commenters_colors'] = colors.getAllNamedColors().keys()
+		options['top_commenters_colors'] = CHART_COLORS
 
 
 	def __call__(self):

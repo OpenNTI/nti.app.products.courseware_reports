@@ -3,7 +3,7 @@
 	xmlns:metal="http://xml.zope.org/namespaces/metal"
 	tal:define="options view/options">
 
-		<h1 fontSize="30" textColor="#494949" spaceAfter=".7in" fontName="Helvetica">
+		<h1 style="h1" spaceAfter=".7in">
 			Activity Over Time
 		</h1>
 
@@ -24,8 +24,10 @@
 			more than one comment.
 		</para>
 
-		<h1 spaceBefore=".5in">Comments Created</h1>
-		<hr width="100%" />
+		<h1 style="h1" spaceBefore=".5in" spaceAfter=".7in">
+			Comments Created
+		</h1>
+		
 		<blockTable style='default'
 					colWidths="40% 21% 15% 12% 12%" >
 			<tr>
@@ -59,8 +61,10 @@
 		<nextPage />
 
 
-		<h1  spaceBefore="0.5in" keepWithNext="true">Top Discussion Creators</h1>
-		<hr width="100%" />
+		<h1 style="h1" spaceBefore="0.5in" spaceAfter=".7in" keepWithNext="true">
+			Top Discussion Creators
+		</h1>
+
 		<illustration width="6in" height="6in">
 		<pieChart dx="0in" dy="0in" dwidth="6in" dheight="6in" x="1in" y="0" width="4in"
 				  height="4in"
@@ -95,7 +99,9 @@
 
 
 		<!-- We'll probably want to flow this one through two colums? -->
-		<h1 spaceBefore=".5in">User Stats</h1>
+		<h1 style="h1" spaceBefore=".5in">
+			User Stats
+		</h1>
 		<blockTable style='default'>
 			<tr>
 				<td>Username</td><td>Discussions Created</td><td>Comments</td>
