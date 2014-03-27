@@ -3,7 +3,7 @@
 	xmlns:metal="http://xml.zope.org/namespaces/metal"
 	tal:define="options view/options">
 
-		<h1 fontSize="30" textColor="#494949" spaceAfter=".7in" fontName="Helvetica">
+		<h1 style="h1" spaceAfter=".7in">
 			Enrollment Summary
 		</h1>
 
@@ -36,12 +36,12 @@
 		<condPageBreak height="3in" />
 
 
-		<h1 fontSize="30" textColor="#494949" spaceBefore="1in" spaceAfter=".2in" fontName="Helvetica" keepWithNext='true'>
+		<h1 style="h1" spaceBefore="1in" spaceAfter=".4in" keepWithNext='true'>
 			Assignments and Assessments
 		</h1>
 		<hr width="100%" />
 
-		<h2 fontSize="15" textColor="#494949" spaceBefore=".5in" spaceAfter=".3in" fontName="Helvetica" keepWithNext='true'>
+		<h2 style="h2">
 			Self-Assessments Taken
 		</h2>
 
@@ -68,7 +68,7 @@
 		</para>
 
 
-		<h2 fontSize="15" textColor="#494949" spaceBefore=".5in" spaceAfter=".3in" fontName="Helvetica" keepWithNext='true'>
+		<h2 style="h2">
 			Assignments Taken
 		</h2>
 		<blockTable style='default' tal:condition="options/assignment_data">
@@ -90,7 +90,7 @@
 			</tr>
 		</blockTable>
 
-		<h2 fontSize="15" textColor="#494949" spaceBefore=".5in" spaceAfter=".3in" fontName="Helvetica" keepWithNext='true'>
+		<h2 style="h2">
 			Assignment Results
 		</h2>
 		<blockTable style='default' tal:condition="options/assignment_data">
@@ -117,12 +117,12 @@
 
 		<nextPage />
 
-		<h1 fontSize="30" textColor="#494949" spaceBefore=".5in" spaceAfter=".3in" fontName="Helvetica" keepWithNext='true'>
+		<h1 style="h1" spaceBefore=".5in" spaceAfter=".4in" keepWithNext='true'>
 			Engagement
 		</h1>
 		<hr width="100%" />
 
-		<h2 fontSize="15" textColor="#494949" spaceBefore=".5in" spaceAfter=".3in" fontName="Helvetica" keepWithNext='true'>
+		<h2 style="h2">
 			For-Credit Engagement
 		</h2>
 		<blockTable style='default' alignment="left">
@@ -155,7 +155,7 @@
 		</pieChart>
 		</illustration>
 		
-		<h2 fontSize="15" textColor="#494949" spaceBefore=".5in" spaceAfter=".3in" fontName="Helvetica" keepWithNext='true'>
+		<h2 style="h2">
 			Non-Credit Engagement
 		</h2>
 		<blockTable style='default' alignment="left">
@@ -189,7 +189,7 @@
 
 		<nextPage />
 
-		<h2 fontSize="15" textColor="#494949" spaceBefore=".5in" spaceAfter=".3in" fontName="Helvetica" keepWithNext='true'>
+		<h2 style="h2">
 			Engagement By Place
 		</h2>
 		<blockTable style='default'>
@@ -207,7 +207,7 @@
 
 		<nextPage />
 
-		<h1 fontSize="30" textColor="#494949" spaceBefore=".5in" spaceAfter=".3in" fontName="Helvetica" keepWithNext='true'>
+		<h1 style="h1" spaceBefore=".5in" spaceAfter=".3in" keepWithNext='true'>
 			Discussions
 		</h1>
 		<hr width="100%" />
@@ -215,15 +215,39 @@
 		<tal:block tal:condition="options/aggregate_forum_stats/forum_objects_by_week_number">
 			<tal:block tal:define="forum_stat options/aggregate_forum_stats">
 				
-				<h2 spaceBefore="0.5in" keepWithNext="true">Activity Over Time in All Forums</h2>
+				<h2 style="h2" spaceAfter=".5in" >
+					Activity Over Time in All Forums
+				</h2>
 
 				<illustration width="5in" height="3in"
 							  metal:use-macro="macro:forum_participation_over_time">
 				</illustration>
 
 				<nextPage />
+				
+				<h2 style="h2">
+					Forum Breakdown
+				</h2>
+				
+				<blockTable colWidths="30% 20% 20% 30%" style='default'>
+					<tr>
+						<td>Forum Name</td>
+						<td>Discussion Count</td>
+						<td>Comment Count</td>
+						<td>Last Updated</td>
+					</tr>
+					<tr tal:repeat="item options/forum_stats">
+						<td tal:content="item/forum/title">Title</td>
+						<td align="decimal" tal:content="item/discussion_count">Notes</td>
+						<td align="decimal" tal:content="item/total_comments">25</td>
+						<td tal:content="item/last_modified">25</td>
+					</tr>
+				</blockTable>
 
-				<h2 spaceBefore="0.7in" keepWithNext="true">Top Commenters in All Forums</h2>
+				<h2 style="h2">
+					Top Commenters in All Forums
+				</h2>
+				
 				<illustration width="3in" height="3in"
 							  tal:define="top_commenters options/aggregate_creators;
 										  top_commenters_colors options/top_commenters_colors;

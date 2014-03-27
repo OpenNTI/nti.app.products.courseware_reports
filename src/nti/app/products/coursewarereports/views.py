@@ -1042,7 +1042,8 @@ class CourseSummaryReportPdf(_AbstractReportView):
 			forum_view = ForumParticipationReportPdf(forum, self.request)
 			forum_view.agg_creators = agg_creators
 			forum_view.options = forum_stat
-			forum_stat['last_modified'] = forum.NewestDescendantCreatedTime
+			last_mod_time = datetime.utcfromtimestamp( forum.NewestDescendantCreatedTime )
+			forum_stat['last_modified'] = last_mod_time.strftime("%Y-%m-%d %H:%M")
 			forum_stat['discussion_count'] = len( forum.values() )
 			forum_stat['total_comments'] = sum( len(disc) for disc in forum.values() )
 			forum_view.for_credit_student_usernames = self.for_credit_student_usernames

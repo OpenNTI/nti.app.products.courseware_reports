@@ -47,8 +47,8 @@
 	</template>
 
 	<stylesheet metal:use-macro="macro:stylesheet">
-		<paraStyle name="h1" fontName="Helvetica-Bold" fontSize="11" leading="12"/>
-		<paraStyle name="h2" fontName="Helvetica-Bold" fontSize="11" leading="20" spaceBefore="12"/>
+		<paraStyle name="h1" fontSize="30" textColor="#494949" fontName="Helvetica"/>
+		<paraStyle name="h2" fontSize="15" textColor="#494949" fontName="Helvetica"/>
 		<paraStyle name="normal" fontName="Helvetica" fontSize="11"
 				   leading="12" spaceBefore="10"/>
 		<paraStyle name="sendTo" leftIndent="0.5in" parent="normal"

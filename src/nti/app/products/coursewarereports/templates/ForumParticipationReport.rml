@@ -45,9 +45,11 @@
 
 		<nextPage />
 
-		<h1>Top Commenters</h1>
-		<hr width="100%" />
-		<illustration width="6in" height="6in"
+		<h1 style="h1" spaceAfter="1in">
+			Top Commenters
+		</h1>
+
+		<illustration width="4in" height="4in"
 					  tal:define="top_commenters options/top_commenters;
 								  top_commenters_colors options/top_commenters_colors"
 					  metal:use-macro="macro:forum_top_commenters">

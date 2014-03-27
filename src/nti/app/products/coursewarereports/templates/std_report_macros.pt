@@ -30,8 +30,9 @@
 	</template>
 
 	<stylesheet metal:define-macro="stylesheet">
-		<paraStyle name="h1" fontName="Helvetica-Bold" fontSize="11" leading="12"/>
-		<paraStyle name="h2" fontName="Helvetica-Bold" fontSize="11" leading="20" spaceBefore="12"/>
+		<paraStyle name="h1" fontSize="30" textColor="#494949" fontName="Helvetica"/>
+		<paraStyle name="h2" fontSize="15" textColor="#494949" fontName="Helvetica" keepWithNext="true"
+					spaceBefore=".5in" spaceAfter=".3in"/>
 		<paraStyle name="normal" fontName="Helvetica" fontSize="11"
 				   leading="12" spaceBefore="10"/>
 		<paraStyle name="sendTo" leftIndent="0.5in" parent="normal"
@@ -109,12 +110,12 @@
 		</barChart>
 	</illustration>
 
-	<illustration width="6in" height="6in"
+	<illustration width="4in" height="4in"
 				  metal:define-macro="forum_top_commenters"
 				  tal:attributes="width top_commenters_ill_width|default;
 								  height top_commenters_ill_height|default">
 		<pieChart dx="0in" dy="0in"
-				  dwidth="6in" dheight="6in"
+				  dwidth="4in" dheight="4in"
 				  x="1in" y="0"
 				  width="4in" height="4in"
 				  checkLabelOverlap='false'
