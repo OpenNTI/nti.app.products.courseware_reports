@@ -435,15 +435,14 @@ class _AbstractReportView(AbstractAuthenticatedView,
 		user = User.get_user( username )
 		if user:
 			return self.build_user_info( user )
-		else:
-			return _StudentInfo( username, username )
+		return _StudentInfo( username, username )
 
 	def build_user_info(self,user):
 		"""Given a user, return a _StudentInfo tuple"""
 		user = IFriendlyNamed( user )
 		display_name = user.alias or user.realname or user.username
 		#Do not display username of open students
-		user_name = "" if user.username in self.open_student_usernames else user.username
+		user_name = "" if user.username not in self.for_credit_student_usernames else user.username
 	
 		return _StudentInfo( display_name, user_name )
 
@@ -696,8 +695,9 @@ class ForumParticipationReportPdf(_AbstractReportView):
 
 		user_stats = list()
 		only_one = 0
-		for uname in sorted(everyone_that_did_something):
-			stat = self.UserStats(	self.get_student_info( uname ), 
+		for uname in sorted( everyone_that_did_something ):
+			student_info = self.get_student_info( uname )
+			stat = self.UserStats(	student_info, 
 									creators.get(uname, 0), 
 									commenters.get(uname, 0) )
 			user_stats.append(stat)
