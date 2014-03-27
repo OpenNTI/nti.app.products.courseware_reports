@@ -104,10 +104,14 @@
 		</h1>
 		<blockTable style='default'>
 			<tr>
-				<td>Username</td><td>Discussions Created</td><td>Comments</td>
+				<td>Display Name</td>
+				<td>Username</td>
+				<td>Discussions Created</td>
+				<td>Comments</td>
 			</tr>
 			<tr tal:repeat="item options/user_stats">
-				<td tal:content="item/username">jamadden</td>
+				<td tal:content="item/username/display">user1</td>
+				<td tal:content="item/username/username">user2</td>
 				<td align="decimal" tal:content="item/topics_created">1</td>
 				<td align="decimal" tal:content="item/total_comment_count">3</td>
 			</tr>

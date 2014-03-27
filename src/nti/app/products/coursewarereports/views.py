@@ -57,6 +57,7 @@ from nti.app.products.gradebook.interfaces import IGradeBook
 from nti.app.products.gradebook.interfaces import IGradeBookEntry
 from nti.dataserver.interfaces import IUser
 from nti.dataserver.users.interfaces import IFriendlyNamed
+from nti.dataserver.users.users import User
 
 from nti.dataserver.contenttypes.forums.interfaces import ICommunityBoard
 from nti.dataserver.contenttypes.forums.interfaces import ICommunityForum
@@ -128,9 +129,11 @@ class _TopCreators(object):
 	title = ''
 	max_contributors = None
 
-	def __init__(self,for_credit_students):
+	def __init__(self,for_credit_students,get_student_info):
+		self._get_student_info = get_student_info
 		self._for_credit_students = for_credit_students
 		self._data = BTrees.family64.OI.BTree()
+
 
 	@property
 	def _for_credit_data(self):
@@ -156,7 +159,9 @@ class _TopCreators(object):
 		# TODO: Better way to do this?
 		largest = heapq.nlargest(10, data.items(), key=lambda x: x[1])
 		# Give percentages to the usernames
-		largest = [('%s (%0.1f%%)' % (x[0],(x[1] / self.total) * 100), x[1]) for x in largest]
+		largest = [('%s (%0.1f%%)' % (	self._get_student_info(x[0]).display,
+										(x[1] / self.total) * 100), x[1]) 
+										for x in largest]
 		if len(data) > len(largest):
 			# We didn't account for everyone, we need to
 			largest_total = sum( (x[1] for x in largest) )
@@ -221,7 +226,7 @@ class _TopCreators(object):
 	def percent_contributed_str(self):
 		return "%0.1f" % self.percent_contributed()
 
-def _common_buckets(objects,for_credit_students,agg_creators=None):
+def _common_buckets(objects,for_credit_students,get_student_info,agg_creators=None):
 	"""
 	Given a list of :class:`ICreated` objects,
 	return a :class:`_CommonBuckets` containing three members:
@@ -241,7 +246,7 @@ def _common_buckets(objects,for_credit_students,agg_creators=None):
 
 	forum_objects_by_day = BTrees.family64.II.BTree()
 	forum_objects_by_week_number = BTrees.family64.II.BTree()
-	top_creators = _TopCreators(for_credit_students)
+	top_creators = _TopCreators(for_credit_students,get_student_info)
 
 	for k, g in groupby(objects, day_key):
 		group = list(g)
@@ -350,7 +355,7 @@ ENGAGEMENT_OBJECT_MIMETYPES = ['application/vnd.nextthought.note',
 							   'application/vnd.nextthought.highlight']
 
 _StudentInfo = namedtuple('_StudentInfo',
-					  ('display', 'username'))
+					 	 ('display', 'username'))
 
 from nti.contenttypes.courses.interfaces import is_instructed_by_name
 from pyramid.httpexceptions import HTTPForbidden
@@ -424,7 +429,23 @@ class _AbstractReportView(AbstractAuthenticatedView,
 		ids = BTrees.family64.II.TreeSet()
 		ids.update( IEnumerableEntityContainer(self.course.legacy_community).iter_intids() )
 		return ids
+	
+	def get_student_info(self,username):
+		"""Given a username, return a _StudentInfo tuple"""
+		user = User.get_user( username )
+		if user:
+			return self.build_user_info( user )
+		else:
+			return _StudentInfo( username, username )
 
+	def build_user_info(self,user):
+		"""Given a user, return a _StudentInfo tuple"""
+		user = IFriendlyNamed( user )
+		display_name = user.alias or user.realname or user.username
+		#Do not display username of open students
+		user_name = "" if user.username in self.open_student_usernames else user.username
+	
+		return _StudentInfo( display_name, user_name )
 
 @view_config(context=ICourseInstanceEnrollment,
 			 name=VIEW_STUDENT_PARTICIPATION)
@@ -446,12 +467,7 @@ class StudentParticipationReportPdf(_AbstractReportView):
 		return self.md_catalog['creator'].apply({'any_of': (self.context.Username,)})
 
 	def _build_user_info(self,options):
-		user = IFriendlyNamed( self.student_user )
-		display_name = user.alias or user.realname or user.username
-		#Do not display username of open students
-		user_name = "" if user.username in self.open_student_usernames else user.username
-	
-		options['user'] = _StudentInfo( display_name, user_name )
+		options['user'] = self.build_user_info( self.student_user )
 
 	def _build_forum_data(self, options):
 		course = self.course
@@ -475,7 +491,9 @@ class StudentParticipationReportPdf(_AbstractReportView):
 		forum_objects_created_by_student_in_course = [x for x in forum_objects_created_by_student
 													  if find_interface(x, ICommunityBoard) == course_board]
 		# Group the forum objects by day and week
-		time_buckets = _common_buckets(forum_objects_created_by_student_in_course,self.for_credit_student_usernames)
+		time_buckets = _common_buckets(	forum_objects_created_by_student_in_course,
+										self.for_credit_student_usernames,
+										self.get_student_info)
 
 		# Tabular breakdown of what topics the user created in what forum
 		# and how many comments in which topics (could be bulkData or actual blockTable)
@@ -638,7 +656,10 @@ class ForumParticipationReportPdf(_AbstractReportView):
 			for topic in self.context.values():
 				for comment in topic.values():
 					yield comment
-		buckets = _common_buckets(_all_comments(), self.for_credit_student_usernames,self.agg_creators)
+		buckets = _common_buckets(	_all_comments(), 
+									self.for_credit_student_usernames,
+									self.get_student_info,
+									self.agg_creators)
 		options['top_commenters'] = buckets.top_creators
 		options['top_commenters_colors'] = CHART_COLORS
 
@@ -647,7 +668,7 @@ class ForumParticipationReportPdf(_AbstractReportView):
 
 	def _build_comment_count_by_topic(self, options):
 		comment_count_by_topic = list()
-		top_creators = _TopCreators(self.for_credit_student_usernames)
+		top_creators = _TopCreators(self.for_credit_student_usernames,self.get_student_info)
 		for topic in self.context.values():
 			count = len(topic)
 			user_count = len({c.creator for c in topic.values()})
@@ -676,7 +697,9 @@ class ForumParticipationReportPdf(_AbstractReportView):
 		user_stats = list()
 		only_one = 0
 		for uname in sorted(everyone_that_did_something):
-			stat = self.UserStats(uname, creators.get(uname, 0), commenters.get(uname, 0) )
+			stat = self.UserStats(	self.get_student_info( uname ), 
+									creators.get(uname, 0), 
+									commenters.get(uname, 0) )
 			user_stats.append(stat)
 			if stat.total_comment_count == 1:
 				only_one += 1
@@ -735,7 +758,9 @@ class TopicParticipationReportPdf(ForumParticipationReportPdf):
 		return self._course_from_forum(self.context.__parent__)
 
 	def _build_top_commenters(self, options):
-		buckets = _common_buckets(self.context.values(), self.for_credit_student_usernames)
+		buckets = _common_buckets(	self.context.values(), 
+									self.for_credit_student_usernames,
+									self.get_student_info )
 		options['top_commenters'] = buckets.top_creators
 		options['top_commenters_colors'] = CHART_COLORS
 		all_forum_stat = _build_buckets_options(options, buckets)
@@ -912,7 +937,7 @@ class CourseSummaryReportPdf(_AbstractReportView):
 
 		for asm in self_assessments:
 			title = _title_of_qs(asm)
-			accum = _TopCreators(self.for_credit_student_usernames)
+			accum = _TopCreators(self.for_credit_student_usernames,self.get_student_info)
 			accum.title = title
 			accum.max_contributors = len(self.all_student_usernames)
 			title_to_count[asm.ntiid] = accum
@@ -1047,7 +1072,7 @@ class CourseSummaryReportPdf(_AbstractReportView):
 	def _build_top_commenters(self, options):
 
 		forum_stats = dict()
-		agg_creators = _TopCreators(self.for_credit_student_usernames)
+		agg_creators = _TopCreators(self.for_credit_student_usernames,self.get_student_info)
 
 		for key, forum in self.course.Discussions.items():
 			forum_stat = forum_stats[key] = dict()

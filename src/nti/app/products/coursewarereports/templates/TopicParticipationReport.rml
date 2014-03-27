@@ -40,11 +40,13 @@
 		</h1>
 		<blockTable style='default'>
 			<tr>
+				<td>Display Name</td>
 				<td>Username</td>
 				<td>Comments</td>
 			</tr>
 			<tr tal:repeat="item options/user_stats">
-				<td tal:content="item/username">The Assessment Title</td>
+				<td tal:content="item/username/display">The Assessment Title</td>
+				<td tal:content="item/username/username">The Assessment Title</td>
 				<td tal:content="item/total_comment_count">Times Taken</td>
 			</tr>
 		</blockTable>
