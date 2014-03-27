@@ -695,7 +695,7 @@ class ForumParticipationReportPdf(_AbstractReportView):
 
 		user_stats = list()
 		only_one = 0
-		for uname in sorted( everyone_that_did_something ):
+		for uname in everyone_that_did_something:
 			student_info = self.get_student_info( uname )
 			stat = self.UserStats(	student_info, 
 									creators.get(uname, 0), 
@@ -703,6 +703,8 @@ class ForumParticipationReportPdf(_AbstractReportView):
 			user_stats.append(stat)
 			if stat.total_comment_count == 1:
 				only_one += 1
+				
+		user_stats.sort( key=lambda x: x.username.display.lower() )
 
 		options['user_stats'] = user_stats
 		if user_stats:
