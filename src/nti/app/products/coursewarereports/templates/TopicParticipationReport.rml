@@ -3,9 +3,20 @@
 	xmlns:metal="http://xml.zope.org/namespaces/metal"
 	tal:define="options view/options">
 
-		<h1 style="h1" spaceAfter=".7in">
+		<para style="normal" spaceAfter=".1in">
+			This report is an overview of the '${context/title}' discussion.
+			The report includes weekly forum participation, top commenter activity, and user comment counts.
+		</para>
+		<hr width="100%" />
+
+		<h1 style="h1" fontSize="24" spaceAfter=".4in">
 			Activity Over Time
 		</h1>
+		
+		<para style="subdesc" spaceAfter=".4in">
+			This chart represents a breakdown of the number of comments created (Discussion Participation) 
+			in '${context/title}' in a given calendar week (Week Number).
+		</para>
 
 		<illustration width="5in" height="3in"
 					  tal:define="forum_stat options/all_forum_participation;
@@ -35,9 +46,15 @@
 
 		<!-- We'll probably want to flow this one through two colums? -->
 
-		<h1 style="h1">
+		<h1 style="h1" spaceAfter=".5in" >
 			User Stats
 		</h1>
+		
+		<para style="subdesc" spaceAfter=".4in">
+				This table indicates the number of comments a user has contributed 
+				to '${context/title}'.
+		</para>
+		
 		<blockTable style='default'>
 			<tr>
 				<td>Display Name</td>

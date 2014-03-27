@@ -33,10 +33,12 @@
 		<paraStyle name="h1" fontSize="30" textColor="#494949" fontName="Helvetica"/>
 		<paraStyle name="h2" fontSize="15" textColor="#494949" fontName="Helvetica" keepWithNext="true"
 					spaceBefore=".5in" spaceAfter=".3in"/>
-		<paraStyle name="normal" fontName="Helvetica" fontSize="11"
-				   leading="12" spaceBefore="10"/>
-		<paraStyle name="sendTo" leftIndent="0.5in" parent="normal"
-				   spaceBefore="10" spaceAfter="2"/>
+		<paraStyle name="normal" fontName="Helvetica" fontSize="12" textColor="#494949"
+				   leading="15" spaceAfter=".5in" />
+		<paraStyle name="subdesc" fontName="Helvetica" leftIndent="1in" rightIndent="1in" fontSize="10" textColor="#494949"
+				   leading="13" spaceAfter=".5in" />
+		<paraStyle name="sendTo" leftIndent="0.5in" parent="normal" textColor="#494949"
+				   spaceBefore="10"/>
 		<blockTableStyle id="default">
 			<lineStyle start="0,0" stop="-1,-1" kind="innergrid" thickness="0.25"
 					   colorName="black"/>
@@ -63,14 +65,14 @@
 			<nextFrame />
 		</tal:block>
 
-	<illustration width="8in" height="3.7in"
+	<illustration width="8in" height="2.8in"
 		  metal:define-macro="forum_participation_over_time">
 		<!--! To use, define a variable 'forum_stat' and 'value_axis_name around the invocation -->
 		<barChart dx="0.5in" dy="0in"
 				  dwidth="5in" dheight="3in"
 				  x="0" y="0"
 				  width="8in"
-				  height="3.7in" direction="vertical" 
+				  height="2.8in" direction="vertical" 
 				  barLabelFormat="%2.0f" barWidth="5"
 				  tal:condition="forum_stat/forum_objects_by_week_number">
 			<barLabels fillColor="#757474" fontSize="12" boxAnchor="s" dy="3" />
@@ -96,7 +98,7 @@
 					  fillColor="#757474" >
 					Week Number (${forum_stat/forum_objects_by_week_number_category_subheader})
 				</text>
-				<text x="2in" y="0.5in" angle="90" textAnchor="middle"
+				<text x="1.6in" y="0.5in" angle="90" textAnchor="middle"
 					  fontName="Helvetica-Bold" fontSize="16"
 					  fillColor="#757474" 
 					  tal:content="value_axis_name">

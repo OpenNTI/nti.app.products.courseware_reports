@@ -3,9 +3,22 @@
 	xmlns:metal="http://xml.zope.org/namespaces/metal"
 	tal:define="options view/options">
 
-		<h1 style="h1" spaceAfter=".7in">
+		<para style="normal" spaceAfter="0in" >
+			This report is an overview of the '${context/__name__}' forum.  
+			The report includes weekly forum participation, top commenter activity, 
+			and user comment counts. 
+		</para>
+		
+		<hr width="100%" />
+
+		<h1 style="h1" fontSize="25" spaceBefore=".1in" spaceAfter=".4in">
 			Activity Over Time
 		</h1>
+		
+		<para style="subdesc" spaceAfter=".3in" >
+			This chart represents a breakdown of the number of comments created 
+			(Forum Participation) in '${context/__name__}' in a given calendar week (Week Number).
+		</para>
 
 		<illustration width="5in" height="3in"
 					  tal:define="forum_stat options/all_forum_participation;
@@ -23,6 +36,8 @@
 			per discussion. ${options/percent_users_comment_more_than_once}% of users contributed
 			more than one comment.
 		</para>
+
+		<condPageBreak height="3in" />
 
 		<h1 style="h1" spaceBefore=".5in" spaceAfter=".7in">
 			Comments Created
@@ -99,9 +114,15 @@
 
 
 		<!-- We'll probably want to flow this one through two colums? -->
-		<h1 style="h1" spaceBefore=".5in">
+		<h1 style="h1" spaceAfter=".5in" >
 			User Stats
 		</h1>
+		
+		<para style="subdesc" spaceAfter=".4in">
+				This table indicates the number of comments a user has contributed 
+				to '${context/title}'.
+		</para>
+		
 		<blockTable style='default'>
 			<tr>
 				<td>Display Name</td>

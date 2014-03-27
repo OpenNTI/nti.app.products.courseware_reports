@@ -3,9 +3,23 @@
 	xmlns:metal="http://xml.zope.org/namespaces/metal"
 	tal:define="options view/options">
 
-	<h1 fontSize="30" textColor="#494949" spaceAfter="1in" fontName="Helvetica">
+	<para style="normal" spaceAfter=".1in">
+		This report is an overview of activity for ${options/user/display}, and includes weekly 
+		forum participation, discussion activity, and user assignment statistics.
+	</para>
+	
+	<hr width="100%" />
+
+	<h1 style="h1" spaceAfter=".5in">
 		Activity Over Time
 	</h1>
+	
+	<para style="subdesc" spaceAfter=".5in" >
+		This chart represents a breakdown of the total number of contributed 
+		comments (Forum Participation) by ${options/user/display} to the course 
+		forums for a given calendar week (Week Number).
+	</para>
+	
 	<illustration width="5in" height="3in"
 				  tal:define="forum_stat options/student_forum_participation;
 					  		  value_axis_name string:Forum Participation"
@@ -18,6 +32,11 @@
 	<h2 fontSize="15" textColor="#494949" spaceAfter="0.3in" fontName="Helvetica">
 		Discussions Created
 	</h2>
+	
+	<para style="subdesc" spaceAfter=".5in" >
+		This table represents the breakdown of discussions created by ${options/user/display}.
+	</para>
+	
 		<blockTable style='default' tal:condition="options/topics_created">
 			<tr>
 				<td><para>Discussion Name</para></td>
@@ -34,9 +53,15 @@
 			This user has not created any discussions.
 		</para>
 
-	<h2 fontSize="15" textColor="#494949" spaceAfter="0.3in" spaceBefore="0.5in" fontName="Helvetica">
+	<h2 style="h2" spaceAfter="0.3in" spaceBefore="0.5in">
 		Comments Created
 	</h2>
+	
+	<para style="subdesc" spaceAfter=".5in" >
+		This table represents the total number of comments created by ${options/user/display} for 
+		each forum discussion in the course. 
+	</para>
+	
 		<blockTable style='default' tal:condition="options/comment_count_by_topic">
 			<tr>
 				<td><para>Forum Name</para></td>
