@@ -56,6 +56,7 @@ from nti.app.products.gradebook.interfaces import IGrade
 from nti.app.products.gradebook.interfaces import IGradeBook
 from nti.app.products.gradebook.interfaces import IGradeBookEntry
 from nti.dataserver.interfaces import IUser
+from nti.dataserver.users.interfaces import IFriendlyNamed
 
 from nti.dataserver.contenttypes.forums.interfaces import ICommunityBoard
 from nti.dataserver.contenttypes.forums.interfaces import ICommunityForum
@@ -434,9 +435,14 @@ class StudentParticipationReportPdf(_AbstractReportView):
 	@Lazy
 	def student_user(self):
 		return IUser(self.context)
+
 	@Lazy
 	def intids_created_by_student(self):
 		return self.md_catalog['creator'].apply({'any_of': (self.context.Username,)})
+
+	def _build_user_info(self,options):
+		#from IPython.core.debugger import Tracer; Tracer()(); ##DEBUG##
+		options['user'] = IFriendlyNamed( self.student_user )
 
 	def _build_forum_data(self, options):
 		course = self.course
@@ -580,6 +586,8 @@ class StudentParticipationReportPdf(_AbstractReportView):
 		# Collect data and return it in a form to be rendered
 		# (a dictionary containing data and callable objects)
 		options = self.options
+		self._build_user_info(options)
+		
 		self._build_forum_data(options)
 
 		# Each self-assessment and how many times taken (again bulkData)
@@ -714,7 +722,7 @@ class ForumParticipationReportPdf(_AbstractReportView):
 			 name=VIEW_TOPIC_PARTICIPATION)
 class TopicParticipationReportPdf(ForumParticipationReportPdf):
 
-	report_title = _('Topic Participation Report')
+	report_title = _('Discussion Participation Report')
 
 	@property
 	def course(self):

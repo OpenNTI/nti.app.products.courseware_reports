@@ -8,7 +8,8 @@
 		</h1>
 
 		<illustration width="5in" height="3in"
-					  tal:define="forum_stat options/all_forum_participation"
+					  tal:define="forum_stat options/all_forum_participation;
+					  			  value_axis_name string:Forum Participation"
 					  metal:use-macro="macro:forum_participation_over_time">
 		</illustration>
 

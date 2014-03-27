@@ -3,12 +3,13 @@
 	xmlns:metal="http://xml.zope.org/namespaces/metal"
 	tal:define="options view/options">
 
-		<h1 fontSize="30" textColor="#494949" spaceAfter=".7in" fontName="Helvetica">
+		<h1 style="h1" spaceAfter=".7in">
 			Activity Over Time
 		</h1>
 
 		<illustration width="5in" height="3in"
-					  tal:define="forum_stat options/all_forum_participation"
+					  tal:define="forum_stat options/all_forum_participation;
+					  			  value_axis_name string:Discussion Participation"
 					  metal:use-macro="macro:forum_participation_over_time">
 		</illustration>
 
@@ -34,23 +35,17 @@
 
 		<!-- We'll probably want to flow this one through two colums? -->
 
-		<h1 spaceBefore=".5in">User Stats</h1>
+		<h1 style="h1">
+			User Stats
+		</h1>
 		<blockTable style='default'>
 			<tr>
-				<td>Username</td><td>Comments</td>
+				<td>Username</td>
+				<td>Comments</td>
 			</tr>
 			<tr tal:repeat="item options/user_stats">
 				<td tal:content="item/username">The Assessment Title</td>
 				<td tal:content="item/total_comment_count">Times Taken</td>
-			</tr>
-			<tr tal:condition="False">
-				<td>The Topic Name</td>
-				<td>Forum Name</td>
-			</tr>
-
-			<tr tal:condition="False">
-				<td>The Topic Name</td>
-				<td>Forum Name</td>
 			</tr>
 		</blockTable>
 

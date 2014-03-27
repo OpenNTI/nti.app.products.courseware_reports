@@ -213,7 +213,8 @@
 		<hr width="100%" />
 
 		<tal:block tal:condition="options/aggregate_forum_stats/forum_objects_by_week_number">
-			<tal:block tal:define="forum_stat options/aggregate_forum_stats">
+			<tal:block tal:define="forum_stat options/aggregate_forum_stats;
+					  			   value_axis_name string:Forum Participation">
 				
 				<h2 style="h2" spaceAfter=".5in" >
 					Activity Over Time in All Forums

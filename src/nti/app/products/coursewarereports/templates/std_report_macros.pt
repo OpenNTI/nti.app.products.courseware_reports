@@ -65,7 +65,7 @@
 
 	<illustration width="8in" height="3.7in"
 		  metal:define-macro="forum_participation_over_time">
-		<!--! To use, define a variable 'forum_stat' around the invocation -->
+		<!--! To use, define a variable 'forum_stat' and 'value_axis_name around the invocation -->
 		<barChart dx="0.5in" dy="0in"
 				  dwidth="5in" dheight="3in"
 				  x="0" y="0"
@@ -98,7 +98,8 @@
 				</text>
 				<text x="2in" y="0.5in" angle="90" textAnchor="middle"
 					  fontName="Helvetica-Bold" fontSize="16"
-					  fillColor="#757474">
+					  fillColor="#757474" 
+					  tal:content="value_axis_name">
 					Forum Participation
 				</text>
 			</texts>
