@@ -334,21 +334,9 @@ def _build_buckets_options(options, buckets):
 		options['forum_objects_by_week_number_value_min'] = minKey - 1
 		options['forum_objects_by_week_number_value_max'] = maxKey + 1
 
-		if _max > 30:
-			# If we have too many values, we have to pick how often we label, otherwise
-			# they won't all fit on the chart and we wind up with overlapping unreadable
-			# blur.
-			step = _max // 10
-		else:
-			step = 1
-		options['forum_objects_by_week_number_y_step'] = step
-
-		#TODO we don't use x 'step'
-		elapsed_weeks = len( full_range )
-		if elapsed_weeks > 15:
-			step = elapsed_weeks // 5
-		else:
-			step = 1
+		#If we have few values, specify our step size; otherwise, let the chart do the work.
+		if _max < 10:
+			options['forum_objects_by_week_number_y_step'] = 1
 
 		#Build our category labels
 		week_range = [str(x)[4:] for x in full_range]

@@ -24,7 +24,8 @@
 		<pieChart dx="2in" dy="0in" dwidth="4in" dheight="4in" x="1in" y="0" width="4in"
 				  height="4in"
 				  checkLabelOverlap='false'
-				  tal:condition="options/count_open">
+				  tal:condition="options/count_open" 
+				  startAngle="180">
 			<labels>
 				<label>Open Enrolled (${options/count_open})</label>
 				<label>For Credit (${options/count_for_credit})</label>
