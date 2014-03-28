@@ -675,7 +675,7 @@ class ForumParticipationReportPdf(_AbstractReportView):
 			created = topic.created
 			comment_count_by_topic.append( self.TopicStats( topic.title, creator, created, count, user_count ))
 
-			top_creators.incr_username(topic.creator)
+			top_creators.incr_username(topic.creator.username)
 
 		comment_count_by_topic.sort( key=lambda x: (x.created, x.title) )
 		options['comment_count_by_topic'] = comment_count_by_topic
@@ -696,11 +696,6 @@ class ForumParticipationReportPdf(_AbstractReportView):
 		user_stats = list()
 		only_one = 0
 		for uname in everyone_that_did_something:
-# 			if isinstance( uname, basestring ):
-# 				student_info = self.get_student_info( uname )
-# 			else:
-# 				#from IPython.core.debugger import Tracer; Tracer()() ##DEBUG##
-# 				student_info = self.build_user_info( uname )
 			student_info = self.get_student_info( uname )
 			stat = self.UserStats(	student_info, 
 									creators.get(uname, 0), 
