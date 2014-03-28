@@ -51,7 +51,7 @@
 		
 		<para style="subdesc" spaceAfter=".4in">
 				This table indicates the number of comments a user has contributed 
-				to '${context/title}'.
+				to '${context/title}'.  Users with zero comments are excluded from the table.
 		</para>
 		
 		<blockTable style='default'>
