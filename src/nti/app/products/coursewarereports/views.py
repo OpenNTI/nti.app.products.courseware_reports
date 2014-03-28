@@ -55,7 +55,9 @@ from nti.app.products.courseware.interfaces import ICourseInstanceEnrollment
 from nti.app.products.gradebook.interfaces import IGrade
 from nti.app.products.gradebook.interfaces import IGradeBook
 from nti.app.products.gradebook.interfaces import IGradeBookEntry
+
 from nti.dataserver.interfaces import IUser
+from nti.dataserver.interfaces import IDeletedObjectPlaceholder
 from nti.dataserver.users.interfaces import IFriendlyNamed
 from nti.dataserver.users.users import User
 
@@ -489,8 +491,12 @@ class StudentParticipationReportPdf(_AbstractReportView):
 													 uidutil )
 		forum_objects_created_by_student_in_course = [x for x in forum_objects_created_by_student
 													  if find_interface(x, ICommunityBoard) == course_board]
+		
+		#We ignore deleted comments
+		live_objects = [x for x in forum_objects_created_by_student_in_course 
+						if not IDeletedObjectPlaceholder.providedBy( x ) ]
 		# Group the forum objects by day and week
-		time_buckets = _common_buckets(	forum_objects_created_by_student_in_course,
+		time_buckets = _common_buckets(	live_objects,
 										self.for_credit_student_usernames,
 										self.get_student_info)
 
@@ -498,7 +504,7 @@ class StudentParticipationReportPdf(_AbstractReportView):
 		# and how many comments in which topics (could be bulkData or actual blockTable)
 		topics_created = []
 		comment_count_by_topic = defaultdict(int)
-		for x in forum_objects_created_by_student_in_course:
+		for x in live_objects:
 			if ITopic.providedBy(x):
 				info = self.TopicCreated( x, x.title, x.__parent__.title, x.created )
 				topics_created.append(info)
@@ -507,7 +513,7 @@ class StudentParticipationReportPdf(_AbstractReportView):
 
 		topics_created.sort(key=lambda x: (x.forum_name, x.topic_name))
 		options['topics_created'] = topics_created
-		options['total_forum_objects_created'] = len(forum_objects_created_by_student_in_course)
+		options['total_forum_objects_created'] = len(live_objects)
 		options['comment_count_by_topic'] = sorted(comment_count_by_topic.items(),
 												   key=lambda x: (x[0].__parent__.title, x[0].title))
 		stat = _build_buckets_options(options, time_buckets)
@@ -654,7 +660,8 @@ class ForumParticipationReportPdf(_AbstractReportView):
 		def _all_comments():
 			for topic in self.context.values():
 				for comment in topic.values():
-					yield comment
+					if not IDeletedObjectPlaceholder.providedBy( comment ):
+						yield comment
 		buckets = _common_buckets(	_all_comments(), 
 									self.for_credit_student_usernames,
 									self.get_student_info,
@@ -668,9 +675,10 @@ class ForumParticipationReportPdf(_AbstractReportView):
 	def _build_comment_count_by_topic(self, options):
 		comment_count_by_topic = list()
 		top_creators = _TopCreators(self.for_credit_student_usernames,self.get_student_info)
+		
 		for topic in self.context.values():
 			count = len(topic)
-			user_count = len({c.creator for c in topic.values()})
+			user_count = len({c.creator for c in topic.values() if not IDeletedObjectPlaceholder.providedBy( c ) })
 			creator = self.get_student_info( topic.creator )
 			created = topic.created
 			comment_count_by_topic.append( self.TopicStats( topic.title, creator, created, count, user_count ))
@@ -1010,10 +1018,11 @@ class CourseSummaryReportPdf(_AbstractReportView):
 				total_discussion_count += 1
 				if discussion.creator.username in for_credit_students:
 					for_credit_discussion_count += 1
-				for topic in discussion.values():
-					total_comment_count += 1
-					if topic.creator.username in for_credit_students:
-						for_credit_comment_count += 1
+				for comment in discussion.values():
+					if not IDeletedObjectPlaceholder.providedBy( comment ):
+						total_comment_count += 1
+						if comment.creator.username in for_credit_students:
+							for_credit_comment_count += 1
 
 
 		data = dict()
