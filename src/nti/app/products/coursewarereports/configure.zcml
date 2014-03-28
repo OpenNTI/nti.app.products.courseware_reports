@@ -138,7 +138,8 @@
 		manager=".interfaces.IPDFReportHeaderManager" />
 
 	<!-- Assignment summary report -->
-
+<!--
+Disable for now
 	<z3c:template
 		template="templates/AssignmentSummaryReport.rml"
 		for=".views.AssignmentSummaryReportPdf"
@@ -150,7 +151,7 @@
 		layer="pyramid.interfaces.IRequest"
 		permission="zope.Public"
 		manager=".interfaces.IPDFReportHeaderManager" />
-
+-->
 
 	<!-- Default macros for the reports -->
 	<!--

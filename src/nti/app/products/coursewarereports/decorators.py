@@ -119,15 +119,16 @@ class _CourseSummaryReport(_AbstractInstructedByDecorator):
 							elements=(VIEW_COURSE_SUMMARY,),
 							title=_('Course Summary Report')) )
 
-@interface.implementer(ext_interfaces.IExternalMappingDecorator)
-@component.adapter(IGradeBookEntry, IRequest)
-class _AssignmentSummaryReport(_AbstractInstructedByDecorator):
-	"""
-	A link to return the assignment summary report.
-	"""
-	def _do_decorate_external( self, context, result_map ):
-		links = result_map.setdefault( LINKS, [] )
-		links.append( Link( context,
-							rel='report-%s' % VIEW_ASSIGNMENT_SUMMARY,
-							elements=(VIEW_ASSIGNMENT_SUMMARY,),
-							title=_('Assignment Summary Report')) )
+# Disable Assignment reports for now
+# @interface.implementer(ext_interfaces.IExternalMappingDecorator)
+# @component.adapter(IGradeBookEntry, IRequest)
+# class _AssignmentSummaryReport(_AbstractInstructedByDecorator):
+# 	"""
+# 	A link to return the assignment summary report.
+# 	"""
+# 	def _do_decorate_external( self, context, result_map ):
+# 		links = result_map.setdefault( LINKS, [] )
+# 		links.append( Link( context,
+# 							rel='report-%s' % VIEW_ASSIGNMENT_SUMMARY,
+# 							elements=(VIEW_ASSIGNMENT_SUMMARY,),
+# 							title=_('Assignment Summary Report')) )
