@@ -820,7 +820,13 @@ def _assignment_stat_for_column(self, column):
 		if grade.value is None:
 			continue
 
-		grade = grade.value if isinstance(grade.value, Number) else float(grade.value.split()[0])
+		#We could have values (19.3), combinations (19.3 A), or strings ('GR'); punt
+		#in the latter case for now
+		try:
+			grade = grade.value if isinstance(grade.value, Number) else float(grade.value.split()[0])
+		except TypeError:
+			continue
+		
 		all_grade_points.append( grade )
 		if username in for_credit_keys:
 			for_credit_grade_points.append(grade)

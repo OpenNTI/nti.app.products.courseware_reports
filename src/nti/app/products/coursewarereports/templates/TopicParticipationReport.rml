@@ -45,7 +45,6 @@
 		<nextPage />
 
 		<!-- We'll probably want to flow this one through two colums? -->
-
 		<h1 style="h1" spaceAfter=".5in" >
 			User Stats
 		</h1>

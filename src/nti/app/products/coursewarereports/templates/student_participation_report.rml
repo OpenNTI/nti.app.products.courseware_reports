@@ -57,7 +57,7 @@
 		Comments Created
 	</h2>
 	
-	<para style="subdesc" spaceAfter=".5in" >
+	<para style="subdesc" spaceAfter=".2in" >
 		This table represents the total number of comments created by ${options/user/display} for 
 		each forum discussion in the course. 
 	</para>
