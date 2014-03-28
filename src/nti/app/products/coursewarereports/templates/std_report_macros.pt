@@ -31,7 +31,7 @@
 
 	<stylesheet metal:define-macro="stylesheet">
 		<paraStyle 	name="report_title" 
-					style="h1" fontSize="20" 
+					fontSize="20" 
 					alignment='right' spaceAfter=".2in" 
 					textColor="#494949" fontName="Helvetica"/>
 	

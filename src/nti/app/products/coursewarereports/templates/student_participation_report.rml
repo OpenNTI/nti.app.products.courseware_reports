@@ -4,25 +4,24 @@
 	tal:define="options view/options">
 
 	<para style="normal" spaceAfter=".1in">
-		This report is an overview of activity for ${options/user/display}, and includes weekly 
-		forum participation, discussion activity, and user assignment statistics.
+		This report presents an overview of activity by ${options/user/display}, and includes weekly 
+		activity, discussion activity, and user assignment statistics.
 	</para>
 	
 	<hr width="100%" />
 
 	<h1 style="h1" spaceAfter=".5in">
-		Activity Over Time
+		Weekly Activity
 	</h1>
 	
 	<para style="subdesc" spaceAfter=".5in" >
-		This chart represents a breakdown of the total number of contributed 
-		comments (Forum Participation) by ${options/user/display} to the course 
-		forums for a given calendar week (Week Number).
+		This chart shows the number of comments made each week by ${options/user/display} to 
+		the course forums.
 	</para>
 	
 	<illustration width="5in" height="3in"
 				  tal:define="forum_stat options/student_forum_participation;
-					  		  value_axis_name string:Forum Participation"
+					  		  value_axis_name string:Comments"
 				  metal:use-macro="macro:forum_participation_over_time">
 	</illustration>
 
@@ -34,7 +33,7 @@
 	</h2>
 	
 	<para style="subdesc" spaceAfter=".5in" >
-		This table represents the breakdown of discussions created by ${options/user/display}.
+		This table shows the discussions created by ${options/user/display}.
 	</para>
 	
 		<blockTable style='default' tal:condition="options/topics_created">
@@ -58,7 +57,7 @@
 	</h2>
 	
 	<para style="subdesc" spaceAfter=".2in" >
-		This table represents the total number of comments created by ${options/user/display} for 
+		This table shows the number of comments created by ${options/user/display} for 
 		each forum discussion in the course. 
 	</para>
 	
