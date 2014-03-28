@@ -54,9 +54,10 @@
 				provides="nti.externalization.interfaces.IExternalMappingDecorator" />
 
 	<!-- A subscriber for getting the assignment summary report from the gradebook -->
+<!--
 	<subscriber factory=".decorators._AssignmentSummaryReport"
 				provides="nti.externalization.interfaces.IExternalMappingDecorator" />
-
+-->
 	<!-- Default layout for reports -->
 	<!--
 		NOTE: Not really necessary, each report view
