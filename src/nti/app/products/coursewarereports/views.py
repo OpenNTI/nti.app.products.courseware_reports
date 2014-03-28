@@ -824,7 +824,7 @@ def _assignment_stat_for_column(self, column):
 		#in the latter case for now
 		try:
 			grade = grade.value if isinstance(grade.value, Number) else float(grade.value.split()[0])
-		except TypeError:
+		except ValueError:
 			continue
 		
 		all_grade_points.append( grade )
