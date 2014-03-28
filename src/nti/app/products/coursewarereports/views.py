@@ -389,7 +389,6 @@ class _AbstractReportView(AbstractAuthenticatedView,
 						  BrowserPagelet):
 
 	def __init__(self, context, request):
-		#from IPython.core.debugger import Tracer; Tracer()() ##DEBUG##
 		self.options = {}
 		# Our two parents take different arguments
 		AbstractAuthenticatedView.__init__(self, request)

@@ -31,14 +31,19 @@
 
 	<stylesheet metal:define-macro="stylesheet">
 		<paraStyle name="h1" fontSize="30" textColor="#494949" fontName="Helvetica"/>
+		
 		<paraStyle name="h2" fontSize="15" textColor="#494949" fontName="Helvetica" keepWithNext="true"
 					spaceBefore=".5in" spaceAfter=".3in"/>
+		
 		<paraStyle name="normal" fontName="Helvetica" fontSize="12" textColor="#494949"
 				   leading="15" spaceAfter=".5in" />
-		<paraStyle name="subdesc" fontName="Helvetica" leftIndent="1in" rightIndent="1in" fontSize="10" textColor="#494949"
+		
+		<paraStyle name="subdesc" fontName="Helvetica" fontSize="10" textColor="#494949"
 				   leading="13" spaceAfter=".5in" />
+		
 		<paraStyle name="sendTo" leftIndent="0.5in" parent="normal" textColor="#494949"
 				   spaceBefore="10"/>
+		
 		<blockTableStyle id="default">
 			<lineStyle start="0,0" stop="-1,-1" kind="innergrid" thickness="0.25"
 					   colorName="black"/>

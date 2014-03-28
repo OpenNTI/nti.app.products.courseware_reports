@@ -4,25 +4,25 @@
 	tal:define="options view/options">
 
 		<para style="normal" spaceAfter="0in" >
-			This report is an overview of the '${context/__name__}' forum.  
-			The report includes weekly forum participation, top commenter activity, 
-			and user comment counts. 
+			This report presents an overview of the '${context/__name__}' forum.  It 
+			includes information about weekly forum participation, top commenter activity, 
+			and comment activity per student. 
 		</para>
 		
 		<hr width="100%" />
 
 		<h1 style="h1" fontSize="25" spaceBefore=".1in" spaceAfter=".4in">
-			Activity Over Time
+			Weekly Activity
 		</h1>
 		
 		<para style="subdesc" spaceAfter=".3in" >
-			This chart represents a breakdown of the number of comments created 
-			(Forum Participation) in '${context/__name__}' in a given calendar week (Week Number).
+			This chart shows the number of comments made each week 
+			in '${context/__name__}' since it was posted.
 		</para>
 
 		<illustration width="5in" height="3in"
 					  tal:define="forum_stat options/all_forum_participation;
-					  			  value_axis_name string:Forum Participation"
+					  			  value_axis_name string:Comments"
 					  metal:use-macro="macro:forum_participation_over_time">
 		</illustration>
 
@@ -115,12 +115,12 @@
 
 		<!-- We'll probably want to flow this one through two colums? -->
 		<h1 style="h1" spaceAfter=".5in" >
-			User Stats
+			Comment Activity
 		</h1>
 		
 		<para style="subdesc" spaceAfter=".4in">
-				This table indicates the number of comments a user has contributed 
-				to '${context/title}'. Users with zero comments are excluded from the table.
+				This table shows the number of comments a user has made 
+				to '${context/title}'. Those who have not contributed are excluded from the table.
 		</para>
 		
 		<blockTable style='default'>

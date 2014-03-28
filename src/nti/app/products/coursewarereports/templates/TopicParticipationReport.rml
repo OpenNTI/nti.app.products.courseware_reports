@@ -4,30 +4,30 @@
 	tal:define="options view/options">
 
 		<para style="normal" spaceAfter=".1in">
-			This report is an overview of the '${context/title}' discussion.
-			The report includes weekly forum participation, top commenter activity, and user comment counts.
+			This report presents an overview of the '${context/title}' discussion.
+			It includes information about weekly participation, top commenters, and comment activity per student.
 		</para>
 		<hr width="100%" />
 
 		<h1 style="h1" fontSize="24" spaceAfter=".4in">
-			Activity Over Time
+			Weekly Activity
 		</h1>
 		
 		<para style="subdesc" spaceAfter=".4in">
-			This chart represents a breakdown of the number of comments created (Discussion Participation) 
-			in '${context/title}' in a given calendar week (Week Number).
+			This chart shows the number of comments made each week
+			in '${context/title}' since it was posted.
 		</para>
 
 		<illustration width="5in" height="3in"
 					  tal:define="forum_stat options/all_forum_participation;
-					  			  value_axis_name string:Discussion Participation"
+					  			  value_axis_name string:Comments"
 					  metal:use-macro="macro:forum_participation_over_time">
 		</illustration>
 
 		<para spaceBefore=".8in" fontSize="10" textColor="#494949" leading="14"  tal:condition="options/top_commenters">
 			This topic has ${options/top_commenters/total} comments by
-			${python:len(options['top_commenters'].keys())} distinct users.
-			It was created on ${context/created/date} and it's most recent activity was on
+			${python:len(options['top_commenters'].keys())} users.
+			It was created on ${context/created/date}, and its most recent activity was on
 			${context/NewestDescendant/created/date}.
 		</para>
 
@@ -46,12 +46,12 @@
 
 		<!-- We'll probably want to flow this one through two colums? -->
 		<h1 style="h1" spaceAfter=".5in" >
-			User Stats
+			Comment Activity
 		</h1>
 		
 		<para style="subdesc" spaceAfter=".4in">
-				This table indicates the number of comments a user has contributed 
-				to '${context/title}'.  Users with zero comments are excluded from the table.
+				This table shows the number of comments each participant has made 
+				to '${context/title}'.  Those who have not contributed are excluded from the table.
 		</para>
 		
 		<blockTable style='default'>
