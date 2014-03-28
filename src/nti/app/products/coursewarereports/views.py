@@ -29,6 +29,8 @@ from collections import defaultdict
 from datetime import datetime
 
 import BTrees
+import pytz
+
 from pyramid.view import view_config
 from pyramid.view import view_defaults
 from pyramid.traversal import find_interface
@@ -82,6 +84,22 @@ import reportlab.platypus.paragraph
 class _SplitText(unicode):
 	pass
 reportlab.platypus.paragraph._SplitText = _SplitText
+
+def _adjust_timestamp( timestamp ):
+	"""Takes a timestamp and returns a timezoned datetime"""
+	date = datetime.utcfromtimestamp( timestamp ) 
+	return _adjust_date( date )
+
+def _adjust_date( date ):
+	"""Takes a date and returns a timezoned datetime"""
+	#TODO Hard code everything to CST for now
+	utc_date = pytz.utc.localize( date )
+	cst_tz = pytz.timezone('US/Central')
+	return utc_date.astimezone( cst_tz )
+
+def _format_datetime( local_date ):
+	"""Returns a string formatted datetime object"""
+	return local_date.strftime("%Y-%m-%d %H:%M")
 
 def _get_self_assessments_for_course(course):
 	"""
@@ -260,7 +278,7 @@ def _common_buckets(objects,for_credit_students,get_student_info,agg_creators=No
 
 		forum_objects_by_day[k] = count
 
-		year_num, week_num, _ = datetime.utcfromtimestamp(k).isocalendar()
+		year_num, week_num, _ = _adjust_timestamp(k).isocalendar()
 		# Because sometimes forums can wrap around years (e.g, start
 		# in the fall of 2013, run through the spring of 2014),
 		# we use week numbers that include the year so everything
@@ -371,6 +389,7 @@ class _AbstractReportView(AbstractAuthenticatedView,
 						  BrowserPagelet):
 
 	def __init__(self, context, request):
+		#from IPython.core.debugger import Tracer; Tracer()() ##DEBUG##
 		self.options = {}
 		# Our two parents take different arguments
 		AbstractAuthenticatedView.__init__(self, request)
@@ -448,6 +467,16 @@ class _AbstractReportView(AbstractAuthenticatedView,
 	
 		return _StudentInfo( display_name, user_name )
 
+class _AssignmentInfo(object):
+
+	def __init__(self,title,submitted,submitted_late,grade_value,history,due_date):
+		self.title = title
+		self.submitted = submitted
+		self.submitted_late = submitted_late
+		self.grade_value = grade_value
+		self.history = history
+		self.due_date = due_date
+
 @view_config(context=ICourseInstanceEnrollment,
 			 name=VIEW_STUDENT_PARTICIPATION)
 class StudentParticipationReportPdf(_AbstractReportView):
@@ -456,8 +485,6 @@ class StudentParticipationReportPdf(_AbstractReportView):
 
 	TopicCreated = namedtuple('TopicCreated',
 							  ('topic', 'topic_name', 'forum_name', 'created'))
-	AssignmentInfo = namedtuple('AssignmentInfo',
-								('title', 'submitted', 'grade_value', 'history', 'due_date'))
 
 	@Lazy
 	def student_user(self):
@@ -578,11 +605,22 @@ class StudentParticipationReportPdf(_AbstractReportView):
 			else:
 				grade_value = ''
 				submitted = ''
-			asg_data.append(self.AssignmentInfo(assignment.title, submitted,
-												grade_value, history_item,
-												assignment.available_for_submission_ending))
+			due_date = assignment.available_for_submission_ending
+			submitted_late = submitted > due_date if due_date and submitted else False
+			
+			asg_data.append(_AssignmentInfo(assignment.title, submitted, 
+											submitted_late,
+											grade_value, history_item,
+											due_date) )
 
+		#Sort null due_dates to end of result
 		asg_data.sort(key=lambda x: (x.due_date is None, x.due_date, x.title))
+		#Toggle timezones
+		for x in asg_data:
+			if x.due_date:
+				x.due_date = _format_datetime( _adjust_date( x.due_date ) )
+			if x.submitted:
+				x.submitted = _format_datetime( _adjust_date( x.submitted ) )
 		options['assignments'] = asg_data
 
 
@@ -770,7 +808,9 @@ class TopicParticipationReportPdf(ForumParticipationReportPdf):
 		return self._course_from_forum(self.context.__parent__)
 
 	def _build_top_commenters(self, options):
-		buckets = _common_buckets(	self.context.values(), 
+		live_objects = [x for x in self.context.values() 
+						if not IDeletedObjectPlaceholder.providedBy( x ) ]
+		buckets = _common_buckets(	live_objects, 
 									self.for_credit_student_usernames,
 									self.get_student_info )
 		options['top_commenters'] = buckets.top_creators
@@ -829,12 +869,10 @@ def _assignment_stat_for_column(self, column):
 	for_credit_grade_points = list()
 	non_credit_grade_points = list()
 	all_grade_points = list()
+	for_credit_total = non_credit_total = 0
 
 	# Separate credit and non-credit
 	for username, grade in column.items():
-		if grade.value is None:
-			continue
-
 		#We could have values (19.3), combinations (19.3 A), or strings ('GR'); punt
 		#in the latter case for now
 		try:
@@ -842,14 +880,18 @@ def _assignment_stat_for_column(self, column):
 		except ValueError:
 			continue
 		
-		all_grade_points.append( grade )
+		#We still increase count of attempts, even if the assignment is ungraded.
 		if username in for_credit_keys:
-			for_credit_grade_points.append(grade)
+			for_credit_total += 1
+			if grade:
+				all_grade_points.append( grade )
+				for_credit_grade_points.append( grade )
 		else:
-			non_credit_grade_points.append(grade)
+			non_credit_total += 1
+			if grade:
+				all_grade_points.append( grade )
+				non_credit_grade_points.append( grade )
 
-	for_credit_total = len(for_credit_grade_points)
-	non_credit_total = len(non_credit_grade_points)
 	total = for_credit_total + non_credit_total
 
 	for_credit_grade_points = asarray(for_credit_grade_points)
@@ -1107,8 +1149,8 @@ class CourseSummaryReportPdf(_AbstractReportView):
 			forum_view.options = forum_stat
 			
 			last_mod_ts = forum.NewestDescendantCreatedTime
-			last_mod_time = datetime.utcfromtimestamp( last_mod_ts ) if last_mod_ts > 0 else None
-			forum_stat['last_modified'] = last_mod_time.strftime("%Y-%m-%d %H:%M") if last_mod_time else 'N/A'
+			last_mod_time = _adjust_timestamp( last_mod_ts ) if last_mod_ts > 0 else None
+			forum_stat['last_modified'] = _format_datetime( last_mod_time ) if last_mod_time else 'N/A'
 			
 			forum_stat['discussion_count'] = len( forum.values() )
 			forum_stat['total_comments'] = sum( len(disc) for disc in forum.values() )

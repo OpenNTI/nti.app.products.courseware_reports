@@ -124,8 +124,9 @@
 			</tr>
 			<tr tal:repeat="item options/assignments">
 				<td tal:content="item/title">The Assignment Name</td>
-				<td tal:content="item/submitted/date | default"></td>
-				<td tal:content="item/due_date/date | default"></td>
+				<td tal:content="item/submitted | default"
+					tal:attributes="fontColor python: 'red' if item.submitted_late else 'black'"></td>
+				<td tal:content="item/due_date | default"></td>
 				<td align="decimal" tal:content="item/grade_value">A+</td>
 				<td align="decimal" tal:content="item/history/FeedbackCount | default"></td>
 			</tr>
