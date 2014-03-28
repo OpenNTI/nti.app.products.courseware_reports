@@ -696,6 +696,11 @@ class ForumParticipationReportPdf(_AbstractReportView):
 		user_stats = list()
 		only_one = 0
 		for uname in everyone_that_did_something:
+# 			if isinstance( uname, basestring ):
+# 				student_info = self.get_student_info( uname )
+# 			else:
+# 				#from IPython.core.debugger import Tracer; Tracer()() ##DEBUG##
+# 				student_info = self.build_user_info( uname )
 			student_info = self.get_student_info( uname )
 			stat = self.UserStats(	student_info, 
 									creators.get(uname, 0), 
@@ -748,6 +753,8 @@ class ForumParticipationReportPdf(_AbstractReportView):
 
 		return options
 
+_TopicInfo = namedtuple('_TopicInfo',
+							('topic_name', 'forum_name'))
 
 @view_config(context=ICommunityHeadlineTopic,
 			 name=VIEW_TOPIC_PARTICIPATION)
@@ -768,6 +775,10 @@ class TopicParticipationReportPdf(ForumParticipationReportPdf):
 		all_forum_stat = _build_buckets_options(options, buckets)
 		options['all_forum_participation'] = all_forum_stat
 
+	def _build_topic_info(self):
+		topic_name = self.context.title
+		forum_name = self.context.__parent__.title
+		return _TopicInfo( topic_name, forum_name )
 
 	def __call__(self):
 		"""
@@ -782,6 +793,7 @@ class TopicParticipationReportPdf(ForumParticipationReportPdf):
 		options = self.options
 		self._build_top_commenters(options)
 		options['top_creators'] = dict()
+		options['topic_info'] = self._build_topic_info()
 #		self._build_comment_count_by_topic(options)
 		self._build_user_stats(options)
 

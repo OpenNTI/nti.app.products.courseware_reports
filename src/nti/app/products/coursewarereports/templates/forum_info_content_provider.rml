@@ -1,8 +1,18 @@
-<tr>
-	<td>Forum:</td>
-	<td tal:content="context/title">title</td>
-</tr>
-<tr>
-	<td>Course:</td>
-	<td tal:content="view/__parent__/course/__name__">Course</td>
-</tr>
+
+<metal:block 
+	tal:define="map view/__parent__/options" >
+	
+	<tr tal:condition="python: 'topic_info' in map">
+		<td>Discussion:</td>
+		<td tal:define="topic_info map/topic_info">${topic_info/forum_name}/${topic_info/topic_name}</td>
+	</tr>
+	<tr tal:condition="python:'topic_info' not in map">
+		<td>Forum:</td>
+		<td tal:content="context/title">title</td>
+	</tr>
+	<tr>
+		<td>Course:</td>
+		<td tal:content="view/__parent__/course/__name__">Course</td>
+	</tr>
+
+</metal:block>
