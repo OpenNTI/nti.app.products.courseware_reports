@@ -671,7 +671,7 @@ class ForumParticipationReportPdf(_AbstractReportView):
 		for topic in self.context.values():
 			count = len(topic)
 			user_count = len({c.creator for c in topic.values()})
-			creator = topic.creator
+			creator = self.get_student_info( topic.creator )
 			created = topic.created
 			comment_count_by_topic.append( self.TopicStats( topic.title, creator, created, count, user_count ))
 

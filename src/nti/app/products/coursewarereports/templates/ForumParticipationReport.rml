@@ -54,7 +54,7 @@
 			</tr>
 			<tr tal:repeat="item options/comment_count_by_topic">
 				<td> <para tal:content="item/title">Forum title</para></td>
-				<td tal:content="item/creator">Steve</td>
+				<td tal:content="item/creator/display">Steve</td>
 				<td align="right" tal:content="item/created/date">2014-01-01</td>
 				<td align="decimal" tal:content="item/comment_count">25</td>
 				<td align="decimal" tal:content="item/distinct_user_count">3</td>
