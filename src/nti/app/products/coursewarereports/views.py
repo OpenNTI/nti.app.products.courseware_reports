@@ -185,25 +185,19 @@ class _TopCreators(object):
 		# In typical data, 'everyone else' far overwhelms
 		# the top 10 commenters, so we are giving it a small value
 		# (one-eighth of the pie),
-		# but including it as a percentage in its label
 		# TODO: Better way to do this?
 		largest = heapq.nlargest(10, data.items(), key=lambda x: x[1])
 		
 		largest = [ self._build_student_info(x) for x in largest ]
-		# Give percentages to the usernames
-# 		largest = [('%s (%0.1f%%)' % (	self._get_student_info(x[0]).display,
-# 										(x[1] / self.total) * 100), x[1]) 
-# 										for x in largest]
 		
 		#Get aggregate remainder
 		if len(data) > len(largest):
-			self.largest_total = sum( (x.count for x in largest) )
-			remainder = total_to_change - self.largest_total
+			largest_total = sum( (x.count for x in largest) )
+			remainder = total_to_change - largest_total
 			# TODO: Localize and map this
 			percent = (remainder / total_to_change) * 100
-			label = 'Others (%0.1f%%)' % percent
-			self.aggregate = _StudentInfo( label, 'Others', remainder, percent )
-			largest.append( self.aggregate )
+			aggregate_remainder = _StudentInfo( 'Others', 'Others', largest_total // 8, percent )
+			largest.append( aggregate_remainder )
 		return largest
 
 	def __iter__(self):
@@ -216,14 +210,7 @@ class _TopCreators(object):
 	__nonzero__ = __bool__
 
 	def series(self):
-		#TODO double check this logic
-		result = ' '.join( ('%d' % x.count for x in self._get_largest() ) )
-		#TODO move this above
-		#Toss in our aggregate if we have one, which we allow to take up 1/8th of the pie
-		if self.aggregate:
-			return result + ( ' %d' % ( self.largest_total // 8 ) )
-		return result
-		#return ' '.join( ('%d' % x[1] for x in self._get_largest()) )
+		return ' '.join( ('%d' % x.count for x in self._get_largest() ) )
 
 	@property
 	def for_credit_total(self):
