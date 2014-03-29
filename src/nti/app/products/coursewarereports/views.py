@@ -201,9 +201,7 @@ class _TopCreators(object):
 		return largest
 
 	def __iter__(self):
-		#TODO what iterates over this?
-		#from IPython.core.debugger import Tracer; Tracer()() ##DEBUG##
-		return (x[0] for x in self._get_largest())
+		return iter(self._get_largest())
 
 	def __bool__(self):
 		return bool(self._data)
