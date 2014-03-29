@@ -148,6 +148,8 @@ class _TopCreators(object):
 	total = 0
 	title = ''
 	max_contributors = None
+	aggregate = None
+	largest_total = 0
 
 	def __init__(self,for_credit_students,get_student_info):
 		self._get_student_info = get_student_info
@@ -169,29 +171,44 @@ class _TopCreators(object):
 	def _get_for_credit_largest(self):
 		return self._do_get_largest(self._for_credit_data, self.for_credit_total)
 
+	def _build_student_info(self,stat):
+		student_info = self._get_student_info( stat[0] )
+		count = stat[1]
+		perc = count / self.total * 100
+		return _StudentInfo( 	student_info.display,
+								student_info.username,
+								count, perc )
+
 	def _do_get_largest(self,data,total_to_change):
-		# Returns the top commenter names, up to (arbitrarily) 15
+		# Returns the top commenter names, up to (arbitrarily) 10
 		# of them, with the next being 'everyone else'
 		# In typical data, 'everyone else' far overwhelms
-		# the top 15 commenters, so we are giving it a small value
+		# the top 10 commenters, so we are giving it a small value
 		# (one-eighth of the pie),
 		# but including it as a percentage in its label
 		# TODO: Better way to do this?
 		largest = heapq.nlargest(10, data.items(), key=lambda x: x[1])
+		
+		largest = [ self._build_student_info(x) for x in largest ]
 		# Give percentages to the usernames
-		largest = [('%s (%0.1f%%)' % (	self._get_student_info(x[0]).display,
-										(x[1] / self.total) * 100), x[1]) 
-										for x in largest]
+# 		largest = [('%s (%0.1f%%)' % (	self._get_student_info(x[0]).display,
+# 										(x[1] / self.total) * 100), x[1]) 
+# 										for x in largest]
+		
+		#Get aggregate remainder
 		if len(data) > len(largest):
-			# We didn't account for everyone, we need to
-			largest_total = sum( (x[1] for x in largest) )
-			remainder = total_to_change - largest_total
+			self.largest_total = sum( (x.count for x in largest) )
+			remainder = total_to_change - self.largest_total
 			# TODO: Localize and map this
 			percent = (remainder / total_to_change) * 100
-			largest.append( ('Others (%0.1f%%)' % percent, largest_total // 8) )
+			label = 'Others (%0.1f%%)' % percent
+			self.aggregate = _StudentInfo( label, 'Others', remainder, percent )
+			largest.append( self.aggregate )
 		return largest
 
 	def __iter__(self):
+		#TODO what iterates over this?
+		#from IPython.core.debugger import Tracer; Tracer()() ##DEBUG##
 		return (x[0] for x in self._get_largest())
 
 	def __bool__(self):
@@ -199,7 +216,14 @@ class _TopCreators(object):
 	__nonzero__ = __bool__
 
 	def series(self):
-		return ' '.join( ('%d' % x[1] for x in self._get_largest()) )
+		#TODO double check this logic
+		result = ' '.join( ('%d' % x.count for x in self._get_largest() ) )
+		#TODO move this above
+		#Toss in our aggregate if we have one, which we allow to take up 1/8th of the pie
+		if self.aggregate:
+			return result + ( ' %d' % ( self.largest_total // 8 ) )
+		return result
+		#return ' '.join( ('%d' % x[1] for x in self._get_largest()) )
 
 	@property
 	def for_credit_total(self):
@@ -362,8 +386,12 @@ FORUM_OBJECT_MIMETYPES = ['application/vnd.nextthought.forums.generalforumcommen
 ENGAGEMENT_OBJECT_MIMETYPES = ['application/vnd.nextthought.note',
 							   'application/vnd.nextthought.highlight']
 
-_StudentInfo = namedtuple('_StudentInfo',
-					 	 ('display', 'username'))
+class _StudentInfo( namedtuple( '_StudentInfo', 
+								('display', 'username', 'count', 'perc' ))):
+	"""Holds general student info. 'count' and 'perc' are optional values"""
+	def __new__( self, display, username, count=None, perc=None ):
+		return super(_StudentInfo,self).__new__( self,display,username,count,perc )
+	
 
 from nti.contenttypes.courses.interfaces import is_instructed_by_name
 from pyramid.httpexceptions import HTTPForbidden
@@ -703,7 +731,9 @@ class ForumParticipationReportPdf(_AbstractReportView):
 		
 		for topic in self.context.values():
 			count = len(topic)
-			user_count = len({c.creator for c in topic.values() if not IDeletedObjectPlaceholder.providedBy( c ) })
+			user_count = len(	{c.creator 
+								for c in topic.values() 
+								if not IDeletedObjectPlaceholder.providedBy( c ) })
 			creator = self.get_student_info( topic.creator )
 			created = topic.created
 			comment_count_by_topic.append( self.TopicStats( topic.title, creator, created, count, user_count ))
