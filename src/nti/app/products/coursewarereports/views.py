@@ -875,22 +875,24 @@ def _assignment_stat_for_column(self, column):
 
 	# Separate credit and non-credit
 	for username, grade in column.items():
-		#We could have values (19.3), combinations (19.3 A), or strings ('GR'); punt
-		#in the latter case for now
-		try:
-			grade = grade.value if isinstance(grade.value, Number) else float(grade.value.split()[0])
-		except ValueError:
-			continue
+		# We could have values (19.3), combinations (19.3 A), or strings ('GR'); punt
+		# in the latter case for now
+		if grade is not None:
+			try:
+				grade = grade.value if isinstance(grade.value, Number) \
+						else float(grade.value.split()[0])
+			except ValueError:
+				continue
 		
-		#We still increase count of attempts, even if the assignment is ungraded.
+		# We still increase count of attempts, even if the assignment is ungraded.
 		if username in for_credit_keys:
 			for_credit_total += 1
-			if grade:
+			if grade is not None:
 				all_grade_points.append( grade )
 				for_credit_grade_points.append( grade )
 		else:
 			non_credit_total += 1
-			if grade:
+			if grade is not None:
 				all_grade_points.append( grade )
 				non_credit_grade_points.append( grade )
 
