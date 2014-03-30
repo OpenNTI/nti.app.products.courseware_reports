@@ -851,8 +851,6 @@ from numpy import asarray
 from numpy import average
 from numpy import median
 from numpy import std
-from numpy import var
-
 
 _AssignmentStat = namedtuple('_AssignmentStat',
 							 ('title', 'count', 'due_date',
@@ -877,12 +875,14 @@ def _assignment_stat_for_column(self, column):
 	for username, grade in column.items():
 		# We could have values (19.3), combinations (19.3 A), or strings ('GR'); punt
 		# in the latter case for now
-		if grade is not None:
+		if grade.value is not None:
 			try:
 				grade = grade.value if isinstance(grade.value, Number) \
 						else float(grade.value.split()[0])
 			except ValueError:
 				continue
+		else:
+			continue
 		
 		# We still increase count of attempts, even if the assignment is ungraded.
 		if username in for_credit_keys:
