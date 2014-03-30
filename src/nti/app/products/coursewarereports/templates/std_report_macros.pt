@@ -18,7 +18,7 @@
 				   showBoundary="1" />
 			<frame id="first" x1="0.5in" y1="0.5in" width="7in" height="9in"/>
 		</pageTemplate>
-		<pageTemplate id="main"> <!-- Deprecated? -->
+		<pageTemplate id="main">
 			<frame id="first" x1="0.5in" y1="0.5in" width="7in" height="10in"/>
 		</pageTemplate>
 
@@ -26,7 +26,7 @@
 			<frame id="two_charts_main" x1="0.5in" y1="0.5in" width="7in" height="10in"/>
 			<frame id="callout" x1="6in" y1="1in" width="8in" height="5in" showBoundary="1" />
 		</pageTemplate>
-
+		
 	</template>
 
 	<stylesheet metal:define-macro="stylesheet">
@@ -48,7 +48,21 @@
 		
 		<paraStyle name="sendTo" leftIndent="0.5in" parent="normal" textColor="#494949"
 				   spaceBefore="10"/>
+
+<!-- It doesn't appear this works with header rows for some reason.
+	 Set values for the table and manually convert the headers.		
+		<blockTableStyle id="default">
+			<lineStyle 	start="0,0" stop="-1,0" 
+						kind="linebelow" 
+						thickness="1"
+					   	colorName="#e9e9e9"/>
 		
+			<blockTextColor start="0,0" stop="-1,0" colorName="#b8b8b8" />
+			<blockFont start="0,0" stop="-1,0" name="Helvetica-Bold" size="10" />
+			<blockTextColor start="0,0" stop="-1,-1" colorName="#494949" />
+			<blockFont start="0,0" stop="-1,-1" name="Helvetica" size="12" />
+		</blockTableStyle>
+-->		
 		<blockTableStyle id="default">
 			<lineStyle start="0,0" stop="-1,-1" kind="innergrid" thickness="0.25"
 					   colorName="black"/>
@@ -125,6 +139,25 @@
 		</barChart>
 	</illustration>
 
+
+	<metal:macro metal:define-macro="comment_table" >
+		<blockTable alignment="left" colWidths="33% 33% 12% 12%" style="default"
+			tal:define="tc options/top_commenters">
+			<tr>
+				<td>Display Name</td>
+				<td>Username</td>
+				<td>Count</td>
+				<td>Percent</td>
+			</tr>
+			<tr tal:repeat="item python: [x for x in tc if x.username != 'Others' ] ">
+				<td tal:content="item/display">Display Name</td>
+				<td tal:content="item/username">Username</td>
+				<td align="decimal" tal:content="item/count">count</td>
+				<td align="decimal" tal:content="python: '%0.1f%%' % item.perc">percent</td>
+			</tr>
+		</blockTable>
+	</metal:macro>
+
 	<illustration width="4in" height="4in"
 				  metal:define-macro="forum_top_commenters"
 				  tal:attributes="width top_commenters_ill_width|default;
@@ -142,8 +175,6 @@
 			<labels>
 				<label tal:repeat="item top_commenters|options/top_commenters"
 					   tal:content="python: item.display + ' (%0.1f%%)' % item.perc">User1</label>
-				<label tal:condition="False">User2</label>
-				<label tal:condition="False">User3</label>
 			</labels>
 			<slices>
 				<!-- The last element is the "everyone else"; it has a

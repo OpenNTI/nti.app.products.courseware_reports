@@ -21,7 +21,7 @@
 				   showBoundary="0" />
 			<frame id="first" x1="0.5in" y1="0.5in" width="10in" height="6in"/>
 		</pageTemplate>
-		<pageTemplate id="main"> <!-- Deprecated? -->
+		<pageTemplate id="main">
 			<frame id="first" x1="0.5in" y1="0.5in" width="10in" height="7.5in"/>
 		</pageTemplate>
 
@@ -31,18 +31,10 @@
 			<frame id="callout" x1="8in" y1="5.5in" width="4in" height="4in" showBoundary="0" />
 		</pageTemplate>
 		
-		<!-- 
-		<pageTemplate id="two_charts">
-			<frame id="two_charts_main" x1="0.5in" y1="0.5in" width="7in" height="10in"/>
-			<frame id="callout" x1="6in" y1="1in" width="8in" height="5in" showBoundary="1" />
+		<pageTemplate id="table_pie">
+			<frame id="table_frame" x1="0.5in" y1="0in" width="5in" height="8in" showBoundary="0"/>
+			<frame id="pie_frame" x1="5.5in" y1="0in" width="5in" height="7in" showBoundary="0" />
 		</pageTemplate>
-		
-				<pageTemplate id="two_charts">
-			<frame id="two_charts_main" x1="0.5in" y1="0.5in" width="7in" height="10in"/>
-			<frame id="callout" x1="6in" y1="1in" width="4in" height="3in" showBoundary="1" />
-		</pageTemplate>
-		
-		-->
 
 	</template>
 

@@ -31,17 +31,28 @@
 			${context/NewestDescendant/created/date}.
 		</para>
 
+		<setNextTemplate name="table_pie" />
+		
 		<nextPage />
-
+		
 		<h1 style="h1" spaceAfter="1in">
 			Top Commenters
 		</h1>
-
+		
+		<nextFrame name="table_frame" />
+		
+		<metal:macro metal:use-macro="macro:comment_table" />
+		
+		<nextFrame name="pie_frame" />
+		
 		<illustration width="6in" height="6in"
 					  tal:define="top_commenters options/top_commenters;
 								  top_commenters_colors options/top_commenters_colors"
 					  metal:use-macro="macro:forum_top_commenters">
 		</illustration>
+		
+		
+		<setNextTemplate name="main"/>
 		<nextPage />
 
 		<!-- We'll probably want to flow this one through two colums? -->
@@ -54,7 +65,7 @@
 				to '${context/title}'.  Those who have not contributed are excluded from the table.
 		</para>
 		
-		<blockTable style='default'>
+		<blockTable style="default">
 			<tr>
 				<td>Display Name</td>
 				<td>Username</td>

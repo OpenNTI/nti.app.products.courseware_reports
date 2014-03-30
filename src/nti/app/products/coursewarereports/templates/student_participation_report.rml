@@ -61,11 +61,13 @@
 		each forum discussion in the course. 
 	</para>
 	
-		<blockTable style='default' tal:condition="options/comment_count_by_topic">
+		<blockTable style='default' 
+					colWidths="40% 40% 20%"
+					tal:condition="options/comment_count_by_topic">
 			<tr>
-				<td><para>Forum Name</para></td>
-				<td><para>Discussion Name</para></td>
-				<td><para>Comment Count</para></td>
+				<td>Forum Name</td>
+				<td>Discussion Name</td>
+				<td>Comment Count</td>
 			</tr>
 			<tr tal:repeat="item options/comment_count_by_topic">
 				<td tal:content="python:item[0].__parent__.title">The Forum Name</td>
@@ -87,10 +89,10 @@
 	<h2 fontSize="15" textColor="#494949" spaceAfter="0.3in" spaceBefore="0.5in" fontName="Helvetica">
 		Self-Assessments
 	</h2>	
-		<blockTable style='default' tal:condition="options/self_assessment_title_to_count">
+		<blockTable style='default' colWidths="70% 30%" tal:condition="options/self_assessment_title_to_count">
 			<tr>
-				<td><para>Assessment Title</para></td>
-				<td><para>Attempts</para></td>
+				<td>Assessment Title</td>
+				<td>Attempts</td>
 			</tr>
 			<tr tal:repeat="item options/self_assessment_title_to_count">
 				<td tal:content="python:item[0]">The Assessment Title</td>
@@ -113,7 +115,9 @@
 	<h2 fontSize="15" textColor="#494949" spaceAfter="0.3in" spaceBefore="0.5in" fontName="Helvetica">
 		Assignments
 	</h2>
-		<blockTable style='default' tal:condition="options/assignments">
+		<blockTable style='default' 
+					colWidths="35% 20% 20% 15% 15%"
+					tal:condition="options/assignments">
 			<tr>
 				<td><para>Assignment Name</para></td>
 				<td><para>Date Submitted</para></td>
