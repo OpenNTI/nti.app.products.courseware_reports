@@ -4,7 +4,7 @@
 	tal:define="options view/options">
 
 
-		<h1 fontSize="15" textColor="#494949" spaceAfter=".3in" fontName="Helvetica" keepWithNext='true'>
+		<h1 style="h1" spaceAfter=".3in">
 			Assignment Overview
 		</h1>
 		
@@ -27,9 +27,9 @@
 			</tr>
 		</blockTable>
 		
-		<h1 fontSize="15" textColor="#494949" spaceBefore=".7in" spaceAfter=".3in" fontName="Helvetica" keepWithNext='true'>
+		<h2 style="h2" spaceBefore=".7in" spaceAfter=".3in" keepWithNext='true'>
 			Assignment Results
-		</h1>
+		</h2>
 		<blockTable style='default'>
 			<tr>
 				<td><para>Assignment Title</para></td>
@@ -51,7 +51,7 @@
 
 		<condPageBreak height="3in" />
 
-		<h1 fontSize="30" textColor="#494949" spaceAfter=".3in" spaceBefore="1in" fontName="Helvetica" keepWithNext='true'>
+		<h1 style="h1" spaceAfter=".3in" spaceBefore="1in" >
 			Question Breakdown
 		</h1>
 		<hr width="100%" />
