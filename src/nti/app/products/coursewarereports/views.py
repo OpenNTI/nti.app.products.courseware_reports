@@ -921,7 +921,7 @@ def _assignment_stat_for_column(self, column):
 		agg_array = all_grade_points
 		agg_avg_grade = average(agg_array)
 		avg_grade_s = '%0.1f' % agg_avg_grade
-		median_grade = median(agg_avg_grade)
+		median_grade = median(agg_array)
 		std_dev_grade = std(agg_array)
 	elif for_credit_total:
 		avg_grade_s = for_credit_avg_grade_s
