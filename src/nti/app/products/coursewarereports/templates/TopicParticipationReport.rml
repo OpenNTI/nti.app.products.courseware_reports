@@ -13,14 +13,19 @@
 			Weekly Activity
 		</h1>
 		
-		<para style="subdesc" spaceAfter=".4in">
+		<para style="subdesc" spaceAfter=".4in"
+				tal:condition="options/all_forum_participation">
 			This chart shows the number of comments made each week
 			in <u>${context/title|context/__name__}</u> since it was posted.
 		</para>
+		<para tal:condition="not:options/all_forum_participation">
+			This topic does not have any comments.
+		</para>		
 
 		<illustration width="5in" height="3in"
 					  tal:define="forum_stat options/all_forum_participation;
 					  			  value_axis_name string:Comments"
+					  tal:condition="options/all_forum_participation"
 					  metal:use-macro="macro:forum_participation_over_time">
 		</illustration>
 
@@ -43,14 +48,20 @@
 		
 		<nextFrame name="table_frame" />
 		
-		<metal:macro tal:define="top_commenters options/top_commenters"
+		<metal:macro 	tal:define="top_commenters options/top_commenters"
+						tal:condition="options/top_commenters"
 						metal:use-macro="macro:comment_table" />
+						
+		<para tal:condition="not:options/top_commenters">
+			This topic does not have any comments.
+		</para>				
 		
 		<nextFrame name="pie_frame" />
 		
 		<illustration width="6in" height="6in"
 					  tal:define="top_commenters options/top_commenters;
 								  top_commenters_colors options/top_commenters_colors"
+					  tal:condition="options/top_commenters"	
 					  metal:use-macro="macro:forum_top_commenters">
 		</illustration>
 		
@@ -63,12 +74,17 @@
 			Comment Activity
 		</h1>
 		
-		<para style="subdesc" spaceAfter=".4in">
+		<para style="subdesc" spaceAfter=".4in"
+				tal:condition="options/user_stats">
 				This table shows the number of comments participants have posted 
 				to <u>${context/title|context/__name__}</u>.  Those who have not contributed are excluded from the table.
 		</para>
+		<para tal:condition="not:options/user_stats">
+			This topic does not have any comments.
+		</para>		
 		
-		<blockTable style="default">
+		<blockTable style="default"
+					tal:condition="options/user_stats">
 			<tr>
 				<td>Name</td>
 				<td>Username</td>

@@ -22,6 +22,9 @@
 			 ${python:request.localizer.pluralize('student', 'students', options['count_total'])} taking this
 			course.
 		</para>
+		<para tal:condition="not:options/count_open">
+			This course does not have any users.
+		</para>		
 
 		<illustration width="4in" height="4in">
 		<pieChart dx="2in" dy="0in" dwidth="4in" dheight="4in" x="1in" y="0" width="4in"
@@ -101,6 +104,9 @@
 				<td align="decimal" tal:content="item/for_credit_attempted_perc">Percent attempted</td>
 			</tr>
 		</blockTable>
+		<para tal:condition="not:options/assignment_data">
+			This course contains no assignments.
+		</para>	
 
 		<h2 style="h2">
 			Assignments: Results
@@ -133,17 +139,28 @@
 			Student Activity
 		</h1>
 		
-		<para style="subdesc" spaceAfter=".1in">
+		<para style="subdesc" spaceAfter=".1in"
+				tal:condition="options/engagement_data_for_credit">
 			The following items show activity taking place in ${context/__name__}. This information
 			includes the number of discussions, comments, notes, and highlights created by all the students
 			in the course, where applicable. 
 		</para>
 		<hr width="100%" />
+		
+		<para tal:condition="not:options/engagement_data_for_credit">
+			This course does not have any student activity.
+		</para>
 
 		<h2 style="h2">
 			Activity: For-Credit Students
 		</h2>
-		<blockTable style='default' alignment="left">
+		
+		<para tal:condition="not:options/engagement_data_for_credit">
+			This course does not have any for-credit student activity.
+		</para>
+		
+		<blockTable style='default' alignment="left"
+					tal:condition="options/engagement_data_for_credit">
 			<tr>
 				<td>Type</td>
 				<td>Number</td>
@@ -158,7 +175,7 @@
 		<pieChart dx="3.5in" dy="0in" dwidth="3in" dheight="3in" x="1in" y="0" width="2.5in"
 					height="2.5in"		  
 				  	checkLabelOverlap='false'
-				  	tal:condition="options/count_open">
+				  	tal:condition="options/engagement_data_for_credit">
 			<labels>
 				<label tal:repeat="item options/engagement_data_for_credit">${python:item[0]}</label>
 			</labels>
@@ -176,7 +193,13 @@
 		<h2 style="h2">
 			Activity: Non-Credit Students
 		</h2>
-		<blockTable style='default' alignment="left">
+		
+		<para tal:condition="not:options/engagement_data_non_credit">
+			This course does not have any non-credit student activity.
+		</para>
+		
+		<blockTable style='default' alignment="left"
+					tal:condition="options/engagement_data_non_credit">
 			<tr>
 				<td>Type</td>
 				<td>Number</td>
@@ -190,7 +213,7 @@
 		<pieChart dx="3.5in" dy="0in" dwidth="3in" dheight="3in" x="1in" y="0" width="2.5in"
 					height="2.5in"		
 				  checkLabelOverlap='false'
-				  tal:condition="options/count_open">
+				  tal:condition="options/engagement_data_non_credit">
 			<labels>
 				<label tal:repeat="item options/engagement_data_non_credit">${python:item[0]}</label>
 			</labels>
@@ -211,7 +234,13 @@
 		<h2 style="h2">
 			Engagement By Place
 		</h2>
-		<blockTable style='default'>
+		
+		<para tal:condition="not:options/placed_engagement_data">
+			This course does not have any engagement-by-place data.
+		</para>
+		
+		<blockTable style='default'
+					tal:condition="options/placed_engagement_data">
 			<tr>
 				<td>Place</td>
 				<td>Notes</td>
@@ -230,7 +259,12 @@
 			Discussions
 		</h1>
 		
-		<para style="subdesc" spaceAfter=".2in">
+		<para tal:condition="not:options/aggregate_forum_stats/forum_objects_by_week_number">
+			This course does not have any comments in this course's forums.
+		</para>
+		
+		<para style="subdesc" spaceAfter=".2in"
+				tal:condition="options/aggregate_forum_stats/forum_objects_by_week_number" >
 			The following information offers an overview of the discussion activity for ${context/__name__}.
 		</para>
 		<hr width="100%" />

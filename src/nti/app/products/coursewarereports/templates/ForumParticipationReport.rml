@@ -15,7 +15,8 @@
 			Weekly Activity
 		</h1>
 		
-		<para style="subdesc" spaceAfter=".3in" >
+		<para style="subdesc" spaceAfter=".3in" 
+			tal:condition="options/all_forum_participation">
 			This chart shows the number of comments made each week 
 			in <u>${context/title|context/__name__}</u> since it was posted.
 		</para>
@@ -23,11 +24,16 @@
 		<illustration width="5in" height="3in"
 					  tal:define="forum_stat options/all_forum_participation;
 					  			  value_axis_name string:Comments"
+					  tal:condition="options/all_forum_participation"
 					  metal:use-macro="macro:forum_participation_over_time">
 		</illustration>
+		<para tal:condition="not:options/all_forum_participation">
+			This forum does not have any comments.
+		</para>
 
 
-		<para style="subdesc" spaceBefore=".8in" tal:condition="options/most_popular_topic">
+		<para	style="subdesc" spaceBefore=".8in" 
+				tal:condition="options/most_popular_topic">
 			The most popular discussion is <u>${options/most_popular_topic/title|options/most_popular_topic/__name__}</u>
 			with ${python:options['most_popular_topic'].comment_count} 
 			${python:request.localizer.pluralize('comment', 'comments', options['most_popular_topic'].comment_count)};
@@ -51,7 +57,8 @@
 		</h1>
 		
 		<blockTable style='default'
-					colWidths="40% 21% 15% 12% 12%" >
+					colWidths="40% 21% 15% 12% 12%" 
+					tal:condition="options/comment_count_by_topic">
 			<tr>
 				<td><para>Discussion Name</para></td>
 				<td>Creator</td>
@@ -67,6 +74,9 @@
 				<td align="decimal" tal:content="item/distinct_user_count">3</td>
 			</tr>
 		</blockTable>
+		<para tal:condition="not:options/comment_count_by_topic">
+			This forum does not have any comments.
+		</para>
 
 		<setNextTemplate name="table_pie" />
 		
@@ -78,14 +88,20 @@
 		
 		<nextFrame name="table_frame" />
 		
-		<metal:macro tal:define="top_commenters options/top_commenters"
+		<metal:macro 	tal:define="top_commenters options/top_commenters"
+						tal:condition="options/top_commenters"
 						metal:use-macro="macro:comment_table" />
+						
+		<para tal:condition="not:options/top_commenters">
+			This forum does not have any comments.
+		</para>				
 		
 		<nextFrame name="pie_frame" />
 		
 		<illustration width="6in" height="6in"
 					  tal:define="top_commenters options/top_commenters;
 								  top_commenters_colors options/top_commenters_colors"
+					  tal:condition="options/top_commenters"	
 					  metal:use-macro="macro:forum_top_commenters">
 		</illustration>
 		
@@ -100,14 +116,19 @@
 		
 		<nextFrame name="table_frame" />
 		
-		<metal:macro tal:define="top_commenters options/top_creators"
+		<metal:macro 	tal:define="top_commenters options/top_creators"
+						tal:condition="options/top_creators"
 						metal:use-macro="macro:comment_table" />
+		<para tal:condition="not:options/top_creators">
+			This forum did not have any discussions created.
+		</para>						
 		
 		<nextFrame name="pie_frame" />
 		
 		<illustration width="6in" height="6in"
 					  tal:define="top_commenters options/top_creators;
 								  top_commenters_colors options/top_commenters_colors"
+					  tal:condition="options/top_creators"
 					  metal:use-macro="macro:forum_top_commenters">
 		</illustration>
 		
@@ -121,12 +142,17 @@
 			Comment Activity
 		</h1>
 		
-		<para style="subdesc" spaceAfter=".4in">
+		<para 	style="subdesc" spaceAfter=".4in"
+				tal:condition="options/user_stats" >
 				This table shows the number of comments participants have posted 
 				to <u>${context/title|context/__name__}</u>. Those who have not contributed are excluded from the table.
 		</para>
+		<para tal:condition="not:options/user_stats">
+			This forum does not have any comments.
+		</para>		
 		
-		<blockTable style="default">
+		<blockTable style="default"
+					tal:condition="options/user_stats">
 			<tr>
 				<td>Name</td>
 				<td>Username</td>

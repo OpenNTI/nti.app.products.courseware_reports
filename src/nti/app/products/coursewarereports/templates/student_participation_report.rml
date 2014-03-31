@@ -14,7 +14,8 @@
 		Weekly Activity
 	</h1>
 	
-	<para style="subdesc" spaceAfter=".5in" >
+	<para style="subdesc" spaceAfter=".5in" 
+			tal:condition="options/student_forum_participation">
 		This chart shows the number of comments posted and discussions created 
 		each week by ${options/user/display} to the course forums.
 	</para>
@@ -22,8 +23,12 @@
 	<illustration width="5in" height="3in"
 				  tal:define="forum_stat options/student_forum_participation;
 					  		  value_axis_name string:Forum Activity"
+				  tal:condition="options/student_forum_participation"
 				  metal:use-macro="macro:forum_participation_over_time">
 	</illustration>
+	<para tal:condition="not:options/student_forum_participation">
+			This user does not have any forum activity.
+	</para>
 
 	<nextPage />
 
@@ -59,7 +64,8 @@
 		Comments
 	</h2>
 	
-	<para style="subdesc" spaceAfter=".2in" >
+	<para style="subdesc" spaceAfter=".2in"
+			tal:condition="options/comment_count_by_topic" >
 		This table shows the number of comments posted by ${options/user/display} to 
 		each forum discussion in the course. 
 	</para>
@@ -111,6 +117,7 @@
 				<td>Forum Name</td>
 			</tr>
 		</blockTable>
+		
 		<para tal:condition="not:options/self_assessment_title_to_count">
 			This course contains no self-assessments.
 		</para>
@@ -118,6 +125,7 @@
 	<h2 style="h2" spaceAfter="0.3in" spaceBefore="0.5in">
 		Assignments
 	</h2>
+	
 		<blockTable style='default' 
 					colWidths="44% 18% 18% 10% 10%"
 					tal:condition="options/assignments">

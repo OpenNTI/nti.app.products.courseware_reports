@@ -8,7 +8,7 @@
 			Assignments: Submissions
 		</h1>
 		
-		<blockTable style='default'>
+		<blockTable style='default' >
 			<tr>
 				<td><para>Assignment Title</para></td>
 				<td><para>For-Credit Students</para></td>
@@ -54,8 +54,15 @@
 		<h1 style="h1" spaceAfter=".3in" spaceBefore="1in" >
 			Question Breakdown
 		</h1>
+		
 		<hr width="100%" />
-		<tal:block tal:repeat="item options/question_stats">
+		
+		<para tal:condition="not:options/question_stats">
+			This assignment does not have any questions.
+		</para>
+		
+		<tal:block  tal:repeat="item options/question_stats" 
+					tal:condition="options/question_stats">
 			<keepTogether>
 			<h2 spaceBefore=".3in" keepWithNext='true' tal:content="item/title">Question Number</h2>
 			<para tal:content="item/content">The content of the question.</para>
