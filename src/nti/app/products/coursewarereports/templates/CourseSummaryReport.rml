@@ -266,19 +266,31 @@
 					</tr>
 				</blockTable>
 
-				<h2 style="h2">
+				<setNextTemplate name="table_pie" />
+		
+				<nextPage />
+		
+				<h1 style="h1" fontSize="20" spaceAfter="1in">
 					Top Commenters in All Forums
-				</h2>
-				
-				<illustration width="3in" height="3in"
-							  tal:define="top_commenters options/aggregate_creators;
-										  top_commenters_colors options/top_commenters_colors;
-										  top_commenters_ill_width string:4in;
-										  top_commenters_ill_height string:4in;
-										  top_commenters_chart_width string:3in;
-										  top_commenters_chart_height string:3in"
-							  metal:use-macro="macro:forum_top_commenters">
+				</h1>
+		
+				<nextFrame name="table_frame" />
+		
+				<metal:macro 
+							tal:define="top_commenters options/aggregate_creators"
+							metal:use-macro="macro:comment_table" />
+		
+				<nextFrame name="pie_frame" />
+		
+				<illustration width="6in" height="6in"
+					  	  tal:define="top_commenters options/aggregate_creators;
+										  top_commenters_colors options/top_commenters_colors"
+						  metal:use-macro="macro:forum_top_commenters">
 				</illustration>
+		
+		
+				<setNextTemplate name="main"/>
+				<nextPage />
 
 			</tal:block>
 		</tal:block>

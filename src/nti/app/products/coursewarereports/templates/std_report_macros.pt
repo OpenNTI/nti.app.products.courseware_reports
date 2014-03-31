@@ -141,15 +141,14 @@
 
 
 	<metal:macro metal:define-macro="comment_table" >
-		<blockTable alignment="left" colWidths="33% 33% 12% 12%" style="default"
-			tal:define="tc options/top_commenters">
+		<blockTable alignment="left" colWidths="33% 33% 12% 12%" style="default">
 			<tr>
 				<td>Display Name</td>
 				<td>Username</td>
 				<td>Count</td>
 				<td>Percent</td>
 			</tr>
-			<tr tal:repeat="item python: [x for x in tc if x.username != 'Others' ] ">
+			<tr tal:repeat="item python: [x for x in top_commenters if x.username != 'Others' ] ">
 				<td tal:content="item/display">Display Name</td>
 				<td tal:content="item/username">Username</td>
 				<td align="decimal" tal:content="item/count">count</td>

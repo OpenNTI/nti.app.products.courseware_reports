@@ -41,7 +41,8 @@
 		
 		<nextFrame name="table_frame" />
 		
-		<metal:macro metal:use-macro="macro:comment_table" />
+		<metal:macro tal:define="top_commenters options/top_commenters"
+						metal:use-macro="macro:comment_table" />
 		
 		<nextFrame name="pie_frame" />
 		

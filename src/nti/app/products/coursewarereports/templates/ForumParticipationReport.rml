@@ -71,7 +71,8 @@
 		
 		<nextFrame name="table_frame" />
 		
-		<metal:macro metal:use-macro="macro:comment_table" />
+		<metal:macro tal:define="top_commenters options/top_commenters"
+						metal:use-macro="macro:comment_table" />
 		
 		<nextFrame name="pie_frame" />
 		
@@ -82,46 +83,31 @@
 		</illustration>
 		
 		
-		<setNextTemplate name="main"/>
+		<setNextTemplate name="table_pie"/>
 		<nextPage />
 
 
-		<h1 style="h1" spaceBefore="0.5in" spaceAfter=".7in" keepWithNext="true">
+		<h1 style="h1" spaceAfter="1in">
 			Top Discussion Creators
 		</h1>
-
-		<illustration width="6in" height="6in">
-		<pieChart dx="0in" dy="0in" dwidth="6in" dheight="6in" x="1in" y="0" width="4in"
-				  height="4in"
-				  checkLabelOverlap='false'
-				  tal:condition="options/top_creators">
-			<labels>
-				<label tal:repeat="item options/top_creators"
-					   tal:content="python: item.display + ' (%0.1f%%)' % item.perc">User1</label>
-				<label tal:condition="False">User2</label>
-				<label tal:condition="False">User3</label>
-			</labels>
-			<slices>
-				<!-- The last element is the "everyone else"; it has a
-				larger percent then its slice size indicates, so draw
-				attention to that by popping it out -->
-				<slice tal:repeat="item options/top_creators"
-					   tal:attributes="popout python:10 if repeat.item.end else 0;
-									   fillColor python:options['top_commenters_colors'][repeat.item.number]" />
-			</slices>
-			<data>
-				<series tal:content="options/top_creators/series">
-					100
-					75
-					25
-				</series>
-			</data>
-		</pieChart>
+		
+		<nextFrame name="table_frame" />
+		
+		<metal:macro tal:define="top_commenters options/top_creators"
+						metal:use-macro="macro:comment_table" />
+		
+		<nextFrame name="pie_frame" />
+		
+		<illustration width="6in" height="6in"
+					  tal:define="top_commenters options/top_creators;
+								  top_commenters_colors options/top_commenters_colors"
+					  metal:use-macro="macro:forum_top_commenters">
 		</illustration>
+		
+		
+		<setNextTemplate name="main"/>
 
 		<nextPage />
-
-
 
 		<!-- We'll probably want to flow this one through two colums? -->
 		<h1 style="h1" spaceAfter=".5in" >
