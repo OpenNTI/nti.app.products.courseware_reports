@@ -15,13 +15,13 @@
 	</h1>
 	
 	<para style="subdesc" spaceAfter=".5in" >
-		This chart shows the number of comments made each week by ${options/user/display} to 
-		the course forums.
+		This chart shows the number of comments made and discussions created 
+		each week by ${options/user/display} to the course forums.
 	</para>
 	
 	<illustration width="5in" height="3in"
 				  tal:define="forum_stat options/student_forum_participation;
-					  		  value_axis_name string:Comments"
+					  		  value_axis_name string:Forum Activity"
 				  metal:use-macro="macro:forum_participation_over_time">
 	</illustration>
 
@@ -32,15 +32,18 @@
 		Discussions Created
 	</h2>
 	
-	<para style="subdesc" spaceAfter=".5in" >
+	<para 	style="subdesc" spaceAfter=".5in" 
+			tal:condition="options/topics_created">
 		This table shows the discussions created by ${options/user/display}.
 	</para>
 	
-		<blockTable style='default' tal:condition="options/topics_created">
+		<blockTable style='default' 
+					colWidths="40% 40% 20%"
+					tal:condition="options/topics_created">
 			<tr>
 				<td><para>Discussion Name</para></td>
 				<td><para>Forum Name</para></td>
-				<td><para>Date</para></td>
+				<td><para>Created Date</para></td>
 			</tr>
 			<tr tal:repeat="item options/topics_created">
 				<td tal:content="item/topic_name">The Topic Name</td>
@@ -116,14 +119,14 @@
 		Assignments
 	</h2>
 		<blockTable style='default' 
-					colWidths="35% 20% 20% 15% 15%"
+					colWidths="44% 18% 18% 10% 10%"
 					tal:condition="options/assignments">
 			<tr>
 				<td><para>Assignment Name</para></td>
 				<td><para>Date Submitted</para></td>
 				<td><para>Date Due</para></td>
 				<td><para>Grade</para></td>
-				<td>Feedback Count</td>
+				<td><para>Feedback Count</para></td>
 			</tr>
 			<tr tal:repeat="item options/assignments">
 				<td tal:content="item/title">The Assignment Name</td>
