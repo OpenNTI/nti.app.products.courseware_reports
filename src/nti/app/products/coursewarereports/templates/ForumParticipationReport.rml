@@ -4,8 +4,8 @@
 	tal:define="options view/options">
 
 		<para style="normal" spaceAfter="0in" >
-			This report presents an overview of the '${context/__name__}' forum.  It 
-			includes information about weekly forum participation, top commenter activity, 
+			This report presents an overview of the <u>${context/__name__}</u> forum.  It 
+			includes information about weekly forum participation, top commenters, 
 			and comment activity per student. 
 		</para>
 		
@@ -17,7 +17,7 @@
 		
 		<para style="subdesc" spaceAfter=".3in" >
 			This chart shows the number of comments made each week 
-			in '${context/__name__}' since it was posted.
+			in <u>${context/__name__}</u> since it was posted.
 		</para>
 
 		<illustration width="5in" height="3in"
@@ -28,19 +28,19 @@
 
 
 		<para style="subdesc" spaceBefore=".8in" tal:condition="options/most_popular_topic">
-			The most popular discussion was &#8220;${options/most_popular_topic/title}&#8221;
+			The most popular discussion is <u>${options/most_popular_topic/title}</u>
 			with ${python:len(options['most_popular_topic'])} comments;
-			the least popular discussion was &#8220;${options/least_popular_topic/title}&#8221;.
+			the least popular discussion is <u>${options/least_popular_topic/title}</u>.
 			There are ${options/top_commenters/total} total comments in this forum, across
 			${python:len(context)} discussions, for an average comment count of ${python:options['top_commenters'].total // len(context)}
-			per discussion. ${options/percent_users_comment_more_than_once}% of users contributed
+			per discussion. ${options/percent_users_comment_more_than_once}% of all participants contributed
 			more than one comment.
 		</para>
 
 		<condPageBreak height="3in" />
 
 		<h1 style="h1" spaceBefore=".5in" spaceAfter=".7in">
-			Comments Created
+			Comments
 		</h1>
 		
 		<blockTable style='default'
@@ -115,8 +115,8 @@
 		</h1>
 		
 		<para style="subdesc" spaceAfter=".4in">
-				This table shows the number of comments a user has made 
-				to '${context/title}'. Those who have not contributed are excluded from the table.
+				This table shows the number of comments participants have posted 
+				to <u>${context/title}</u>. Those who have not contributed are excluded from the table.
 		</para>
 		
 		<blockTable style="default">
