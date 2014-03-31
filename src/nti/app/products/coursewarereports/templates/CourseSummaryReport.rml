@@ -5,8 +5,8 @@
 
 		<para style="normal" fontSize="12" spaceAfter=".1in">
 			This report is an overview of ${context/__name__}.  The report 
-			includes enrollment counts, practice quiz stats, assignment stats, 
-			engagement, as well as an overview of the discussions.
+			includes information about enrollment, self-assessments, assignments,
+			student activity, and dicussions.
 		</para>
 		<hr width="100%" />
 
@@ -15,8 +15,8 @@
 		</h1>
 		
 		<para style="subdesc" >
-			This chart shows the number of students taking ${context/__name__} 
-			for credit and as open students. There are ${options/count_total} students enrolled in this
+			This chart shows a breakdown of students taking ${context/__name__} 
+			for credit and as open students. There are ${options/count_total} students taking this
 			course.
 		</para>
 
@@ -27,8 +27,8 @@
 				  tal:condition="options/count_open" 
 				  startAngle="180">
 			<labels>
-				<label>Open Enrolled (${options/count_open})</label>
-				<label>For Credit (${options/count_for_credit})</label>
+				<label>Non-Credit (${options/count_open})</label>
+				<label>For-Credit (${options/count_for_credit})</label>
 			</labels>
 			<slices>
 				<slice />
@@ -51,17 +51,17 @@
 		<hr width="100%" keepWithNext='true'/>
 
 		<h2 style="h2" keepWithNext='true'>
-			Self-Assessments
+			Self-Assessments: Attempts Made
 		</h2>
 
 		<blockTable style='default' tal:condition="options/self_assessment_data">
 			<tr>
 				<td align="center"><para>Assessment Title</para></td>
-				<td align="center"><para>For-Credit Attempts</para></td>
-				<td align="center"><para>Non-Credit Attempts</para></td>
-				<td align="center"><para>Total Attempts</para></td>
-				<td align="center"><para>Average Attempts</para></td>
-				<td align="center"><para>Attempted (%)</para></td>
+				<td align="center"><para>For-Credit Students</para></td>
+				<td align="center"><para>Non-Credit Students</para></td>
+				<td align="center"><para>Total Students</para></td>
+				<td align="center"><para>Average Per Student</para></td>
+				<td align="center"><para>Total Attempted (%)</para></td>
 			</tr>
 			<tr tal:repeat="item options/self_assessment_data">
 				<td><para tal:content="item/title">The Assessment Title</para></td>
@@ -78,15 +78,15 @@
 
 
 		<h2 style="h2">
-			Assignments
+			Assignments: Submissions
 		</h2>
 		<blockTable style='default' tal:condition="options/assignment_data">
 			<tr>
 				<td align="center"><para>Assignment Title</para></td>
-				<td align="center"><para>For-Credit Attempts</para></td>
-				<td align="center"><para>Non-Credit Attempts</para></td>
-				<td align="center"><para>Total Attempts</para></td>
-				<td align="center"><para>Attempted (%)</para></td>
+				<td align="center"><para>For-Credit Students</para></td>
+				<td align="center"><para>Non-Credit Students</para></td>
+				<td align="center"><para>Total Students</para></td>
+				<td align="center"><para>Total Attempted (%)</para></td>
 				<td align="center"><para>For-Credit Attempted (%)</para></td>
 			</tr>
 			<tr tal:repeat="item options/assignment_data">
@@ -100,14 +100,14 @@
 		</blockTable>
 
 		<h2 style="h2">
-			Assignment Results
+			Assignments: Results
 		</h2>
 		<blockTable style='default' tal:condition="options/assignment_data">
 			<tr>
 				<td align="center"><para>Assignment Title</para></td>
-				<td align="center"><para>For-Credit Average</para></td>
-				<td align="center"><para>Non-Credit Average</para></td>
-				<td align="center"><para>Average</para></td>
+				<td align="center"><para>Average: For-Credit</para></td>
+				<td align="center"><para>Average: Non-Credit</para></td>
+				<td align="center"><para>Average: All</para></td>
 				<td align="center"><para>Median</para></td>
 				<td align="center"><para>Standard Deviation</para></td>
 			</tr>
@@ -127,18 +127,18 @@
 		<nextPage />
 
 		<h1 style="h1" fontSize="25" spaceBefore=".5in" spaceAfter=".3in" keepWithNext='true'>
-			Engagement
+			Student Activity
 		</h1>
 		
 		<para style="subdesc" spaceAfter=".1in">
-			The following charts and graphs look at how engaged users are for ${context/__name__} 
-			by measuring the number of discussions, discussion topics, notes, and highlights 
-			created by all users.
+			The following items show activity taking place in ${context/__name__}. This information
+			includes the number of discussions, comments, notes, and highlights created by all the students
+			in the course, where applicable. 
 		</para>
 		<hr width="100%" />
 
 		<h2 style="h2">
-			For-Credit Engagement
+			Activity: For-Credit Students
 		</h2>
 		<blockTable style='default' alignment="left">
 			<tr>
@@ -171,7 +171,7 @@
 		</illustration>
 		
 		<h2 style="h2">
-			Non-Credit Engagement
+			Activity: Non-Credit Students
 		</h2>
 		<blockTable style='default' alignment="left">
 			<tr>
@@ -228,17 +228,16 @@
 		</h1>
 		
 		<para style="subdesc" spaceAfter=".2in">
-			The following charts and graphs contain an overview of the discussion and discussion 
-			topic activity for ${context/__name__}.
+			The following information offers an overview of the discussion activity for ${context/__name__}.
 		</para>
 		<hr width="100%" />
 
 		<tal:block tal:condition="options/aggregate_forum_stats/forum_objects_by_week_number">
 			<tal:block tal:define="forum_stat options/aggregate_forum_stats;
-					  			   value_axis_name string:Forum Participation">
+					  			   value_axis_name string:Comments">
 				
 				<h2 style="h2" spaceAfter=".5in" >
-					Activity Over Time in All Forums
+					Weekly Activity for All Forums
 				</h2>
 
 				<illustration width="5in" height="3in"
