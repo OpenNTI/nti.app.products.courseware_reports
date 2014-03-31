@@ -16,7 +16,10 @@
 		
 		<para style="subdesc" >
 			This chart shows a breakdown of students taking ${context/__name__} 
-			for credit and as open students. There are ${options/count_total} students taking this
+			for credit and as open students. There 
+			 ${python:request.localizer.pluralize('is', 'are', options['count_total'])}
+			 ${options/count_total} 
+			 ${python:request.localizer.pluralize('student', 'students', options['count_total'])} taking this
 			course.
 		</para>
 

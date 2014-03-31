@@ -785,6 +785,7 @@ class ForumParticipationReportPdf(_AbstractReportView):
 			A sequence sorted by username, of objects with `username`,
 			`topics_created` and `total_comment_count`.
 		"""
+		
 		self._check_access()
 		options = self.options
 		self._build_top_commenters(options)

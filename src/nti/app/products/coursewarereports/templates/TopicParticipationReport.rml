@@ -25,8 +25,10 @@
 		</illustration>
 
 		<para style="subdesc" spaceBefore=".8in" tal:condition="options/top_commenters">
-			This topic has ${options/top_commenters/total} comments by
-			${python:len(options['top_commenters'].keys())} users.
+			This topic has ${options/top_commenters/total} 
+			 ${python:request.localizer.pluralize('comment', 'comments', options['top_commenters'].total)} by
+			${python:len(options['top_commenters'].keys())} 
+			 ${python:request.localizer.pluralize('user', 'users', len(options['top_commenters'].keys()))}.
 			It was created on ${context/created/date}, and its most recent activity was on
 			${context/NewestDescendant/created/date}.
 		</para>
