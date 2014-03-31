@@ -4,7 +4,7 @@
 	tal:define="options view/options">
 
 		<para style="normal" spaceAfter=".1in">
-			This report presents an overview of the <u>${context/title}</u> discussion.
+			This report presents an overview of the <u>${python: context.title or context.__name__}</u> discussion.
 			It includes information about weekly participation, top commenters, and comment activity per student.
 		</para>
 		<hr width="100%" />
@@ -15,7 +15,7 @@
 		
 		<para style="subdesc" spaceAfter=".4in">
 			This chart shows the number of comments made each week
-			in <u>${context/title}</u> since it was posted.
+			in <u>${python: context.title or context.__name__}</u> since it was posted.
 		</para>
 
 		<illustration width="5in" height="3in"
@@ -63,7 +63,7 @@
 		
 		<para style="subdesc" spaceAfter=".4in">
 				This table shows the number of comments participants have posted 
-				to <u>${context/title}</u>.  Those who have not contributed are excluded from the table.
+				to <u>${python: context.title or context.__name__}</u>.  Those who have not contributed are excluded from the table.
 		</para>
 		
 		<blockTable style="default">

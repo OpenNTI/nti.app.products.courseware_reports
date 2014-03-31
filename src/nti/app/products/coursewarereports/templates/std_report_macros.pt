@@ -141,7 +141,7 @@
 
 
 	<metal:macro metal:define-macro="comment_table" >
-		<blockTable alignment="left" colWidths="33% 33% 12% 12%" style="default">
+		<blockTable alignment="left" colWidths="35% 35% 10% 12%" style="default">
 			<tr>
 				<td>Name</td>
 				<td>Username</td>

@@ -6,9 +6,9 @@
 		<td>Discussion:</td>
 		<td tal:define="topic_info map/topic_info">${topic_info/forum_name}/${topic_info/topic_name}</td>
 	</tr>
-	<tr tal:condition="python:'topic_info' not in map">
+	<tr tal:condition="python: 'topic_info' not in map">
 		<td>Forum:</td>
-		<td tal:content="context/title">title</td>
+		<td tal:content="python: context.title or context.__name__">title</td>
 	</tr>
 	<tr>
 		<td>Course:</td>
