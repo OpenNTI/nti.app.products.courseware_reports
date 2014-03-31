@@ -149,7 +149,6 @@ class _TopCreators(object):
 	title = ''
 	max_contributors = None
 	aggregate = None
-	largest_total = 0
 
 	def __init__(self,for_credit_students,get_student_info):
 		self._get_student_info = get_student_info
@@ -196,8 +195,7 @@ class _TopCreators(object):
 			remainder = total_to_change - largest_total
 			# TODO: Localize and map this
 			percent = (remainder / total_to_change) * 100
-			aggregate_remainder = _StudentInfo( 'Others', 'Others', largest_total // 8, percent )
-			largest.append( aggregate_remainder )
+			self.aggregate = _StudentInfo( 'Others', 'Others', largest_total, percent )
 		return largest
 
 	def __iter__(self):

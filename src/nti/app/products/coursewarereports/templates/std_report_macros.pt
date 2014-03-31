@@ -148,7 +148,7 @@
 				<td>Count</td>
 				<td>Percent</td>
 			</tr>
-			<tr tal:repeat="item python: [x for x in top_commenters if x.username != 'Others' ] ">
+			<tr tal:repeat="item python: [x for x in top_commenters] ">
 				<td tal:content="item/display">Display Name</td>
 				<td tal:content="item/username">Username</td>
 				<td align="decimal" tal:content="item/count">count</td>
@@ -161,14 +161,58 @@
 				  metal:define-macro="forum_top_commenters"
 				  tal:attributes="width top_commenters_ill_width|default;
 								  height top_commenters_ill_height|default">
+					
+		<!-- We prefer to use a pie-chart, unless there is a remainder (e.g. 'aggregate').  
+			If so, we will fall back to a bar chart.  -->			
 								  
-								  
+		<barChart dx="0in" dy="0in"
+				  dwidth="4in" dheight="4in"
+				  x="1.3in" y="0"
+				  width="3.5in"
+				  height="4in" direction="horizontal" 
+				  barLabelFormat="%2d" barWidth="5"
+				  tal:condition="top_commenters/aggregate" >
+			<barLabels fillColor="#757474" fontSize="12" boxAnchor="w" dx="3" />
+			<bars>
+				<bar fillColor="#ffbe4d" strokeColor="#ffbe4d" />
+			</bars>
+			<categoryAxis visibleTicks="false" strokeColor="#e9e9e9"
+						reverseDirection="true"
+						tal:attributes="categoryNames python: ' '.join(['%s' % x.display for x in top_commenters])"
+						tal:condition="top_commenters|options/top_commenters">
+				<labels fontName="Helvetica" fontSize="10" fillColor="#b8b8b8"/>
+			</categoryAxis>
+			<valueAxis 	valueMin="0" valueMax="15"
+						visibleTicks="false" visibleAxis="false" visibleGrid="true"
+						gridStrokeWidth="1" gridStrokeColor="#e9e9e9"
+						rangeRound="ceiling"
+						maximumTicks="10"
+						tal:condition="top_commenters|options/top_commenters"
+						tal:attributes="valueMax python: max([x.count for x in top_commenters]) + 1" >
+				<labels fontName="Helvetica" fontSize="10" fillColor="#b8b8b8" />
+			</valueAxis>
+			<texts >
+				<text x="3.2in" y="-0.6in" textAnchor="middle"
+					  fontName="Helvetica-Bold" fontSize="12"
+					  fillColor="#757474" >
+					Number of Comments
+				</text>
+			</texts>
+			<data>
+				<series tal:content="top_commenters/series|options/top_commenters/series">
+					100
+					75
+					25
+				</series>
+			</data>
+		</barChart>	
+		
 		<pieChart dx="0in" dy="0in"
 				  dwidth="4in" dheight="4in"
 				  x="1in" y="0"
 				  width="4in" height="4in"
 				  checkLabelOverlap='false'
-				  tal:condition="top_commenters|options/top_commenters"
+				  tal:condition="not: top_commenters/aggregate|options/top_commenters/aggregate"
 				  tal:attributes="dwidth top_commenters_ill_width|default;
 								  dheight top_commenters_ill_height|default;
 								  width top_commenters_chart_width|default;
@@ -176,6 +220,8 @@
 			<labels>
 				<label tal:repeat="item top_commenters|options/top_commenters"
 					   tal:content="python: item.display + ' (%0.1f%%)' % item.perc">User1</label>
+				<label tal:condition="False">User2</label>
+				<label tal:condition="False">User3</label>
 			</labels>
 			<slices>
 				<!-- The last element is the "everyone else"; it has a
@@ -192,8 +238,8 @@
 					25
 				</series>
 			</data>
-		</pieChart>
-		</illustration>
+		</pieChart>		
+	</illustration>
 
 	</story>
 </document>
