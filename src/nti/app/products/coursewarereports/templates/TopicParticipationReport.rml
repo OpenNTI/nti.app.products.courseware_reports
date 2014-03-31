@@ -68,7 +68,7 @@
 		
 		<blockTable style="default">
 			<tr>
-				<td>Display Name</td>
+				<td>Name</td>
 				<td>Username</td>
 				<td>Comments</td>
 			</tr>
