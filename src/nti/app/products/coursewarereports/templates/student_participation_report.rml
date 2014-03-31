@@ -4,8 +4,8 @@
 	tal:define="options view/options">
 
 	<para style="normal" spaceAfter=".1in">
-		This report presents an overview of activity by ${options/user/display}, and includes weekly 
-		activity, discussion activity, and user assignment statistics.
+		This report presents an overview of the activity by ${options/user/display}. It includes
+		information about the student's forum and discussion participation as well as assignments.
 	</para>
 	
 	<hr width="100%" />
@@ -15,7 +15,7 @@
 	</h1>
 	
 	<para style="subdesc" spaceAfter=".5in" >
-		This chart shows the number of comments made and discussions created 
+		This chart shows the number of comments posted and discussions created 
 		each week by ${options/user/display} to the course forums.
 	</para>
 	
@@ -56,11 +56,11 @@
 		</para>
 
 	<h2 style="h2" spaceAfter="0.3in" spaceBefore="0.5in">
-		Comments Created
+		Comments
 	</h2>
 	
 	<para style="subdesc" spaceAfter=".2in" >
-		This table shows the number of comments created by ${options/user/display} for 
+		This table shows the number of comments posted by ${options/user/display} to 
 		each forum discussion in the course. 
 	</para>
 	
@@ -92,7 +92,7 @@
 	<h2 style="h2" spaceAfter="0.3in" spaceBefore="0.5in">
 		Self-Assessments
 	</h2>	
-		<blockTable style='default' colWidths="70% 30%" tal:condition="options/self_assessment_title_to_count">
+		<blockTable style='default' alignment="left" colWidths="44% 10%" tal:condition="options/self_assessment_title_to_count">
 			<tr>
 				<td>Assessment Title</td>
 				<td>Attempts</td>
@@ -126,7 +126,7 @@
 				<td><para>Date Submitted</para></td>
 				<td><para>Date Due</para></td>
 				<td><para>Grade</para></td>
-				<td><para>Feedback Count</para></td>
+				<td><para>Feedback Comments</para></td>
 			</tr>
 			<tr tal:repeat="item options/assignments">
 				<td tal:content="item/title">The Assignment Name</td>
