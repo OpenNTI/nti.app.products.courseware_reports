@@ -8,7 +8,7 @@
 	</tr>
 	<tr tal:condition="python: 'topic_info' not in map">
 		<td>Forum:</td>
-		<td tal:content="python: context.title or context.__name__">title</td>
+		<td tal:content="context/title|context/__name__">title</td>
 	</tr>
 	<tr>
 		<td>Course:</td>

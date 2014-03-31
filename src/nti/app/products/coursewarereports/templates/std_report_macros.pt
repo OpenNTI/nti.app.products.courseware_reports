@@ -161,6 +161,8 @@
 				  metal:define-macro="forum_top_commenters"
 				  tal:attributes="width top_commenters_ill_width|default;
 								  height top_commenters_ill_height|default">
+								  
+								  
 		<pieChart dx="0in" dy="0in"
 				  dwidth="4in" dheight="4in"
 				  x="1in" y="0"

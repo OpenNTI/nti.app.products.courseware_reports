@@ -4,5 +4,5 @@
 </tr>
 <tr>
 	<td>Course:</td>
-	<td tal:content="view/__parent__/course/title">CLC 3403</td>
+	<td tal:content="view/__parent__/course/__name__">CLC 3403</td>
 </tr>

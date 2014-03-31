@@ -4,7 +4,7 @@
 	tal:define="options view/options">
 
 		<para style="normal" spaceAfter="0in" >
-			This report presents an overview of the <u>${python: context.title or context.__name__}</u> forum.  It 
+			This report presents an overview of the <u>${context/title|context/__name__}</u> forum.  It 
 			includes information about weekly forum participation, top commenters, 
 			and comment activity per student. 
 		</para>
@@ -17,7 +17,7 @@
 		
 		<para style="subdesc" spaceAfter=".3in" >
 			This chart shows the number of comments made each week 
-			in <u>${python: context.title or context.__name__}</u> since it was posted.
+			in <u>${context/title|context/__name__}</u> since it was posted.
 		</para>
 
 		<illustration width="5in" height="3in"
@@ -28,9 +28,9 @@
 
 
 		<para style="subdesc" spaceBefore=".8in" tal:condition="options/most_popular_topic">
-			The most popular discussion is <u>${python: options['most_popular_topic'].title or options['least_popular_topic'].__name__}</u>
+			The most popular discussion is <u>${options/most_popular_topic/title|options/most_popular_topic/__name__}</u>
 			with ${python:len(options['most_popular_topic'])} comments;
-			the least popular discussion is <u>${python: options['least_popular_topic'].title or options['least_popular_topic'].__name__}</u>.
+			the least popular discussion is <u>${options/least_popular_topic/title|options/least_popular_topic/__name__}</u>.
 			There are ${options/top_commenters/total} total comments in this forum, across
 			${python:len(context)} discussions, for an average comment count of ${python:options['top_commenters'].total // len(context)}
 			per discussion. ${options/percent_users_comment_more_than_once}% of all participants contributed
@@ -116,7 +116,7 @@
 		
 		<para style="subdesc" spaceAfter=".4in">
 				This table shows the number of comments participants have posted 
-				to <u>${python: context.title or context.__name__}</u>. Those who have not contributed are excluded from the table.
+				to <u>${context/title|context/__name__}</u>. Those who have not contributed are excluded from the table.
 		</para>
 		
 		<blockTable style="default">
