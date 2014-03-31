@@ -5,16 +5,16 @@
 
 
 		<h1 style="h1" spaceAfter=".3in">
-			Assignment Overview
+			Assignments: Submissions
 		</h1>
 		
 		<blockTable style='default'>
 			<tr>
 				<td><para>Assignment Title</para></td>
-				<td><para>For-Credit Attempts</para></td>
-				<td><para>Non-Credit Attempts</para></td>
-				<td><para>Total Attempts</para></td>
-				<td><para>Attempted (%)</para></td>
+				<td><para>For-Credit Students</para></td>
+				<td><para>Non-Credit Students</para></td>
+				<td><para>Total Students</para></td>
+				<td><para>Total Attempted (%)</para></td>
 				<td><para>For-Credit Attempted (%)</para></td>
 			</tr>
 			<tr tal:repeat="item options/assignment_data">
@@ -28,14 +28,14 @@
 		</blockTable>
 		
 		<h2 style="h2" spaceBefore=".7in" spaceAfter=".3in" keepWithNext='true'>
-			Assignment Results
+			Assignments: Results
 		</h2>
 		<blockTable style='default'>
 			<tr>
 				<td><para>Assignment Title</para></td>
-				<td><para>For-Credit Average</para></td>
-				<td><para>Non-Credit Average</para></td>
-				<td><para>Average</para></td>
+				<td><para>Average: For-Credit</para></td>
+				<td><para>Average: Non-Credit</para></td>
+				<td><para>Average: All</para></td>
 				<td><para>Median</para></td>
 				<td><para>Standard Deviation</para></td>
 			</tr>
