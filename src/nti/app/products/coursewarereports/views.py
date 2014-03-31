@@ -713,10 +713,9 @@ class ForumParticipationReportPdf(_AbstractReportView):
 		top_creators = _TopCreators(self.for_credit_student_usernames,self.get_student_info)
 		
 		for topic in self.context.values():
-			count = len(topic)
-			user_count = len(	{c.creator 
-								for c in topic.values() 
-								if not IDeletedObjectPlaceholder.providedBy( c ) })
+			comments = [c for c in topic.values() if not IDeletedObjectPlaceholder.providedBy( c ) ];
+			count = len( comments )
+			user_count = len( {c.creator for c in comments } )
 			creator = self.get_student_info( topic.creator )
 			created = topic.created
 			comment_count_by_topic.append( self.TopicStats( topic.title, creator, created, count, user_count ))
@@ -726,8 +725,8 @@ class ForumParticipationReportPdf(_AbstractReportView):
 		comment_count_by_topic.sort( key=lambda x: (x.created, x.title) )
 		options['comment_count_by_topic'] = comment_count_by_topic
 		if self.context:
-			options['most_popular_topic'] = max(self.context.values(), key=len)
-			options['least_popular_topic'] = min(self.context.values(), key=len)
+			options['most_popular_topic'] = max( comment_count_by_topic, key=lambda x: x.comment_count )
+			options['least_popular_topic'] = min(comment_count_by_topic, key=lambda x: x.comment_count )
 		else:
 			options['most_popular_topic'] = options['least_popular_topic'] = None
 		options['top_creators'] = top_creators

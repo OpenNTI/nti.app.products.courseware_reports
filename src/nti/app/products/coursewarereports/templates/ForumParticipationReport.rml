@@ -29,7 +29,7 @@
 
 		<para style="subdesc" spaceBefore=".8in" tal:condition="options/most_popular_topic">
 			The most popular discussion is <u>${options/most_popular_topic/title|options/most_popular_topic/__name__}</u>
-			with ${python:len(options['most_popular_topic'])} comments;
+			with ${python:options['most_popular_topic'].comment_count} comments;
 			the least popular discussion is <u>${options/least_popular_topic/title|options/least_popular_topic/__name__}</u>.
 			There are ${options/top_commenters/total} total comments in this forum, across
 			${python:len(context)} discussions, for an average comment count of ${python:options['top_commenters'].total // len(context)}
