@@ -30,6 +30,7 @@ from datetime import datetime
 
 import BTrees
 import pytz
+import string
 
 from pyramid.view import view_config
 from pyramid.view import view_defaults
@@ -1289,6 +1290,17 @@ from nti.assessment.interfaces import IQMultipleChoiceMultipleAnswerPart
 from nti.contentfragments.interfaces import IPlainTextContentFragment
 from collections import Counter
 
+class _AnswerStat(object):
+	"""Holds stat and display information for a particular answer."""
+	letter_prefix = None
+	count = 0
+	perc_s = None
+	
+	def __init__(self, answer, is_correct):
+		self.answer = answer
+		self.is_correct = is_correct
+		self.count = 1
+
 @view_config(context=IGradeBookEntry,
 			 name=VIEW_ASSIGNMENT_SUMMARY)
 class AssignmentSummaryReportPdf(_AbstractReportView):
@@ -1315,7 +1327,8 @@ class AssignmentSummaryReportPdf(_AbstractReportView):
 				qids_to_q[q.ntiid] = q
 
 		column = self.context
-		submissions = defaultdict(list)
+		#TODO can't I do this via deafultdict here?
+		submissions = {}
 		assessed_values = defaultdict(list)
 
 		for grade in column.values():
@@ -1325,29 +1338,43 @@ class AssignmentSummaryReportPdf(_AbstractReportView):
 				continue
 
 			submission = history.Submission
+			is_correct = False
+			
 			pending = history.pendingAssessment
 			for set_submission in submission.parts:
 				for question_submission in set_submission.questions:
 					if len(question_submission.parts) != 1:
 						continue
+					
 					question = qids_to_q[question_submission.questionId]
+					
+					if question_submission.questionId in submissions:
+						answer_stats = submissions[question_submission.questionId]
+					else:
+						submissions[question_submission.questionId] = answer_stats = {}
+
 					question_part = question.parts[0]
 					response = question_submission.parts[0]
 					if (IQMultipleChoicePart.providedBy(question_part)
 						and not IQMultipleChoiceMultipleAnswerPart.providedBy(question_part)
 						and isinstance(response, int)):
-						# convert int indexes into actual values; elide
-						# the right answer so we only show incorrect answers
+						# convert int indexes into actual values
 						__traceback_info__ = response
-#Try keeping correct responses						
-# 						if question_part.solutions[0].value == response:
-# 							response = None
-# 						else:
+
+						is_correct = question_part.solutions[0].value == response
+
 						response = question_part.choices[response]
 						if isinstance(response, string_types):
 							response = IPlainTextContentFragment(response)
 					if response is not None:
-						submissions[question_submission.questionId].append(response)
+						try:
+							if response in answer_stats:
+								answer_stats[response].count += 1
+							else:
+								answer_stats[response] = _AnswerStat(response,is_correct)
+						except TypeError:
+							# Dict or list answers
+							continue
 
 			for maybe_assessed in pending.parts:
 				if not IQAssessedQuestionSet.providedBy(maybe_assessed):
@@ -1370,17 +1397,21 @@ class AssignmentSummaryReportPdf(_AbstractReportView):
 			else:
 				avg_assessed_s = 'N/A'
 
-			submission = submissions.get(q.ntiid, ())
-			try:
-				# If this gets big, we'll need to do something different,
-				# like just showing top-answers
-				# Arbitrary picking how many
-				submission_counts = Counter(submission)
-				if len(submission_counts) > 20:
-					submission_counts = dict(submission_counts.most_common(20))
-			except TypeError:
-				# Dictionary or list submissions
-				submission_counts = dict()
+			submission = submissions.get(q.ntiid, {})
+			# If this gets big, we'll need to do something different,
+			# like just showing top-answers
+			# Arbitrary picking how many
+				
+			submission_counts = heapq.nlargest(10, submission.values(), key=lambda x: x.count)
+				
+			total_submits = sum( (x.count for x in submission.values()) )
+			# Now set the letter and perc values
+			letters = string.ascii_uppercase
+				
+			for j in range(len(submission_counts)):
+				sub = submission_counts[j]
+				sub.letter_prefix = letters[j]
+				sub.perc_s = '%0.1f%%' % ( sub.count * 100.0 / total_submits )
 
 			title = i + 1
 			content = IPlainTextContentFragment(q.content)
