@@ -148,6 +148,8 @@ class _TopCreators(object):
 	total = 0
 	title = ''
 	max_contributors = None
+	aggregate_creators = None
+	#TODO rename this, this is an aggregate_remainder
 	aggregate = None
 
 	def __init__(self,for_credit_students,get_student_info):
@@ -229,6 +231,9 @@ class _TopCreators(object):
 			self._data[username] += 1
 		else:
 			self._data[username] = 1
+			
+		if self.aggregate_creators is not None:
+			self.aggregate_creators.incr_username( username )	
 
 	def keys(self):
 		return self._data.keys()
@@ -848,7 +853,14 @@ from nti.contentlibrary.interfaces import IContentPackageLibrary
 from numpy import asarray
 from numpy import average
 from numpy import median
+from numpy import percentile
 from numpy import std
+
+_EngagementPerfStat = namedtuple( '_EngagementPerfStat',
+								('first','second','third','fourth'))
+
+_EngagementQuartileStat = namedtuple( '_EngagementQuartileStat',
+								('name','count','value', 'assignment_stat'))
 
 _AssignmentStat = namedtuple('_AssignmentStat',
 							 ('title', 'count', 'due_date',
@@ -858,7 +870,7 @@ _AssignmentStat = namedtuple('_AssignmentStat',
 							  'non_credit_avg_grade', 'median_grade', 'std_dev_grade',
 							  'attempted_perc', 'for_credit_attempted_perc' ))
 
-def _assignment_stat_for_column(self, column):
+def _assignment_stat_for_column(self, column, filter=None):
 	count = len(column)
 	keys = set(column)
 
@@ -874,6 +886,9 @@ def _assignment_stat_for_column(self, column):
 		# We could have values (19.3), combinations (19.3 A), or strings ('GR'); punt
 		# in the latter case for now
 		if grade.value is not None:
+			#Skip if not in filter
+			if filter is not None and username not in filter:
+				continue
 			try:
 				grade = grade.value if isinstance(grade.value, Number) \
 						else float(grade.value.split()[0])
@@ -962,6 +977,8 @@ def _assignment_stat_for_column(self, column):
 class CourseSummaryReportPdf(_AbstractReportView):
 
 	report_title = _('Course Summary Report')
+	assessment_aggregator = None
+	engagement_aggregator = None
 
 	def _build_enrollment_info(self, options):
 
@@ -1005,6 +1022,7 @@ class CourseSummaryReportPdf(_AbstractReportView):
 		for asm in self_assessments:
 			title = _title_of_qs(asm)
 			accum = _TopCreators(self.for_credit_student_usernames,self.get_student_info)
+			accum.aggregate_creators = self.assessment_aggregator
 			accum.title = title
 			accum.max_contributors = len(self.all_student_usernames)
 			title_to_count[asm.ntiid] = accum
@@ -1125,23 +1143,24 @@ class CourseSummaryReportPdf(_AbstractReportView):
 # 		options['placed_engagement_data'] = data
 
 
-	def _build_assignment_data(self, options):
+	def _build_assignment_data(self, options, filter=None):
 		gradebook = IGradeBook(self.course)
 		assignment_catalog = ICourseAssignmentCatalog(self.course)
 
 		stats = list()
 		for asg in assignment_catalog.iter_assignments():
 			column = gradebook.getColumnForAssignmentId(asg.ntiid)
-			stats.append(_assignment_stat_for_column(self, column))
+			stats.append(_assignment_stat_for_column(self, column, filter))
 
 		stats.sort(key=lambda x: (x.due_date is None, x.due_date, x.title))
-		options['assignment_data'] = stats
+		return stats
 
 
 	def _build_top_commenters(self, options):
 
 		forum_stats = dict()
 		agg_creators = _TopCreators(self.for_credit_student_usernames,self.get_student_info)
+		agg_creators.aggregate_creators = self.engagement_aggregator
 
 		for key, forum in self.course.Discussions.items():
 			forum_stat = forum_stats[key] = dict()
@@ -1183,15 +1202,84 @@ class CourseSummaryReportPdf(_AbstractReportView):
 		options['aggregate_creators'] = agg_creators
 		options['top_commenters_colors'] = CHART_COLORS
 
+	def _build_engagement_perf(self,options):
+		"""
+		Get engagement data:
+			- Self-assessments by user (2x)
+			- Comments/discussion creators (1x)
+			- (Notes/highlights)
+		Stuff into buckets by user
+			- Quartile might be too low?
+		For each assignment, see how each quartile performed
+		Return 'engagement_to_performance' (EngagementPerfStats)
+			-Each assignment (title,count)
+				-QuartileStat (first,second,third,fourth)
+					-Name
+					-Boundary
+					-ForCredit/NonCredit (assignmentstat)
+						-Average
+						-Median
+						-Max
+						-Min
+		TODO: toggle these numbers
+			-verify
+			-add stats by quartile (count, avg(assessment), avg(comment_count), quartile_val) Engagement_stat	
+			-		
+		"""
+		map = self.engagement_aggregator._data
+		
+		for k,v in self.assessment_aggregator._data.items():
+			#self-assessments are weighted 2
+			#comments are weighted 1
+			weighted_val = 2 * v
+			if k in map:
+				map[k] += weighted_val
+			else:
+				map[k] = weighted_val 
+				
+		quartiles = percentile( [x[1] for x in map.items()], [75, 50, 25] ) 		
+
+		first = list()
+		second = list()
+		third = list()
+		fourth = list()
+		
+		for x,v in map.items():
+			if v >= quartiles[0]:
+				first.append( x )
+			elif v >= quartiles[1]:
+				second.append( x )
+			elif v >= quartiles[2]:
+				third.append( x )
+			else:
+				fourth.append( x )
+
+		first_stats = self._build_assignment_data(options, first)	
+		second_stats = self._build_assignment_data(options, second)	
+		third_stats = self._build_assignment_data(options, third)	
+		fourth_stats = self._build_assignment_data(options, fourth)		
+		
+		first_quart = _EngagementQuartileStat( 'First', len(first), quartiles[0], first_stats )
+		second_quart = _EngagementQuartileStat( 'Second', len(second), quartiles[1], second_stats )
+		third_quart = _EngagementQuartileStat( 'Third', len(third), quartiles[2], third_stats )
+		fourth_quart = _EngagementQuartileStat( 'Fourth', len(fourth), 0, fourth_stats )
+		
+		options['engagement_to_performance'] = _EngagementPerfStat( first_quart, second_quart, third_quart, fourth_quart )		
 
 	def __call__(self):
 		self._check_access()
 		options = self.options
+		
+		self.assessment_aggregator = _TopCreators(self.for_credit_student_usernames, self.get_student_info)
+		self.engagement_aggregator = _TopCreators(self.for_credit_student_usernames, self.get_student_info)
+		
 		self._build_engagement_data(options)
 		self._build_enrollment_info(options)
 		self._build_self_assessment_data(options)
-		self._build_assignment_data(options)
+		options['assignment_data'] = self._build_assignment_data(options)
 		self._build_top_commenters(options)
+		#Must do this last
+		self._build_engagement_perf(options)
 		return options
 
 from nti.app.assessment.interfaces import IUsersCourseAssignmentHistoryItem

@@ -209,6 +209,7 @@
 				<td align="decimal" tal:content="python:item[1]">25</td>
 			</tr>
 		</blockTable>
+		
 		<illustration width="5in" height="1in" >
 		<pieChart dx="3.5in" dy="0in" dwidth="3in" dheight="3in" x="1in" y="0" width="2.5in"
 					height="2.5in"		
@@ -330,5 +331,87 @@
 
 			</tal:block>
 		</tal:block>
+		
+		<h1 style="h1" spaceBefore=".5in" spaceAfter=".5in" keepWithNext='true'>
+			Engagement to Performance
+		</h1>
+		
+		<para tal:condition="not:options/engagement_to_performance">
+			This course does not have any engagement to performance metrics.
+		</para>
+		
+		<para style="subdesc" spaceAfter=".2in"
+				tal:condition="options/engagement_to_performance" >
+			The following information correlates engagement with performance.
+		</para>
+		<hr width="100%" />
+		
+		<h2 style="h2">
+			Quartile Stats
+		</h2>
+		
+		<blockTable style='default' 
+				alignment="left"
+				colWidths="20% 10% 10%" 
+				tal:define="perf options/engagement_to_performance"
+				tal:condition="options/engagement_to_performance">
+			<tr>
+				<td align="center"><para>Quartile</para></td>
+				<td align="center"><para>Student Count in Quartile</para></td>
+				<td align="center"><para>Quartile Boundary</para></td>
+			</tr>
+			<tr>
+				<td><para tal:content="perf/first/name">Title</para></td>
+				<td align="decimal" tal:content="perf/first/count">Count</td>
+				<td align="decimal" tal:content="perf/first/value">Value</td>
+			</tr>
+			<tr>
+				<td><para tal:content="perf/second/name">Title</para></td>
+				<td align="decimal" tal:content="perf/second/count">Count</td>
+				<td align="decimal" tal:content="perf/second/value">Value</td>
+			</tr>
+			<tr>
+				<td><para tal:content="perf/third/name">Title</para></td>
+				<td align="decimal" tal:content="perf/third/count">Count</td>
+				<td align="decimal" tal:content="perf/third/value">Value</td>
+			</tr>
+			<tr>
+				<td><para tal:content="perf/fourth/name">Title</para></td>
+				<td align="decimal" tal:content="perf/fourth/count">Count</td>
+				<td align="decimal" tal:content="perf/fourth/value">Value</td>
+			</tr>
+		</blockTable>
+		
+		<h2 style="h2">
+			Quartile Performance
+		</h2>
+		
+		<blockTable style='default' 
+				colWidths="36% 8% 8% 8% 8% 8% 8% 8% 8%" 
+				tal:define="perf options/engagement_to_performance"
+				tal:condition="options/engagement_to_performance">
+			<tr>
+				<td align="center"><para>Assignment Title</para></td>
+				<td align="center"><para>First Quartile</para></td>
+				<td><para>First Quartile Count</para></td>
+				<td align="center"><para>Second Quartile</para></td>
+				<td><para>Second Quartile Count</para></td>
+				<td align="center"><para>Third Quartile</para></td>
+				<td><para>Third Quartile Count</para></td>
+				<td align="center"><para>Fourth Quartile</para></td>
+				<td><para>Fourth Quartile Count</para></td>
+			</tr>
+			<tr tal:repeat="item python: range(len(perf.first))">
+				<td><para tal:content="python:  perf.first.assignment_stat[item].title">Title</para></td>
+				<td align="decimal" tal:content="python: perf.first.assignment_stat[item].avg_grade">First</td>
+				<td align="decimal" tal:content="python: perf.first.assignment_stat[item].total">First</td>
+				<td align="decimal" tal:content="python: perf.second.assignment_stat[item].avg_grade">Second</td>
+				<td align="decimal" tal:content="python: perf.second.assignment_stat[item].total">First</td>
+				<td align="decimal" tal:content="python: perf.third.assignment_stat[item].avg_grade">Third</td>
+				<td align="decimal" tal:content="python: perf.third.assignment_stat[item].total">First</td>
+				<td align="decimal" tal:content="python: perf.fourth.assignment_stat[item].avg_grade">Fourth</td>
+				<td align="decimal" tal:content="python: perf.fourth.assignment_stat[item].total">First</td>
+			</tr>
+		</blockTable>
 
 </metal:block>
