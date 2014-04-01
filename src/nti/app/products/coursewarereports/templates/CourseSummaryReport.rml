@@ -6,7 +6,7 @@
 		<para style="normal" fontSize="12" spaceAfter=".1in">
 			This report is an overview of ${context/__name__}.  The report 
 			includes information about enrollment, self-assessments, assignments,
-			student activity, and dicussions.
+			student activity, and discussions.
 		</para>
 		<hr width="100%" />
 
@@ -332,13 +332,10 @@
 			</tal:block>
 		</tal:block>
 		
-		<h1 style="h1" spaceBefore=".5in" spaceAfter=".5in" keepWithNext='true'>
+		<h1 style="h1" spaceBefore=".5in" spaceAfter=".5in" keepWithNext='true'
+			tal:condition="not:options/engagement_to_performance">
 			Engagement to Performance
 		</h1>
-		
-		<para tal:condition="not:options/engagement_to_performance">
-			This course does not have any engagement to performance metrics.
-		</para>
 		
 		<para style="subdesc" spaceAfter=".2in"
 				tal:condition="options/engagement_to_performance" >
@@ -346,7 +343,8 @@
 		</para>
 		<hr width="100%" />
 		
-		<h2 style="h2">
+		<h2 style="h2"
+			tal:condition="not:options/engagement_to_performance">
 			Quartile Stats
 		</h2>
 		
@@ -382,7 +380,8 @@
 			</tr>
 		</blockTable>
 		
-		<h2 style="h2">
+		<h2 style="h2"
+			tal:condition="not:options/engagement_to_performance">
 			Quartile Performance
 		</h2>
 		

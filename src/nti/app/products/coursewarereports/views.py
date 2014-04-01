@@ -1270,8 +1270,8 @@ class CourseSummaryReportPdf(_AbstractReportView):
 		self._check_access()
 		options = self.options
 		
-		self.assessment_aggregator = _TopCreators(self.for_credit_student_usernames, self.get_student_info)
-		self.engagement_aggregator = _TopCreators(self.for_credit_student_usernames, self.get_student_info)
+		#self.assessment_aggregator = _TopCreators(self.for_credit_student_usernames, self.get_student_info)
+		#self.engagement_aggregator = _TopCreators(self.for_credit_student_usernames, self.get_student_info)
 		
 		self._build_engagement_data(options)
 		self._build_enrollment_info(options)
@@ -1279,7 +1279,7 @@ class CourseSummaryReportPdf(_AbstractReportView):
 		options['assignment_data'] = self._build_assignment_data(options)
 		self._build_top_commenters(options)
 		#Must do this last
-		self._build_engagement_perf(options)
+		#self._build_engagement_perf(options)
 		return options
 
 from nti.app.assessment.interfaces import IUsersCourseAssignmentHistoryItem
@@ -1339,12 +1339,13 @@ class AssignmentSummaryReportPdf(_AbstractReportView):
 						# convert int indexes into actual values; elide
 						# the right answer so we only show incorrect answers
 						__traceback_info__ = response
-						if question_part.solutions[0].value == response:
-							response = None
-						else:
-							response = question_part.choices[response]
-							if isinstance(response, string_types):
-								response = IPlainTextContentFragment(response)
+#Try keeping correct responses						
+# 						if question_part.solutions[0].value == response:
+# 							response = None
+# 						else:
+						response = question_part.choices[response]
+						if isinstance(response, string_types):
+							response = IPlainTextContentFragment(response)
 					if response is not None:
 						submissions[question_submission.questionId].append(response)
 

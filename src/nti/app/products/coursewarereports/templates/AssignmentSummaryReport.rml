@@ -63,40 +63,42 @@
 		
 		<tal:block  tal:repeat="item options/question_stats" 
 					tal:condition="options/question_stats">
+					
 			<keepTogether>
-			<h2 spaceBefore=".3in" keepWithNext='true' tal:content="item/title">Question Number</h2>
-			<para tal:content="item/content">The content of the question.</para>
-			<blockTable alignment="left">
-				<tr>
-					<td>Average Score</td>
-					<td align="decimal" tal:content="item/avg_score">75% </td>
+			<h2 style="h2" fontSize="10" spaceBefore=".3in" fontName="Helvetica-Bold" spaceAfter=".2" keepWithNext='true' 
+				tal:content="string:${item/title}:">
+				Question Number
+			</h2>
+			<para style="subdesc" tal:content="item/content" spaceAfter=".1in" >
+				The content of the question.
+			</para>
+
+			<blockTable alignment="left"
+						colWidths="30% 10% 10%"
+						tal:condition="item/submission_counts">
+						
+				<blockTableStyle id="new">
+					<lineStyle 	start="0,0" stop="-1,-1" 
+								kind="box" 
+								thickness="1"
+					   			colorName="#e9e9e9"/>
+		
+					<blockValign start="-1,-1" stop="1,1" value="top"/>
+					<blockTextColor start="0,0" stop="-1,-1" colorName="#b8b8b8" />
+					<blockFont start="0,0" stop="-1,-1" name="Helvetica-Bold" size="10" />
+					<blockTextColor start="0,0" stop="-1,-1" colorName="#494949" />
+					<blockFont start="0,0" stop="-1,-1" name="Helvetica" size="12" />
+				</blockTableStyle>		
+						
+				<tr tal:repeat="ans python: item.submission_counts.items()"
+					tal:define="total python: sum(item.submission_counts.values())">
+
+					<td tal:content=" python: ans[0]"><para>answer<para></td>
+					<td tal:content=" python: ans[1]">count</td>
+					<td tal:content=" python: '%0.1f%%' % ( ans[1] * 100.0 / total )">perc</td>
 				</tr>
 			</blockTable>
-			<illustration width="4in" height="4in" tal:condition="item/submission_counts">
-				<pieChart dx="1.5in" dy="0.8in" dwidth="4in" dheight="4in" x="1in" y="0" width="3in"
-						  height="3in"
-						  checkLabelOverlap='true'
-						  >
-					<labels>
-						<!--!  (${item/submission_counts/?key}) gets the count, is it useful? -->
-						<label tal:repeat="key item/submission_counts">${python:key[0:20] + '...' if isinstance(key,basestring) and len(key) > 15 else key}</label>
-					</labels>
-					<data>
-						<series>
-							<tal:block tal:repeat="value item/submission_counts/values">
-								${value}
-							</tal:block>
-						</series>
-					</data>
-					<texts >
-						<text x="2.5in" y="-0.5in" textAnchor="middle"
-							  fontName="Helvetica-Bold" fontSize="13"
-							  fillColor="black" >
-							Common Incorrect Answers
-						</text>
-					</texts>
-				</pieChart>
-			</illustration>
+	
 			</keepTogether>
 		</tal:block>
 </metal:block>
