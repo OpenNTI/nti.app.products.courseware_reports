@@ -148,6 +148,8 @@
 				to <u>${context/title|context/__name__}</u>. Those who have not contributed are excluded from the table.
 		</para>
 		
+		<hr width="100%" />
+		
 		<h2 style="h2">
 			For-Credit Comment Activity
 		</h2>
@@ -160,7 +162,7 @@
 					alignment="left" colWidths="30% 30% 12% 12%">
 			<tr>
 				<td>Name</td>
-				<td>Username</td>
+				<td>Login</td>
 				<td><para>Discussions Created</para></td>
 				<td>Comments</td>
 			</tr>

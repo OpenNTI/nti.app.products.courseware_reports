@@ -74,6 +74,8 @@
 			Comment Activity
 		</h1>
 		
+		<hr width="100%" />
+		
 		<para style="subdesc" spaceAfter=".4in"
 				tal:condition="options/for_credit_user_stats|options/non_credit_user_stats">
 				This table shows the number of comments participants have posted 
@@ -92,7 +94,7 @@
 					alignment="left" colWidths="30% 30% 12%">
 			<tr>
 				<td>Name</td>
-				<td>Username</td>
+				<td>Login</td>
 				<td>Comments</td>
 			</tr>
 			<tr tal:repeat="item options/for_credit_user_stats">
