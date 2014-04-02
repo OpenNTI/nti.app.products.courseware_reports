@@ -73,7 +73,7 @@
 					
 			<keepTogether>
 			<h2 style="h2" fontSize="10" spaceBefore=".3in" fontName="Helvetica-Bold" spaceAfter=".2" keepWithNext='true' 
-				tal:content="string:${item/title}:">
+				tal:content="string:${item/title}: (Average Score ${item/avg_score})">
 				Question Number
 			</h2>
 			<para style="subdesc" tal:content="item/content" spaceAfter=".1in" >

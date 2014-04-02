@@ -1417,11 +1417,14 @@ class AssignmentSummaryReportPdf(_AbstractReportView):
 			# If this gets big, we'll need to do something different,
 			# like just showing top-answers
 			# Arbitrary picking how many
+			# -9 since it fits on page, currently.
 				
-			# TODO can we order by content?
-			# TODO if not, we need 'all of the above' at end
-			# TODO We need correct answer in list, always
-			submission_counts = heapq.nlargest(10, submission.values(), key=lambda x: x.count)
+			# We order by popularity; we could do by content perhaps.
+			submission_counts = heapq.nlargest(9, submission.values(), key=lambda x: x.count)
+			if len( submission.values() ) > len( submission_counts ) \
+				and not [x for x in submission_counts if x.is_correct]:
+				#Ok, our correct answer isn't in our trimmed-down set; make it so.
+				submission_counts = submission_counts[:-1] + [x for x in submission.values() if x.is_correct]
 				
 			total_submits = sum( (x.count for x in submission.values()) )
 			# Now set the letter and perc values
