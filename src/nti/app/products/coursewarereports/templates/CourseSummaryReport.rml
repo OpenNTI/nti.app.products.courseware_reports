@@ -92,16 +92,16 @@
 				<td align="center"><para>For-Credit Students</para></td>
 				<td align="center"><para>Non-Credit Students</para></td>
 				<td align="center"><para>Total Students</para></td>
-				<td align="center"><para>Total Attempted (%)</para></td>
 				<td align="center"><para>For-Credit Attempted (%)</para></td>
+				<td align="center"><para>Total Attempted (%)</para></td>
 			</tr>
 			<tr tal:repeat="item options/assignment_data">
 				<td><para tal:content="item/title">The Assessment Title</para></td>
 				<td align="decimal" tal:content="item/for_credit_total">For-Credit Attempts</td>
 				<td align="decimal" tal:content="item/non_credit_total">Non-Credit Attempts</td>
 				<td align="decimal" tal:content="item/total">Total Attempts</td>
-				<td align="decimal" tal:content="item/attempted_perc">Percent attempted</td>
 				<td align="decimal" tal:content="item/for_credit_attempted_perc">Percent attempted</td>
+				<td align="decimal" tal:content="item/attempted_perc">Percent attempted</td>
 			</tr>
 		</blockTable>
 		<para tal:condition="not:options/assignment_data">
@@ -117,8 +117,8 @@
 				<td align="center"><para>Average: For-Credit</para></td>
 				<td align="center"><para>Average: Non-Credit</para></td>
 				<td align="center"><para>Average: All</para></td>
-				<td align="center"><para>Median</para></td>
-				<td align="center"><para>Standard Deviation</para></td>
+				<td align="center"><para>Median: All</para></td>
+				<td align="center"><para>Standard Deviation: All</para></td>
 			</tr>
 			<tr tal:repeat="item options/assignment_data">
 				<td><para tal:content="item/title">The Assessment Title</para></td>
