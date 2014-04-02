@@ -6,7 +6,7 @@
 	</td>
 </tr>
 <tr tal:condition="view/__parent__/options/user/username">
-	<td>Username:</td>
+	<td>Login:</td>
 	<td tal:content="view/__parent__/options/user/username">
 		Username
 	</td>

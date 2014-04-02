@@ -141,16 +141,14 @@
 
 
 	<metal:macro metal:define-macro="comment_table" >
-		<blockTable alignment="left" colWidths="35% 35% 10% 12%" style="default">
+		<blockTable alignment="left" colWidths="60% 12% 12%" style="default">
 			<tr>
 				<td>Name</td>
-				<td>Username</td>
 				<td>Count</td>
 				<td>Percent</td>
 			</tr>
 			<tr tal:repeat="item python: [x for x in top_commenters] ">
 				<td tal:content="item/display">Display Name</td>
-				<td tal:content="item/username">Username</td>
 				<td align="decimal" tal:content="item/count">count</td>
 				<td align="decimal" tal:content="python: '%0.1f%%' % item.perc">percent</td>
 			</tr>

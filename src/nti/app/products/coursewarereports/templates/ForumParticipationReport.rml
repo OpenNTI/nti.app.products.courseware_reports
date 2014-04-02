@@ -152,11 +152,12 @@
 		</para>		
 		
 		<blockTable style="default"
-					tal:condition="options/user_stats">
+					tal:condition="options/user_stats"
+					alignment="left" colWidths="30% 30% 12% 12%">
 			<tr>
 				<td>Name</td>
 				<td>Username</td>
-				<td>Discussions Created</td>
+				<td><para>Discussions Created</para></td>
 				<td>Comments</td>
 			</tr>
 			<tr tal:repeat="item options/user_stats">

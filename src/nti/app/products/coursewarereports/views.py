@@ -1281,6 +1281,7 @@ class CourseSummaryReportPdf(_AbstractReportView):
 		self._build_top_commenters(options)
 		#Must do this last
 		#self._build_engagement_perf(options)
+		options['engagement_to_performance'] = ()
 		return options
 
 from nti.app.assessment.interfaces import IUsersCourseAssignmentHistoryItem

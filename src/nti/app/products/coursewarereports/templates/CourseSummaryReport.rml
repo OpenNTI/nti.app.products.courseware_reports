@@ -333,7 +333,7 @@
 		</tal:block>
 		
 		<h1 style="h1" spaceBefore=".5in" spaceAfter=".5in" keepWithNext='true'
-			tal:condition="not:options/engagement_to_performance">
+			tal:condition="options/engagement_to_performance">
 			Engagement to Performance
 		</h1>
 		
@@ -341,10 +341,11 @@
 				tal:condition="options/engagement_to_performance" >
 			The following information correlates engagement with performance.
 		</para>
-		<hr width="100%" />
+		<hr width="100%" 
+			tal:condition="options/engagement_to_performance"/>
 		
 		<h2 style="h2"
-			tal:condition="not:options/engagement_to_performance">
+			tal:condition="options/engagement_to_performance">
 			Quartile Stats
 		</h2>
 		
@@ -381,7 +382,7 @@
 		</blockTable>
 		
 		<h2 style="h2"
-			tal:condition="not:options/engagement_to_performance">
+			tal:condition="options/engagement_to_performance">
 			Quartile Performance
 		</h2>
 		
