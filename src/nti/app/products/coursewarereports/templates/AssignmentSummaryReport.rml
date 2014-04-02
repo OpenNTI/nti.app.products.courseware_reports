@@ -22,7 +22,7 @@
 				<td><para>Non-Credit Students</para></td>
 				<td><para>Total Students</para></td>
 				<td><para>For-Credit Attempted (%)</para></td>
-				<td><para>Total Attempted (%)</para></td>
+				<td><para>Non-Credit Attempted (%)</para></td>
 			</tr>
 			<tr tal:repeat="item options/assignment_data">
 				<td><para tal:content="item/title">The Assessment Title</para></td>
@@ -30,7 +30,7 @@
 				<td align="decimal" tal:content="item/non_credit_total">Non-Credit Attempts</td>
 				<td align="decimal" tal:content="item/total">Total Attempts</td>
 				<td align="decimal" tal:content="item/for_credit_attempted_perc">Percent attempted</td>
-				<td align="decimal" tal:content="item/attempted_perc">Percent attempted</td>
+				<td align="decimal" tal:content="item/non_credit_attempted_perc">Percent attempted</td>
 			</tr>
 		</blockTable>
 		

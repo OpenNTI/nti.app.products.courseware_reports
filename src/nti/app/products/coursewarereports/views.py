@@ -149,9 +149,10 @@ class _TopCreators(object):
 	total = 0
 	title = ''
 	max_contributors = None
+	max_contributors_for_credit = None
+	max_contributors_non_credit = None
 	aggregate_creators = None
-	#TODO rename this, this is an aggregate_remainder
-	aggregate = None
+	aggregate_remainder = None
 
 	def __init__(self,for_credit_students,get_student_info):
 		self._get_student_info = get_student_info
@@ -198,7 +199,7 @@ class _TopCreators(object):
 			remainder = total_to_change - largest_total
 			# TODO: Localize and map this
 			percent = (remainder / total_to_change) * 100
-			self.aggregate = _StudentInfo( 'Others', 'Others', largest_total, percent )
+			self.aggregate_remainder = _StudentInfo( 'Others', 'Others', largest_total, percent )
 		return largest
 
 	def __iter__(self):
@@ -210,6 +211,18 @@ class _TopCreators(object):
 
 	def series(self):
 		return ' '.join( ('%d' % x.count for x in self._get_largest() ) )
+
+	@property
+	def unique_contributors(self):
+		return len(self.keys())
+		
+	@property
+	def unique_contributors_for_credit(self):
+		return len(self.for_credit_keys())
+	
+	@property
+	def unique_contributors_non_credit(self):
+		return len(self.non_credit_keys())
 
 	@property
 	def for_credit_total(self):
@@ -256,14 +269,19 @@ class _TopCreators(object):
 	def average_count_str(self):
 		return "%0.1f" % self.average_count()
 
-	def percent_contributed(self):
-		#FIXME update this for credit/non-credit
-		if not self.max_contributors:
+	def percent_contributed(self, max, contributors_count):
+		if not max:
 			return 100
-		return (len(self.keys()) / self.max_contributors) * 100.0
+		return (contributors_count / max) * 100.0
 
 	def percent_contributed_str(self):
-		return "%0.1f" % self.percent_contributed()
+		return "%0.1f" % self.percent_contributed( self.max_contributors, self.unique_contributors )
+
+	def for_credit_percent_contributed_str(self):
+		return "%0.1f" % self.percent_contributed( self.max_contributors_for_credit, self.unique_contributors_for_credit )
+
+	def non_credit_percent_contributed_str(self):
+		return "%0.1f" % self.percent_contributed( self.max_contributors_non_credit, self.unique_contributors_non_credit )
 
 def _common_buckets(objects,for_credit_students,get_student_info,agg_creators=None):
 	"""
@@ -452,6 +470,10 @@ class _AbstractReportView(AbstractAuthenticatedView,
 	@Lazy
 	def count_credit_students(self):
 		return len(self.for_credit_student_usernames)
+	
+	@Lazy
+	def count_non_credit_students(self):
+		return len(self.open_student_usernames)
 
 	@Lazy
 	def all_user_intids(self):
@@ -885,7 +907,7 @@ _AssignmentStat = namedtuple('_AssignmentStat',
 							  'non_credit_total',
 							  'avg_grade', 'for_credit_avg_grade',
 							  'non_credit_avg_grade', 'median_grade', 'std_dev_grade',
-							  'attempted_perc', 'for_credit_attempted_perc' ))
+							  'attempted_perc', 'for_credit_attempted_perc', 'non_credit_attempted_perc' ))
 
 def _assignment_stat_for_column(self, column, filter=None):
 	count = len(column)
@@ -975,17 +997,23 @@ def _assignment_stat_for_column(self, column, filter=None):
 		per_attempted_s = 'N/A'
 
 	if self.count_credit_students:
-		for_credit_per = (len(for_credit_keys) / self.count_credit_students) * 100.0
+		for_credit_per = (for_credit_total / self.count_credit_students) * 100.0
 		for_credit_per_s = '%0.1f' % for_credit_per
 	else:
 		for_credit_per_s = 'N/A'
+		
+	if self.count_non_credit_students:
+		non_credit_per = (non_credit_total / self.count_non_credit_students) * 100.0
+		non_credit_per_s = '%0.1f' % non_credit_per
+	else:
+		non_credit_per_s = 'N/A'
 
 	stat = _AssignmentStat( column.displayName, count, column.DueDate, total,
 							for_credit_total, non_credit_total,
 							avg_grade_s, for_credit_avg_grade_s,
 							non_credit_avg_grade_s,
 							median_grade_s,	std_dev_grade_s,
-							per_attempted_s, for_credit_per_s )
+							per_attempted_s, for_credit_per_s, non_credit_per_s )
 
 	return stat
 
@@ -1041,7 +1069,9 @@ class CourseSummaryReportPdf(_AbstractReportView):
 			accum = _TopCreators(self.for_credit_student_usernames,self.get_student_info)
 			accum.aggregate_creators = self.assessment_aggregator
 			accum.title = title
-			accum.max_contributors = len(self.all_student_usernames)
+			accum.max_contributors = self.count_all_students
+			accum.max_contributors_for_credit = self.count_credit_students
+			accum.max_contributors_non_credit = self.count_non_credit_students
 			title_to_count[asm.ntiid] = accum
 
 		for submission in qsets_by_student_in_course:
@@ -1107,7 +1137,7 @@ class CourseSummaryReportPdf(_AbstractReportView):
 		data = dict()
 		data['Notes'] = for_credit_note_count
 		data['Highlights'] = for_credit_highlight_count
-		data['Discussions'] = for_credit_discussion_count
+		data['Discussions Created'] = for_credit_discussion_count
 		data['Discussion Comments'] = for_credit_comment_count
 
 		options['engagement_data_for_credit'] = sorted(data.items())
@@ -1115,7 +1145,7 @@ class CourseSummaryReportPdf(_AbstractReportView):
 		data = dict()
 		data['Notes'] = len(intids_of_notes) - for_credit_note_count
 		data['Highlights'] = len(intids_of_hls) - for_credit_highlight_count
-		data['Discussions'] = total_discussion_count - for_credit_discussion_count
+		data['Discussions Created'] = total_discussion_count - for_credit_discussion_count
 		data['Discussion Comments'] = total_comment_count - for_credit_comment_count
 
 		options['engagement_data_non_credit'] = sorted(data.items())

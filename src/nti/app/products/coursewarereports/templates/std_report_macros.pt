@@ -160,7 +160,7 @@
 				  tal:attributes="width top_commenters_ill_width|default;
 								  height top_commenters_ill_height|default">
 					
-		<!-- We prefer to use a pie-chart, unless there is a remainder (e.g. 'aggregate').  
+		<!-- We prefer to use a pie-chart, unless there is a remainder (e.g. 'aggregate_remainder').  
 			If so, we will fall back to a bar chart.  -->			
 								  
 		<barChart dx="0in" dy="0in"
@@ -169,7 +169,7 @@
 				  width="3.5in"
 				  height="4in" direction="horizontal" 
 				  barLabelFormat="%2d" barWidth="5"
-				  tal:condition="top_commenters/aggregate" >
+				  tal:condition="top_commenters/aggregate_remainder" >
 			<barLabels fillColor="#757474" fontSize="12" boxAnchor="w" dx="3" />
 			<bars>
 				<bar fillColor="#ffbe4d" strokeColor="#ffbe4d" />
@@ -210,7 +210,7 @@
 				  x="1in" y="0"
 				  width="4in" height="4in"
 				  checkLabelOverlap='false'
-				  tal:condition="not: top_commenters/aggregate|options/top_commenters/aggregate"
+				  tal:condition="not: top_commenters/aggregate_remainder|options/top_commenters/aggregate_remainder"
 				  tal:attributes="dwidth top_commenters_ill_width|default;
 								  dheight top_commenters_ill_height|default;
 								  width top_commenters_chart_width|default;
