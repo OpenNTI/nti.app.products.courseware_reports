@@ -14,18 +14,18 @@
 		</h1>
 		
 		<para style="subdesc" spaceAfter=".4in"
-				tal:condition="options/all_forum_participation">
+				tal:condition="options/all_forum_participation/forum_objects_by_week_number">
 			This chart shows the number of comments made each week
 			in <u>${context/title|context/__name__}</u> since it was posted.
 		</para>
-		<para tal:condition="not:options/all_forum_participation">
+		<para tal:condition="not:options/all_forum_participation/forum_objects_by_week_number">
 			This topic does not have any comments.
 		</para>		
 
 		<illustration width="5in" height="3in"
 					  tal:define="forum_stat options/all_forum_participation;
 					  			  value_axis_name string:Comments"
-					  tal:condition="options/all_forum_participation"
+					  tal:condition="options/all_forum_participation/forum_objects_by_week_number"
 					  metal:use-macro="macro:forum_participation_over_time">
 		</illustration>
 
