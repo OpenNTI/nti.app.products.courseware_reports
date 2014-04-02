@@ -1338,7 +1338,6 @@ class AssignmentSummaryReportPdf(_AbstractReportView):
 				continue
 
 			submission = history.Submission
-			is_correct = False
 			
 			pending = history.pendingAssessment
 			for set_submission in submission.parts:
@@ -1355,9 +1354,12 @@ class AssignmentSummaryReportPdf(_AbstractReportView):
 
 					question_part = question.parts[0]
 					response = question_submission.parts[0]
+					is_correct = False
 					if (IQMultipleChoicePart.providedBy(question_part)
 						and not IQMultipleChoiceMultipleAnswerPart.providedBy(question_part)
 						and isinstance(response, int)):
+						# Indexes into multi-part answers
+						
 						# convert int indexes into actual values
 						__traceback_info__ = response
 
@@ -1366,7 +1368,18 @@ class AssignmentSummaryReportPdf(_AbstractReportView):
 						response = question_part.choices[response]
 						if isinstance(response, string_types):
 							response = IPlainTextContentFragment(response)
+							response = response.lower()
+					elif isinstance(response, string_types):
+						#Freeform answers
+						response = response.lower()	
+						solution = question_part.solutions[0].value
+						
+						#TODO What case does this occur in?							
+						solution = solution.lower() if isinstance(solution, string_types) else solution
+						is_correct = solution == response
+							
 					if response is not None:
+						# If we have an answer, add it to our pool
 						try:
 							if response in answer_stats:
 								answer_stats[response].count += 1
@@ -1374,6 +1387,9 @@ class AssignmentSummaryReportPdf(_AbstractReportView):
 								answer_stats[response] = _AnswerStat(response,is_correct)
 						except TypeError:
 							# Dict or list answers
+							#TODO For dict or list, couldn't we flatten the dict or list
+							#and accumulate those into AnswerStats? Would we be
+							#able to parse the answer set?
 							continue
 
 			for maybe_assessed in pending.parts:
@@ -1402,6 +1418,9 @@ class AssignmentSummaryReportPdf(_AbstractReportView):
 			# like just showing top-answers
 			# Arbitrary picking how many
 				
+			# TODO can we order by content?
+			# TODO if not, we need 'all of the above' at end
+			# TODO We need correct answer in list, always
 			submission_counts = heapq.nlargest(10, submission.values(), key=lambda x: x.count)
 				
 			total_submits = sum( (x.count for x in submission.values()) )
