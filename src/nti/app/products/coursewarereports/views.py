@@ -1316,6 +1316,22 @@ class AssignmentSummaryReportPdf(_AbstractReportView):
 		stats = [_assignment_stat_for_column(self, self.context)]
 		options['assignment_data'] = stats
 
+	def _add_multiple_choice_to_answer_stats(self,answer_stats,response,question_part,check_correct):
+		"""Adds the multiple choice response to our answer_stats"""
+		response_val = question_part.choices[response]
+		self._add_val_to_answer_stats(answer_stats, response_val, check_correct)
+
+	def _add_val_to_answer_stats(self,answer_stats,response,check_correct):
+		"""Adds a response value to our answer_stats"""
+		if isinstance(response, string_types):
+			response = IPlainTextContentFragment(response)
+			
+		if response in answer_stats:
+			answer_stats[response].count += 1
+		else:
+			is_correct = check_correct()
+			answer_stats[response] = _AnswerStat(response,is_correct)
+
 	def _build_question_data(self, options):
 		assignment = component.getUtility(IQAssignment, name=self.context.AssignmentId)
 
@@ -1328,6 +1344,7 @@ class AssignmentSummaryReportPdf(_AbstractReportView):
 
 		column = self.context
 		#TODO can't I do this via deafultdict here?
+		#submissions = defaultdict(lambda: defaultdict(list))
 		submissions = {}
 		assessed_values = defaultdict(list)
 
@@ -1347,50 +1364,51 @@ class AssignmentSummaryReportPdf(_AbstractReportView):
 					
 					question = qids_to_q[question_submission.questionId]
 					
-					if question_submission.questionId in submissions:
-						answer_stats = submissions[question_submission.questionId]
-					else:
-						submissions[question_submission.questionId] = answer_stats = {}
+					#TODO clean this up, think we can defaultdict now (or at least I know how to do it for this case)
+ 					if question_submission.questionId in submissions:
+ 						answer_stats = submissions[question_submission.questionId]
+ 					else:
+ 						submissions[question_submission.questionId] = answer_stats = {}
 
 					question_part = question.parts[0]
 					response = question_submission.parts[0]
-					is_correct = False
-					if (IQMultipleChoicePart.providedBy(question_part)
+
+					if (	IQMultipleChoicePart.providedBy(question_part)
 						and not IQMultipleChoiceMultipleAnswerPart.providedBy(question_part)
 						and isinstance(response, int)):
-						# Indexes into multi-part answers
-						
+						# We have indexes into single multiple choice answers
 						# convert int indexes into actual values
-						__traceback_info__ = response
-
-						is_correct = question_part.solutions[0].value == response
-
-						response = question_part.choices[response]
-						if isinstance(response, string_types):
-							response = IPlainTextContentFragment(response)
-							response = response.lower()
+						self._add_multiple_choice_to_answer_stats( 	answer_stats, 
+																	response, 
+																	question_part,
+																	lambda: response == question_part.solutions[0].value )
+					elif (	IQMultipleChoicePart.providedBy(question_part)
+						and IQMultipleChoiceMultipleAnswerPart.providedBy(question_part)
+						and response):		
+						# We are losing empty responses
+						# The solutions should be int indexes, as well as our responses
+						for r in response:
+							self._add_multiple_choice_to_answer_stats( 	answer_stats, 
+																		r, 
+																		question_part,
+																		lambda: r in question_part.solutions[0].value )
+					#TODO We should be able to handle freeform multiple answer as well
+						# Solutions and respones should be a list of strings
+						# Freeform multi-answer strings
+						#	-list of responses
+						#	-list of solutions
+					#TODO Can we handle matching (and ordering)
+					#	For those, each answer available will have correct and incorrect answers
 					elif isinstance(response, string_types):
-						#Freeform answers
+						# Freeform answers
 						response = response.lower()	
 						solution = question_part.solutions[0].value
 						
-						#TODO What case does this occur in?							
+						#TODO What case does this occur in?			
 						solution = solution.lower() if isinstance(solution, string_types) else solution
-						is_correct = solution == response
-							
-					if response is not None:
-						# If we have an answer, add it to our pool
-						try:
-							if response in answer_stats:
-								answer_stats[response].count += 1
-							else:
-								answer_stats[response] = _AnswerStat(response,is_correct)
-						except TypeError:
-							# Dict or list answers
-							#TODO For dict or list, couldn't we flatten the dict or list
-							#and accumulate those into AnswerStats? Would we be
-							#able to parse the answer set?
-							continue
+						self._add_val_to_answer_stats( 	answer_stats,
+														response,
+														lambda: solution == response )
 
 			for maybe_assessed in pending.parts:
 				if not IQAssessedQuestionSet.providedBy(maybe_assessed):
@@ -1417,14 +1435,15 @@ class AssignmentSummaryReportPdf(_AbstractReportView):
 			# If this gets big, we'll need to do something different,
 			# like just showing top-answers
 			# Arbitrary picking how many
-			# -9 since it fits on page, currently.
+			# ->8 since it fits on page with header, currently.
 				
 			# We order by popularity; we could do by content perhaps.
-			submission_counts = heapq.nlargest(9, submission.values(), key=lambda x: x.count)
+			submission_counts = heapq.nlargest(8, submission.values(), key=lambda x: x.count)
 			if len( submission.values() ) > len( submission_counts ) \
 				and not [x for x in submission_counts if x.is_correct]:
-				#Ok, our correct answer isn't in our trimmed-down set; make it so.
-				submission_counts = submission_counts[:-1] + [x for x in submission.values() if x.is_correct]
+				#Ok, our correct answer(s) isn't in our trimmed-down set; make it so.
+				missing_corrects = [x for x in submission.values() if x.is_correct and x not in submission_counts]
+				submission_counts = submission_counts[:-1 * len(missing_corrects)] + missing_corrects
 				
 			total_submits = sum( (x.count for x in submission.values()) )
 			# Now set the letter and perc values
