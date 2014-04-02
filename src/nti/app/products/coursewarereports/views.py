@@ -1433,21 +1433,22 @@ class AssignmentSummaryReportPdf(_AbstractReportView):
 
 			submission = submissions.get(q.ntiid, {})
 			# If this gets big, we'll need to do something different,
-			# like just showing top-answers
+			# like just showing top-answers.
+			# TODO Do we want to truncate the multiple choice questions at all?
 			# Arbitrary picking how many
 			# ->8 since it fits on page with header, currently.
 				
 			# We order by popularity; we could do by content perhaps.
 			submission_counts = heapq.nlargest(8, submission.values(), key=lambda x: x.count)
 			
-			if len(submission_values()) > len(submission_counts):
+			if len(submission.values()) > len(submission_counts):
 				missing_corrects = [x for x in submission.values() 
 									if x.is_correct and x not in submission_counts]
 				if missing_corrects:
 					#Ok, our correct answer(s) isn't in our trimmed-down set; make it so.
 					submission_counts = submission_counts[:-1 * len(missing_corrects)] + missing_corrects
 				
-			total_submits = sum( (x.count for x in submission.values()) )
+			total_submits = len( assessed_value )
 			# Now set the letter and perc values
 			letters = string.ascii_uppercase
 				
