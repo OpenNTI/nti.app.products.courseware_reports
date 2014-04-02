@@ -84,6 +84,12 @@
 						colWidths="6% 50% 10% 10%"
 						tal:condition="item/submission_counts">
 						
+				<blockTableStyle id="new" >
+					<lineStyle 	thickness="2" 
+								start="0,0" stop="-1,-1" 
+								kind="linebelow" colorName="white" />	
+				</blockTableStyle>		
+						
 				<tr tal:repeat="answer_stat item/submission_counts">
 					<td tal:content="string:${answer_stat/letter_prefix}."
 						tal:attributes="background python: '#cbf2db' if answer_stat.is_correct else '#f5f5f5'"
@@ -103,7 +109,7 @@
 							</para>
 					</td>
 					<td tal:content="answer_stat/count"
-						tal:attributes="fontColor python: '#cbf2db' if answer_stat.is_correct else '#e74c3c'"
+						tal:attributes="fontColor python: '#2ecc71' if answer_stat.is_correct else '#e74c3c'"
 						fontSize="14" fontName="Helvetica-Bold"
 						topPadding="20"
 						bottomPadding="20"
@@ -112,7 +118,7 @@
 						count
 					</td>
 					<td tal:content="answer_stat/perc_s"
-						tal:attributes="fontColor python: '#cbf2db' if answer_stat.is_correct else '#e74c3c'"
+						tal:attributes="fontColor python: '#2ecc71' if answer_stat.is_correct else '#e74c3c'"
 						fontSize="14" fontName="Helvetica-Bold"
 						topPadding="20"
 						bottomPadding="20"

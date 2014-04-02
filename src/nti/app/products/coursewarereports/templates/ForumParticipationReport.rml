@@ -142,7 +142,7 @@
 			Comment Activity
 		</h1>
 		
-		<para 	style="subdesc" spaceAfter=".4in"
+		<para 	style="subdesc" spaceAfter=".1in"
 				tal:condition="options/for_credit_user_stats|options/non_credit_user_stats" >
 				This table shows the number of comments participants have posted 
 				to <u>${context/title|context/__name__}</u>. Those who have not contributed are excluded from the table.
