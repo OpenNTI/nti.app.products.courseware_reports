@@ -238,6 +238,12 @@ class _TopCreators(object):
 
 	def keys(self):
 		return self._data.keys()
+	
+	def for_credit_keys(self):
+		return self._for_credit_data.keys()
+	
+	def non_credit_keys(self):
+		return self._non_credit_data.keys()
 
 	def get(self, key, default=None):
 		return self._data.get(key, default)
@@ -326,8 +332,6 @@ def _build_buckets_options(options, buckets):
 		maxKey = forum_objects_by_week_number.maxKey()
 		minYear = minKey // 100
 		maxYear = maxKey // 100
-		#minWeek = int(str(minKey)[4:])
-		#maxWeek = int(str(maxKey)[4:])
 		multi_year_span = minYear != maxYear
 
 		if multi_year_span:
@@ -742,11 +746,28 @@ class ForumParticipationReportPdf(_AbstractReportView):
 		commenters = options['top_commenters']
 		creators = options['top_creators']
 
-		everyone_that_did_something = set(commenters.keys()) | set(creators.keys())
+		for_credit_users = set(commenters.for_credit_keys()) | set(creators.for_credit_keys())
+		non_credit_users = set(commenters.non_credit_keys()) | set(creators.non_credit_keys())
+		
+		for_credit_stats = self._build_user_stats_with_keys(for_credit_users, commenters, creators)
+		non_credit_stats = self._build_user_stats_with_keys(non_credit_users, commenters, creators)
 
+		options['for_credit_user_stats'] = fc_stats = for_credit_stats[0]
+		options['non_credit_user_stats'] = nc_stats = non_credit_stats[0]
+		only_one = for_credit_stats[1] + non_credit_stats[1]
+		total_distinct_count = len(fc_stats) + len(nc_stats)
+		
+		#Could probably break this into three parts if we want
+		if fc_stats or nc_stats:
+			options['percent_users_comment_more_than_once'] = "%0.2f" % ((total_distinct_count - only_one) / total_distinct_count * 100.0)
+		else:
+			options['percent_users_comment_more_than_once'] = '0.0'
+
+	def _build_user_stats_with_keys(self,users,commenters,creators):
+		"""Returns sorted user stats for the given set of users"""
 		user_stats = list()
 		only_one = 0
-		for uname in everyone_that_did_something:
+		for uname in users:
 			student_info = self.get_student_info( uname )
 			stat = self.UserStats(	student_info, 
 									creators.get(uname, 0), 
@@ -756,12 +777,7 @@ class ForumParticipationReportPdf(_AbstractReportView):
 				only_one += 1
 				
 		user_stats.sort( key=lambda x: x.username.display.lower() )
-
-		options['user_stats'] = user_stats
-		if user_stats:
-			options['percent_users_comment_more_than_once'] = "%0.2f" % (((len(user_stats) - only_one) / len(user_stats)) * 100.0)
-		else:
-			options['percent_users_comment_more_than_once'] = '0.0'
+		return (user_stats,only_one)
 
 	def __call__(self):
 		"""
@@ -841,9 +857,9 @@ class TopicParticipationReportPdf(ForumParticipationReportPdf):
 		self._check_access()
 		options = self.options
 		self._build_top_commenters(options)
-		options['top_creators'] = dict()
+		# This is a placeholder
+		options['top_creators'] = _TopCreators(self.for_credit_student_usernames,self.get_student_info)
 		options['topic_info'] = self._build_topic_info()
-#		self._build_comment_count_by_topic(options)
 		self._build_user_stats(options)
 
 		return options

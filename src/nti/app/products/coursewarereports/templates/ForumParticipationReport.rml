@@ -137,22 +137,26 @@
 
 		<nextPage />
 
-		<!-- We'll probably want to flow this one through two colums? -->
+		<!-- We'll probably want to flow this one through two columns? -->
 		<h1 style="h1" spaceAfter=".5in" >
 			Comment Activity
 		</h1>
 		
 		<para 	style="subdesc" spaceAfter=".4in"
-				tal:condition="options/user_stats" >
+				tal:condition="options/for_credit_user_stats|options/non_credit_user_stats" >
 				This table shows the number of comments participants have posted 
 				to <u>${context/title|context/__name__}</u>. Those who have not contributed are excluded from the table.
 		</para>
-		<para tal:condition="not:options/user_stats">
-			This forum does not have any comments.
-		</para>		
+		
+		<h2 style="h2">
+			For-Credit Comment Activity
+		</h2>
+		<para tal:condition="not:options/for_credit_user_stats">
+			This forum does not have any comments by for-credit students.
+		</para>	
 		
 		<blockTable style="default"
-					tal:condition="options/user_stats"
+					tal:condition="options/for_credit_user_stats"
 					alignment="left" colWidths="30% 30% 12% 12%">
 			<tr>
 				<td>Name</td>
@@ -160,9 +164,31 @@
 				<td><para>Discussions Created</para></td>
 				<td>Comments</td>
 			</tr>
-			<tr tal:repeat="item options/user_stats">
+			<tr tal:repeat="item options/for_credit_user_stats">
 				<td tal:content="item/username/display">user1</td>
 				<td tal:content="item/username/username">user2</td>
+				<td align="decimal" tal:content="item/topics_created">1</td>
+				<td align="decimal" tal:content="item/total_comment_count">3</td>
+			</tr>
+		</blockTable>
+		
+		<h2 style="h2">
+			Non-Credit Comment Activity
+		</h2>
+		<para tal:condition="not:options/non_credit_user_stats">
+			This forum does not have any comments by non-credit students.
+		</para>	
+		
+		<blockTable style="default"
+					tal:condition="options/non_credit_user_stats"
+					alignment="left" colWidths="30% 12% 12%">
+			<tr>
+				<td>Name</td>
+				<td><para>Discussions Created</para></td>
+				<td>Comments</td>
+			</tr>
+			<tr tal:repeat="item options/non_credit_user_stats">
+				<td tal:content="item/username/display">user1</td>
 				<td align="decimal" tal:content="item/topics_created">1</td>
 				<td align="decimal" tal:content="item/total_comment_count">3</td>
 			</tr>
