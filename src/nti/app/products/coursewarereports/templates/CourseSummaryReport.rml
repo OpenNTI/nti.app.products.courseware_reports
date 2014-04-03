@@ -272,7 +272,7 @@
 		
 		<para style="subdesc" spaceAfter=".2in"
 				tal:condition="options/aggregate_forum_stats/forum_objects_by_week_number" >
-			The following information offers an overview of the discussion activity for ${context/__name__}.
+			The following information presents an overview of the discussion activity for ${context/__name__}.
 		</para>
 		<hr width="100%" />
 
