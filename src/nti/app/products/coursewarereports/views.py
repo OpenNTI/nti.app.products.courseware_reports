@@ -931,6 +931,7 @@ def _assignment_stat_for_column(self, column, filter=None):
 		if filter is not None and username not in filter:
 			continue
 		
+		grade_val = None
 		# We could have values (19.3), combinations (19.3 A), or strings ('GR'); 
 		# Count the latter case and move on
 		if grade.value is not None:
