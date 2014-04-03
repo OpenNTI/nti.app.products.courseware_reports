@@ -1104,10 +1104,24 @@ class CourseSummaryReportPdf(_AbstractReportView):
 		all_hls = intids_of_hls
 
 		lib = component.getUtility(IContentPackageLibrary)
-		containers_in_course = lib.childrenOfNTIID(self.course.legacy_content_package.ntiid)
-		# TODO: Is this getting everything? All the embedded containers, etc?
-		containers_in_course = [x.ntiid for x in containers_in_course]
+		paths = lib.pathToNTIID( self.course.legacy_content_package.ntiid )
+		root = paths[0] if paths else None
 
+		def _recur(node, accum):
+			#Get our embedded ntiids and recursively fetch our children's ntiids
+			ntiid = node.ntiid
+			accum.update( node.embeddedContainerNTIIDs )
+			if ntiid:
+				accum.add(ntiid)
+			for n in node.children:	
+				_recur(n, accum)
+
+		containers_in_course = set()
+		if root:
+			_recur( root,containers_in_course )
+		containers_in_course.discard( None )
+
+		#Now we should have our whole tree of ntiids, intersect with our vals
 		intids_of_objects_in_course_containers = md_catalog['containerId'].apply({'any_of': containers_in_course})
 
 		intids_of_notes = intersection( intids_of_notes,
@@ -1158,13 +1172,13 @@ class CourseSummaryReportPdf(_AbstractReportView):
 
 		options['engagement_data_non_credit'] = sorted(data.items())
 
-		outline = self.course.Outline
-		def _recur(node, accum):
-			ntiid = getattr(node, 'ContentNTIID', getattr(node, '_v_ContentNTIID', None))
-			if ntiid:
-				accum.add(ntiid)
-			for n in node.values():
-				_recur(n, accum)
+# 		outline = self.course.Outline
+# 		def _recur(node, accum):
+# 			ntiid = getattr(node, 'ContentNTIID', getattr(node, '_v_ContentNTIID', None))
+# 			if ntiid:
+# 				accum.add(ntiid)
+# 			for n in node.values():
+# 				_recur(n, accum)
 
 #		Exclude engagement_by_place data until we fully flesh out the details
 # 		data = list()
