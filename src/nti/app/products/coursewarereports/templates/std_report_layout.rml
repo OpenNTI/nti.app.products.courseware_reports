@@ -23,6 +23,7 @@
 		</pageTemplate>
 		<pageTemplate id="main">
 			<frame id="first" x1="0.5in" y1="0.5in" width="10in" height="7.5in"/>
+<!--		<frame id="footer" x1="7in" y1="0.1in" width="4.5in" height=".3in" showBoundary="1"/> -->
 		</pageTemplate>
 
 
@@ -61,8 +62,7 @@
 					tal:content="structure provider:header_manager">
 		</blockTable>
 		<nextFrame />
-
-		<metal:block tal:content="structure provider:pagelet">
+   		<metal:block tal:content="structure provider:pagelet">
 			RML Content
 		</metal:block>
 	</story>

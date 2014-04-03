@@ -27,6 +27,7 @@ from itertools import groupby
 from collections import namedtuple
 from collections import defaultdict
 from datetime import datetime
+from datetime import timedelta
 
 import BTrees
 import pytz
@@ -283,7 +284,7 @@ class _TopCreators(object):
 	def non_credit_percent_contributed_str(self):
 		return "%0.1f" % self.percent_contributed( self.max_contributors_non_credit, self.unique_contributors_non_credit )
 
-def _common_buckets(objects,for_credit_students,get_student_info,agg_creators=None):
+def _common_buckets(objects,for_credit_students,get_student_info,object_create_date,agg_creators=None):
 	"""
 	Given a list of :class:`ICreated` objects,
 	return a :class:`_CommonBuckets` containing three members:
@@ -296,10 +297,11 @@ def _common_buckets(objects,for_credit_students,get_student_info,agg_creators=No
 
 	"""
 	# Group the forum objects by day
-	day_normalizer = TimestampNormalizer(TimestampNormalizer.RES_DAY)
-	day_key = lambda x: int(day_normalizer.value(x.createdTime))
-
+	# Since we want deltas, everything is staying in UTC
+	day_key = lambda x: x.created.date()
 	objects = sorted(objects, key=day_key)
+	object_create_date = object_create_date.date()
+	start_monday = object_create_date - timedelta( days=object_create_date.weekday() )
 
 	forum_objects_by_day = BTrees.family64.II.BTree()
 	forum_objects_by_week_number = BTrees.family64.II.BTree()
@@ -313,14 +315,14 @@ def _common_buckets(objects,for_credit_students,get_student_info,agg_creators=No
 			if agg_creators is not None:
 				agg_creators.incr_username(o.creator.username)
 
-		forum_objects_by_day[k] = count
+		#These diffs should always be positive
+		day_delta = (k - object_create_date).days
+		forum_objects_by_day[day_delta] = count
 
-		year_num, week_num, _ = _adjust_timestamp(k).isocalendar()
-		# Because sometimes forums can wrap around years (e.g, start
-		# in the fall of 2013, run through the spring of 2014),
-		# we use week numbers that include the year so everything
-		# stays in order.
-		week_num = year_num * 100 + week_num
+		group_monday = k - timedelta( days=k.weekday() )
+		#First week is '1'
+		week_num = ( (group_monday - start_monday).days // 7 ) + 1
+	
 		if week_num in forum_objects_by_week_number:
 			forum_objects_by_week_number[week_num] += count
 		else:
@@ -332,7 +334,7 @@ ForumObjectsStat = namedtuple('ForumObjectsStat',
 							  ('forum_objects_by_day', 'forum_objects_by_week_number',
 							   'forum_objects_by_week_number_series', 'forum_objects_by_week_number_max',
 							   'forum_objects_by_week_number_value_min', 'forum_objects_by_week_number_value_max',
-							   'forum_objects_by_week_number_categories', 'forum_objects_by_week_number_category_subheader',
+							   'forum_objects_by_week_number_categories',
 							   'forum_objects_by_week_number_y_step'))
 
 def _build_buckets_options(options, buckets):
@@ -342,22 +344,13 @@ def _build_buckets_options(options, buckets):
 	options['forum_objects_by_day'] = forum_objects_by_day
 	options['forum_objects_by_week_number'] = forum_objects_by_week_number
 
+	#Now that we're using time deltas, we could go back to line plots
 	if forum_objects_by_week_number:
 		#TODO we should think about having minimum data points (12 weeks?), to keep the chart consistent across views
 
-		#Note: this will not handle spans over two years
 		minKey = forum_objects_by_week_number.minKey()
 		maxKey = forum_objects_by_week_number.maxKey()
-		minYear = minKey // 100
-		maxYear = maxKey // 100
-		multi_year_span = minYear != maxYear
-
-		if multi_year_span:
-			r1 = range(minKey, minYear * 100 + 53 )
-			r2 = range(maxYear * 100 + 01, maxKey + 1 )
-			full_range = r1 + r2
-		else:
-			full_range = range(minKey, maxKey + 1)
+		full_range = range(minKey, maxKey + 1)
 
 		def as_series():
 			rows = ['%d' % forum_objects_by_week_number.get(k, 0)
@@ -374,17 +367,13 @@ def _build_buckets_options(options, buckets):
 			options['forum_objects_by_week_number_y_step'] = 1
 
 		#Build our category labels
-		week_range = [str(x)[4:] for x in full_range]
-		options['forum_objects_by_week_number_categories'] = ' '.join(week_range)
-		options['forum_objects_by_week_number_category_subheader'] = '%d-%d' % (minYear,maxYear) if multi_year_span else str(minYear)
-
+		options['forum_objects_by_week_number_categories'] = ' '.join( [str(x) for x in full_range] )
 	else:
 		options['forum_objects_by_week_number_series'] = ''
 		options['forum_objects_by_week_number_max'] = 0
 		options['forum_objects_by_week_number_value_min'] = 0
 		options['forum_objects_by_week_number_value_max'] = 0
 		options['forum_objects_by_week_number_categories'] = ''
-		options['forum_objects_by_week_number_category_subheader'] = ''
 
 	return ForumObjectsStat( *[options.get(x)
 							   for x in ForumObjectsStat._fields] )
@@ -431,6 +420,11 @@ class _AbstractReportView(AbstractAuthenticatedView,
 	@property
 	def course(self):
 		return ICourseInstance(self.context)
+
+	@property
+	def course_start_date(self):
+		entry = self.course.legacy_catalog_entry
+		return entry.StartDate
 
 	@Lazy
 	def md_catalog(self):
@@ -546,16 +540,18 @@ class StudentParticipationReportPdf(_AbstractReportView):
 		intids_of_forum_objects_created_by_student = md_catalog.family.IF.intersection(intids_created_by_student, intids_of_forum_objects)
 		forum_objects_created_by_student = ResultSet(intids_of_forum_objects_created_by_student,
 													 uidutil )
-		forum_objects_created_by_student_in_course = [x for x in forum_objects_created_by_student
-													  if find_interface(x, ICommunityBoard) == course_board]
 		
-		#We ignore deleted comments
-		live_objects = [x for x in forum_objects_created_by_student_in_course 
-						if not IDeletedObjectPlaceholder.providedBy( x ) ]
+		#Grab by course, ignore deleted comments and those before course start
+		live_objects = [x for x in forum_objects_created_by_student
+						if 	find_interface(x, ICommunityBoard) == course_board
+						and not IDeletedObjectPlaceholder.providedBy( x )
+						and x.created > self.course_start_date ]
+		
 		# Group the forum objects by day and week
 		time_buckets = _common_buckets(	live_objects,
 										self.for_credit_student_usernames,
-										self.get_student_info)
+										self.get_student_info,
+										self.course_start_date )
 
 		# Tabular breakdown of what topics the user created in what forum
 		# and how many comments in which topics (could be bulkData or actual blockTable)
@@ -728,11 +724,13 @@ class ForumParticipationReportPdf(_AbstractReportView):
 		def _all_comments():
 			for topic in self.context.values():
 				for comment in topic.values():
-					if not IDeletedObjectPlaceholder.providedBy( comment ):
+					if not IDeletedObjectPlaceholder.providedBy( comment ) \
+						and comment.created > self.course_start_date:
 						yield comment
 		buckets = _common_buckets(	_all_comments(), 
 									self.for_credit_student_usernames,
 									self.get_student_info,
+									self.course_start_date,
 									self.agg_creators)
 		options['top_commenters'] = buckets.top_creators
 		options['top_commenters_colors'] = CHART_COLORS
@@ -745,7 +743,11 @@ class ForumParticipationReportPdf(_AbstractReportView):
 		top_creators = _TopCreators(self.for_credit_student_usernames,self.get_student_info)
 		
 		for topic in self.context.values():
-			comments = [c for c in topic.values() if not IDeletedObjectPlaceholder.providedBy( c ) ];
+			#TODO duplicate logic in student report
+			comments = [c for c in topic.values() 
+						if 	not IDeletedObjectPlaceholder.providedBy( c )
+						and c.created > self.course_start_date ];
+						
 			count = len( comments )
 			user_count = len( {c.creator for c in comments } )
 			creator = self.get_student_info( topic.creator )
@@ -853,10 +855,12 @@ class TopicParticipationReportPdf(ForumParticipationReportPdf):
 
 	def _build_top_commenters(self, options):
 		live_objects = [x for x in self.context.values() 
-						if not IDeletedObjectPlaceholder.providedBy( x ) ]
+						if not IDeletedObjectPlaceholder.providedBy( x )
+						and x.created > self.course_start_date ]
 		buckets = _common_buckets(	live_objects, 
 									self.for_credit_student_usernames,
-									self.get_student_info )
+									self.get_student_info,
+									self.course_start_date )
 		options['top_commenters'] = buckets.top_creators
 		options['top_commenters_colors'] = CHART_COLORS
 		all_forum_stat = _build_buckets_options(options, buckets)
@@ -1128,7 +1132,8 @@ class CourseSummaryReportPdf(_AbstractReportView):
 				if discussion.creator.username in for_credit_students:
 					for_credit_discussion_count += 1
 				for comment in discussion.values():
-					if not IDeletedObjectPlaceholder.providedBy( comment ):
+					if not IDeletedObjectPlaceholder.providedBy( comment ) \
+						and comment.created > self.course_start_date:
 						total_comment_count += 1
 						if comment.creator.username in for_credit_students:
 							for_credit_comment_count += 1
@@ -1240,7 +1245,7 @@ class CourseSummaryReportPdf(_AbstractReportView):
 				else:
 					acc_week[week] = val
 			
-		new_buckets = _CommonBuckets(None, acc_week, None)
+		new_buckets = _CommonBuckets(None, acc_week, None )
 		agg_stat = _build_buckets_options({},new_buckets)
 		options['aggregate_forum_stats'] = agg_stat
 
