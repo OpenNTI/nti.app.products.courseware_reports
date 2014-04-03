@@ -1487,7 +1487,9 @@ class AssignmentSummaryReportPdf(_AbstractReportView):
 					if len(assessed_question.parts) != 1:
 						continue
 					assessed_part = assessed_question.parts[0]
-					assessed_values[assessed_question.questionId].append( assessed_part.assessedValue )
+					#TODO We stored an empty assessed val?
+					if assessed_part.assessedValue:
+						assessed_values[assessed_question.questionId].append( assessed_part.assessedValue )
 
 		options['xxx'] = submissions
 
