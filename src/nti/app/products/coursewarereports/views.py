@@ -1227,11 +1227,12 @@ class CourseSummaryReportPdf(_AbstractReportView):
 			last_mod_time = _adjust_timestamp( last_mod_ts ) if last_mod_ts > 0 else None
 			forum_stat['last_modified'] = _format_datetime( last_mod_time ) if last_mod_time else 'N/A'
 			
-			forum_stat['discussion_count'] = len( forum.values() )
-			forum_stat['total_comments'] = sum( len(disc) for disc in forum.values() )
 			forum_view.for_credit_student_usernames = self.for_credit_student_usernames
-
 			forum_view()
+			forum_stat['discussion_count'] = len( forum.values() )
+			forum_stat['total_comments'] = sum( [x.comment_count for x in forum_stat['comment_count_by_topic']] )
+			
+			sum( len(disc) for disc in forum.values() )
 		
 		#Need to accumulate these
 		#TODO rework this
