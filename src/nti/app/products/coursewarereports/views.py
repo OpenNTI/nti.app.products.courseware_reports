@@ -926,31 +926,33 @@ def _assignment_stat_for_column(self, column, filter=None):
 
 	# Separate credit and non-credit
 	for username, grade in column.items():
-		# We could have values (19.3), combinations (19.3 A), or strings ('GR'); punt
-		# in the latter case for now
-		if grade.value is not None:
-			#Skip if not in filter
-			if filter is not None and username not in filter:
-				continue
-			try:
-				grade = grade.value if isinstance(grade.value, Number) \
-						else float(grade.value.split()[0])
-			except ValueError:
-				continue
-		else:
+		
+		#Skip if not in filter
+		if filter is not None and username not in filter:
 			continue
+		
+		# We could have values (19.3), combinations (19.3 A), or strings ('GR'); 
+		# Count the latter case and move on
+		if grade.value is not None:
+			try:
+				if isinstance(grade.value, Number):
+					grade_val = grade.value
+				elif len( grade.value.split() ) > 1:
+					grade_val = float( grade.value.split()[0] )
+			except ValueError:
+				pass
 		
 		# We still increase count of attempts, even if the assignment is ungraded.
 		if username in for_credit_keys:
 			for_credit_total += 1
-			if grade is not None:
-				all_grade_points.append( grade )
-				for_credit_grade_points.append( grade )
+			if grade_val:
+				all_grade_points.append( grade_val )
+				for_credit_grade_points.append( grade_val )
 		else:
 			non_credit_total += 1
-			if grade is not None:
-				all_grade_points.append( grade )
-				non_credit_grade_points.append( grade )
+			if grade_val:
+				all_grade_points.append( grade_val )
+				non_credit_grade_points.append( grade_val )
 
 	total = for_credit_total + non_credit_total
 
