@@ -24,6 +24,7 @@ from six import string_types
 from numbers import Number
 
 from itertools import groupby
+from itertools import chain
 from collections import namedtuple
 from collections import defaultdict
 from datetime import datetime
@@ -299,7 +300,7 @@ def _common_buckets(objects,for_credit_students,get_student_info,object_create_d
 	# Group the forum objects by day
 	# Since we want deltas, everything is staying in UTC
 	# TODO We need to convert these to our timestamp again
-	# TODO We shouldnt need to groupby anymore either
+	# TODO We shouldnt need to groupby anymore either, but we could
 	day_key = lambda x: x.created.date()
 	objects = sorted(objects, key=day_key)
 	object_create_date = object_create_date.date()
@@ -307,10 +308,10 @@ def _common_buckets(objects,for_credit_students,get_student_info,object_create_d
 
 	forum_objects_by_day = BTrees.family64.II.BTree()
 	forum_objects_by_week_number = BTrees.family64.II.BTree()
-	top_creators = _TopCreators(for_credit_students,get_student_info)
+	top_creators = _TopCreators( for_credit_students, get_student_info )
 
 	dates = []
-	old_week_num = -1
+	old_week_num = None
 	
 	for k, g in groupby(objects, day_key):
 		group = list(g)
@@ -320,13 +321,16 @@ def _common_buckets(objects,for_credit_students,get_student_info,object_create_d
 			if agg_creators is not None:
 				agg_creators.incr_username(o.creator.username)
 
-		#These diffs should always be positive
 		day_delta = (k - object_create_date).days
 		forum_objects_by_day[day_delta] = count
 
 		group_monday = k - timedelta( days=k.weekday() )
-		
 		week_num = ( (group_monday - start_monday).days // 7 )
+		
+		if old_week_num is None:
+			old_week_num = week_num
+			dates.append( group_monday )
+		
 		if week_num != old_week_num:
 			#Check for week gaps and fill
 			for f in range(old_week_num - week_num + 1, 0):
@@ -377,37 +381,14 @@ def _build_buckets_options(options, buckets):
 		if _max < 10:
 			options['forum_objects_by_week_number_y_step'] = 1
 
-		#Build our category labels
-		last_month = 0
-		last_week = 0
 		weeks_s = []
-		
-		#FIXME We need to make sure we have enough categories...
-		#FIXME And we may have gaps between dates
-		#FIXME And clean this up
-		if buckets and buckets.group_dates:
-			if len( buckets.group_dates ) < 8:
-				for d_entry in buckets.group_dates:
-					if last_month == 0:
-						#Find our week
-						last_week = ( d_entry.day - 1 ) // 7 + 1
-					else:	
-						if last_month != d_entry.month:
-							#New month
-							last_week = 1
-						else:
-							#Same month
-							last_week += 1
-			
-					last_month = d_entry.month	
-					month_s = d_entry.strftime( '%b' )
-			
-					weeks_s.append( 'Week %d %s' % ( last_week, month_s ) )
-			else:
-				for d_entry in buckets.group_dates:
-					weeks_s.append( d_entry.strftime( '%d-%b' ) )
-					#weeks_s.append( 'x' )
-		
+		if len( buckets.group_dates ) < 13:
+			for d_entry in buckets.group_dates:
+				weeks_s.append( d_entry.strftime( '%b %d' ) )
+		else:
+			for d_entry in buckets.group_dates:
+				weeks_s.append( d_entry.strftime( '%m-%d' ) )
+
 		options['forum_objects_by_week_number_categories'] = weeks_s
 	else:
 		options['forum_objects_by_week_number_series'] = ''
@@ -783,6 +764,7 @@ class ForumParticipationReportPdf(_AbstractReportView):
 									self.get_student_info,
 									self.course_start_date,
 									self.agg_creators)
+		options['group_dates'] = buckets.group_dates
 		options['top_commenters'] = buckets.top_creators
 		options['top_commenters_colors'] = CHART_COLORS
 
@@ -910,6 +892,7 @@ class TopicParticipationReportPdf(ForumParticipationReportPdf):
 									self.get_student_info,
 									self.course_start_date )
 		options['top_commenters'] = buckets.top_creators
+		options['group_dates'] = buckets.group_dates
 		options['top_commenters_colors'] = CHART_COLORS
 		all_forum_stat = _build_buckets_options(options, buckets)
 		options['all_forum_participation'] = all_forum_stat
@@ -1316,8 +1299,36 @@ class CourseSummaryReportPdf(_AbstractReportView):
 					acc_week[week] += val
 				else:
 					acc_week[week] = val
+		
+		#Now we have to come up with our categories
+		accum_dates_list = ( x['group_dates'] for x in forum_stats.values() )
+		accum_dates = list( chain.from_iterable( accum_dates_list ) )
+		accum_dates = sorted( accum_dates )
+		dates = []
+		
+		start_date = self.course_start_date.date()
+		start_monday = start_date - timedelta( days=start_date.weekday() )
+		old_week_num = None
+		#We have our sorted dates now. Just need to normalize them by week.
+		#FIXME and clean this up
+		for k in accum_dates:
+			group_monday = k - timedelta( days=k.weekday() )
+			week_num = ( (group_monday - start_monday).days // 7 )
+
+			if old_week_num is None:
+				old_week_num = week_num
+				dates.append( group_monday )
+
+			if week_num != old_week_num:
+				#Check for week gaps and fill
+				for f in range(old_week_num - week_num + 1, 0):
+					#Add negative weeks to retain order
+					old_monday = group_monday + timedelta( weeks=1 * f )
+					dates.append( old_monday )
+				dates.append( group_monday )	
+				old_week_num = week_num
 			
-		new_buckets = _CommonBuckets(None, acc_week, None, None)
+		new_buckets = _CommonBuckets(None, acc_week, None, dates)
 		agg_stat = _build_buckets_options({},new_buckets)
 		options['aggregate_forum_stats'] = agg_stat
 
