@@ -1541,10 +1541,10 @@ class AssignmentSummaryReportPdf(_AbstractReportView):
 			# Now set the letter and perc values
 			letters = string.ascii_uppercase
 				
-			for j in range(len(submission_counts)):
+			for j in range( len(submission_counts) ):
 				sub = submission_counts[j]
 				sub.letter_prefix = letters[j]
-				sub.perc_s = '%0.1f%%' % ( sub.count * 100.0 / total_submits )
+				sub.perc_s = '%0.1f%%' % ( sub.count * 100.0 / total_submits ) if total_submits else 'N/A'
 
 			title = i + 1
 			content = IPlainTextContentFragment(q.content)
