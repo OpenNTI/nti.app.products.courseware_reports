@@ -377,6 +377,8 @@ def _build_buckets_options(options, buckets):
 		last_week = 0
 		weeks_s = []
 		
+		
+		#FIXME We need to make sure we have enough categories...
 		if buckets and buckets.group_dates:
 			for d_entry in buckets.group_dates:
 				if last_month == 0:
@@ -526,8 +528,7 @@ class _AbstractReportView(AbstractAuthenticatedView,
 	def filter_objects(self,objects):
 		"""Returns a set of filtered objects"""
 		return [ x for x in objects
-				if 	not IDeletedObjectPlaceholder.providedBy( x )
-				and x.creator.username not in self.instructor_usernames ]
+				if not IDeletedObjectPlaceholder.providedBy( x ) ]
 
 class _AssignmentInfo(object):
 
