@@ -105,7 +105,9 @@
 			</bars>
 			<categoryAxis visibleTicks="false" strokeColor="#e9e9e9"
 						tal:condition="forum_stat/forum_objects_by_week_number">
-				<labels fontName="Helvetica" fontSize="10" fillColor="#b8b8b8"/>
+				<labels fontName="Helvetica" fontSize="10" fillColor="#b8b8b8"
+						tal:attributes="angle python: '45' if len( forum_stat.forum_objects_by_week_number_categories ) > 12 else 0;
+										boxAnchor python: 'ne' if len( forum_stat.forum_objects_by_week_number_categories ) > 12 else None " />
 				<categoryNames >
 					<name 	tal:repeat="week_num_cat forum_stat/forum_objects_by_week_number_categories" 
 							tal:content="week_num_cat" >
@@ -121,7 +123,7 @@
 						tal:attributes="valueMax forum_stat/forum_objects_by_week_number_max;
 										valueStep forum_stat/forum_objects_by_week_number_y_step"
 						tal:condition="forum_stat/forum_objects_by_week_number">
-				<labels fontName="Helvetica" fontSize="10" fillColor="#b8b8b8" />
+				<labels fontName="Helvetica" fontSize="10" fillColor="#b8b8b8"/>
 			</valueAxis>
 			<texts >
 				<text x="4in" y="-0.6in" textAnchor="middle"

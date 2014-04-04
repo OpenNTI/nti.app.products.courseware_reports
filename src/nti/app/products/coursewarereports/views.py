@@ -974,12 +974,12 @@ def _assignment_stat_for_column(self, column, filter=None):
 		# We still increase count of attempts, even if the assignment is ungraded.
 		if username in for_credit_keys:
 			for_credit_total += 1
-			if grade_val:
+			if grade_val is not None:
 				all_grade_points.append( grade_val )
 				for_credit_grade_points.append( grade_val )
 		else:
 			non_credit_total += 1
-			if grade_val:
+			if grade_val is not None:
 				all_grade_points.append( grade_val )
 				non_credit_grade_points.append( grade_val )
 
