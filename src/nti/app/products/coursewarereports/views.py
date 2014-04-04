@@ -328,6 +328,11 @@ def _common_buckets(objects,for_credit_students,get_student_info,object_create_d
 		
 		week_num = ( (group_monday - start_monday).days // 7 )
 		if week_num != old_week_num:
+			#Check for week gaps and fill
+			for f in range(old_week_num - week_num + 1, 0):
+				#Add negative weeks to retain order
+				old_monday = group_monday + timedelta( weeks=1 * f )
+				dates.append( old_monday )
 			dates.append( group_monday )
 			old_week_num = week_num
 
@@ -377,25 +382,31 @@ def _build_buckets_options(options, buckets):
 		last_week = 0
 		weeks_s = []
 		
-		
 		#FIXME We need to make sure we have enough categories...
+		#FIXME And we may have gaps between dates
+		#FIXME And clean this up
 		if buckets and buckets.group_dates:
-			for d_entry in buckets.group_dates:
-				if last_month == 0:
-					#Find our week
-					last_week = ( d_entry.day - 1 ) // 7 + 1
-				else:	
-					if last_month != d_entry.month:
-						#New month
-						last_week = 1
-					else:
-						#Same month
-						last_week += 1
+			if len( buckets.group_dates ) < 8:
+				for d_entry in buckets.group_dates:
+					if last_month == 0:
+						#Find our week
+						last_week = ( d_entry.day - 1 ) // 7 + 1
+					else:	
+						if last_month != d_entry.month:
+							#New month
+							last_week = 1
+						else:
+							#Same month
+							last_week += 1
 			
-				last_month = d_entry.month	
-				month_s = d_entry.strftime( '%b' )
+					last_month = d_entry.month	
+					month_s = d_entry.strftime( '%b' )
 			
-				weeks_s.append( 'Week %d %s' % ( last_week, month_s ) )
+					weeks_s.append( 'Week %d %s' % ( last_week, month_s ) )
+			else:
+				for d_entry in buckets.group_dates:
+					weeks_s.append( d_entry.strftime( '%d-%b' ) )
+					#weeks_s.append( 'x' )
 		
 		options['forum_objects_by_week_number_categories'] = weeks_s
 	else:
@@ -1564,7 +1575,9 @@ class AssignmentSummaryReportPdf(_AbstractReportView):
 				avg_assessed_s = 'N/A'
 
 			q_stat = submissions.get(q.ntiid, {})
+			#FIXME what do we do if we have dict or None?
 			submission = q_stat.answer_stat
+			
 			# If this gets big, we'll need to do something different,
 			# like just showing top-answers.
 			# TODO Do we want to truncate the multiple choice questions at all?
