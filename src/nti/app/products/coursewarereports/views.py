@@ -365,7 +365,7 @@ def _build_buckets_options(options, buckets):
 
 		minKey = forum_objects_by_week_number.minKey()
 		maxKey = forum_objects_by_week_number.maxKey()
-		full_range = range(minKey, maxKey)
+		full_range = range(minKey, maxKey + 1)
 
 		def as_series():
 			rows = ['%d' % forum_objects_by_week_number.get(k, 0)
@@ -1278,8 +1278,6 @@ class CourseSummaryReportPdf(_AbstractReportView):
 			forum_stat['discussion_count'] = len( self.filter_objects( forum.values() ) )
 			forum_stat['total_comments'] = sum( [x.comment_count for x in forum_stat['comment_count_by_topic']] )
 			
-			sum( len(disc) for disc in forum.values() )
-		
 		#Need to accumulate these
 		#TODO rework this
 		acc_week = BTrees.family64.II.BTree()

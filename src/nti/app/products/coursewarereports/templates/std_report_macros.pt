@@ -139,6 +139,9 @@
 			<data>
 				<series tal:condition="forum_stat/forum_objects_by_week_number"
 						tal:content="forum_stat/forum_objects_by_week_number_series">
+						0
+						1
+						2
 				</series>
 			</data>
 		</barChart>

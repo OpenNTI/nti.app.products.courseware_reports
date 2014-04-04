@@ -22,8 +22,8 @@
 			<frame id="first" x1="0.5in" y1="0.5in" width="10in" height="6in"/>
 		</pageTemplate>
 		<pageTemplate id="main">
-			<frame id="first" x1="0.5in" y1="0.5in" width="10in" height="7.5in"/>
-<!--		<frame id="footer" x1="7in" y1="0.1in" width="4.5in" height=".3in" showBoundary="1"/> -->
+			<frame id="first" x1="0.5in" y1="0.5in" width="10in" height="7.2in"/>
+<!--			<frame id="footer" x1="7in" y1="0.1in" width="4.5in" height=".3in" showBoundary="1"/> -->
 		</pageTemplate>
 
 
