@@ -993,31 +993,31 @@ def _assignment_stat_for_column(self, column, filter=None):
 	all_grade_points = asarray(all_grade_points)
 
 	# Credit
-	if for_credit_total:
+	if for_credit_grade_points.any():
 		for_credit_avg_grade = average(for_credit_grade_points)
 		for_credit_avg_grade_s = '%0.1f' % for_credit_avg_grade
 	else:
 		for_credit_avg_grade_s = 'N/A'
 
 	# Non-credit
-	if non_credit_total:
+	if non_credit_grade_points.any():
 		non_credit_avg_grade = average(non_credit_grade_points)
 		non_credit_avg_grade_s = '%0.1f' % non_credit_avg_grade
 	else:
 		non_credit_avg_grade_s = 'N/A'
 
 	# Aggregate
-	if for_credit_total and non_credit_total:
+	if for_credit_grade_points.any() and non_credit_grade_points.any():
 		agg_array = all_grade_points
 		agg_avg_grade = average(agg_array)
 		avg_grade_s = '%0.1f' % agg_avg_grade
 		median_grade = median(agg_array)
 		std_dev_grade = std(agg_array)
-	elif for_credit_total:
+	elif for_credit_grade_points.any():
 		avg_grade_s = for_credit_avg_grade_s
 		median_grade = median(for_credit_grade_points)
 		std_dev_grade = std(for_credit_grade_points)
-	elif non_credit_total:
+	elif non_credit_grade_points.any():
 		avg_grade_s = non_credit_avg_grade_s
 		median_grade = median(non_credit_grade_points)
 		std_dev_grade = std(non_credit_grade_points)
