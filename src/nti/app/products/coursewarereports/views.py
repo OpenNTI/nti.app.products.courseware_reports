@@ -1388,6 +1388,15 @@ class _AnswerStat(object):
 		self.is_correct = is_correct
 		self.count = 1
 
+class _QuestionStat(object):
+	"""Holds stat and display information for a particular question."""
+	submission_count = 0
+	answer_stat = None
+	
+	def __init__(self, answer_stat, submission_count ):
+		self.answer_stat = answer_stat
+		self.submission_count = submission_count
+
 @view_config(context=IGradeBookEntry,
 			 name=VIEW_ASSIGNMENT_SUMMARY)
 class AssignmentSummaryReportPdf(_AbstractReportView):
@@ -1457,9 +1466,12 @@ class AssignmentSummaryReportPdf(_AbstractReportView):
 					
 					#TODO clean this up, think we can defaultdict now (or at least I know how to do it for this case)
  					if question_submission.questionId in submissions:
- 						answer_stats = submissions[question_submission.questionId]
+ 						question_stat = submissions[question_submission.questionId]
+ 						answer_stats = question_stat.answer_stat
+ 						question_stat.submission_count += 1
  					else:
- 						submissions[question_submission.questionId] = answer_stats = {}
+ 						answer_stats = {}
+ 						submissions[question_submission.questionId] = _QuestionStat( answer_stats, 1 )
 
 					question_part = question.parts[0]
 					response = question_submission.parts[0]
@@ -1525,7 +1537,8 @@ class AssignmentSummaryReportPdf(_AbstractReportView):
 			else:
 				avg_assessed_s = 'N/A'
 
-			submission = submissions.get(q.ntiid, {})
+			q_stat = submissions.get(q.ntiid, {})
+			submission = q_stat.answer_stat
 			# If this gets big, we'll need to do something different,
 			# like just showing top-answers.
 			# TODO Do we want to truncate the multiple choice questions at all?
@@ -1542,7 +1555,7 @@ class AssignmentSummaryReportPdf(_AbstractReportView):
 					#Ok, our correct answer(s) isn't in our trimmed-down set; make it so.
 					submission_counts = submission_counts[:-1 * len(missing_corrects)] + missing_corrects
 				
-			total_submits = len( assessed_value )
+			total_submits = q_stat.submission_count
 			# Now set the letter and perc values
 			letters = string.ascii_uppercase
 			for j in range( len(submission_counts) ):
