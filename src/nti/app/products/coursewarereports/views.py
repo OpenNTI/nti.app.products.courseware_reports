@@ -756,8 +756,7 @@ class ForumParticipationReportPdf(_AbstractReportView):
 				#self.filter_objects( (x for x in topic.values) )
 				for comment in topic.values():
 					#TODO can we use filter_objects?
-					if not IDeletedObjectPlaceholder.providedBy( comment ) \
-						and comment.creator.username not in self.instructor_usernames:
+					if not IDeletedObjectPlaceholder.providedBy( comment ):
 						yield comment
 		buckets = _common_buckets(	_all_comments(), 
 									self.for_credit_student_usernames,
@@ -784,9 +783,7 @@ class ForumParticipationReportPdf(_AbstractReportView):
 			created = topic.created
 			comment_count_by_topic.append( self.TopicStats( topic.title, creator, created, count, user_count ))
 
-			#We cannot filter out our topics, but we can filter them here if they're instructors
-			if topic.creator.username not in self.instructor_usernames:
-				top_creators.incr_username( topic.creator.username ) 
+			top_creators.incr_username( topic.creator.username ) 
 
 		comment_count_by_topic.sort( key=lambda x: (x.created, x.title) )
 		options['comment_count_by_topic'] = comment_count_by_topic
@@ -1180,14 +1177,11 @@ class CourseSummaryReportPdf(_AbstractReportView):
 		#TODO use TopCreators here
 		for forum in self.course.Discussions.values():
 			for discussion in forum.values():
-				if discussion.creator.username not in self.instructor_usernames:
-					total_discussion_count += 1
+				total_discussion_count += 1
 				if discussion.creator.username in for_credit_students:
 					for_credit_discussion_count += 1
 				for comment in discussion.values():
-					if 		not IDeletedObjectPlaceholder.providedBy( comment ) \
-						and comment.creator.username not in self.instructor_usernames:
-							
+					if not IDeletedObjectPlaceholder.providedBy( comment ):
 						total_comment_count += 1
 						if comment.creator.username in for_credit_students:
 							for_credit_comment_count += 1
