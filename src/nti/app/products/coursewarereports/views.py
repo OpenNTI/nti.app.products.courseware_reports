@@ -321,7 +321,7 @@ def _common_buckets(objects,for_credit_students,get_student_info,object_create_d
 
 		group_monday = k - timedelta( days=k.weekday() )
 		#First week is '1'
-		week_num = ( (group_monday - start_monday).days // 7 ) + 1
+		week_num = ( (group_monday - start_monday).days // 7 )
 	
 		if week_num in forum_objects_by_week_number:
 			forum_objects_by_week_number[week_num] += count
@@ -344,9 +344,7 @@ def _build_buckets_options(options, buckets):
 	options['forum_objects_by_day'] = forum_objects_by_day
 	options['forum_objects_by_week_number'] = forum_objects_by_week_number
 
-	#Now that we're using time deltas, we could go back to line plots
 	if forum_objects_by_week_number:
-		#TODO we should think about having minimum data points (12 weeks?), to keep the chart consistent across views
 
 		minKey = forum_objects_by_week_number.minKey()
 		maxKey = forum_objects_by_week_number.maxKey()
@@ -499,7 +497,6 @@ class _AbstractReportView(AbstractAuthenticatedView,
 		"""Returns a set of filtered objects"""
 		return [ x for x in objects
 				if 	not IDeletedObjectPlaceholder.providedBy( x )
-				and x.created > self.course_start_date
 				and x.creator.username not in self.instructor_usernames ]
 
 class _AssignmentInfo(object):
@@ -737,7 +734,6 @@ class ForumParticipationReportPdf(_AbstractReportView):
 				for comment in topic.values():
 					#TODO can we use filter_objects?
 					if not IDeletedObjectPlaceholder.providedBy( comment ) \
-						and comment.created > self.course_start_date \
 						and comment.creator.username not in self.instructor_usernames:
 						yield comment
 		buckets = _common_buckets(	_all_comments(), 
@@ -1165,7 +1161,6 @@ class CourseSummaryReportPdf(_AbstractReportView):
 					for_credit_discussion_count += 1
 				for comment in discussion.values():
 					if 		not IDeletedObjectPlaceholder.providedBy( comment ) \
-						and comment.created > self.course_start_date \
 						and comment.creator.username not in self.instructor_usernames:
 							
 						total_comment_count += 1
@@ -1280,7 +1275,7 @@ class CourseSummaryReportPdf(_AbstractReportView):
 				else:
 					acc_week[week] = val
 			
-		new_buckets = _CommonBuckets(None, acc_week, None )
+		new_buckets = _CommonBuckets(None, acc_week, None)
 		agg_stat = _build_buckets_options({},new_buckets)
 		options['aggregate_forum_stats'] = agg_stat
 
