@@ -15,8 +15,7 @@
 		</h1>
 		
 		<para style="subdesc" >
-			This chart shows a breakdown of students taking ${context/__name__} 
-			for credit and as open students. There 
+			This chart shows a breakdown of for-credit and non-credit students taking ${context/__name__}. There 
 			 ${python:request.localizer.pluralize('is', 'are', options['count_total'])}
 			 ${options/count_total} 
 			 ${python:request.localizer.pluralize('student', 'students', options['count_total'])} taking this
@@ -63,14 +62,14 @@
 		<blockTable style='default' tal:condition="options/self_assessment_data">
 			<tr>
 				<td align="center"><para>Assessment Title</para></td>
-				<td align="center"><para>For-Credit Students</para></td>
-				<td align="center"><para>For-Credit Attempts</para></td>
-				<td align="center"><para>Non-Credit Students</para></td>
-				<td align="center"><para>Non-Credit Attempts</para></td>
+				<td align="center"><para>By For-Credit Students</para></td>
+				<td align="center"><para>For-Credit Student Attempts</para></td>
+				<td align="center"><para>By Non-Credit Students</para></td>
+				<td align="center"><para>Non-Credit Student Attempts</para></td>
 				<td align="center"><para>Total Attempts</para></td>
-				<td align="center"><para>Average Per Student</para></td>
-				<td align="center"><para>For-Credit Attempted (%)</para></td>
-				<td align="center"><para>Non-Credit Attempted (%)</para></td>
+				<td align="center"><para>Average Attempts Per Student</para></td>
+				<td align="center"><para>For-Credit Students (%)</para></td>
+				<td align="center"><para>Non-Credit Students (%)</para></td>
 			</tr>
 			<tr tal:repeat="item options/self_assessment_data">
 				<td><para tal:content="item/title">The Assessment Title</para></td>
@@ -98,8 +97,8 @@
 				<td align="center"><para>For-Credit Students</para></td>
 				<td align="center"><para>Non-Credit Students</para></td>
 				<td align="center"><para>Total Students</para></td>
-				<td align="center"><para>For-Credit Attempted (%)</para></td>
-				<td align="center"><para>Non-Credit Attempted (%)</para></td>
+				<td align="center"><para>For-Credit Students (%)</para></td>
+				<td align="center"><para>Non-Credit Students (%)</para></td>
 			</tr>
 			<tr tal:repeat="item options/assignment_data">
 				<td><para tal:content="item/title">The Assessment Title</para></td>
@@ -147,8 +146,8 @@
 		
 		<para style="subdesc" spaceAfter=".1in"
 				tal:condition="options/engagement_data_for_credit">
-			The following items show activity taking place in ${context/__name__}. This information
-			includes the number of discussions, comments, notes, and highlights created by all the students
+			This section reports the number of contributions and annotations made by students in ${context/__name__}. This information
+			includes the number of discussions, comments, notes, and highlights created by all students
 			in the course, where applicable. 
 		</para>
 		<hr width="100%" />

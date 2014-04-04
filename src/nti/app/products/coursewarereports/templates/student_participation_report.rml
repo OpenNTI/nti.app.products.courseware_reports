@@ -15,7 +15,7 @@
 	</h1>
 	
 	<para style="subdesc" spaceAfter=".5in" 
-			tal:condition="options/student_forum_participation">
+			tal:condition="options/student_forum_participation/forum_objects_by_week_number">
 		This chart shows the number of comments posted and discussions created 
 		each week by ${options/user/display} to the course forums.
 	</para>
@@ -26,8 +26,8 @@
 				  tal:condition="options/student_forum_participation"
 				  metal:use-macro="macro:forum_participation_over_time">
 	</illustration>
-	<para tal:condition="not:options/student_forum_participation">
-			This user does not have any forum activity.
+	<para tal:condition="not:options/student_forum_participation/forum_objects_by_week_number">
+			This student has not posted any comments or created any discussions.
 	</para>
 
 	<nextPage />
@@ -57,7 +57,7 @@
 			</tr>
 		</blockTable>
 		<para tal:condition="not:options/topics_created">
-			This user has not created any discussions.
+			This student has not created any discussions.
 		</para>
 
 	<h2 style="h2" spaceAfter="0.3in" spaceBefore="0.5in">
@@ -85,7 +85,7 @@
 			</tr>
 		</blockTable>
 		<para tal:condition="not:options/comment_count_by_topic">
-			This user has not created any comments.
+			This student has not posted any comments.
 		</para>
 		
 		<nextPage />
