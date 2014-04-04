@@ -387,9 +387,9 @@ def _build_buckets_options(options, buckets):
 			
 			month_s = d.strftime( '%b' )
 			
-			weeks_s.append( 'Week-%d/%s' % ( last_week, month_s ) )
+			weeks_s.append( 'Week %d %s' % ( last_week, month_s ) )
 		
-		options['forum_objects_by_week_number_categories'] = ' '.join( [x for x in weeks_s] )
+		options['forum_objects_by_week_number_categories'] = weeks_s
 	else:
 		options['forum_objects_by_week_number_series'] = ''
 		options['forum_objects_by_week_number_max'] = 0

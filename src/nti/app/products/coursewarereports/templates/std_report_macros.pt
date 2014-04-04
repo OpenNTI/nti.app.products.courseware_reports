@@ -104,9 +104,14 @@
 				<bar fillColor="#53a2db" strokeColor="#53a2db" />
 			</bars>
 			<categoryAxis visibleTicks="false" strokeColor="#e9e9e9"
-						tal:attributes="categoryNames forum_stat/forum_objects_by_week_number_categories"
 						tal:condition="forum_stat/forum_objects_by_week_number">
 				<labels fontName="Helvetica" fontSize="10" fillColor="#b8b8b8"/>
+				<categoryNames >
+					<name 	tal:repeat="week_num_cat forum_stat/forum_objects_by_week_number_categories" 
+							tal:content="week_num_cat" >
+						Commenter
+					</name>
+				</categoryNames>
 			</categoryAxis>
 			<valueAxis 	valueMin="0" valueMax="15"
 						visibleTicks="false" visibleAxis="false" visibleGrid="true"
@@ -176,9 +181,14 @@
 			</bars>
 			<categoryAxis visibleTicks="false" strokeColor="#e9e9e9"
 						reverseDirection="true"
-						tal:attributes="categoryNames python: '\n'.join(['%s' % x.display for x in top_commenters])"
 						tal:condition="top_commenters|options/top_commenters">
 				<labels fontName="Helvetica" fontSize="10" fillColor="#b8b8b8"/>
+				<categoryNames >
+					<name 	tal:repeat="commenter top_commenters" 
+							tal:content="commenter/display" >
+						Commenter
+					</name>
+				</categoryNames>
 			</categoryAxis>
 			<valueAxis 	valueMin="0" valueMax="15"
 						visibleTicks="false" visibleAxis="false" visibleGrid="true"
