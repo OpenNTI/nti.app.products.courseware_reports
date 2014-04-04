@@ -232,12 +232,8 @@
 				<label tal:condition="False">User3</label>
 			</labels>
 			<slices>
-				<!-- The last element is the "everyone else"; it has a
-				larger percent then its slice size indicates, so draw
-				attention to that by popping it out -->
 				<slice tal:repeat="item top_commenters|options/top_commenters"
-					   tal:attributes="popout python:10 if repeat.item.end else 0;
-									   fillColor python:top_commenters_colors[repeat.item.number]" />
+					   tal:attributes="fillColor python:top_commenters_colors[repeat.item.number]" />
 			</slices>
 			<data>
 				<series tal:content="top_commenters/series|options/top_commenters/series">
