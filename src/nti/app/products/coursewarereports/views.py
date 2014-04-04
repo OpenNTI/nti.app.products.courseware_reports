@@ -438,6 +438,10 @@ class _AbstractReportView(AbstractAuthenticatedView,
 		return self.md_catalog['creator'].apply({'any_of': self.all_student_usernames})
 
 	@Lazy
+	def instructor_usernames(self):
+		return {x.id for x in self.course.instructors}
+
+	@Lazy
 	def for_credit_student_usernames(self):
 		restricted_id = self.course.LegacyScopes['restricted']
 		restricted = Entity.get_entity(restricted_id) if restricted_id else None
@@ -445,7 +449,7 @@ class _AbstractReportView(AbstractAuthenticatedView,
 		restricted_usernames = ({x for x in IEnumerableEntityContainer(restricted).iter_usernames()}
 								if restricted is not None
 								else set())
-		return restricted_usernames
+		return restricted_usernames - self.instructor_usernames
 
 	@Lazy
 	def open_student_usernames(self):
@@ -455,7 +459,7 @@ class _AbstractReportView(AbstractAuthenticatedView,
 	def all_student_usernames(self):
 		everyone = self.course.legacy_community
 		everyone_usernames = {x for x in IEnumerableEntityContainer(everyone).iter_usernames()}
-		student_usernames = everyone_usernames - {x.id for x in self.course.instructors}
+		student_usernames = everyone_usernames - self.instructor_usernames
 		return student_usernames
 
 	@Lazy
@@ -490,6 +494,13 @@ class _AbstractReportView(AbstractAuthenticatedView,
 		user_name = "" if user.username not in self.for_credit_student_usernames else user.username
 	
 		return _StudentInfo( display_name, user_name )
+	
+	def filter_objects(self,objects):
+		"""Returns a set of filtered objects"""
+		return [ x for x in objects
+				if 	not IDeletedObjectPlaceholder.providedBy( x )
+				and x.created > self.course_start_date
+				and x.creator.username not in self.instructor_usernames ]
 
 class _AssignmentInfo(object):
 
@@ -542,10 +553,8 @@ class StudentParticipationReportPdf(_AbstractReportView):
 													 uidutil )
 		
 		#Grab by course, ignore deleted comments and those before course start
-		live_objects = [x for x in forum_objects_created_by_student
-						if 	find_interface(x, ICommunityBoard) == course_board
-						and not IDeletedObjectPlaceholder.providedBy( x )
-						and x.created > self.course_start_date ]
+		live_objects = self.filter_objects( (	x for x in forum_objects_created_by_student
+											if 	find_interface(x, ICommunityBoard) == course_board) )
 		
 		# Group the forum objects by day and week
 		time_buckets = _common_buckets(	live_objects,
@@ -723,9 +732,13 @@ class ForumParticipationReportPdf(_AbstractReportView):
 
 		def _all_comments():
 			for topic in self.context.values():
+				#TODO this yields, right?
+				#self.filter_objects( (x for x in topic.values) )
 				for comment in topic.values():
+					#TODO can we use filter_objects?
 					if not IDeletedObjectPlaceholder.providedBy( comment ) \
-						and comment.created > self.course_start_date:
+						and comment.created > self.course_start_date \
+						and comment.creator.username not in self.instructor_usernames:
 						yield comment
 		buckets = _common_buckets(	_all_comments(), 
 									self.for_credit_student_usernames,
@@ -743,10 +756,7 @@ class ForumParticipationReportPdf(_AbstractReportView):
 		top_creators = _TopCreators(self.for_credit_student_usernames,self.get_student_info)
 		
 		for topic in self.context.values():
-			#TODO duplicate logic in student report
-			comments = [c for c in topic.values() 
-						if 	not IDeletedObjectPlaceholder.providedBy( c )
-						and c.created > self.course_start_date ];
+			comments = self.filter_objects( topic.values() )
 						
 			count = len( comments )
 			user_count = len( {c.creator for c in comments } )
@@ -754,7 +764,9 @@ class ForumParticipationReportPdf(_AbstractReportView):
 			created = topic.created
 			comment_count_by_topic.append( self.TopicStats( topic.title, creator, created, count, user_count ))
 
-			top_creators.incr_username(topic.creator.username)
+			#We cannot filter out our topics, but we can filter them here if they're instructors
+			if topic.creator.username not in self.instructor_usernames:
+				top_creators.incr_username( topic.creator.username ) 
 
 		comment_count_by_topic.sort( key=lambda x: (x.created, x.title) )
 		options['comment_count_by_topic'] = comment_count_by_topic
@@ -854,9 +866,7 @@ class TopicParticipationReportPdf(ForumParticipationReportPdf):
 		return self._course_from_forum(self.context.__parent__)
 
 	def _build_top_commenters(self, options):
-		live_objects = [x for x in self.context.values() 
-						if not IDeletedObjectPlaceholder.providedBy( x )
-						and x.created > self.course_start_date ]
+		live_objects = self.filter_objects( self.context.values() )
 		buckets = _common_buckets(	live_objects, 
 									self.for_credit_student_usernames,
 									self.get_student_info,
@@ -1133,6 +1143,9 @@ class CourseSummaryReportPdf(_AbstractReportView):
 		for_credit_students = self.for_credit_student_usernames
 
 		notes = ResultSet(intids_of_notes, self.uidutil)
+		#TODO filter notes and highlights
+		#top_creators = _TopCreators( self.for_credit_student_usernames,self.get_student_info )
+		
 		for_credit_note_count = sum( 1 for x in notes if x.creator.username in for_credit_students )
 
 		highlights = ResultSet(intids_of_hls, self.uidutil)
@@ -1143,14 +1156,18 @@ class CourseSummaryReportPdf(_AbstractReportView):
 		for_credit_comment_count = 0
 		total_comment_count = 0
 
+		#TODO use TopCreators here
 		for forum in self.course.Discussions.values():
 			for discussion in forum.values():
-				total_discussion_count += 1
+				if discussion.creator.username not in self.instructor_usernames:
+					total_discussion_count += 1
 				if discussion.creator.username in for_credit_students:
 					for_credit_discussion_count += 1
 				for comment in discussion.values():
-					if not IDeletedObjectPlaceholder.providedBy( comment ) \
-						and comment.created > self.course_start_date:
+					if 		not IDeletedObjectPlaceholder.providedBy( comment ) \
+						and comment.created > self.course_start_date \
+						and comment.creator.username not in self.instructor_usernames:
+							
 						total_comment_count += 1
 						if comment.creator.username in for_credit_students:
 							for_credit_comment_count += 1
@@ -1244,7 +1261,7 @@ class CourseSummaryReportPdf(_AbstractReportView):
 			
 			forum_view.for_credit_student_usernames = self.for_credit_student_usernames
 			forum_view()
-			forum_stat['discussion_count'] = len( forum.values() )
+			forum_stat['discussion_count'] = len( self.filter_objects( forum.values() ) )
 			forum_stat['total_comments'] = sum( [x.comment_count for x in forum_stat['comment_count_by_topic']] )
 			
 			sum( len(disc) for disc in forum.values() )
