@@ -377,7 +377,7 @@ def _build_buckets_options(options, buckets):
 		last_week = 0
 		weeks_s = []
 		
-		if buckets is not None:
+		if buckets and buckets.group_dates:
 			for d_entry in buckets.group_dates:
 				if last_month == 0:
 					#Find our week
