@@ -142,7 +142,7 @@ def _get_self_assessments_for_course(course):
 	return result
 
 _CommonBuckets = namedtuple('_CommonBuckets',
-					  ('count_by_day', 'count_by_week_number', 'top_creators'))
+					  ('count_by_day', 'count_by_week_number', 'top_creators', 'group_dates'))
 
 import heapq
 class _TopCreators(object):
@@ -298,6 +298,7 @@ def _common_buckets(objects,for_credit_students,get_student_info,object_create_d
 	"""
 	# Group the forum objects by day
 	# Since we want deltas, everything is staying in UTC
+	# TODO We need to convert these to our timestamp again
 	day_key = lambda x: x.created.date()
 	objects = sorted(objects, key=day_key)
 	object_create_date = object_create_date.date()
@@ -306,6 +307,8 @@ def _common_buckets(objects,for_credit_students,get_student_info,object_create_d
 	forum_objects_by_day = BTrees.family64.II.BTree()
 	forum_objects_by_week_number = BTrees.family64.II.BTree()
 	top_creators = _TopCreators(for_credit_students,get_student_info)
+
+	dates = []
 
 	for k, g in groupby(objects, day_key):
 		group = list(g)
@@ -320,7 +323,7 @@ def _common_buckets(objects,for_credit_students,get_student_info,object_create_d
 		forum_objects_by_day[day_delta] = count
 
 		group_monday = k - timedelta( days=k.weekday() )
-		#First week is '1'
+		dates.append( group_monday )
 		week_num = ( (group_monday - start_monday).days // 7 )
 	
 		if week_num in forum_objects_by_week_number:
@@ -328,7 +331,7 @@ def _common_buckets(objects,for_credit_students,get_student_info,object_create_d
 		else:
 			forum_objects_by_week_number[week_num] = count
 
-	return _CommonBuckets(forum_objects_by_day, forum_objects_by_week_number, top_creators)
+	return _CommonBuckets(forum_objects_by_day, forum_objects_by_week_number, top_creators, dates)
 
 ForumObjectsStat = namedtuple('ForumObjectsStat',
 							  ('forum_objects_by_day', 'forum_objects_by_week_number',
@@ -348,7 +351,7 @@ def _build_buckets_options(options, buckets):
 
 		minKey = forum_objects_by_week_number.minKey()
 		maxKey = forum_objects_by_week_number.maxKey()
-		full_range = range(minKey, maxKey + 1)
+		full_range = range(minKey, maxKey)
 
 		def as_series():
 			rows = ['%d' % forum_objects_by_week_number.get(k, 0)
@@ -365,7 +368,28 @@ def _build_buckets_options(options, buckets):
 			options['forum_objects_by_week_number_y_step'] = 1
 
 		#Build our category labels
-		options['forum_objects_by_week_number_categories'] = ' '.join( [str(x) for x in full_range] )
+		last_month = 0
+		last_week = 0
+		weeks_s = []
+		
+		for d in buckets.group_dates:
+			if last_month == 0:
+				#Find our week
+				last_week = ( d.day - 1 ) // 7 + 1
+			elif last_month != d.month:
+				#New month
+				last_week = 1
+			else:
+				#Same month
+				last_week += 1
+			
+			last_month = d.month
+			
+			month_s = d.strftime( '%b' )
+			
+			weeks_s.append( 'Week-%d/%s' % ( last_week, month_s ) )
+		
+		options['forum_objects_by_week_number_categories'] = ' '.join( [x for x in weeks_s] )
 	else:
 		options['forum_objects_by_week_number_series'] = ''
 		options['forum_objects_by_week_number_max'] = 0
@@ -1275,7 +1299,7 @@ class CourseSummaryReportPdf(_AbstractReportView):
 				else:
 					acc_week[week] = val
 			
-		new_buckets = _CommonBuckets(None, acc_week, None)
+		new_buckets = _CommonBuckets(None, acc_week, None, None)
 		agg_stat = _build_buckets_options({},new_buckets)
 		options['aggregate_forum_stats'] = agg_stat
 
