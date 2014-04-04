@@ -1428,12 +1428,13 @@ class _AnswerStat(object):
 		self.is_correct = is_correct
 		self.count = 1
 
+#FIXME oof, we already have two _QuestionStats; I must have been tired.
 class _QuestionStat(object):
 	"""Holds stat and display information for a particular question."""
 	submission_count = 0
-	answer_stat = None
+	answer_stat = {}
 	
-	def __init__(self, answer_stat, submission_count ):
+	def __init__(self, answer_stat, submission_count):
 		self.answer_stat = answer_stat
 		self.submission_count = submission_count
 
@@ -1577,9 +1578,9 @@ class AssignmentSummaryReportPdf(_AbstractReportView):
 			else:
 				avg_assessed_s = 'N/A'
 
-			q_stat = submissions.get(q.ntiid, {})
-			#FIXME what do we do if we have dict or None?
-			submission = q_stat.answer_stat
+			q_stat = submissions.get( q.ntiid )
+			submission = q_stat.answer_stat if q_stat else {}
+			total_submits = q_stat.submission_count if q_stat else 0
 			
 			# If this gets big, we'll need to do something different,
 			# like just showing top-answers.
@@ -1597,13 +1598,11 @@ class AssignmentSummaryReportPdf(_AbstractReportView):
 					#Ok, our correct answer(s) isn't in our trimmed-down set; make it so.
 					submission_counts = submission_counts[:-1 * len(missing_corrects)] + missing_corrects
 				
-			total_submits = q_stat.submission_count
 			# Now set the letter and perc values
 			letters = string.ascii_uppercase
 			for j in range( len(submission_counts) ):
 				sub = submission_counts[j]
 				sub.letter_prefix = letters[j]
-				#TODO total_submits isn't right, we should divide by total responses
 				sub.perc_s = '%0.1f%%' % ( sub.count * 100.0 / total_submits ) if total_submits else 'N/A'
 
 			title = i + 1
