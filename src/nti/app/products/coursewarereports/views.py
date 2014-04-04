@@ -299,6 +299,7 @@ def _common_buckets(objects,for_credit_students,get_student_info,object_create_d
 	# Group the forum objects by day
 	# Since we want deltas, everything is staying in UTC
 	# TODO We need to convert these to our timestamp again
+	# TODO We shouldnt need to groupby anymore either
 	day_key = lambda x: x.created.date()
 	objects = sorted(objects, key=day_key)
 	object_create_date = object_create_date.date()
@@ -309,7 +310,8 @@ def _common_buckets(objects,for_credit_students,get_student_info,object_create_d
 	top_creators = _TopCreators(for_credit_students,get_student_info)
 
 	dates = []
-
+	old_week_num = -1
+	
 	for k, g in groupby(objects, day_key):
 		group = list(g)
 		count = len(group)
@@ -323,9 +325,12 @@ def _common_buckets(objects,for_credit_students,get_student_info,object_create_d
 		forum_objects_by_day[day_delta] = count
 
 		group_monday = k - timedelta( days=k.weekday() )
-		dates.append( group_monday )
+		
 		week_num = ( (group_monday - start_monday).days // 7 )
-	
+		if week_num != old_week_num:
+			dates.append( group_monday )
+			old_week_num = week_num
+
 		if week_num in forum_objects_by_week_number:
 			forum_objects_by_week_number[week_num] += count
 		else:
@@ -372,22 +377,23 @@ def _build_buckets_options(options, buckets):
 		last_week = 0
 		weeks_s = []
 		
-		for d in buckets.group_dates:
-			if last_month == 0:
-				#Find our week
-				last_week = ( d.day - 1 ) // 7 + 1
-			elif last_month != d.month:
-				#New month
-				last_week = 1
-			else:
-				#Same month
-				last_week += 1
+		if buckets is not None:
+			for d_entry in buckets.group_dates:
+				if last_month == 0:
+					#Find our week
+					last_week = ( d_entry.day - 1 ) // 7 + 1
+				else:	
+					if last_month != d_entry.month:
+						#New month
+						last_week = 1
+					else:
+						#Same month
+						last_week += 1
 			
-			last_month = d.month
+				last_month = d_entry.month	
+				month_s = d_entry.strftime( '%b' )
 			
-			month_s = d.strftime( '%b' )
-			
-			weeks_s.append( 'Week %d %s' % ( last_week, month_s ) )
+				weeks_s.append( 'Week %d %s' % ( last_week, month_s ) )
 		
 		options['forum_objects_by_week_number_categories'] = weeks_s
 	else:
