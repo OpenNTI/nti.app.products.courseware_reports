@@ -1420,7 +1420,11 @@ class AssignmentSummaryReportPdf(_AbstractReportView):
 			answer_stats[response] = _AnswerStat(response,is_correct)
 
 	def _build_question_data(self, options):
-		assignment = component.getUtility(IQAssignment, name=self.context.AssignmentId)
+		assignment = component.queryUtility(IQAssignment, name=self.context.AssignmentId)
+		if assignment is None:
+			#Maybe this is something without an assignment, like Attendance?
+			#In ou-alpha, CS1300-exercise1
+			return
 
 		ordered_questions = []
 		qids_to_q = {}
@@ -1474,6 +1478,7 @@ class AssignmentSummaryReportPdf(_AbstractReportView):
 						and response):		
 						# We are losing empty responses
 						# The solutions should be int indexes, as well as our responses
+						#from IPython.core.debugger import Tracer;Tracer()()
 						for r in response:
 							self._add_multiple_choice_to_answer_stats( 	answer_stats, 
 																		r, 
@@ -1540,10 +1545,10 @@ class AssignmentSummaryReportPdf(_AbstractReportView):
 			total_submits = len( assessed_value )
 			# Now set the letter and perc values
 			letters = string.ascii_uppercase
-				
 			for j in range( len(submission_counts) ):
 				sub = submission_counts[j]
 				sub.letter_prefix = letters[j]
+				#TODO total_submits isn't right, we should divide by total responses
 				sub.perc_s = '%0.1f%%' % ( sub.count * 100.0 / total_submits ) if total_submits else 'N/A'
 
 			title = i + 1
