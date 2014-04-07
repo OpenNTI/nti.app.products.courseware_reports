@@ -686,8 +686,10 @@ class CourseSummaryReportPdf(_AbstractReportView):
 			title_to_count[asm.ntiid] = accum
 
 		for submission in qsets_by_student_in_course:
-			asm = self_assessment_qsids[submission.questionSetId]
-			title_to_count[asm.ntiid].incr_username(submission.creator.username)
+			#Content may have changed such that we have an orphaned question set; move on.
+			if submission.questionSetId in self_assessment_qsids:
+				asm = self_assessment_qsids[submission.questionSetId]
+				title_to_count[asm.ntiid].incr_username( submission.creator.username )
 
 		options['self_assessment_data'] = sorted(title_to_count.values(),
 												 key=lambda x: x.title)
