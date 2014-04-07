@@ -32,7 +32,6 @@ from .. import VIEW_ASSIGNMENT_SUMMARY
 from nti.app.assessment.tests import RegisterAssignmentsForEveryoneLayer
 from nti.app.assessment.tests import RegisterAssignmentLayerMixin
 
-
 class TestStudentParticipationReport(ApplicationLayerTest):
 
 	layer = RegisterAssignmentsForEveryoneLayer
