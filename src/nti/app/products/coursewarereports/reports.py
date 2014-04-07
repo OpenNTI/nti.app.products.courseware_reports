@@ -18,6 +18,13 @@ import pytz
 
 import heapq
 
+from numpy import asarray
+from numpy import average
+from numpy import median
+from numpy import percentile
+from numpy import std
+from numbers import Number
+
 from nti.app.assessment.interfaces import ICourseAssessmentItemCatalog
 
 from nti.assessment.interfaces import IQAssignment
@@ -346,3 +353,122 @@ def _build_buckets_options(options, buckets):
 
 	return ForumObjectsStat( *[options.get(x)
 							   for x in ForumObjectsStat._fields] )
+
+_AssignmentStat = namedtuple('_AssignmentStat',
+							 ('title', 'count', 'due_date',
+							  'total', 'for_credit_total',
+							  'non_credit_total',
+							  'avg_grade', 'for_credit_avg_grade',
+							  'non_credit_avg_grade', 'median_grade', 'std_dev_grade',
+							  'attempted_perc', 'for_credit_attempted_perc', 'non_credit_attempted_perc' ))
+
+def _assignment_stat_for_column(self, column, filter=None):
+	count = len(column)
+	keys = set(column)
+
+	# TODO Case sensitivity issue?
+	for_credit_keys = self.for_credit_student_usernames.intersection(keys)
+	for_credit_grade_points = list()
+	non_credit_grade_points = list()
+	all_grade_points = list()
+	for_credit_total = non_credit_total = 0
+
+	# Separate credit and non-credit
+	for username, grade in column.items():
+		
+		#Skip if not in filter
+		if filter is not None and username not in filter:
+			continue
+		
+		grade_val = None
+		# We could have values (19.3), combinations (19.3 A), or strings ('GR'); 
+		# Count the latter case and move on
+		if grade.value is not None:
+			try:
+				if isinstance(grade.value, Number):
+					grade_val = grade.value
+				elif len( grade.value.split() ) > 1:
+					grade_val = float( grade.value.split()[0] )
+			except ValueError:
+				pass
+		
+		# We still increase count of attempts, even if the assignment is ungraded.
+		if username in for_credit_keys:
+			for_credit_total += 1
+			if grade_val is not None:
+				all_grade_points.append( grade_val )
+				for_credit_grade_points.append( grade_val )
+		else:
+			non_credit_total += 1
+			if grade_val is not None:
+				all_grade_points.append( grade_val )
+				non_credit_grade_points.append( grade_val )
+
+	total = for_credit_total + non_credit_total
+
+	for_credit_grade_points = asarray(for_credit_grade_points)
+	non_credit_grade_points = asarray(non_credit_grade_points)
+	all_grade_points = asarray(all_grade_points)
+
+	# Credit
+	if for_credit_grade_points.any():
+		for_credit_avg_grade = average(for_credit_grade_points)
+		for_credit_avg_grade_s = '%0.1f' % for_credit_avg_grade
+	else:
+		for_credit_avg_grade_s = 'N/A'
+
+	# Non-credit
+	if non_credit_grade_points.any():
+		non_credit_avg_grade = average(non_credit_grade_points)
+		non_credit_avg_grade_s = '%0.1f' % non_credit_avg_grade
+	else:
+		non_credit_avg_grade_s = 'N/A'
+
+	# Aggregate
+	if for_credit_grade_points.any() and non_credit_grade_points.any():
+		agg_array = all_grade_points
+		agg_avg_grade = average(agg_array)
+		avg_grade_s = '%0.1f' % agg_avg_grade
+		median_grade = median(agg_array)
+		std_dev_grade = std(agg_array)
+	elif for_credit_grade_points.any():
+		avg_grade_s = for_credit_avg_grade_s
+		median_grade = median(for_credit_grade_points)
+		std_dev_grade = std(for_credit_grade_points)
+	elif non_credit_grade_points.any():
+		avg_grade_s = non_credit_avg_grade_s
+		median_grade = median(non_credit_grade_points)
+		std_dev_grade = std(non_credit_grade_points)
+	else:
+		avg_grade_s = 'N/A'
+		median_grade = std_dev_grade = 0
+
+	median_grade_s = '%0.1f' % median_grade
+	std_dev_grade_s = '%0.1f' % std_dev_grade
+
+	if self.count_all_students:
+		per_attempted = (count / self.count_all_students) * 100.0
+		per_attempted_s = '%0.1f' % per_attempted
+	else:
+		per_attempted_s = 'N/A'
+
+	if self.count_credit_students:
+		for_credit_per = (for_credit_total / self.count_credit_students) * 100.0
+		for_credit_per_s = '%0.1f' % for_credit_per
+	else:
+		for_credit_per_s = 'N/A'
+		
+	if self.count_non_credit_students:
+		non_credit_per = (non_credit_total / self.count_non_credit_students) * 100.0
+		non_credit_per_s = '%0.1f' % non_credit_per
+	else:
+		non_credit_per_s = 'N/A'
+
+	stat = _AssignmentStat( column.displayName, count, column.DueDate, total,
+							for_credit_total, non_credit_total,
+							avg_grade_s, for_credit_avg_grade_s,
+							non_credit_avg_grade_s,
+							median_grade_s,	std_dev_grade_s,
+							per_attempted_s, for_credit_per_s, non_credit_per_s )
+
+	return stat	
