@@ -290,6 +290,10 @@
 					</tal:block>
 				</series>
 			</data>
+			<slices>
+				<slice tal:repeat="item python: [x for x in data if data.count]"
+					   tal:attributes="fillColor item/color" />
+			</slices>
 		</pieChart>
 	</illustration>
 	

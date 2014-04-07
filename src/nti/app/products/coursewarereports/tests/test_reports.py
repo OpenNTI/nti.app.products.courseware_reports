@@ -162,7 +162,7 @@ class TestBuckets( unittest.TestCase ):
 		assert_that( 	forum_stat.forum_objects_by_week_number_categories, 
 						has_length( greater_than_or_equal_to( 5 ) ) )
 
-def _mock_student_info( x, username ):
+def _mock_student_info( self_placeholder, username ):
 	return _StudentInfo( username + "_alias", username )	
 	
 class _MockReport(object):

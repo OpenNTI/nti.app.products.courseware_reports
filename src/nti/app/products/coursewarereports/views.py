@@ -636,7 +636,7 @@ _EngagementStats = namedtuple( '_EngagmentStats',
 							( 'for_credit', 'non_credit', 'aggregate' ) )
 
 _EngagementStat = namedtuple( '_EngagementStat',
-							( 'name', 'count', 'unique_count', 'unique_perc_s' ) )
+							( 'name', 'count', 'unique_count', 'unique_perc_s', 'color' ) )
 
 @view_config(context=ICourseInstance,
 			 name=VIEW_COURSE_SUMMARY)
@@ -820,26 +820,31 @@ class CourseSummaryReportPdf(_AbstractReportView):
 		total_unique_comment = comment_creators.unique_contributors
 		total_perc_s_comment = comment_creators.percent_contributed_str()
 		
-		for_credit_notes =  _EngagementStat( 'Notes', for_credit_note_count, for_credit_unique_note, for_credit_perc_s_note )
-		for_credit_hls = _EngagementStat( 'Highlights', for_credit_hl_count, for_credit_unique_hl, for_credit_perc_s_hl )
-		for_credit_discussions = _EngagementStat( 'Discussions Created', for_credit_discussion_count, for_credit_unique_discussion, for_credit_perc_s_discussion )
-		for_credit_comments = _EngagementStat( 'Discussion Comments', for_credit_comment_count, for_credit_unique_comment, for_credit_perc_s_comment )
+		note_color = CHART_COLORS[0]
+		hl_color = CHART_COLORS[5]
+		discussion_color = CHART_COLORS[2]
+		comments_color = CHART_COLORS[1]
+		
+		for_credit_notes =  _EngagementStat( 'Notes', for_credit_note_count, for_credit_unique_note, for_credit_perc_s_note, note_color )
+		for_credit_hls = _EngagementStat( 'Highlights', for_credit_hl_count, for_credit_unique_hl, for_credit_perc_s_hl, hl_color )
+		for_credit_discussions = _EngagementStat( 'Discussions Created', for_credit_discussion_count, for_credit_unique_discussion, for_credit_perc_s_discussion, discussion_color )
+		for_credit_comments = _EngagementStat( 'Discussion Comments', for_credit_comment_count, for_credit_unique_comment, for_credit_perc_s_comment, comments_color )
 		for_credit_list = [ for_credit_notes, for_credit_hls, for_credit_discussions, for_credit_comments ]
 		activity = sum( [x.count for x in for_credit_list] )
 		for_credit_stats = for_credit_list if activity else []
 
-		non_credit_notes = _EngagementStat( 'Notes',  non_credit_note_count, non_credit_unique_note, non_credit_perc_s_note )
-		non_credit_hls = _EngagementStat( 'Highlights', non_credit_hl_count, non_credit_unique_hl, non_credit_perc_s_hl )
-		non_credit_discussions = _EngagementStat( 'Discussions Created', non_credit_discussion_count, non_credit_unique_discussion, non_credit_perc_s_discussion )
-		non_credit_comments = _EngagementStat( 'Discussion Comments', non_credit_comment_count, non_credit_unique_comment, non_credit_perc_s_comment )
+		non_credit_notes = _EngagementStat( 'Notes',  non_credit_note_count, non_credit_unique_note, non_credit_perc_s_note, note_color )
+		non_credit_hls = _EngagementStat( 'Highlights', non_credit_hl_count, non_credit_unique_hl, non_credit_perc_s_hl, hl_color )
+		non_credit_discussions = _EngagementStat( 'Discussions Created', non_credit_discussion_count, non_credit_unique_discussion, non_credit_perc_s_discussion, discussion_color )
+		non_credit_comments = _EngagementStat( 'Discussion Comments', non_credit_comment_count, non_credit_unique_comment, non_credit_perc_s_comment, comments_color )
 		non_credit_list = [ non_credit_notes, non_credit_hls, non_credit_discussions, non_credit_comments ]
 		activity = sum( [x.count for x in non_credit_list] )
 		non_credit_stats = non_credit_list if activity else []
 
-		total_notes = _EngagementStat( 'Notes', total_note_count, total_unique_note, total_perc_s_note )
-		total_hls = _EngagementStat( 'Highlights', total_hl_count, total_unique_hl, total_perc_s_hl )
-		total_discussions = _EngagementStat( 'Discussions Created', total_discussion_count, total_unique_discussion, total_perc_s_discussion )
-		total_comments = _EngagementStat( 'Discussion Comments', total_comment_count, total_unique_comment, total_perc_s_comment )
+		total_notes = _EngagementStat( 'Notes', total_note_count, total_unique_note, total_perc_s_note, note_color )
+		total_hls = _EngagementStat( 'Highlights', total_hl_count, total_unique_hl, total_perc_s_hl, hl_color )
+		total_discussions = _EngagementStat( 'Discussions Created', total_discussion_count, total_unique_discussion, total_perc_s_discussion, discussion_color )
+		total_comments = _EngagementStat( 'Discussion Comments', total_comment_count, total_unique_comment, total_perc_s_comment, comments_color )
 		aggregate_list = [ total_notes, total_hls, total_discussions, total_comments ]
 		activity = sum( [x.count for x in aggregate_list] )
 		aggregate_stats = aggregate_list if activity else []

@@ -36,8 +36,8 @@
 				<label>For-Credit (${options/count_for_credit})</label>
 			</labels>
 			<slices>
-				<slice />
-				<slice popout="10" />
+				<slice fillColor="#3498db" />
+				<slice fillColor="#1abc9c" popout="10" />
 			</slices>
 			<data>
 				<series>
