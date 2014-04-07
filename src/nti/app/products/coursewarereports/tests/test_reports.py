@@ -83,7 +83,7 @@ class TestBuckets( unittest.TestCase ):
 	def test_empty(self):
 		empty_objects = []
 		empty_for_credit = []
-		buckets = _common_buckets( empty_objects, empty_for_credit, _mock_student_info, datetime.now() )
+		buckets = _common_buckets( empty_objects, _MockReport( [] ), datetime.now() )
 		assert_that( buckets, not_none() )
 		assert_that( buckets.count_by_day, empty() )
 		assert_that( buckets.count_by_week_number, empty() )
@@ -93,7 +93,7 @@ class TestBuckets( unittest.TestCase ):
 	def test_buckets(self):
 		empty_for_credit = []
 		start_date = datetime( year=2014, month=4, day=5, hour=0, minute=30 )
-		buckets = _common_buckets( self.objects, empty_for_credit, _mock_student_info, start_date )
+		buckets = _common_buckets( self.objects, _MockReport( [] ), start_date )
 		assert_that( buckets, not_none() )
 		assert_that( buckets.count_by_day, has_length( 8 ) )
 		#We have a bucket for each week
@@ -110,7 +110,7 @@ class TestBuckets( unittest.TestCase ):
 		
 		#Different start dates do not change counts
 		start_date = datetime( year=2014, month=12, day=5, hour=0, minute=30 )
-		buckets = _common_buckets( self.objects, empty_for_credit, _mock_student_info, start_date )
+		buckets = _common_buckets( self.objects, _MockReport( [] ), start_date )
 		assert_that( buckets.count_by_day, has_length( 8 ) )
 		#We have a bucket for each week
 		assert_that( buckets.count_by_week_number, has_length( 4 ) )
@@ -119,7 +119,7 @@ class TestBuckets( unittest.TestCase ):
 		assert_that( buckets.group_dates, has_length( 5 ) )
 		
 		start_date = datetime( year=2011, month=3, day=5, hour=0, minute=30 )
-		buckets = _common_buckets( self.objects, empty_for_credit, _mock_student_info, start_date )
+		buckets = _common_buckets( self.objects, _MockReport( [] ), start_date )
 		assert_that( buckets.count_by_day, has_length( 8 ) )
 		#We have a bucket for each week
 		assert_that( buckets.count_by_week_number, has_length( 4 ) )
@@ -131,7 +131,7 @@ class TestBuckets( unittest.TestCase ):
 		empty_objects = []
 		empty_for_credit = []
 		options = {}
-		buckets = _common_buckets( empty_objects, empty_for_credit, _mock_student_info, datetime.now() )	
+		buckets = _common_buckets( empty_objects, _MockReport( [] ), datetime.now() )	
 		forum_stat = _build_buckets_options( options, buckets )
 		
 		assert_that( forum_stat, not_none() )
@@ -147,7 +147,7 @@ class TestBuckets( unittest.TestCase ):
 		empty_for_credit = []
 		options = {}
 		start_date = datetime( year=2014, month=4, day=5, hour=0, minute=30 )
-		buckets = _common_buckets( self.objects, empty_for_credit, _mock_student_info, start_date )
+		buckets = _common_buckets( self.objects, _MockReport( [] ), start_date )
 		
 		forum_stat = _build_buckets_options( options, buckets )
 		
@@ -162,13 +162,26 @@ class TestBuckets( unittest.TestCase ):
 		assert_that( 	forum_stat.forum_objects_by_week_number_categories, 
 						has_length( greater_than_or_equal_to( 5 ) ) )
 
-def _mock_student_info( username ):
+def _mock_student_info( x, username ):
 	return _StudentInfo( username + "_alias", username )	
+	
+class _MockReport(object):
+	
+	for_credit_student_usernames = []
+	open_student_usernames = []
+	get_student_info = _mock_student_info
+	count_all_students = 0
+	count_credit_students = 0
+	count_non_credit_students = 0
+	
+	def __init__( self, for_credit_students=[], non_credit_students=[] ):
+		self.for_credit_student_usernames = for_credit_students
+		self.open_student_usernames = non_credit_students
 		
 class TestTopCreators( unittest.TestCase ):
 	
 	def setUp(self):
-		self.top_creators = _TopCreators( [], _mock_student_info )
+		self.top_creators = _TopCreators( _MockReport( [] ) )
 	
 	def test_empty(self):
 		assert_that( self.top_creators._for_credit_data, empty() )
@@ -201,7 +214,7 @@ class TestTopCreators( unittest.TestCase ):
 		
 	def test_single(self):
 		for_credit = 'for_credit1'
-		self.top_creators = _TopCreators( [ for_credit ], _mock_student_info )
+		self.top_creators = _TopCreators( _MockReport( [ for_credit ] ) )
 		self.top_creators.incr_username( for_credit )
 		
 		assert_that( self.top_creators.total, equal_to( 1 ) )
@@ -248,7 +261,7 @@ class TestTopCreators( unittest.TestCase ):
 		non_credit1 = 'non_credit1'
 		non_credit2 = 'non_credit2'
 		
-		self.top_creators = _TopCreators( [ for_credit, for_credit2 ], _mock_student_info )
+		self.top_creators = _TopCreators( _MockReport( [ for_credit, for_credit2 ], [non_credit1,non_credit2] ) )
 		
 		for i in range(5):
 			self.top_creators.incr_username( for_credit )

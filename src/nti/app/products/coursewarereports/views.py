@@ -158,6 +158,10 @@ class _AbstractReportView(AbstractAuthenticatedView,
 	@Lazy
 	def intids_created_by_students(self):
 		return self.md_catalog['creator'].apply({'any_of': self.all_student_usernames})
+	
+	@Lazy
+	def intids_created_by_everyone(self):
+		return self.md_catalog['creator'].apply({'any_of': self.all_usernames})
 
 	@Lazy
 	def instructor_usernames(self):
@@ -179,10 +183,13 @@ class _AbstractReportView(AbstractAuthenticatedView,
 
 	@Lazy
 	def all_student_usernames(self):
+		return self.all_usernames - self.instructor_usernames
+	
+	@Lazy
+	def all_usernames(self):
 		everyone = self.course.legacy_community
 		everyone_usernames = {x for x in IEnumerableEntityContainer(everyone).iter_usernames()}
-		student_usernames = everyone_usernames - self.instructor_usernames
-		return student_usernames
+		return everyone_usernames
 
 	@Lazy
 	def count_all_students(self):
@@ -278,8 +285,7 @@ class StudentParticipationReportPdf(_AbstractReportView):
 		
 		# Group the forum objects by day and week
 		time_buckets = _common_buckets(	live_objects,
-										self.for_credit_student_usernames,
-										self.get_student_info,
+										self,
 										self.course_start_date )
 
 		# Tabular breakdown of what topics the user created in what forum
@@ -459,8 +465,7 @@ class ForumParticipationReportPdf(_AbstractReportView):
 					if not IDeletedObjectPlaceholder.providedBy( comment ):
 						yield comment
 		buckets = _common_buckets(	_all_comments(), 
-									self.for_credit_student_usernames,
-									self.get_student_info,
+									self,
 									self.course_start_date,
 									self.agg_creators)
 		options['group_dates'] = buckets.group_dates
@@ -472,7 +477,7 @@ class ForumParticipationReportPdf(_AbstractReportView):
 
 	def _build_comment_count_by_topic(self, options):
 		comment_count_by_topic = list()
-		top_creators = _TopCreators(self.for_credit_student_usernames,self.get_student_info)
+		top_creators = _TopCreators( self )
 		
 		for topic in self.context.values():
 			comments = self.filter_objects( topic.values() )
@@ -585,8 +590,7 @@ class TopicParticipationReportPdf(ForumParticipationReportPdf):
 	def _build_top_commenters(self, options):
 		live_objects = self.filter_objects( self.context.values() )
 		buckets = _common_buckets(	live_objects, 
-									self.for_credit_student_usernames,
-									self.get_student_info,
+									self,
 									self.course_start_date )
 		options['top_commenters'] = buckets.top_creators
 		options['group_dates'] = buckets.group_dates
@@ -612,7 +616,7 @@ class TopicParticipationReportPdf(ForumParticipationReportPdf):
 		options = self.options
 		self._build_top_commenters(options)
 		# This is a placeholder
-		options['top_creators'] = _TopCreators(self.for_credit_student_usernames,self.get_student_info)
+		options['top_creators'] = _TopCreators( self )
 		options['topic_info'] = self._build_topic_info()
 		self._build_user_stats(options)
 
@@ -627,6 +631,12 @@ _EngagementPerfStat = namedtuple( '_EngagementPerfStat',
 
 _EngagementQuartileStat = namedtuple( '_EngagementQuartileStat',
 								('name','count','value', 'assignment_stat'))
+
+_EngagementStats = namedtuple( '_EngagmentStats',
+							( 'for_credit', 'non_credit', 'aggregate' ) )
+
+_EngagementStat = namedtuple( '_EngagementStat',
+							( 'name', 'count', 'unique_count', 'unique_perc_s' ) )
 
 @view_config(context=ICourseInstance,
 			 name=VIEW_COURSE_SUMMARY)
@@ -677,12 +687,9 @@ class CourseSummaryReportPdf(_AbstractReportView):
 
 		for asm in self_assessments:
 			title = _title_of_qs(asm)
-			accum = _TopCreators(self.for_credit_student_usernames,self.get_student_info)
+			accum = _TopCreators( self )
 			accum.aggregate_creators = self.assessment_aggregator
 			accum.title = title
-			accum.max_contributors = self.count_all_students
-			accum.max_contributors_for_credit = self.count_credit_students
-			accum.max_contributors_non_credit = self.count_non_credit_students
 			title_to_count[asm.ntiid] = accum
 
 		for submission in qsets_by_student_in_course:
@@ -702,9 +709,9 @@ class CourseSummaryReportPdf(_AbstractReportView):
 		intids_of_hls = md_catalog['mimeType'].apply({'any_of': ('application/vnd.nextthought.highlight',)})
 
 		intids_of_notes = intersection( intids_of_notes,
-										self.intids_created_by_students )
+										self.intids_created_by_everyone )
 		intids_of_hls = intersection( intids_of_hls,
-									  self.intids_created_by_students )
+									  self.intids_created_by_everyone )
 
 		all_notes = intids_of_notes
 		all_hls = intids_of_hls
@@ -713,14 +720,14 @@ class CourseSummaryReportPdf(_AbstractReportView):
 		paths = lib.pathToNTIID( self.course.legacy_content_package.ntiid )
 		root = paths[0] if paths else None
 
-		def _recur(node, accum):
+		def _recur( node, accum ):
 			#Get our embedded ntiids and recursively fetch our children's ntiids
 			ntiid = node.ntiid
 			accum.update( node.embeddedContainerNTIIDs )
 			if ntiid:
-				accum.add(ntiid)
+				accum.add( ntiid )
 			for n in node.children:	
-				_recur(n, accum)
+				_recur( n, accum )
 
 		containers_in_course = set()
 		if root:
@@ -735,51 +742,109 @@ class CourseSummaryReportPdf(_AbstractReportView):
 		intids_of_hls = intersection( intids_of_hls,
 									  intids_of_objects_in_course_containers )
 
-		#Separate credit and non-credit
-		for_credit_students = self.for_credit_student_usernames
-
-		notes = ResultSet(intids_of_notes, self.uidutil)
-		#TODO filter notes and highlights
-		#top_creators = _TopCreators( self.for_credit_student_usernames,self.get_student_info )
+		#We could filter notes and highlights (exclude deleted)
+		#If we want top noters/highlighters, we should use TopCreators
+		notes = ResultSet( intids_of_notes, self.uidutil )
+		note_creators = _TopCreators( self )
+		for note in notes:
+			note_creators.incr_username( note.creator.username )
 		
-		for_credit_note_count = sum( 1 for x in notes if x.creator.username in for_credit_students )
+		for_credit_note_count = note_creators.for_credit_total
+		non_credit_note_count = note_creators.non_credit_total
+		total_note_count = note_creators.total
+		
+		for_credit_unique_note = note_creators.unique_contributors_for_credit
+		for_credit_perc_s_note = note_creators.for_credit_percent_contributed_str()
+		
+		non_credit_unique_note = note_creators.unique_contributors_non_credit
+		non_credit_perc_s_note = note_creators.non_credit_percent_contributed_str()
+		
+		total_unique_note = note_creators.unique_contributors
+		total_perc_s_note = note_creators.percent_contributed_str()
 
+		#Highlights
 		highlights = ResultSet(intids_of_hls, self.uidutil)
-		for_credit_highlight_count = sum( 1 for x in highlights if x.creator.username in for_credit_students )
+		hl_creators = _TopCreators( self )
+		for hl in highlights:
+			hl_creators.incr_username( hl.creator.username )
+		
+		for_credit_hl_count = hl_creators.for_credit_total
+		non_credit_hl_count = hl_creators.non_credit_total
+		total_hl_count = hl_creators.total
+		
+		for_credit_unique_hl = hl_creators.unique_contributors_for_credit
+		for_credit_perc_s_hl = hl_creators.for_credit_percent_contributed_str()
+		
+		non_credit_unique_hl = hl_creators.unique_contributors_non_credit
+		non_credit_perc_s_hl = hl_creators.non_credit_percent_contributed_str()
+		
+		total_unique_hl = hl_creators.unique_contributors
+		total_perc_s_hl = hl_creators.percent_contributed_str()
 
-		for_credit_discussion_count = 0
-		total_discussion_count = 0
-		for_credit_comment_count = 0
-		total_comment_count = 0
+		#Discussions/comments
+		discussion_creators = _TopCreators( self )
+		comment_creators = _TopCreators( self )
 
-		#TODO use TopCreators here
 		for forum in self.course.Discussions.values():
 			for discussion in forum.values():
-				total_discussion_count += 1
-				if discussion.creator.username in for_credit_students:
-					for_credit_discussion_count += 1
+				discussion_creators.incr_username( discussion.creator.username )
 				for comment in discussion.values():
 					if not IDeletedObjectPlaceholder.providedBy( comment ):
-						total_comment_count += 1
-						if comment.creator.username in for_credit_students:
-							for_credit_comment_count += 1
+						comment_creators.incr_username( comment.creator.username )
 
+		#Discussions
+		for_credit_discussion_count = discussion_creators.for_credit_total
+		non_credit_discussion_count = discussion_creators.non_credit_total
+		total_discussion_count = discussion_creators.total
+		
+		for_credit_unique_discussion = discussion_creators.unique_contributors_for_credit
+		for_credit_perc_s_discussion = discussion_creators.for_credit_percent_contributed_str()
+		
+		non_credit_unique_discussion = discussion_creators.unique_contributors_non_credit
+		non_credit_perc_s_discussion = discussion_creators.non_credit_percent_contributed_str()
+		
+		total_unique_discussion = discussion_creators.unique_contributors
+		total_perc_s_discussion = discussion_creators.percent_contributed_str()
 
-		data = dict()
-		data['Notes'] = for_credit_note_count
-		data['Highlights'] = for_credit_highlight_count
-		data['Discussions Created'] = for_credit_discussion_count
-		data['Discussion Comments'] = for_credit_comment_count
+		#Comments
+		for_credit_comment_count = comment_creators.for_credit_total
+		non_credit_comment_count = comment_creators.non_credit_total
+		total_comment_count = comment_creators.total
+		
+		for_credit_unique_comment = comment_creators.unique_contributors_for_credit
+		for_credit_perc_s_comment = comment_creators.for_credit_percent_contributed_str()
+		
+		non_credit_unique_comment = comment_creators.unique_contributors_non_credit
+		non_credit_perc_s_comment = comment_creators.non_credit_percent_contributed_str()
+		
+		total_unique_comment = comment_creators.unique_contributors
+		total_perc_s_comment = comment_creators.percent_contributed_str()
+		
+		for_credit_notes =  _EngagementStat( 'Notes', for_credit_note_count, for_credit_unique_note, for_credit_perc_s_note )
+		for_credit_hls = _EngagementStat( 'Highlights', for_credit_hl_count, for_credit_unique_hl, for_credit_perc_s_hl )
+		for_credit_discussions = _EngagementStat( 'Discussions Created', for_credit_discussion_count, for_credit_unique_discussion, for_credit_perc_s_discussion )
+		for_credit_comments = _EngagementStat( 'Discussion Comments', for_credit_comment_count, for_credit_unique_comment, for_credit_perc_s_comment )
+		for_credit_list = [ for_credit_notes, for_credit_hls, for_credit_discussions, for_credit_comments ]
+		activity = sum( [x.count for x in for_credit_list] )
+		for_credit_stats = for_credit_list if activity else []
 
-		options['engagement_data_for_credit'] = sorted(data.items())
+		non_credit_notes = _EngagementStat( 'Notes',  non_credit_note_count, non_credit_unique_note, non_credit_perc_s_note )
+		non_credit_hls = _EngagementStat( 'Highlights', non_credit_hl_count, non_credit_unique_hl, non_credit_perc_s_hl )
+		non_credit_discussions = _EngagementStat( 'Discussions Created', non_credit_discussion_count, non_credit_unique_discussion, non_credit_perc_s_discussion )
+		non_credit_comments = _EngagementStat( 'Discussion Comments', non_credit_comment_count, non_credit_unique_comment, non_credit_perc_s_comment )
+		non_credit_list = [ non_credit_notes, non_credit_hls, non_credit_discussions, non_credit_comments ]
+		activity = sum( [x.count for x in non_credit_list] )
+		non_credit_stats = non_credit_list if activity else []
 
-		data = dict()
-		data['Notes'] = len(intids_of_notes) - for_credit_note_count
-		data['Highlights'] = len(intids_of_hls) - for_credit_highlight_count
-		data['Discussions Created'] = total_discussion_count - for_credit_discussion_count
-		data['Discussion Comments'] = total_comment_count - for_credit_comment_count
+		total_notes = _EngagementStat( 'Notes', total_note_count, total_unique_note, total_perc_s_note )
+		total_hls = _EngagementStat( 'Highlights', total_hl_count, total_unique_hl, total_perc_s_hl )
+		total_discussions = _EngagementStat( 'Discussions Created', total_discussion_count, total_unique_discussion, total_perc_s_discussion )
+		total_comments = _EngagementStat( 'Discussion Comments', total_comment_count, total_unique_comment, total_perc_s_comment )
+		aggregate_list = [ total_notes, total_hls, total_discussions, total_comments ]
+		activity = sum( [x.count for x in aggregate_list] )
+		aggregate_stats = aggregate_list if activity else []
 
-		options['engagement_data_non_credit'] = sorted(data.items())
+		options['engagement_data'] = _EngagementStats( for_credit_stats, non_credit_stats, aggregate_stats )
 
 # 		outline = self.course.Outline
 # 		def _recur(node, accum):
@@ -837,7 +902,7 @@ class CourseSummaryReportPdf(_AbstractReportView):
 	def _build_top_commenters(self, options):
 
 		forum_stats = dict()
-		agg_creators = _TopCreators(self.for_credit_student_usernames,self.get_student_info)
+		agg_creators = _TopCreators( self )
 		agg_creators.aggregate_creators = self.engagement_aggregator
 
 		for key, forum in self.course.Discussions.items():

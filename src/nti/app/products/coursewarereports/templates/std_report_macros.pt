@@ -250,6 +250,50 @@
 		</pieChart>		
 	</illustration>
 
+	<metal:macro metal:define-macro="engagement_stats_table" >
+		<blockTable style='default' alignment="left"
+					colWidths="40% 20% 20% 20%"
+					tal:condition="engagement_stat" >
+			<tr>
+				<td>Type</td>
+				<td>Count</td>
+				<td><para>Unique Contributors</para></td>
+				<td><para>Unique Percent Contributed</para></td>
+			</tr>
+			<tr tal:repeat="item engagement_stat">
+				<td tal:content="item/name">Notes</td>
+				<td align="decimal" tal:content="item/count">25</td>
+				<td align="decimal" tal:content="item/unique_count">100</td>
+				<td align="decimal" tal:content="item/unique_perc_s">25</td>
+			</tr>
+		</blockTable>
+	</metal:macro>
+	
+	<illustration width="4in" height="3.5in"
+				  metal:define-macro="engagement_stats_pie" >	
+		<pieChart dx="1.5in" dy=".8in" dwidth="3in" dheight="3in" x="0in" y="0" width="2.5in"
+					height="2.5in"		  
+				  	checkLabelOverlap='false'
+				  	tal:define="data engagement_stat"
+				  	tal:condition="engagement_stat">
+			<labels>
+				<label 	tal:repeat="item python: [x for x in data if data.count]"
+						tal:content="item/name">
+					Name
+				</label>
+			</labels>
+			<data>
+				<!-- Deals very badly with 0 size slices -->
+				<series>
+					<tal:block tal:repeat="item python: [x for x in data if data.count]">
+						${python:(item.count)}
+					</tal:block>
+				</series>
+			</data>
+		</pieChart>
+	</illustration>
+	
+
 	</story>
 	
 </document>

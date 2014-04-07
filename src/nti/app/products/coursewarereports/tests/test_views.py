@@ -31,10 +31,6 @@ from .. import VIEW_TOPIC_PARTICIPATION
 from .. import VIEW_COURSE_SUMMARY
 from .. import VIEW_ASSIGNMENT_SUMMARY
 
-from ..views import _add_multiple_choice_to_answer_stats
-from ..views import _build_assignment_data
-from ..views import _add_val_to_answer_stats
-
 from nti.app.assessment.tests import RegisterAssignmentsForEveryoneLayer
 from nti.app.assessment.tests import RegisterAssignmentLayerMixin
 

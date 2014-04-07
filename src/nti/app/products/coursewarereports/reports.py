@@ -111,9 +111,13 @@ class _TopCreators(object):
 	aggregate_creators = None
 	aggregate_remainder = None
 
-	def __init__(self,for_credit_students,get_student_info):
-		self._get_student_info = get_student_info
-		self._for_credit_students = for_credit_students
+	def __init__(self,report):
+		self.max_contributors = report.count_all_students
+		self.max_contributors_for_credit = report.count_credit_students
+		self.max_contributors_non_credit = report.count_non_credit_students
+		self._get_student_info = report.get_student_info
+		self._for_credit_students = report.for_credit_student_usernames
+		self._non_credit_students = report.open_student_usernames
 		self._data = BTrees.family64.OI.BTree()
 
 	@property
@@ -122,7 +126,7 @@ class _TopCreators(object):
 
 	@property
 	def _non_credit_data(self):
-		return {username: i for username, i in self._data.items() if username not in self._for_credit_students}
+		return {username: i for username, i in self._data.items() if username in self._non_credit_students}
 
 	def _get_largest(self):
 		return self._do_get_largest(self._data, self.total)
@@ -239,7 +243,7 @@ class _TopCreators(object):
 	def non_credit_percent_contributed_str(self):
 		return "%0.1f" % self.percent_contributed( self.max_contributors_non_credit, self.unique_contributors_non_credit )
 
-def _common_buckets(objects,for_credit_students,get_student_info,object_create_date,agg_creators=None):
+def _common_buckets(objects,report,object_create_date,agg_creators=None):
 	"""
 	Given a list of :class:`ICreated` objects,
 	return a :class:`_CommonBuckets` containing three members:
@@ -262,7 +266,7 @@ def _common_buckets(objects,for_credit_students,get_student_info,object_create_d
 
 	forum_objects_by_day = BTrees.family64.II.BTree()
 	forum_objects_by_week_number = BTrees.family64.II.BTree()
-	top_creators = _TopCreators( for_credit_students, get_student_info )
+	top_creators = _TopCreators( report )
 	top_creators.aggregate_creators = agg_creators
 
 	dates = []

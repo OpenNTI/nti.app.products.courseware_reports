@@ -138,102 +138,68 @@
 			This course contains no assignments.
 		</para>
 
+		<setNextTemplate name="table_pie" />
+		
 		<nextPage />
-
+		
 		<h1 style="h1" fontSize="25" spaceBefore=".5in" spaceAfter=".3in" keepWithNext='true'>
 			Student Activity
 		</h1>
 		
-		<para style="subdesc" spaceAfter=".1in"
-				tal:condition="options/engagement_data_for_credit">
-			This section reports the number of contributions and annotations made by students in ${context/__name__}. This information
-			includes the number of discussions, comments, notes, and highlights created by all students
+		<para style="subdesc" spaceAfter=".1in">
+			The following items show activity taking place in ${context/__name__}. This information
+			includes the number of discussions, comments, notes, and highlights created by all the students
 			in the course, where applicable. 
 		</para>
 		<hr width="100%" />
 		
-		<para tal:condition="not:options/engagement_data_for_credit">
-			This course does not have any student activity.
-		</para>
-
 		<h2 style="h2">
 			Activity: For-Credit Students
 		</h2>
 		
-		<para tal:condition="not:options/engagement_data_for_credit">
+		<para tal:condition="not:options/engagement_data/for_credit">
 			This course does not have any for-credit student activity.
 		</para>
 		
-		<blockTable style='default' alignment="left"
-					tal:condition="options/engagement_data_for_credit">
-			<tr>
-				<td>Type</td>
-				<td>Number</td>
-			</tr>
-			<tr tal:repeat="item options/engagement_data_for_credit">
-				<td tal:content="python:item[0]">Notes</td>
-				<td align="decimal" tal:content="python:item[1]">25</td>
-			</tr>
-		</blockTable>
+		<nextFrame name="table_frame" />
 		
-		<illustration width="5in" height="1in" >
-		<pieChart dx="3.5in" dy="0in" dwidth="3in" dheight="3in" x="1in" y="0" width="2.5in"
-					height="2.5in"		  
-				  	checkLabelOverlap='false'
-				  	tal:condition="options/engagement_data_for_credit">
-			<labels>
-				<label tal:repeat="item python: [x for x in options['engagement_data_for_credit'] if x[1] > 0]">${python:item[0]}</label>
-			</labels>
-			<data>
-				<!-- Deals very badly with 0 size slices -->
-				<series>
-					<tal:block tal:repeat="item python: [x for x in options['engagement_data_for_credit'] if x[1] > 0]">
-					${python:(item[1] or 1.1)}
-					</tal:block>
-				</series>
-			</data>
-		</pieChart>
+		<metal:macro 	tal:define="engagement_stat options/engagement_data/for_credit"
+						metal:use-macro="macro:engagement_stats_table"
+						tal:condition="options/engagement_data/for_credit" />
+		
+		<nextFrame name="pie_frame" />
+		
+		<illustration width="4in" height="5in"
+			  	  tal:define="engagement_stat options/engagement_data/for_credit"
+				  metal:use-macro="macro:engagement_stats_pie"
+				  tal:condition="options/engagement_data/for_credit" >
 		</illustration>
+		
+		<nextFrame name="table_frame" />
 		
 		<h2 style="h2">
 			Activity: Non-Credit Students
 		</h2>
-		
-		<para tal:condition="not:options/engagement_data_non_credit">
+		<para tal:condition="not:options/engagement_data/non_credit">
 			This course does not have any non-credit student activity.
 		</para>
 		
-		<blockTable style='default' alignment="left"
-					tal:condition="options/engagement_data_non_credit">
-			<tr>
-				<td>Type</td>
-				<td>Number</td>
-			</tr>
-			<tr tal:repeat="item options/engagement_data_non_credit">
-				<td tal:content="python:item[0]">Notes</td>
-				<td align="decimal" tal:content="python:item[1]">25</td>
-			</tr>
-		</blockTable>
+		<metal:macro 	tal:define="engagement_stat options/engagement_data/non_credit"
+						metal:use-macro="macro:engagement_stats_table"
+						tal:condition="options/engagement_data/non_credit"  />
 		
-		<illustration width="5in" height="1in" >
-		<pieChart dx="3.5in" dy="0in" dwidth="3in" dheight="3in" x="1in" y="0" width="2.5in"
-					height="2.5in"		
-				  checkLabelOverlap='false'
-				  tal:condition="options/engagement_data_non_credit">
-			<labels>
-				<label tal:repeat="item python: [x for x in options['engagement_data_non_credit'] if x[1] > 0]">${python:item[0]}</label>
-			</labels>
-			<data>
-				<!-- Deals very badly with 0 size slices -->
-				<series>
-					<tal:block tal:repeat="item python: [x for x in options['engagement_data_non_credit'] if x[1] > 0]">
-					${python:(item[1] or 1.1)}
-					</tal:block>
-				</series>
-			</data>
-		</pieChart>
+		<nextFrame name="pie_frame" />
+		
+		<illustration width="4in" height="5in"
+			  	  tal:define="engagement_stat options/engagement_data/non_credit"
+				  metal:use-macro="macro:engagement_stats_pie"
+				  tal:condition="options/engagement_data/non_credit" >
 		</illustration>
-
+		
+		<setNextTemplate name="main"/>
+		
+		
+		
 <!--!
 		<nextPage />
 
