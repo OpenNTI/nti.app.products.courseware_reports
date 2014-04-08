@@ -735,15 +735,8 @@ class CourseSummaryReportPdf(_AbstractReportView):
 			_recur( root,containers_in_course )
 		containers_in_course.discard( None )
 
-# 		with open('/Users/jzuech/containers/' + self.course.__name__, 'a') as f:
-# 			for x in sorted(containers_in_course):
-# 				f.write(x.encode('utf-8'))
-# 				f.write("\n")
-
 		#Now we should have our whole tree of ntiids, intersect with our vals
 		intids_of_objects_in_course_containers = md_catalog['containerId'].apply({'any_of': containers_in_course})
-
-		from IPython.core.debugger import Tracer;Tracer()()
 
 		intids_of_notes = intersection( intids_of_notes,
 										intids_of_objects_in_course_containers )
