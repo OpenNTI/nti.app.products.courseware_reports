@@ -81,7 +81,7 @@
 			</para>
 
 			<blockTable alignment="left"
-						colWidths="6% 50% 10% 10%"
+						colWidths="6% 50% 7% 7%"
 						tal:condition="item/submission_counts">
 						
 				<blockTableStyle id="new" >

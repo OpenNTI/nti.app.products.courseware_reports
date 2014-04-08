@@ -735,8 +735,15 @@ class CourseSummaryReportPdf(_AbstractReportView):
 			_recur( root,containers_in_course )
 		containers_in_course.discard( None )
 
+# 		with open('/Users/jzuech/containers/' + self.course.__name__, 'a') as f:
+# 			for x in sorted(containers_in_course):
+# 				f.write(x.encode('utf-8'))
+# 				f.write("\n")
+
 		#Now we should have our whole tree of ntiids, intersect with our vals
 		intids_of_objects_in_course_containers = md_catalog['containerId'].apply({'any_of': containers_in_course})
+
+		from IPython.core.debugger import Tracer;Tracer()()
 
 		intids_of_notes = intersection( intids_of_notes,
 										intids_of_objects_in_course_containers )
@@ -1103,7 +1110,7 @@ class AssignmentSummaryReportPdf(_AbstractReportView):
 	def _add_multiple_choice_to_answer_stats(self,answer_stats,response,question_part,check_correct):
 		"""Adds the multiple choice response to our answer_stats"""
 		#We could have empty strings or 'None' here; slot that in our 'empty' answer area
-		response_val = question_part.choices[response] if response else ''
+		response_val = question_part.choices[response] if response is not None and response != '' else ''
 		self._add_val_to_answer_stats(answer_stats, response_val, check_correct)
 
 	def _add_val_to_answer_stats(self,answer_stats,response,check_correct):
