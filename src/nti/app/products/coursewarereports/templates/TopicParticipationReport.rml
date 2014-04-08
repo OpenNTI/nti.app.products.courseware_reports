@@ -89,7 +89,7 @@
 			This discussion does not have any comments by for-credit students.
 		</para>	
 		
-		<blockTable style="default"
+		<blockTable style="table_user_1"
 					tal:condition="options/for_credit_user_stats"
 					alignment="left" colWidths="30% 30% 12%">
 			<tr>
@@ -111,7 +111,7 @@
 			This discussion does not have any comments by non-credit students.
 		</para>	
 		
-		<blockTable style="default"
+		<blockTable style="table_user_1"
 					tal:condition="options/non_credit_user_stats"
 					alignment="left" colWidths="30% 12%">
 			<tr>

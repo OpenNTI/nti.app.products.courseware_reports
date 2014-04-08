@@ -17,15 +17,15 @@
 		
 		<blockTable style='default' >
 			<tr>
-				<td><para>Assignment Title</para></td>
-				<td><para>For-Credit Students</para></td>
-				<td><para>Non-Credit Students</para></td>
-				<td><para>Total Students</para></td>
-				<td><para>For-Credit Attempted (%)</para></td>
-				<td><para>Non-Credit Attempted (%)</para></td>
+				<td><para style="header">Assignment Title</para></td>
+				<td><para style="header">For-Credit Students</para></td>
+				<td><para style="header">Non-Credit Students</para></td>
+				<td><para style="header">Total Students</para></td>
+				<td><para style="header">For-Credit <br/> Attempted (%)</para></td>
+				<td><para style="header">Non-Credit <br/> Attempted (%)</para></td>
 			</tr>
 			<tr tal:repeat="item options/assignment_data">
-				<td><para tal:content="item/title">The Assessment Title</para></td>
+				<td><para tal:content="item/title" style="data" >The Assessment Title</para></td>
 				<td align="decimal" tal:content="item/for_credit_total">For-Credit Attempts</td>
 				<td align="decimal" tal:content="item/non_credit_total">Non-Credit Attempts</td>
 				<td align="decimal" tal:content="item/total">Total Attempts</td>
@@ -39,15 +39,15 @@
 		</h2>
 		<blockTable style='default'>
 			<tr>
-				<td><para>Assignment Title</para></td>
-				<td><para>Average: For-Credit</para></td>
-				<td><para>Average: Non-Credit</para></td>
-				<td><para>Average: All</para></td>
-				<td><para>Median: All</para></td>
-				<td><para>Standard Deviation: All</para></td>
+				<td><para style="header">Assignment Title</para></td>
+				<td><para style="header">Average: For-Credit</para></td>
+				<td><para style="header">Average: Non-Credit</para></td>
+				<td><para style="header">Average: All</para></td>
+				<td><para style="header">Median: All</para></td>
+				<td><para style="header">Standard Deviation: All</para></td>
 			</tr>
 			<tr tal:repeat="item options/assignment_data">
-				<td><para tal:content="item/title">The Assessment Title</para></td>
+				<td><para tal:content="item/title" style="data">The Assessment Title</para></td>
 				<td align="decimal" tal:content="item/for_credit_avg_grade">For-Credit Average</td>
 				<td align="decimal" tal:content="item/non_credit_avg_grade">Non-Credit Average</td>
 				<td align="decimal" tal:content="item/avg_grade">Average</td>

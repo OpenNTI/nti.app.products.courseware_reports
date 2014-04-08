@@ -43,12 +43,12 @@
 	</para>
 	
 		<blockTable style='default' 
-					colWidths="40% 40% 20%"
+					colWidths="35% 55% 10%"
 					tal:condition="options/topics_created">
 			<tr>
-				<td><para>Discussion Name</para></td>
-				<td><para>Forum Name</para></td>
-				<td><para>Created Date</para></td>
+				<td><para style="header">Discussion Name</para></td>
+				<td><para style="header">Forum Name</para></td>
+				<td><para style="header">Created Date</para></td>
 			</tr>
 			<tr tal:repeat="item options/topics_created">
 				<td tal:content="item/topic_name">The Topic Name</td>
@@ -130,16 +130,16 @@
 					colWidths="44% 18% 18% 10% 10%"
 					tal:condition="options/assignments">
 			<tr>
-				<td><para>Assignment Name</para></td>
-				<td><para>Date Submitted</para></td>
-				<td><para>Date Due</para></td>
-				<td><para>Grade</para></td>
-				<td><para>Feedback Comments</para></td>
+				<td><para style="header">Assignment Name</para></td>
+				<td><para style="header">Date Submitted</para></td>
+				<td><para style="header">Date Due</para></td>
+				<td><para style="header">Grade</para></td>
+				<td><para style="header">Feedback Comments</para></td>
 			</tr>
 			<tr tal:repeat="item options/assignments">
 				<td tal:content="item/title">The Assignment Name</td>
 				<td tal:content="item/submitted | default"
-					tal:attributes="fontColor python: 'red' if item.submitted_late else 'black'"></td>
+					tal:attributes="fontColor python: 'red' if item.submitted_late else default"></td>
 				<td tal:content="item/due_date | default"></td>
 				<td align="decimal" tal:content="item/grade_value">A+</td>
 				<td align="decimal" tal:content="item/history/FeedbackCount | default"></td>

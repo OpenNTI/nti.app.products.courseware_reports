@@ -48,29 +48,68 @@
 		
 		<paraStyle name="sendTo" leftIndent="0.5in" parent="normal" textColor="#494949"
 				   spaceBefore="10"/>
+				   
+		<!-- column header, should match the 0,0:-1,0 entry below -->		   
+		<paraStyle name="header" textColor="#b8b8b8" fontName="Helvetica-Bold" size="10" />		   
+		
+		<!-- data, should match the entry below -->		   
+		<paraStyle name="data" textColor="#757474" fontName="Helvetica" size="12" />		
 
-<!-- It doesn't appear this works with header rows for some reason.
-	 Set values for the table and manually convert the headers.		
 		<blockTableStyle id="default">
-			<lineStyle 	start="0,0" stop="-1,0" 
+			<lineStyle 	start="0,0" stop="-1,-1" 
+						kind="linebelow" 
+						thickness="1"
+					   	colorName="#e9e9e9"/>
+			<!-- Header row -->
+			<blockTextColor start="0,0" stop="-1,0" colorName="#b8b8b8" />
+			<blockFont start="0,0" stop="-1,0" name="Helvetica-Bold" size="10" />
+			
+			<!-- Data rows -->
+			<blockTextColor start="0,1" stop="-1,-1" colorName="#757474" />
+			<blockFont start="0,1" stop="-1,-1" name="Helvetica" size="12" />
+
+		</blockTableStyle>
+		
+		<blockTableStyle id="table_user_1">
+			<lineStyle 	start="0,0" stop="-1,-1" 
+						kind="linebelow" 
+						thickness="1"
+					   	colorName="#e9e9e9"/>
+			<!-- Header row -->
+			<blockTextColor start="0,0" stop="-1,0" colorName="#b8b8b8" />
+			<blockFont start="0,0" stop="-1,0" name="Helvetica-Bold" size="10" />
+			
+			<!-- Data rows -->
+			<blockTextColor start="1,1" stop="-1,-1" colorName="#757474" />
+			<blockFont start="0,1" stop="-1,-1" name="Helvetica" size="12" />
+			
+			<!-- Username column #1 -->
+			<blockTextColor start="0,1" stop="0,-1" colorName="#3fb3f6" />
+			
+		</blockTableStyle>
+		
+		<blockTableStyle id="table_user_2">
+			<lineStyle 	start="0,0" stop="-1,-1" 
 						kind="linebelow" 
 						thickness="1"
 					   	colorName="#e9e9e9"/>
 		
+			<!-- Header row -->
 			<blockTextColor start="0,0" stop="-1,0" colorName="#b8b8b8" />
 			<blockFont start="0,0" stop="-1,0" name="Helvetica-Bold" size="10" />
-			<blockTextColor start="0,0" stop="-1,-1" colorName="#494949" />
-			<blockFont start="0,0" stop="-1,-1" name="Helvetica" size="12" />
+			
+			<!-- Data rows -->
+			<blockTextColor start="1,1" stop="-1,-1" colorName="#757474" />
+			<blockFont start="0,1" stop="-1,-1" name="Helvetica" size="12" />
+			
+			<!-- Username column #2 -->
+			<blockTextColor start="1,1" stop="1,-1" colorName="#3fb3f6" />
+			
 		</blockTableStyle>
--->		
-		<blockTableStyle id="default">
-			<lineStyle start="0,0" stop="-1,-1" kind="innergrid" thickness="0.25"
-					   colorName="black"/>
-			<blockRightPadding start="0,0" stop="-1,-1" length="3mm"/>
-		</blockTableStyle>
-
+		
 		<blockTableStyle id="header_table">
 		</blockTableStyle>
+
 	</stylesheet>
 
 	<story firstPageTemplate="cover">
@@ -151,7 +190,7 @@
 
 
 	<metal:macro metal:define-macro="comment_table" >
-		<blockTable alignment="left" colWidths="60% 12% 12%" style="default">
+		<blockTable alignment="left" colWidths="60% 12% 12%" style="table_user_1">
 			<tr>
 				<td>Name</td>
 				<td>Count</td>
@@ -251,14 +290,18 @@
 	</illustration>
 
 	<metal:macro metal:define-macro="engagement_stats_table" >
-		<blockTable style='default' alignment="left"
-					colWidths="40% 20% 20% 20%"
+		<blockTable style='default' 
+					alignment="left"
+					colWidths="38% 20% 22% 20%"
 					tal:condition="engagement_stat" >
 			<tr>
 				<td>Type</td>
 				<td>Count</td>
-				<td><para>Unique Contributors</para></td>
-				<td><para>Unique Percent Contributed</para></td>
+				<td><para style="header">
+					Unique<br/>
+					Contributors
+				</para></td>
+				<td><para style="header">Unique Percent Contributed</para></td>
 			</tr>
 			<tr tal:repeat="item engagement_stat">
 				<td tal:content="item/name">Notes</td>

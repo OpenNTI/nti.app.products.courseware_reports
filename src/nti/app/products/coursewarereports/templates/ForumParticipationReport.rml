@@ -56,18 +56,18 @@
 			Comments
 		</h1>
 		
-		<blockTable style='default'
+		<blockTable style='table_user_2'
 					colWidths="40% 21% 15% 12% 12%" 
 					tal:condition="options/comment_count_by_topic">
 			<tr>
-				<td><para>Discussion Name</para></td>
-				<td>Creator</td>
-				<td>Created Date</td>
-				<td><para>Comments</para></td>
-				<td><para>Distinct Users</para></td>
+				<td><para style="header">Discussion Name</para></td>
+				<td><para style="header">Creator</para></td>
+				<td><para style="header">Created Date</para></td>
+				<td><para style="header">Comments</para></td>
+				<td><para style="header">Distinct Users</para></td>
 			</tr>
 			<tr tal:repeat="item options/comment_count_by_topic">
-				<td> <para tal:content="item/title">Forum title</para></td>
+				<td> <para tal:content="item/title" style="data">Forum title</para></td>
 				<td tal:content="item/creator/display">Steve</td>
 				<td align="right" tal:content="item/created/date">2014-01-01</td>
 				<td align="decimal" tal:content="item/comment_count">25</td>
@@ -157,13 +157,13 @@
 			This forum does not have any comments by for-credit students.
 		</para>	
 		
-		<blockTable style="default"
+		<blockTable style="table_user_1"
 					tal:condition="options/for_credit_user_stats"
 					alignment="left" colWidths="30% 30% 12% 12%">
 			<tr>
 				<td>Name</td>
 				<td>Login</td>
-				<td><para>Discussions Created</para></td>
+				<td><para style="header">Discussions Created</para></td>
 				<td>Comments</td>
 			</tr>
 			<tr tal:repeat="item options/for_credit_user_stats">
@@ -181,12 +181,12 @@
 			This forum does not have any comments by non-credit students.
 		</para>	
 		
-		<blockTable style="default"
+		<blockTable style="table_user_1"
 					tal:condition="options/non_credit_user_stats"
 					alignment="left" colWidths="30% 12% 12%">
 			<tr>
 				<td>Name</td>
-				<td><para>Discussions Created</para></td>
+				<td><para style="header">Discussions Created</para></td>
 				<td>Comments</td>
 			</tr>
 			<tr tal:repeat="item options/non_credit_user_stats">

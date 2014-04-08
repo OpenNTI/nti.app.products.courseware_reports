@@ -61,18 +61,18 @@
 
 		<blockTable style='default' tal:condition="options/self_assessment_data">
 			<tr>
-				<td align="center"><para>Assessment Title</para></td>
-				<td align="center"><para>By For-Credit Students</para></td>
-				<td align="center"><para>For-Credit Student Attempts</para></td>
-				<td align="center"><para>By Non-Credit Students</para></td>
-				<td align="center"><para>Non-Credit Student Attempts</para></td>
-				<td align="center"><para>Total Attempts</para></td>
-				<td align="center"><para>Average Attempts Per Student</para></td>
-				<td align="center"><para>For-Credit Students (%)</para></td>
-				<td align="center"><para>Non-Credit Students (%)</para></td>
+				<td align="center"><para style="header">Assessment Title</para></td>
+				<td align="center"><para style="header">By For-Credit Students</para></td>
+				<td align="center"><para style="header">For-Credit Student Attempts</para></td>
+				<td align="center"><para style="header">By Non-Credit Students</para></td>
+				<td align="center"><para style="header">Non-Credit Student Attempts</para></td>
+				<td align="center"><para style="header">Total Attempts</para></td>
+				<td align="center"><para style="header">Average Attempts Per Student</para></td>
+				<td align="center"><para style="header">For-Credit Students (%)</para></td>
+				<td align="center"><para style="header">Non-Credit Students (%)</para></td>
 			</tr>
 			<tr tal:repeat="item options/self_assessment_data">
-				<td><para tal:content="item/title">The Assessment Title</para></td>
+				<td><para tal:content="item/title" style="data">The Assessment Title</para></td>
 				<td align="decimal" tal:content="item/unique_contributors_for_credit">For-Credit Students</td>
 				<td align="decimal" tal:content="item/for_credit_total">For-Credit Attempts</td>
 				<td align="decimal" tal:content="item/unique_contributors_non_credit">Non-Credit Students</td>
@@ -93,15 +93,15 @@
 		</h2>
 		<blockTable style='default' tal:condition="options/assignment_data">
 			<tr>
-				<td align="center"><para>Assignment Title</para></td>
-				<td align="center"><para>For-Credit Students</para></td>
-				<td align="center"><para>Non-Credit Students</para></td>
-				<td align="center"><para>Total Students</para></td>
-				<td align="center"><para>For-Credit Students (%)</para></td>
-				<td align="center"><para>Non-Credit Students (%)</para></td>
+				<td align="center"><para style="header">Assignment Title</para></td>
+				<td align="center"><para style="header">For-Credit Students</para></td>
+				<td align="center"><para style="header">Non-Credit Students</para></td>
+				<td align="center"><para style="header">Total Students</para></td>
+				<td align="center"><para style="header">For-Credit <br/> Students (%)</para></td>
+				<td align="center"><para style="header">Non-Credit <br/> Students (%)</para></td>
 			</tr>
 			<tr tal:repeat="item options/assignment_data">
-				<td><para tal:content="item/title">The Assessment Title</para></td>
+				<td><para tal:content="item/title" style="data">The Assessment Title</para></td>
 				<td align="decimal" tal:content="item/for_credit_total">For-Credit Attempts</td>
 				<td align="decimal" tal:content="item/non_credit_total">Non-Credit Attempts</td>
 				<td align="decimal" tal:content="item/total">Total Attempts</td>
@@ -118,15 +118,15 @@
 		</h2>
 		<blockTable style='default' tal:condition="options/assignment_data">
 			<tr>
-				<td align="center"><para>Assignment Title</para></td>
-				<td align="center"><para>Average: For-Credit</para></td>
-				<td align="center"><para>Average: Non-Credit</para></td>
-				<td align="center"><para>Average: All</para></td>
-				<td align="center"><para>Median: All</para></td>
-				<td align="center"><para>Standard Deviation: All</para></td>
+				<td align="center"><para style="header">Assignment Title</para></td>
+				<td align="center"><para style="header">Average: For-Credit</para></td>
+				<td align="center"><para style="header">Average: Non-Credit</para></td>
+				<td align="center"><para style="header">Average: All</para></td>
+				<td align="center"><para style="header">Median: All</para></td>
+				<td align="center"><para style="header">Standard Deviation: All</para></td>
 			</tr>
 			<tr tal:repeat="item options/assignment_data">
-				<td><para tal:content="item/title">The Assessment Title</para></td>
+				<td><para tal:content="item/title" style="data">The Assessment Title</para></td>
 				<td align="decimal" tal:content="item/for_credit_avg_grade">For-Credit Average</td>
 				<td align="decimal" tal:content="item/non_credit_avg_grade">Non-Credit Average</td>
 				<td align="decimal" tal:content="item/avg_grade">Average</td>
@@ -326,9 +326,9 @@
 				tal:define="perf options/engagement_to_performance"
 				tal:condition="options/engagement_to_performance">
 			<tr>
-				<td align="center"><para>Quartile</para></td>
-				<td align="center"><para>Student Count in Quartile</para></td>
-				<td align="center"><para>Quartile Boundary</para></td>
+				<td align="center"><para style="header">Quartile</para></td>
+				<td align="center"><para style="header">Student Count in Quartile</para></td>
+				<td align="center"><para style="header">Quartile Boundary</para></td>
 			</tr>
 			<tr>
 				<td><para tal:content="perf/first/name">Title</para></td>
@@ -362,15 +362,15 @@
 				tal:define="perf options/engagement_to_performance"
 				tal:condition="options/engagement_to_performance">
 			<tr>
-				<td align="center"><para>Assignment Title</para></td>
-				<td align="center"><para>First Quartile</para></td>
-				<td><para>First Quartile Count</para></td>
-				<td align="center"><para>Second Quartile</para></td>
-				<td><para>Second Quartile Count</para></td>
-				<td align="center"><para>Third Quartile</para></td>
-				<td><para>Third Quartile Count</para></td>
-				<td align="center"><para>Fourth Quartile</para></td>
-				<td><para>Fourth Quartile Count</para></td>
+				<td align="center"><para style="header">Assignment Title</para></td>
+				<td align="center"><para style="header">First Quartile</para></td>
+				<td><para style="header">First Quartile Count</para></td>
+				<td align="center"><para style="header">Second Quartile</para></td>
+				<td><para style="header">Second Quartile Count</para></td>
+				<td align="center"><para style="header">Third Quartile</para></td>
+				<td><para style="header">Third Quartile Count</para></td>
+				<td align="center"><para style="header">Fourth Quartile</para></td>
+				<td><para style="header">Fourth Quartile Count</para></td>
 			</tr>
 			<tr tal:repeat="item python: range(len(perf.first))">
 				<td><para tal:content="python:  perf.first.assignment_stat[item].title">Title</para></td>
