@@ -30,6 +30,7 @@
 				  height="4in"
 				  checkLabelOverlap='false'
 				  tal:condition="options/count_open" 
+				  strokeWidth="0"
 				  startAngle="180">
 			<labels>
 				<label>Non-Credit (${options/count_open})</label>

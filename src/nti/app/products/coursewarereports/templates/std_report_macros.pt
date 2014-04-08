@@ -130,7 +130,7 @@
 
 	<illustration width="8in" height="2.8in"
 		  metal:define-macro="forum_participation_over_time">
-		<!--! To use, define a variable 'forum_stat' and 'value_axis_name around the invocation -->
+		<!--! To use, define a variable 'forum_stat' and 'value_axis_name' around the invocation -->
 		<barChart dx="0.5in" dy="0in"
 				  dwidth="5in" dheight="3in"
 				  x="0" y="0"
@@ -138,7 +138,7 @@
 				  height="2.8in" direction="vertical" 
 				  barLabelFormat="%2.0f" barWidth="5"
 				  tal:condition="forum_stat/forum_objects_by_week_number">
-			<barLabels fillColor="#757474" fontSize="12" boxAnchor="s" dy="3" />
+			<barLabels 	fontSize="12" boxAnchor="s" dy="3" fillColor="#757474" />
 			<bars>
 				<bar fillColor="#53a2db" strokeColor="#53a2db" />
 			</bars>
@@ -264,6 +264,7 @@
 				  x="1in" y="0"
 				  width="4in" height="4in"
 				  checkLabelOverlap='false'
+				  strokeWidth="0"
 				  tal:condition="not: top_commenters/aggregate_remainder|options/top_commenters/aggregate_remainder"
 				  tal:attributes="dwidth top_commenters_ill_width|default;
 								  dheight top_commenters_ill_height|default;
@@ -317,6 +318,7 @@
 		<pieChart dx="1.5in" dy=".8in" dwidth="3in" dheight="3in" x="0in" y="0" width="2.5in"
 					height="2.5in"		  
 				  	checkLabelOverlap='false'
+				  	strokeWidth="0"
 				  	tal:define="data engagement_stat"
 				  	tal:condition="engagement_stat">
 			<labels>
@@ -335,7 +337,7 @@
 			</data>
 			<slices>
 				<slice tal:repeat="item python: [x for x in data if data.count]"
-					   tal:attributes="fillColor item/color" />
+					   tal:attributes="fillColor item/color"/>
 			</slices>
 		</pieChart>
 	</illustration>
