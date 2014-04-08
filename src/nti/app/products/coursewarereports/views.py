@@ -163,16 +163,17 @@ class _AbstractReportView(AbstractAuthenticatedView,
 	def intids_created_by_everyone(self):
 		return self.md_catalog['creator'].apply({'any_of': self.all_usernames})
 
+	#Making all of these include lowercase names
 	@Lazy
 	def instructor_usernames(self):
-		return {x.id for x in self.course.instructors}
+		return {x.id.lower() for x in self.course.instructors}
 
 	@Lazy
 	def for_credit_student_usernames(self):
 		restricted_id = self.course.LegacyScopes['restricted']
 		restricted = Entity.get_entity(restricted_id) if restricted_id else None
 
-		restricted_usernames = ({x for x in IEnumerableEntityContainer(restricted).iter_usernames()}
+		restricted_usernames = ({x.lower() for x in IEnumerableEntityContainer(restricted).iter_usernames()}
 								if restricted is not None
 								else set())
 		return restricted_usernames - self.instructor_usernames
@@ -188,7 +189,7 @@ class _AbstractReportView(AbstractAuthenticatedView,
 	@Lazy
 	def all_usernames(self):
 		everyone = self.course.legacy_community
-		everyone_usernames = {x for x in IEnumerableEntityContainer(everyone).iter_usernames()}
+		everyone_usernames = {x.lower() for x in IEnumerableEntityContainer(everyone).iter_usernames()}
 		return everyone_usernames
 
 	@Lazy
@@ -220,7 +221,7 @@ class _AbstractReportView(AbstractAuthenticatedView,
 		user = IFriendlyNamed( user )
 		display_name = user.alias or user.realname or user.username
 		#Do not display username of open students
-		user_name = "" if user.username not in self.for_credit_student_usernames else user.username
+		user_name = "" if user.username.lower() not in self.for_credit_student_usernames else user.username
 	
 		return _StudentInfo( display_name, user_name )
 	
@@ -1047,7 +1048,6 @@ class CourseSummaryReportPdf(_AbstractReportView):
 		
 		#self.assessment_aggregator = _TopCreators(self.for_credit_student_usernames, self.get_student_info)
 		#self.engagement_aggregator = _TopCreators(self.for_credit_student_usernames, self.get_student_info)
-		
 		self._build_engagement_data(options)
 		self._build_enrollment_info(options)
 		self._build_self_assessment_data(options)

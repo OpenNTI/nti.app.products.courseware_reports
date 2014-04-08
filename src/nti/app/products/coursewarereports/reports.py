@@ -122,11 +122,11 @@ class _TopCreators(object):
 
 	@property
 	def _for_credit_data(self):
-		return {username: i for username, i in self._data.items() if username in self._for_credit_students}
+		return {username: i for username, i in self._data.items() if username.lower() in self._for_credit_students}
 
 	@property
 	def _non_credit_data(self):
-		return {username: i for username, i in self._data.items() if username in self._non_credit_students}
+		return {username: i for username, i in self._data.items() if username.lower() in self._non_credit_students}
 
 	def _get_largest(self):
 		return self._do_get_largest(self._data, self.total)
@@ -371,6 +371,7 @@ def _assignment_stat_for_column(self, column, filter=None):
 	keys = set(column)
 
 	# TODO Case sensitivity issue?
+	# TODO We need explicit non-credit too
 	for_credit_keys = self.for_credit_student_usernames.intersection(keys)
 	for_credit_grade_points = list()
 	non_credit_grade_points = list()
