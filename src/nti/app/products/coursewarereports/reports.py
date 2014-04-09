@@ -482,9 +482,17 @@ def _assignment_stat_for_column(self, column, filter=None):
 	return stat	
 
 _QuestionStat = namedtuple('_QuestionStat',
-							  ('title', 'content', 'avg_score',
-							   'submission_count_list',
-							   ))
+							  ('title', 'content', 'avg_score', 'question_parts'))
+
+class _QuestionPartStat(object):
+	"""Holds stat and display information for a particular question part."""
+	avg_score = 0
+	answer_stats = {}
+	
+	def __init__(self, letter_prefix, answer_stats, avg_score=0):
+		self.answer_stats = answer_stats
+		self.letter_prefix = letter_prefix
+		self.avg_score = avg_score
 
 """
 Assessed-vals{question_id}
@@ -492,69 +500,79 @@ Assessed-vals{question_id}
 		-> (assessed_vals)
 
 Submissions{question_id}
-	-> _QuestionStat.answerStat{idx}
-		-> (submission)
+	-> _QuestionStat.question_part_stat{idx}
+		-> _QuestionPartStat.answer_stats{idx}
+			-> (AnswerStats)
 
 """
 
-def _build_question_stats( ordered_questions, submissions, assessed_values ):
+
+def _build_question_stats( ordered_questions, question_stats, assessed_values ):
 	"""From questions, assessed_vals and submissions, return formed question stat objects"""
-	question_stats = []
+	results = []
 	for i, q in enumerate( ordered_questions ):
 		assessed_parts = assessed_values.get(q.ntiid, {})
 
-		q_stat = submissions.get( q.ntiid )
-		answers = q_stat.answer_stat if q_stat else {}
+		q_stat = question_stats.get( q.ntiid )
+		question_part_stats = q_stat.question_part_stats if q_stat else {}
 		total_submits = q_stat.submission_count if q_stat else 0
 		
-		submission_count_list = []
+		question_parts = []
+		question_part_grades = []
 		
 		#Go through each answer part
-		for idx, submission in answers.items():
+		for idx, question_part_stat in question_part_stats.items():
 			
 			#We should have lined up indexes
 			#Do we have an unassessed question?
 			avg_assessed_s = 'N/A'
 			
 			if idx in assessed_parts:
-				#FIXME, this does not seem to work yet
 				assessed_values_for_part = assessed_parts[idx]
 				if assessed_values_for_part:
 					avg_assessed = average( assessed_values_for_part )
 					avg_assessed = avg_assessed * 100.0
 					avg_assessed_s = '%0.1f' % avg_assessed
+					
+					question_part_grades.append( avg_assessed )
+						
 			# If this gets big, we'll need to do something different,
 			# like just showing top-answers.
 			# TODO Do we want to truncate the multiple choice questions at all?
 			# Arbitrary picking how many
 			# ->8 since it fits on page with header, currently.
+			answer_stats = question_part_stat.answer_stats
 			
 			# We order by popularity; we could do by content perhaps.
-			submission_counts = heapq.nlargest(8, submission.values(), key=lambda x: x.count)
+			top_answer_stats = heapq.nlargest( 8, answer_stats.values(), key=lambda x: x.count )
 			
-			if len(submission.values()) > len(submission_counts):
-				missing_corrects = [x for x in submission.values() 
-									if x.is_correct and x not in submission_counts]
+			if len( answer_stats.values() ) > len( top_answer_stats ):
+				missing_corrects = [x for x in answer_stats.values() 
+									if x.is_correct and x not in top_answer_stats]
 				if missing_corrects:
 					#Ok, our correct answer(s) isn't in our trimmed-down set; make it so.
-					submission_counts = submission_counts[:-1 * len(missing_corrects)] + missing_corrects
+					top_answer_stats = top_answer_stats[:-1 * len(missing_corrects)] + missing_corrects
 			
-			# Now set the letter and perc values
+			# Now update the letter and perc values for our answer_stats
 			letters = string.ascii_uppercase
-			for j in range( len(submission_counts) ):
-				#TODO we need to placed asssessed val here
-				sub = submission_counts[j]
+			for j in range( len( top_answer_stats ) ):
+				sub = top_answer_stats[j]
 				sub.letter_prefix = letters[j]
 				sub.perc_s = '%0.1f%%' % ( sub.count * 100.0 / total_submits ) if total_submits else 'N/A'
 			
-			submission_count_list.append( submission_counts )
+			question_parts.append( _QuestionPartStat( 	question_part_stat.letter_prefix, 
+														top_answer_stats, 
+														avg_assessed_s ) )
 
 		title = i + 1
 		content = IPlainTextContentFragment( q.content )
 		if not content:
 			content = IPlainTextContentFragment( q.parts[0].content )
 
-		stat = _QuestionStat( title, content, avg_assessed_s, submission_count_list )
-		question_stats.append( stat )
+		#Averaging all the parts to get the question assessment grade
+		question_avg_assessed_s = '%0.1f' % average( question_part_grades )
+
+		stat = _QuestionStat( title, content, question_avg_assessed_s, question_parts )
+		results.append( stat )
 			
-	return question_stats
+	return results

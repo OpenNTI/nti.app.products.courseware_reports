@@ -55,6 +55,28 @@ class TestReports( unittest.TestCase ):
 		assert_that( adjusted, not_none() )
 		assert_that( adjusted.tzname(), not_none() )
 	
+	
+class TestQuestionStats( unittest.TestCase ):		
+	"""
+	Assessed-vals{question_id}
+		-> assessed_parts{idx}
+			-> (assessed_vals)
+	
+	Submissions{question_id}
+		-> _QuestionStat.answerStat{idx}
+			-> (submission)
+	
+	def _build_question_stats( ordered_questions, submissions, assessed_values ):
+	"""
+	pass
+# 	def build_data(self):
+# 		questions = 
+# 		
+# 	
+# 	def test_build_question_stats(self):
+			
+		
+	
 _cd = namedtuple( '_cd', ( 'created', 'creator' ))
 _cr = namedtuple( '_cr', 'username' )		
 		

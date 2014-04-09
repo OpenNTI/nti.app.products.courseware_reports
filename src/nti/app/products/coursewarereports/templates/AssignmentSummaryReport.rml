@@ -80,20 +80,20 @@
 				The content of the question.
 			</para>
 
-			<metal:block tal:repeat="question_part question/submission_count_list" >
+			<metal:block tal:repeat="question_part question/question_parts" >
 			
 				<nextPage tal:condition="python: repeat.question_part.number > 1" />
 
 				<blockTable alignment="left"
 							colWidths="6% 50% 7% 7%"
-							tal:condition="question_part">
+							tal:condition="question_part/answer_stats">
 					<blockTableStyle id="new" >
 						<lineStyle 	thickness="2" 
 									start="0,0" stop="-1,-1" 
 									kind="linebelow" colorName="white" />	
 					</blockTableStyle>		
 						
-					<tr tal:repeat="answer_stat question_part">
+					<tr tal:repeat="answer_stat question_part/answer_stats">
 						<td tal:content="string:${answer_stat/letter_prefix}."
 							tal:attributes="background python: '#cbf2db' if answer_stat.is_correct else '#f5f5f5'"
 							align="right" 

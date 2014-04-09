@@ -28,6 +28,7 @@ from .reports import _adjust_date
 from .reports import _format_datetime
 from .reports import _assignment_stat_for_column
 from .reports import _build_question_stats
+from .reports import _QuestionPartStat
 
 from zope import component
 from zope import interface
@@ -722,7 +723,7 @@ class CourseSummaryReportPdf(_AbstractReportView):
 			_recur( root,containers_in_course )
 			
 		#Add in our assignments	
-		assignment_catalog = ICourseAssignmentCatalog(self.course)
+		assignment_catalog = ICourseAssignmentCatalog( self.course )
 		containers_in_course = containers_in_course.union( ( asg.ntiid for asg in assignment_catalog.iter_assignments() ) )	
 		containers_in_course.discard( None )
 		
@@ -1089,12 +1090,14 @@ class _AnswerStat(object):
 class _QuestionStat(object):
 	"""Holds stat and display information for a particular question."""
 	submission_count = 0
-	answer_stat = {}
+	question_part_stats = {}
 	
-	def __init__(self, answer_stat, submission_count):
-		self.answer_stat = answer_stat
+	def __init__(self, question_part_stats, submission_count):
+		self.question_part_stats = question_part_stats
 		self.submission_count = submission_count
-
+		
+ROMAN_NUMERALS = [ 'I', 'II', 'III', 'IV', 'V' ]		
+		
 @view_config(context=IGradeBookEntry,
 			 name=VIEW_ASSIGNMENT_SUMMARY)
 class AssignmentSummaryReportPdf(_AbstractReportView):
@@ -1155,20 +1158,19 @@ class AssignmentSummaryReportPdf(_AbstractReportView):
 					
 					if question_submission.questionId in submissions:
 						question_stat = submissions[question_submission.questionId]
-						answer_stats = question_stat.answer_stat
+						question_part_stats = question_stat.question_part_stats
 						question_stat.submission_count += 1
 					else:
-						answer_stats = {}
-						submissions[question_submission.questionId] = _QuestionStat( answer_stats, 1 )
-
+						#First time seeing this question, initialize our question parts since they won't change
+						question_part_stats = {}
+						for idx in range(len(question.parts)):
+							question_part_stats[idx] = _QuestionPartStat( ROMAN_NUMERALS[idx], {} )
+						submissions[question_submission.questionId] = _QuestionStat( question_part_stats, 1 )
+						
 					for idx in range(len(question.parts)):
 						question_part = question.parts[idx] 
 						response = question_submission.parts[idx]
-						
-						if idx in answer_stats:
-							answer_stat = answer_stats[idx]
-						else:
-							answer_stats[idx] = answer_stat = {}
+						answer_stat = question_part_stats[idx].answer_stats
 
 						if (	IQMultipleChoicePart.providedBy(question_part)
 							and not IQMultipleChoiceMultipleAnswerPart.providedBy(question_part)
