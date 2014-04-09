@@ -509,7 +509,6 @@ Submissions{question_id}
 
 """
 
-
 def _build_question_stats( ordered_questions, question_stats ):
 	"""From questions_stats, return fully formed question_stat objects"""
 	results = []
@@ -531,29 +530,9 @@ def _build_question_stats( ordered_questions, question_stats ):
 				avg_assessed_s = '%0.1f' % avg_assessed
 				
 				question_part_grades.append( avg_assessed )
-			
-			answer_stats = question_part_stat.answer_stats			
-			# If this gets big, we'll need to do something different,
-			# like just showing top-answers.
-			# TODO Do we want to truncate the multiple choice questions at all?
-			# Arbitrarily picking how many
-			# ->8 since it fits on page with header, currently.
-			# We order by popularity; we could do by content perhaps.
-			top_answer_stats = heapq.nlargest( 8, answer_stats.values(), key=lambda x: x.count )
-			
-			if len( answer_stats.values() ) > len( top_answer_stats ):
-				missing_corrects = [x for x in answer_stats.values() 
-									if x.is_correct and x not in top_answer_stats]
-				if missing_corrects:
-					#Ok, our correct answer(s) isn't in our trimmed-down set; make it so.
-					top_answer_stats = top_answer_stats[:-1 * len(missing_corrects)] + missing_corrects
-			
-			# Now update the letter and perc values for our answer_stats
-			letters = string.ascii_uppercase
-			for j in range( len( top_answer_stats ) ):
-				sub = top_answer_stats[j]
-				sub.letter_prefix = letters[j]
-				sub.perc_s = '%0.1f%%' % ( sub.count * 100.0 / total_submits ) if total_submits else 'N/A'
+
+			top_answer_stats = _get_top_answers( question_part_stat.answer_stats )
+			_finalize_answer_stats( top_answer_stats, total_submits )
 			
 			question_parts.append( _QuestionPartStat( 	question_part_stat.letter_prefix, 
 														top_answer_stats, 
@@ -571,3 +550,35 @@ def _build_question_stats( ordered_questions, question_stats ):
 		results.append( stat )
 			
 	return results
+
+def _get_top_answers( answer_stats ):
+	# If this gets big, we'll need to do something different, like just showing top-answers.
+	# TODO Do we want to truncate the multiple choice questions at all?
+	# Arbitrarily picking how many
+	# 	->8 since it fits on page with header, currently.
+	# We order by popularity; we could do by content perhaps.
+	top_answer_stats = heapq.nlargest( 8, answer_stats.values(), key=lambda x: x.count )
+	
+	if len( answer_stats.values() ) > len( top_answer_stats ):
+		missing_corrects = [x for x in answer_stats.values() 
+							if x.is_correct and x not in top_answer_stats]
+		if missing_corrects:
+			#Ok, our correct answer(s) isn't in our trimmed-down set; make it so.
+			top_answer_stats = top_answer_stats[:-1 * len(missing_corrects)] + missing_corrects
+	return top_answer_stats
+
+def _finalize_answer_stats( answer_stats, total_submits ):
+	"""Modifies the incoming answer_stats with relevant values"""
+	# Now update the letter and perc values for our answer_stats
+	letters = string.ascii_uppercase
+	for j in range( len( answer_stats ) ):
+		sub = answer_stats[j]
+		sub.letter_prefix = letters[j]
+		sub.perc_s = '%0.1f%%' % ( sub.count * 100.0 / total_submits ) if total_submits else 'N/A'
+		
+ROMAN_NUMERALS = [ 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X' ]		
+	
+def _get_roman_numeral(idx):
+	if idx < len( ROMAN_NUMERALS ):
+		return ROMAN_NUMERALS[idx]	
+	return 'X+'		

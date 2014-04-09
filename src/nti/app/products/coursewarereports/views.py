@@ -30,6 +30,7 @@ from .reports import _assignment_stat_for_column
 from .reports import _build_question_stats
 from .reports import _QuestionPartStat
 from .reports import _QuestionStat
+from .reports import _get_roman_numeral
 
 from zope import component
 from zope import interface
@@ -1080,13 +1081,6 @@ class _AnswerStat(object):
 		self.perc_s = None
 		self.letter_prefix = None
 		
-ROMAN_NUMERALS = [ 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X' ]		
-	
-def _get_roman_numeral(idx):
-	if idx < len( ROMAN_NUMERALS ):
-		return ROMAN_NUMERALS[idx]	
-	return 'X+'
-		
 @view_config(context=IGradeBookEntry,
 			 name=VIEW_ASSIGNMENT_SUMMARY)
 class AssignmentSummaryReportPdf(_AbstractReportView):
@@ -1139,66 +1133,23 @@ class AssignmentSummaryReportPdf(_AbstractReportView):
 
 			submission = history.Submission
 			
-			pending = history.pendingAssessment
 			for set_submission in submission.parts:
 				for question_submission in set_submission.questions:
+					
 					question = qids_to_q[question_submission.questionId]
 					
-					if question_submission.questionId in question_stats:
-						question_stat = question_stats[question_submission.questionId]
-						question_part_stats = question_stat.question_part_stats
-						question_stat.submission_count += 1
-					else:
-						#First time seeing this question, initialize our question parts since they won't change
-						question_part_stats = {}
-						for idx in range(len(question.parts)):
-							question_part_stats[idx] = _QuestionPartStat( _get_roman_numeral( idx ) )
-						question_stats[question_submission.questionId] = _QuestionStat( question_part_stats )
+					question_part_stats = self._get_question_part_stats( 	question_stats, 
+																			question_submission.questionId,
+																			question )
 						
-					for idx in range(len(question.parts)):
+					for idx in range( len(question.parts) ):
 						question_part = question.parts[idx] 
 						response = question_submission.parts[idx]
 						answer_stat = question_part_stats[idx].answer_stats
 
-						if (	IQMultipleChoicePart.providedBy(question_part)
-							and not IQMultipleChoiceMultipleAnswerPart.providedBy(question_part)
-							and isinstance(response, int)):
-							
-							# We have indexes into single multiple choice answers
-							# convert int indexes into actual values
-							self._add_multiple_choice_to_answer_stats( 	answer_stat, 
-																		response, 
-																		question_part,
-																		lambda: response == question_part.solutions[0].value )
-						elif (	IQMultipleChoicePart.providedBy(question_part)
-							and IQMultipleChoiceMultipleAnswerPart.providedBy(question_part)
-							and response):		
+						self._accumulate_response( question_part, response, answer_stat )
 
-							# We are losing empty responses
-							# The solutions should be int indexes, as well as our responses
-							for r in response:
-								self._add_multiple_choice_to_answer_stats( 	answer_stat, 
-																			r, 
-																			question_part,
-																			lambda: r in question_part.solutions[0].value )
-					#TODO We should be able to handle freeform multiple answer as well
-						# Solutions and respones should be a list of strings
-						# Freeform multi-answer strings
-						#	-list of responses
-						#	-list of solutions
-					#TODO Can we handle matching (and ordering)
-					#	For those, each answer available will have correct and incorrect answers
-						elif isinstance(response, string_types):
-							# Freeform answers
-							response = response.lower()	
-							#TODO We should be able to look in the solutions list for even the 
-							#multiple choice types correct (probably a rare use-case)
-							#TODO What case do non-strings occur in?		
-							solutions = (x.value.lower() if isinstance(x.value, string_types) else x for x in question_part.solutions)
-							self._add_val_to_answer_stats( 	answer_stat,
-															response,
-															lambda: response in solutions )
-
+			pending = history.pendingAssessment
 			#Do we have to worry about assessed values without submissions?
 			for maybe_assessed in pending.parts:
 				if not IQAssessedQuestionSet.providedBy(maybe_assessed):
@@ -1218,6 +1169,63 @@ class AssignmentSummaryReportPdf(_AbstractReportView):
 		options['question_stats'] = _build_question_stats( ordered_questions, question_stats )
 
 
+	def _get_question_part_stats( self, question_stats, question_id, question ):
+		"""Retrieves question_part_stats for the given question, building if necessary"""
+		if question_id in question_stats:
+			question_stat = question_stats[ question_id ]
+			question_part_stats = question_stat.question_part_stats
+			question_stat.submission_count += 1
+		else:
+			#First time seeing this question, initialize our question parts since they won't change
+			question_part_stats = {}
+			for idx in range(len(question.parts)):
+				question_part_stats[idx] = _QuestionPartStat( _get_roman_numeral( idx ) )
+				
+			question_stats[ question_id ] = _QuestionStat( question_part_stats )
+			
+		return question_part_stats
+	
+	def _accumulate_response( self, question_part, response, answer_stat ):
+		"""Adds the response information to our answer_stats"""
+		if (	IQMultipleChoicePart.providedBy(question_part)
+			and not IQMultipleChoiceMultipleAnswerPart.providedBy(question_part)
+			and isinstance(response, int)):
+			
+			# We have indexes into single multiple choice answers
+			# convert int indexes into actual values
+			self._add_multiple_choice_to_answer_stats( 	answer_stat, 
+														response, 
+														question_part,
+														lambda: response == question_part.solutions[0].value )
+		elif (	IQMultipleChoicePart.providedBy(question_part)
+			and IQMultipleChoiceMultipleAnswerPart.providedBy(question_part)
+			and response):		
+
+			# We are losing empty responses
+			# The solutions should be int indexes, as well as our responses
+			for r in response:
+				self._add_multiple_choice_to_answer_stats( 	answer_stat, 
+															r, 
+															question_part,
+															lambda: r in question_part.solutions[0].value )
+		#TODO We should be able to handle freeform multiple answer as well
+		# Solutions and respones should be a list of strings
+		# Freeform multi-answer strings
+		#	-list of responses
+		#	-list of solutions
+		#TODO Can we handle matching (and ordering)
+		#	For those, each answer available will have correct and incorrect answers
+		elif isinstance(response, string_types):
+			# Freeform answers
+			response = response.lower()	
+			#TODO We should be able to look in the solutions list for even the 
+			#multiple choice types correct (probably a rare use-case)
+			#TODO What case do non-strings occur in?		
+			solutions = (x.value.lower() if isinstance(x.value, string_types) else x for x in question_part.solutions)
+			self._add_val_to_answer_stats( 	answer_stat,
+											response,
+											lambda: response in solutions )
+			
 	def __call__(self):
 		self._check_access()
 		options = self.options
