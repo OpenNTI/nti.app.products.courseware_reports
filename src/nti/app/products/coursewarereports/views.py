@@ -1080,7 +1080,12 @@ class _AnswerStat(object):
 		self.perc_s = None
 		self.letter_prefix = None
 		
-ROMAN_NUMERALS = [ 'I', 'II', 'III', 'IV', 'V' ]		
+ROMAN_NUMERALS = [ 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X' ]		
+	
+def _get_roman_numeral(idx):
+	if idx < len( ROMAN_NUMERALS ):
+		return ROMAN_NUMERALS[idx]	
+	return 'X+'
 		
 @view_config(context=IGradeBookEntry,
 			 name=VIEW_ASSIGNMENT_SUMMARY)
@@ -1147,7 +1152,7 @@ class AssignmentSummaryReportPdf(_AbstractReportView):
 						#First time seeing this question, initialize our question parts since they won't change
 						question_part_stats = {}
 						for idx in range(len(question.parts)):
-							question_part_stats[idx] = _QuestionPartStat( ROMAN_NUMERALS[idx] )
+							question_part_stats[idx] = _QuestionPartStat( _get_roman_numeral( idx ) )
 						question_stats[question_submission.questionId] = _QuestionStat( question_part_stats )
 						
 					for idx in range(len(question.parts)):
@@ -1158,6 +1163,7 @@ class AssignmentSummaryReportPdf(_AbstractReportView):
 						if (	IQMultipleChoicePart.providedBy(question_part)
 							and not IQMultipleChoiceMultipleAnswerPart.providedBy(question_part)
 							and isinstance(response, int)):
+							
 							# We have indexes into single multiple choice answers
 							# convert int indexes into actual values
 							self._add_multiple_choice_to_answer_stats( 	answer_stat, 
@@ -1167,6 +1173,7 @@ class AssignmentSummaryReportPdf(_AbstractReportView):
 						elif (	IQMultipleChoicePart.providedBy(question_part)
 							and IQMultipleChoiceMultipleAnswerPart.providedBy(question_part)
 							and response):		
+
 							# We are losing empty responses
 							# The solutions should be int indexes, as well as our responses
 							for r in response:
@@ -1184,13 +1191,13 @@ class AssignmentSummaryReportPdf(_AbstractReportView):
 						elif isinstance(response, string_types):
 							# Freeform answers
 							response = response.lower()	
-							solution = question_part.solutions[0].value
-						
-							#TODO What case does this occur in?			
-							solution = solution.lower() if isinstance(solution, string_types) else solution
+							#TODO We should be able to look in the solutions list for even the 
+							#multiple choice types correct (probably a rare use-case)
+							#TODO What case do non-strings occur in?		
+							solutions = (x.value.lower() if isinstance(x.value, string_types) else x for x in question_part.solutions)
 							self._add_val_to_answer_stats( 	answer_stat,
 															response,
-															lambda: solution == response )
+															lambda: response in solutions )
 
 			#Do we have to worry about assessed values without submissions?
 			for maybe_assessed in pending.parts:
