@@ -81,54 +81,56 @@
 			</para>
 
 			<metal:block tal:repeat="question_part question/submission_count_list" >
+			
+				<nextPage tal:condition="python: repeat.question_part.number > 1" />
 
-			<blockTable alignment="left"
-						colWidths="6% 50% 7% 7%"
-						tal:condition="question_part">
-				<blockTableStyle id="new" >
-					<lineStyle 	thickness="2" 
-								start="0,0" stop="-1,-1" 
-								kind="linebelow" colorName="white" />	
-				</blockTableStyle>		
+				<blockTable alignment="left"
+							colWidths="6% 50% 7% 7%"
+							tal:condition="question_part">
+					<blockTableStyle id="new" >
+						<lineStyle 	thickness="2" 
+									start="0,0" stop="-1,-1" 
+									kind="linebelow" colorName="white" />	
+					</blockTableStyle>		
 						
-				<tr tal:repeat="answer_stat question_part">
-					<td tal:content="string:${answer_stat/letter_prefix}."
-						tal:attributes="background python: '#cbf2db' if answer_stat.is_correct else '#f5f5f5'"
-						align="right" 
-						vAlign="middle"
-						leftPadding="20"
-						topPadding="20"
-						bottomPadding="20"
-						fontSize="12" fontName="Helvetica-Bold">
-						A
-					</td>
-					<td tal:attributes="background python: '#cbf2db' if answer_stat.is_correct else '#f5f5f5'"
-						vAlign="middle"
-						fontColor="#494949">
-							<para tal:content="answer_stat/answer">
-								answer
-							</para>
-					</td>
-					<td tal:content="answer_stat/count"
-						tal:attributes="fontColor python: '#2ecc71' if answer_stat.is_correct else '#e74c3c'"
-						fontSize="14" fontName="Helvetica-Bold"
-						topPadding="20"
-						bottomPadding="20"
-						align="decimal"
-						vAlign="middle" >
-						count
-					</td>
-					<td tal:content="answer_stat/perc_s"
-						tal:attributes="fontColor python: '#2ecc71' if answer_stat.is_correct else '#e74c3c'"
-						fontSize="14" fontName="Helvetica-Bold"
-						topPadding="20"
-						bottomPadding="20"
-						align="decimal"
-						vAlign="middle" >
-						perc
-					</td>
-				</tr>
-			</blockTable>
+					<tr tal:repeat="answer_stat question_part">
+						<td tal:content="string:${answer_stat/letter_prefix}."
+							tal:attributes="background python: '#cbf2db' if answer_stat.is_correct else '#f5f5f5'"
+							align="right" 
+							vAlign="middle"
+							leftPadding="20"
+							topPadding="20"
+							bottomPadding="20"
+							fontSize="12" fontName="Helvetica-Bold">
+							A
+						</td>
+						<td tal:attributes="background python: '#cbf2db' if answer_stat.is_correct else '#f5f5f5'"
+							vAlign="middle"
+							fontColor="#494949">
+								<para tal:content="answer_stat/answer">
+									answer
+								</para>
+						</td>
+						<td tal:content="answer_stat/count"
+							tal:attributes="fontColor python: '#2ecc71' if answer_stat.is_correct else '#e74c3c'"
+							fontSize="14" fontName="Helvetica-Bold"
+							topPadding="20"
+							bottomPadding="20"
+							align="decimal"
+							vAlign="middle" >
+							count
+						</td>
+						<td tal:content="answer_stat/perc_s"
+							tal:attributes="fontColor python: '#2ecc71' if answer_stat.is_correct else '#e74c3c'"
+							fontSize="14" fontName="Helvetica-Bold"
+							topPadding="20"
+							bottomPadding="20"
+							align="decimal"
+							vAlign="middle" >
+							perc
+						</td>
+					</tr>
+				</blockTable>
 			</metal:block>
 			</keepTogether>
 		</tal:block>

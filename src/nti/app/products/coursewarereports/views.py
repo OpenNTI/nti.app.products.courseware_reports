@@ -1132,10 +1132,8 @@ class AssignmentSummaryReportPdf(_AbstractReportView):
 				qids_to_q[q.ntiid] = q
 
 		column = self.context
-		#TODO can't I do this via deafultdict here?
-		#submissions = defaultdict(lambda: defaultdict(list))
 		submissions = {} 
-		assessed_values = defaultdict(list)
+		assessed_values = {}
 
 		for grade in column.values():
 			try:
@@ -1150,7 +1148,6 @@ class AssignmentSummaryReportPdf(_AbstractReportView):
 				for question_submission in set_submission.questions:
 					question = qids_to_q[question_submission.questionId]
 					
-					#TODO clean this up, think we can defaultdict now (or at least I know how to do it for this case)
 					if question_submission.questionId in submissions:
 						question_stat = submissions[question_submission.questionId]
 						answer_stats = question_stat.answer_stat
@@ -1206,28 +1203,30 @@ class AssignmentSummaryReportPdf(_AbstractReportView):
 															lambda: solution == response )
 
 			for maybe_assessed in pending.parts:
-				#FIXME handle multipart questions
 				if not IQAssessedQuestionSet.providedBy(maybe_assessed):
 					continue
 				for assessed_question in maybe_assessed.questions:
-					if len(assessed_question.parts) != 1:
-						continue
-					assessed_part = assessed_question.parts[0]
-					#TODO We stored an empty assessed val?
-					if assessed_part.assessedValue:
-						assessed_values[assessed_question.questionId].append( assessed_part.assessedValue )
+					
+					for idx in range(len(assessed_question.parts)):
+						assessed_part = assessed_question.parts[idx]
+						val = assessed_part.assessedValue
+						#We may not have a grade yet
+						if val:
+							if assessed_question.questionId in assessed_values:
+								question_parts = assessed_values[assessed_question.questionId]
+							else:
+								question_parts = {}
+								
+							if idx in question_parts:
+								question_parts[idx].append( val )
+							else:	
+								question_parts[idx] = [val]
 
 		options['xxx'] = submissions
 
 		question_stats = []
 		for i, q in enumerate(ordered_questions):
-			assessed_value = assessed_values.get(q.ntiid, ())
-			if assessed_value:
-				avg_assessed = average(assessed_value)
-				avg_assessed = avg_assessed * 100.0
-				avg_assessed_s = '%0.1f' % avg_assessed
-			else:
-				avg_assessed_s = 'N/A'
+			assessed_parts = assessed_values.get(q.ntiid, {})
 
 			q_stat = submissions.get( q.ntiid )
 			answers = q_stat.answer_stat if q_stat else {}
@@ -1236,7 +1235,18 @@ class AssignmentSummaryReportPdf(_AbstractReportView):
 			submission_count_list = []
 			
 			#Go through each answer part
-			for submission in answers.values():
+			for idx, submission in answers.items():
+				
+				#We should have lined up indexes
+				#Do we have an unassessed question?
+				avg_assessed_s = 'N/A'
+				
+				if idx in assessed_parts:
+					assessed_values = assessed_parts[idx]
+					if assessed_values:
+						avg_assessed = average( assessed_values )
+						avg_assessed = avg_assessed * 100.0
+						avg_assessed_s = '%0.1f' % avg_assessed
 				# If this gets big, we'll need to do something different,
 				# like just showing top-answers.
 				# TODO Do we want to truncate the multiple choice questions at all?
@@ -1245,7 +1255,6 @@ class AssignmentSummaryReportPdf(_AbstractReportView):
 				
 				# We order by popularity; we could do by content perhaps.
 				submission_counts = heapq.nlargest(8, submission.values(), key=lambda x: x.count)
-				#from IPython.core.debugger import Tracer;Tracer()()
 				
 				if len(submission.values()) > len(submission_counts):
 					missing_corrects = [x for x in submission.values() 
