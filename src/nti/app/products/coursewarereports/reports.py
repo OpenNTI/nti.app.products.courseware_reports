@@ -481,18 +481,21 @@ def _assignment_stat_for_column(self, column, filter=None):
 
 	return stat	
 
-_QuestionStat = namedtuple('_QuestionStat',
-							  ('title', 'content', 'avg_score', 'question_parts'))
-
 class _QuestionPartStat(object):
 	"""Holds stat and display information for a particular question part."""
-	avg_score = 0
-	answer_stats = {}
-	assessed_values = []
-	
-	def __init__(self, letter_prefix, answer_stats, avg_score=0):
-		self.answer_stats = answer_stats
+	def __init__(self, letter_prefix, answer_stats=None, avg_score=0):
+		self.answer_stats = answer_stats if answer_stats else {}
 		self.letter_prefix = letter_prefix
+		self.avg_score = avg_score
+		self.assessed_values = []
+
+class _QuestionStat(object):
+	"""Holds stat and display information for a particular question."""
+	def __init__(self, question_part_stats, title=None, content=None, avg_score=0, submission_count=1 ):
+		self.question_part_stats = question_part_stats
+		self.submission_count = submission_count
+		self.title = title
+		self.content = content
 		self.avg_score = avg_score
 
 """
@@ -509,7 +512,7 @@ Submissions{question_id}
 
 
 def _build_question_stats( ordered_questions, question_stats ):
-	"""From questions, assessed_vals and submissions, return formed question stat objects"""
+	"""From questions_stats, return fully formed question_stat objects"""
 	results = []
 	for i, q in enumerate( ordered_questions ):
 		q_stat = question_stats.get( q.ntiid )
@@ -565,7 +568,7 @@ def _build_question_stats( ordered_questions, question_stats ):
 		#Averaging all the parts to get the question assessment grade
 		question_avg_assessed_s = '%0.1f' % average( question_part_grades )
 
-		stat = _QuestionStat( title, content, question_avg_assessed_s, question_parts )
+		stat = _QuestionStat( question_parts, title, content, question_avg_assessed_s )
 		results.append( stat )
 			
 	return results

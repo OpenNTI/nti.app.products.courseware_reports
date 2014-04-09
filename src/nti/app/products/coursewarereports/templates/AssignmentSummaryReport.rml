@@ -80,14 +80,14 @@
 				The content of the question.
 			</para>
 
-			<metal:block tal:repeat="question_part question/question_parts" >
+			<metal:block tal:repeat="question_part question/question_part_stats" >
 			
 				<nextPage tal:condition="python: repeat.question_part.number > 1" />
 
 				<h3 style="h3"
 					spaceBefore="0in" fontName="Helvetica-Bold" spaceAfter=".2"
 					tal:content="string:Part ${question_part/letter_prefix}"
-					tal:condition="python: len(question.question_parts) > 1">
+					tal:condition="python: len(question.question_part_stats) > 1">
 					Part I
 				</h3>
 

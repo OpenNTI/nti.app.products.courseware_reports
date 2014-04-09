@@ -29,6 +29,7 @@ from .reports import _format_datetime
 from .reports import _assignment_stat_for_column
 from .reports import _build_question_stats
 from .reports import _QuestionPartStat
+from .reports import _QuestionStat
 
 from zope import component
 from zope import interface
@@ -1085,16 +1086,6 @@ class _AnswerStat(object):
 		self.answer = answer
 		self.is_correct = is_correct
 		self.count = 1
-
-#FIXME oof, we already have two _QuestionStats; I must have been tired.
-class _QuestionStat(object):
-	"""Holds stat and display information for a particular question."""
-	submission_count = 0
-	question_part_stats = {}
-	
-	def __init__(self, question_part_stats, submission_count):
-		self.question_part_stats = question_part_stats
-		self.submission_count = submission_count
 		
 ROMAN_NUMERALS = [ 'I', 'II', 'III', 'IV', 'V' ]		
 		
@@ -1163,8 +1154,8 @@ class AssignmentSummaryReportPdf(_AbstractReportView):
 						#First time seeing this question, initialize our question parts since they won't change
 						question_part_stats = {}
 						for idx in range(len(question.parts)):
-							question_part_stats[idx] = _QuestionPartStat( ROMAN_NUMERALS[idx], {} )
-						question_stats[question_submission.questionId] = _QuestionStat( question_part_stats, 1 )
+							question_part_stats[idx] = _QuestionPartStat( ROMAN_NUMERALS[idx] )
+						question_stats[question_submission.questionId] = _QuestionStat( question_part_stats )
 						
 					for idx in range(len(question.parts)):
 						question_part = question.parts[idx] 
@@ -1208,7 +1199,6 @@ class AssignmentSummaryReportPdf(_AbstractReportView):
 															response,
 															lambda: solution == response )
 
-			#TODO Can we combine this with the objects used by our submissions? (yes)
 			#Do we have to worry about assessed values without submissions?
 			for maybe_assessed in pending.parts:
 				if not IQAssessedQuestionSet.providedBy(maybe_assessed):
