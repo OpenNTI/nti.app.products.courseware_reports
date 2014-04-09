@@ -22,7 +22,6 @@ import heapq
 from numpy import asarray
 from numpy import average
 from numpy import median
-from numpy import percentile
 from numpy import std
 from numbers import Number
 

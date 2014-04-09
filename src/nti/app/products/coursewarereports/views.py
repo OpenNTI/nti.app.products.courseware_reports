@@ -37,7 +37,6 @@ from zope import interface
 from six import string_types
 from numbers import Number
 
-from numpy import average
 from numpy import percentile
 
 from collections import namedtuple
@@ -48,10 +47,6 @@ from datetime import timedelta
 from itertools import chain
 
 import BTrees
-
-import string
-
-import heapq
 
 from pyramid.view import view_config
 from pyramid.view import view_defaults
@@ -1078,14 +1073,12 @@ from nti.contentfragments.interfaces import IPlainTextContentFragment
 
 class _AnswerStat(object):
 	"""Holds stat and display information for a particular answer."""
-	letter_prefix = None
-	count = 0
-	perc_s = None
-	
 	def __init__(self, answer, is_correct):
 		self.answer = answer
 		self.is_correct = is_correct
 		self.count = 1
+		self.perc_s = None
+		self.letter_prefix = None
 		
 ROMAN_NUMERALS = [ 'I', 'II', 'III', 'IV', 'V' ]		
 		
@@ -1204,8 +1197,8 @@ class AssignmentSummaryReportPdf(_AbstractReportView):
 				if not IQAssessedQuestionSet.providedBy(maybe_assessed):
 					continue
 				for assessed_question in maybe_assessed.questions:
-					
 					for idx in range(len(assessed_question.parts)):
+						
 						assessed_part = assessed_question.parts[idx]
 						val = assessed_part.assessedValue
 						#We may not have a grade yet
