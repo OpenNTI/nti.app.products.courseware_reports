@@ -488,6 +488,7 @@ class _QuestionPartStat(object):
 	"""Holds stat and display information for a particular question part."""
 	avg_score = 0
 	answer_stats = {}
+	assessed_values = []
 	
 	def __init__(self, letter_prefix, answer_stats, avg_score=0):
 		self.answer_stats = answer_stats
@@ -507,12 +508,10 @@ Submissions{question_id}
 """
 
 
-def _build_question_stats( ordered_questions, question_stats, assessed_values ):
+def _build_question_stats( ordered_questions, question_stats ):
 	"""From questions, assessed_vals and submissions, return formed question stat objects"""
 	results = []
 	for i, q in enumerate( ordered_questions ):
-		assessed_parts = assessed_values.get(q.ntiid, {})
-
 		q_stat = question_stats.get( q.ntiid )
 		question_part_stats = q_stat.question_part_stats if q_stat else {}
 		total_submits = q_stat.submission_count if q_stat else 0
@@ -520,29 +519,23 @@ def _build_question_stats( ordered_questions, question_stats, assessed_values ):
 		question_parts = []
 		question_part_grades = []
 		
-		#Go through each answer part
+		#Go through each question part
 		for idx, question_part_stat in question_part_stats.items():
-			
-			#We should have lined up indexes
 			#Do we have an unassessed question?
 			avg_assessed_s = 'N/A'
+			if question_part_stat.assessed_values:
+				avg_assessed = average( question_part_stat.assessed_values )
+				avg_assessed = avg_assessed * 100.0
+				avg_assessed_s = '%0.1f' % avg_assessed
+				
+				question_part_grades.append( avg_assessed )
 			
-			if idx in assessed_parts:
-				assessed_values_for_part = assessed_parts[idx]
-				if assessed_values_for_part:
-					avg_assessed = average( assessed_values_for_part )
-					avg_assessed = avg_assessed * 100.0
-					avg_assessed_s = '%0.1f' % avg_assessed
-					
-					question_part_grades.append( avg_assessed )
-						
+			answer_stats = question_part_stat.answer_stats			
 			# If this gets big, we'll need to do something different,
 			# like just showing top-answers.
 			# TODO Do we want to truncate the multiple choice questions at all?
-			# Arbitrary picking how many
+			# Arbitrarily picking how many
 			# ->8 since it fits on page with header, currently.
-			answer_stats = question_part_stat.answer_stats
-			
 			# We order by popularity; we could do by content perhaps.
 			top_answer_stats = heapq.nlargest( 8, answer_stats.values(), key=lambda x: x.count )
 			

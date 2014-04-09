@@ -1140,8 +1140,7 @@ class AssignmentSummaryReportPdf(_AbstractReportView):
 				qids_to_q[q.ntiid] = q
 
 		column = self.context
-		submissions = {} 
-		assessed_values = {}
+		question_stats = {} 
 
 		for grade in column.values():
 			try:
@@ -1156,8 +1155,8 @@ class AssignmentSummaryReportPdf(_AbstractReportView):
 				for question_submission in set_submission.questions:
 					question = qids_to_q[question_submission.questionId]
 					
-					if question_submission.questionId in submissions:
-						question_stat = submissions[question_submission.questionId]
+					if question_submission.questionId in question_stats:
+						question_stat = question_stats[question_submission.questionId]
 						question_part_stats = question_stat.question_part_stats
 						question_stat.submission_count += 1
 					else:
@@ -1165,7 +1164,7 @@ class AssignmentSummaryReportPdf(_AbstractReportView):
 						question_part_stats = {}
 						for idx in range(len(question.parts)):
 							question_part_stats[idx] = _QuestionPartStat( ROMAN_NUMERALS[idx], {} )
-						submissions[question_submission.questionId] = _QuestionStat( question_part_stats, 1 )
+						question_stats[question_submission.questionId] = _QuestionStat( question_part_stats, 1 )
 						
 					for idx in range(len(question.parts)):
 						question_part = question.parts[idx] 
@@ -1221,17 +1220,12 @@ class AssignmentSummaryReportPdf(_AbstractReportView):
 						val = assessed_part.assessedValue
 						#We may not have a grade yet
 						if val is not None:
-							if assessed_question.questionId in assessed_values:
-								question_parts = assessed_values[assessed_question.questionId]
-							else:
-								assessed_values[assessed_question.questionId] = question_parts = {}
-								
-							if idx in question_parts:
-								question_parts[idx].append( val )
-							else:	
-								question_parts[idx] = [val]
+							#Assuming we've already seen every question at this point due to submissions above
+							question_stat = question_stats[assessed_question.questionId]
+							question_part_stats = question_stat.question_part_stats
+							question_part_stats[idx].assessed_values.append( val )
 
-		options['question_stats'] = _build_question_stats( ordered_questions, submissions, assessed_values )
+		options['question_stats'] = _build_question_stats( ordered_questions, question_stats )
 
 
 	def __call__(self):
