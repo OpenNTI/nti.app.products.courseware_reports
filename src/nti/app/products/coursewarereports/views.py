@@ -1093,7 +1093,7 @@ class AssignmentSummaryReportPdf(_AbstractReportView):
 
 	QuestionStat = namedtuple('QuestionStat',
 							  ('title', 'content', 'avg_score',
-							   'submission_counts',
+							   'submission_count_list',
 							   ))
 
 	def _build_assignment_data(self, options):
@@ -1134,7 +1134,7 @@ class AssignmentSummaryReportPdf(_AbstractReportView):
 		column = self.context
 		#TODO can't I do this via deafultdict here?
 		#submissions = defaultdict(lambda: defaultdict(list))
-		submissions = {}
+		submissions = {} 
 		assessed_values = defaultdict(list)
 
 		for grade in column.values():
@@ -1148,9 +1148,6 @@ class AssignmentSummaryReportPdf(_AbstractReportView):
 			pending = history.pendingAssessment
 			for set_submission in submission.parts:
 				for question_submission in set_submission.questions:
-					if len(question_submission.parts) != 1:
-						continue
-					
 					question = qids_to_q[question_submission.questionId]
 					
 					#TODO clean this up, think we can defaultdict now (or at least I know how to do it for this case)
@@ -1162,28 +1159,34 @@ class AssignmentSummaryReportPdf(_AbstractReportView):
 						answer_stats = {}
 						submissions[question_submission.questionId] = _QuestionStat( answer_stats, 1 )
 
-					question_part = question.parts[0]
-					response = question_submission.parts[0]
+					for idx in range(len(question.parts)):
+						question_part = question.parts[idx] 
+						response = question_submission.parts[idx]
+						
+						if idx in answer_stats:
+							answer_stat = answer_stats[idx]
+						else:
+							answer_stats[idx] = answer_stat = {}
 
-					if (	IQMultipleChoicePart.providedBy(question_part)
-						and not IQMultipleChoiceMultipleAnswerPart.providedBy(question_part)
-						and isinstance(response, int)):
-						# We have indexes into single multiple choice answers
-						# convert int indexes into actual values
-						self._add_multiple_choice_to_answer_stats( 	answer_stats, 
-																	response, 
-																	question_part,
-																	lambda: response == question_part.solutions[0].value )
-					elif (	IQMultipleChoicePart.providedBy(question_part)
-						and IQMultipleChoiceMultipleAnswerPart.providedBy(question_part)
-						and response):		
-						# We are losing empty responses
-						# The solutions should be int indexes, as well as our responses
-						for r in response:
-							self._add_multiple_choice_to_answer_stats( 	answer_stats, 
-																		r, 
+						if (	IQMultipleChoicePart.providedBy(question_part)
+							and not IQMultipleChoiceMultipleAnswerPart.providedBy(question_part)
+							and isinstance(response, int)):
+							# We have indexes into single multiple choice answers
+							# convert int indexes into actual values
+							self._add_multiple_choice_to_answer_stats( 	answer_stat, 
+																		response, 
 																		question_part,
-																		lambda: r in question_part.solutions[0].value )
+																		lambda: response == question_part.solutions[0].value )
+						elif (	IQMultipleChoicePart.providedBy(question_part)
+							and IQMultipleChoiceMultipleAnswerPart.providedBy(question_part)
+							and response):		
+							# We are losing empty responses
+							# The solutions should be int indexes, as well as our responses
+							for r in response:
+								self._add_multiple_choice_to_answer_stats( 	answer_stat, 
+																			r, 
+																			question_part,
+																			lambda: r in question_part.solutions[0].value )
 					#TODO We should be able to handle freeform multiple answer as well
 						# Solutions and respones should be a list of strings
 						# Freeform multi-answer strings
@@ -1191,18 +1194,19 @@ class AssignmentSummaryReportPdf(_AbstractReportView):
 						#	-list of solutions
 					#TODO Can we handle matching (and ordering)
 					#	For those, each answer available will have correct and incorrect answers
-					elif isinstance(response, string_types):
-						# Freeform answers
-						response = response.lower()	
-						solution = question_part.solutions[0].value
+						elif isinstance(response, string_types):
+							# Freeform answers
+							response = response.lower()	
+							solution = question_part.solutions[0].value
 						
-						#TODO What case does this occur in?			
-						solution = solution.lower() if isinstance(solution, string_types) else solution
-						self._add_val_to_answer_stats( 	answer_stats,
-														response,
-														lambda: solution == response )
+							#TODO What case does this occur in?			
+							solution = solution.lower() if isinstance(solution, string_types) else solution
+							self._add_val_to_answer_stats( 	answer_stat,
+															response,
+															lambda: solution == response )
 
 			for maybe_assessed in pending.parts:
+				#FIXME handle multipart questions
 				if not IQAssessedQuestionSet.providedBy(maybe_assessed):
 					continue
 				for assessed_question in maybe_assessed.questions:
@@ -1226,38 +1230,45 @@ class AssignmentSummaryReportPdf(_AbstractReportView):
 				avg_assessed_s = 'N/A'
 
 			q_stat = submissions.get( q.ntiid )
-			submission = q_stat.answer_stat if q_stat else {}
+			answers = q_stat.answer_stat if q_stat else {}
 			total_submits = q_stat.submission_count if q_stat else 0
 			
-			# If this gets big, we'll need to do something different,
-			# like just showing top-answers.
-			# TODO Do we want to truncate the multiple choice questions at all?
-			# Arbitrary picking how many
-			# ->8 since it fits on page with header, currently.
-				
-			# We order by popularity; we could do by content perhaps.
-			submission_counts = heapq.nlargest(8, submission.values(), key=lambda x: x.count)
+			submission_count_list = []
 			
-			if len(submission.values()) > len(submission_counts):
-				missing_corrects = [x for x in submission.values() 
-									if x.is_correct and x not in submission_counts]
-				if missing_corrects:
-					#Ok, our correct answer(s) isn't in our trimmed-down set; make it so.
-					submission_counts = submission_counts[:-1 * len(missing_corrects)] + missing_corrects
+			#Go through each answer part
+			for submission in answers.values():
+				# If this gets big, we'll need to do something different,
+				# like just showing top-answers.
+				# TODO Do we want to truncate the multiple choice questions at all?
+				# Arbitrary picking how many
+				# ->8 since it fits on page with header, currently.
 				
-			# Now set the letter and perc values
-			letters = string.ascii_uppercase
-			for j in range( len(submission_counts) ):
-				sub = submission_counts[j]
-				sub.letter_prefix = letters[j]
-				sub.perc_s = '%0.1f%%' % ( sub.count * 100.0 / total_submits ) if total_submits else 'N/A'
+				# We order by popularity; we could do by content perhaps.
+				submission_counts = heapq.nlargest(8, submission.values(), key=lambda x: x.count)
+				#from IPython.core.debugger import Tracer;Tracer()()
+				
+				if len(submission.values()) > len(submission_counts):
+					missing_corrects = [x for x in submission.values() 
+										if x.is_correct and x not in submission_counts]
+					if missing_corrects:
+						#Ok, our correct answer(s) isn't in our trimmed-down set; make it so.
+						submission_counts = submission_counts[:-1 * len(missing_corrects)] + missing_corrects
+				
+				# Now set the letter and perc values
+				letters = string.ascii_uppercase
+				for j in range( len(submission_counts) ):
+					sub = submission_counts[j]
+					sub.letter_prefix = letters[j]
+					sub.perc_s = '%0.1f%%' % ( sub.count * 100.0 / total_submits ) if total_submits else 'N/A'
+				
+				submission_count_list.append( submission_counts )
 
 			title = i + 1
 			content = IPlainTextContentFragment(q.content)
 			if not content:
 				content = IPlainTextContentFragment(q.parts[0].content)
 
-			stat = self.QuestionStat( title, content, avg_assessed_s, submission_counts )
+			stat = self.QuestionStat( title, content, avg_assessed_s, submission_count_list )
 			question_stats.append( stat )
 
 		options['question_stats'] = question_stats
