@@ -27,6 +27,7 @@ from .reports import _adjust_timestamp
 from .reports import _adjust_date
 from .reports import _format_datetime
 from .reports import _assignment_stat_for_column
+from .reports import _build_question_stats
 
 from zope import component
 from zope import interface
@@ -1091,11 +1092,6 @@ class AssignmentSummaryReportPdf(_AbstractReportView):
 
 	report_title = _('Assignment Summary Report')
 
-	QuestionStat = namedtuple('QuestionStat',
-							  ('title', 'content', 'avg_score',
-							   'submission_count_list',
-							   ))
-
 	def _build_assignment_data(self, options):
 		stats = [_assignment_stat_for_column(self, self.context)]
 		options['assignment_data'] = stats
@@ -1211,76 +1207,18 @@ class AssignmentSummaryReportPdf(_AbstractReportView):
 						assessed_part = assessed_question.parts[idx]
 						val = assessed_part.assessedValue
 						#We may not have a grade yet
-						if val:
+						if val is not None:
 							if assessed_question.questionId in assessed_values:
 								question_parts = assessed_values[assessed_question.questionId]
 							else:
-								question_parts = {}
+								assessed_values[assessed_question.questionId] = question_parts = {}
 								
 							if idx in question_parts:
 								question_parts[idx].append( val )
 							else:	
 								question_parts[idx] = [val]
 
-		options['xxx'] = submissions
-
-		question_stats = []
-		for i, q in enumerate(ordered_questions):
-			assessed_parts = assessed_values.get(q.ntiid, {})
-
-			q_stat = submissions.get( q.ntiid )
-			answers = q_stat.answer_stat if q_stat else {}
-			total_submits = q_stat.submission_count if q_stat else 0
-			
-			submission_count_list = []
-			
-			#Go through each answer part
-			for idx, submission in answers.items():
-				
-				#We should have lined up indexes
-				#Do we have an unassessed question?
-				avg_assessed_s = 'N/A'
-				
-				if idx in assessed_parts:
-					assessed_values = assessed_parts[idx]
-					if assessed_values:
-						avg_assessed = average( assessed_values )
-						avg_assessed = avg_assessed * 100.0
-						avg_assessed_s = '%0.1f' % avg_assessed
-				# If this gets big, we'll need to do something different,
-				# like just showing top-answers.
-				# TODO Do we want to truncate the multiple choice questions at all?
-				# Arbitrary picking how many
-				# ->8 since it fits on page with header, currently.
-				
-				# We order by popularity; we could do by content perhaps.
-				submission_counts = heapq.nlargest(8, submission.values(), key=lambda x: x.count)
-				
-				if len(submission.values()) > len(submission_counts):
-					missing_corrects = [x for x in submission.values() 
-										if x.is_correct and x not in submission_counts]
-					if missing_corrects:
-						#Ok, our correct answer(s) isn't in our trimmed-down set; make it so.
-						submission_counts = submission_counts[:-1 * len(missing_corrects)] + missing_corrects
-				
-				# Now set the letter and perc values
-				letters = string.ascii_uppercase
-				for j in range( len(submission_counts) ):
-					sub = submission_counts[j]
-					sub.letter_prefix = letters[j]
-					sub.perc_s = '%0.1f%%' % ( sub.count * 100.0 / total_submits ) if total_submits else 'N/A'
-				
-				submission_count_list.append( submission_counts )
-
-			title = i + 1
-			content = IPlainTextContentFragment(q.content)
-			if not content:
-				content = IPlainTextContentFragment(q.parts[0].content)
-
-			stat = self.QuestionStat( title, content, avg_assessed_s, submission_count_list )
-			question_stats.append( stat )
-
-		options['question_stats'] = question_stats
+		options['question_stats'] = _build_question_stats( ordered_questions, submissions, assessed_values )
 
 
 	def __call__(self):

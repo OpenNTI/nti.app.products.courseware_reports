@@ -15,6 +15,7 @@ from datetime import timedelta
 
 import BTrees
 import pytz
+import string
 
 import heapq
 
@@ -29,6 +30,8 @@ from nti.app.assessment.interfaces import ICourseAssessmentItemCatalog
 
 from nti.assessment.interfaces import IQAssignment
 from nti.assessment.interfaces import IQuestionSet
+
+from nti.contentfragments.interfaces import IPlainTextContentFragment
 
 # XXX: Fix a unicode decode issue.
 # TODO: Make this a formal patch
@@ -477,3 +480,70 @@ def _assignment_stat_for_column(self, column, filter=None):
 							per_attempted_s, for_credit_per_s, non_credit_per_s )
 
 	return stat	
+
+_QuestionStat = namedtuple('_QuestionStat',
+							  ('title', 'content', 'avg_score',
+							   'submission_count_list',
+							   ))
+
+def _build_question_stats( ordered_questions, submissions, assessed_values ):
+	"""From questions, assessed_vals and submissions, return formed question stat objects"""
+	question_stats = []
+	for i, q in enumerate( ordered_questions ):
+		assessed_parts = assessed_values.get(q.ntiid, {})
+
+		q_stat = submissions.get( q.ntiid )
+		answers = q_stat.answer_stat if q_stat else {}
+		total_submits = q_stat.submission_count if q_stat else 0
+		
+		submission_count_list = []
+		
+		#Go through each answer part
+		for idx, submission in answers.items():
+			
+			#We should have lined up indexes
+			#Do we have an unassessed question?
+			avg_assessed_s = 'N/A'
+			
+			if idx in assessed_parts:
+				#FIXME, this does not seem to work yet
+				assessed_values_for_part = assessed_parts[idx]
+				if assessed_values_for_part:
+					avg_assessed = average( assessed_values_for_part )
+					avg_assessed = avg_assessed * 100.0
+					avg_assessed_s = '%0.1f' % avg_assessed
+			# If this gets big, we'll need to do something different,
+			# like just showing top-answers.
+			# TODO Do we want to truncate the multiple choice questions at all?
+			# Arbitrary picking how many
+			# ->8 since it fits on page with header, currently.
+			
+			# We order by popularity; we could do by content perhaps.
+			submission_counts = heapq.nlargest(8, submission.values(), key=lambda x: x.count)
+			
+			if len(submission.values()) > len(submission_counts):
+				missing_corrects = [x for x in submission.values() 
+									if x.is_correct and x not in submission_counts]
+				if missing_corrects:
+					#Ok, our correct answer(s) isn't in our trimmed-down set; make it so.
+					submission_counts = submission_counts[:-1 * len(missing_corrects)] + missing_corrects
+			
+			# Now set the letter and perc values
+			letters = string.ascii_uppercase
+			for j in range( len(submission_counts) ):
+				#TODO we need to placed asssessed val here
+				sub = submission_counts[j]
+				sub.letter_prefix = letters[j]
+				sub.perc_s = '%0.1f%%' % ( sub.count * 100.0 / total_submits ) if total_submits else 'N/A'
+			
+			submission_count_list.append( submission_counts )
+
+		title = i + 1
+		content = IPlainTextContentFragment(q.content)
+		if not content:
+			content = IPlainTextContentFragment(q.parts[0].content)
+
+		stat = _QuestionStat( title, content, avg_assessed_s, submission_count_list )
+		question_stats.append( stat )
+			
+	return question_stats
