@@ -486,6 +486,17 @@ _QuestionStat = namedtuple('_QuestionStat',
 							   'submission_count_list',
 							   ))
 
+"""
+Assessed-vals{question_id}
+	-> assessed_parts{idx}
+		-> (assessed_vals)
+
+Submissions{question_id}
+	-> _QuestionStat.answerStat{idx}
+		-> (submission)
+
+"""
+
 def _build_question_stats( ordered_questions, submissions, assessed_values ):
 	"""From questions, assessed_vals and submissions, return formed question stat objects"""
 	question_stats = []
@@ -539,9 +550,9 @@ def _build_question_stats( ordered_questions, submissions, assessed_values ):
 			submission_count_list.append( submission_counts )
 
 		title = i + 1
-		content = IPlainTextContentFragment(q.content)
+		content = IPlainTextContentFragment( q.content )
 		if not content:
-			content = IPlainTextContentFragment(q.parts[0].content)
+			content = IPlainTextContentFragment( q.parts[0].content )
 
 		stat = _QuestionStat( title, content, avg_assessed_s, submission_count_list )
 		question_stats.append( stat )

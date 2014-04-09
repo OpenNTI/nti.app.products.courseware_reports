@@ -703,21 +703,7 @@ class CourseSummaryReportPdf(_AbstractReportView):
 		options['self_assessment_data'] = sorted(title_to_count.values(),
 												 key=lambda x: x.title)
 
-	def _build_engagement_data(self, options):
-		md_catalog = self.md_catalog
-		intersection = md_catalog.family.IF.intersection
-
-		intids_of_notes = md_catalog['mimeType'].apply({'any_of': ('application/vnd.nextthought.note',)})
-		intids_of_hls = md_catalog['mimeType'].apply({'any_of': ('application/vnd.nextthought.highlight',)})
-
-		intids_of_notes = intersection( intids_of_notes,
-										self.intids_created_by_everyone )
-		intids_of_hls = intersection( intids_of_hls,
-									  self.intids_created_by_everyone )
-
-		all_notes = intids_of_notes
-		all_hls = intids_of_hls
-
+	def _get_containers_in_course(self):
 		lib = component.getUtility(IContentPackageLibrary)
 		paths = lib.pathToNTIID( self.course.legacy_content_package.ntiid )
 		root = paths[0] if paths else None
@@ -734,7 +720,30 @@ class CourseSummaryReportPdf(_AbstractReportView):
 		containers_in_course = set()
 		if root:
 			_recur( root,containers_in_course )
+			
+		#Add in our assignments	
+		assignment_catalog = ICourseAssignmentCatalog(self.course)
+		containers_in_course.union( ( asg.ntiid for asg in assignment_catalog.iter_assignments() ) )	
 		containers_in_course.discard( None )
+		
+		return containers_in_course
+
+	def _build_engagement_data(self, options):
+		md_catalog = self.md_catalog
+		intersection = md_catalog.family.IF.intersection
+
+		intids_of_notes = md_catalog['mimeType'].apply({'any_of': ('application/vnd.nextthought.note',)})
+		intids_of_hls = md_catalog['mimeType'].apply({'any_of': ('application/vnd.nextthought.highlight',)})
+
+		intids_of_notes = intersection( intids_of_notes,
+										self.intids_created_by_everyone )
+		intids_of_hls = intersection( intids_of_hls,
+									  self.intids_created_by_everyone )
+
+		all_notes = intids_of_notes
+		all_hls = intids_of_hls
+		
+		containers_in_course = self._get_containers_in_course()
 
 		#Now we should have our whole tree of ntiids, intersect with our vals
 		intids_of_objects_in_course_containers = md_catalog['containerId'].apply({'any_of': containers_in_course})
@@ -1198,6 +1207,8 @@ class AssignmentSummaryReportPdf(_AbstractReportView):
 															response,
 															lambda: solution == response )
 
+			#TODO Can we combine this with the objects used by our submissions? (yes)
+			#Do we have to worry about assessed values without submissions?
 			for maybe_assessed in pending.parts:
 				if not IQAssessedQuestionSet.providedBy(maybe_assessed):
 					continue
