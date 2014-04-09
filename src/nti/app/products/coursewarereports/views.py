@@ -723,7 +723,7 @@ class CourseSummaryReportPdf(_AbstractReportView):
 			
 		#Add in our assignments	
 		assignment_catalog = ICourseAssignmentCatalog(self.course)
-		containers_in_course.union( ( asg.ntiid for asg in assignment_catalog.iter_assignments() ) )	
+		containers_in_course = containers_in_course.union( ( asg.ntiid for asg in assignment_catalog.iter_assignments() ) )	
 		containers_in_course.discard( None )
 		
 		return containers_in_course
