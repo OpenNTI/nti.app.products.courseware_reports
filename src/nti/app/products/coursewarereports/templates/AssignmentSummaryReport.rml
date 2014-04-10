@@ -21,19 +21,19 @@
 		<blockTable style='default' >
 			<tr>
 				<td><para style="header">Assignment Title</para></td>
-				<td><para style="header">For-Credit Students</para></td>
-				<td><para style="header">Non-Credit Students</para></td>
-				<td><para style="header">Total Students</para></td>
-				<td><para style="header">For-Credit <br/> Attempted (%)</para></td>
-				<td><para style="header">Non-Credit <br/> Attempted (%)</para></td>
+				<td><para style="header_r">For-Credit Students</para></td>
+				<td><para style="header_r">Non-Credit Students</para></td>
+				<td><para style="header_r">Total Students</para></td>
+				<td><para style="header_r">For-Credit <br/> Attempted (%)</para></td>
+				<td><para style="header_r">Non-Credit <br/> Attempted (%)</para></td>
 			</tr>
 			<tr tal:repeat="item options/assignment_data">
 				<td><para tal:content="item/title" style="data" >The Assessment Title</para></td>
-				<td align="decimal" tal:content="item/for_credit_total">For-Credit Attempts</td>
-				<td align="decimal" tal:content="item/non_credit_total">Non-Credit Attempts</td>
-				<td align="decimal" tal:content="item/total">Total Attempts</td>
-				<td align="decimal" tal:content="item/for_credit_attempted_perc">Percent attempted</td>
-				<td align="decimal" tal:content="item/non_credit_attempted_perc">Percent attempted</td>
+				<td align="right" tal:content="item/for_credit_total">For-Credit Attempts</td>
+				<td align="right" tal:content="item/non_credit_total">Non-Credit Attempts</td>
+				<td align="right" tal:content="item/total">Total Attempts</td>
+				<td align="right" tal:content="item/for_credit_attempted_perc">Percent attempted</td>
+				<td align="right" tal:content="item/non_credit_attempted_perc">Percent attempted</td>
 			</tr>
 		</blockTable>
 		
@@ -43,19 +43,19 @@
 		<blockTable style='default'>
 			<tr>
 				<td><para style="header">Assignment Title</para></td>
-				<td><para style="header">Average: For-Credit</para></td>
-				<td><para style="header">Average: Non-Credit</para></td>
-				<td><para style="header">Average: All</para></td>
-				<td><para style="header">Median: All</para></td>
-				<td><para style="header">Standard Deviation: All</para></td>
+				<td><para style="header_r">Average: For-Credit</para></td>
+				<td><para style="header_r">Average: Non-Credit</para></td>
+				<td><para style="header_r">Average: All</para></td>
+				<td><para style="header_r">Median: All</para></td>
+				<td><para style="header_r">Standard Deviation: All</para></td>
 			</tr>
 			<tr tal:repeat="item options/assignment_data">
 				<td><para tal:content="item/title" style="data">The Assessment Title</para></td>
-				<td align="decimal" tal:content="item/for_credit_avg_grade">For-Credit Average</td>
-				<td align="decimal" tal:content="item/non_credit_avg_grade">Non-Credit Average</td>
-				<td align="decimal" tal:content="item/avg_grade">Average</td>
-				<td align="decimal" tal:content="item/median_grade">Median</td>
-				<td align="decimal" tal:content="item/std_dev_grade">Standard Deviation</td>
+				<td align="right" tal:content="item/for_credit_avg_grade">For-Credit Average</td>
+				<td align="right" tal:content="item/non_credit_avg_grade">Non-Credit Average</td>
+				<td align="right" tal:content="item/avg_grade">Average</td>
+				<td align="right" tal:content="item/median_grade">Median</td>
+				<td align="right" tal:content="item/std_dev_grade">Standard Deviation</td>
 			</tr>
 		</blockTable>
 
@@ -96,181 +96,134 @@
 
 	
 				<!-- Single column answers -->
-				<pto>
-					<pto_header>
-						<blockTable alignment="left"
+				<blockTable alignment="left"
 							colWidths="6% 50% 7% 7%"
+							repeatRows="1"
 							tal:condition="python: question_part.answer_stats and not isinstance( question_part.answer_stats[0].answer, tuple )">
-							
-							<blockTableStyle id="new" >
-								<lineStyle 	thickness="2" 
-											start="0,0" stop="-1,-1" 
-											kind="linebelow" colorName="white" />	
-								<blockTextColor start="0,0" stop="-1,0" colorName="#b8b8b8" />
-								<blockFont start="0,0" stop="-1,0" name="Helvetica-Bold" size="10" />			
-							</blockTableStyle>		
-								
-							<tr>
-								<td />
-								<td />
-								<td align="decimal">Count</td>
-								<td align="decimal">Percent</td>
-							</tr>
-						</blockTable>
-					</pto_header>
-					
-					<blockTable alignment="left"
-								colWidths="6% 50% 7% 7%"
-								tal:condition="python: question_part.answer_stats and not isinstance( question_part.answer_stats[0].answer, tuple )">
-						<blockTableStyle id="new" >
-							<lineStyle 	thickness="2" 
-										start="0,0" stop="-1,-1" 
-										kind="linebelow" colorName="white" />	
-							<blockTextColor start="0,0" stop="-1,0" colorName="#b8b8b8" />
-							<blockFont start="0,0" stop="-1,0" name="Helvetica-Bold" size="10" />			
-						</blockTableStyle>		
-							
-						<tr>
-							<td />
-							<td />
-							<td align="decimal">Count</td>
-							<td align="decimal">Percent</td>
-						</tr>
-							
-						<tr tal:repeat="answer_stat question_part/answer_stats">
-							<td tal:content="string:${answer_stat/letter_prefix}."
-								tal:attributes="background python: '#cbf2db' if answer_stat.is_correct else '#f5f5f5'"
-								align="right" 
-								vAlign="middle"
-								leftPadding="20"
-								topPadding="20"
-								bottomPadding="20"
-								fontSize="12" fontName="Helvetica-Bold">
-								A
-							</td>
-							<td tal:attributes="background python: '#cbf2db' if answer_stat.is_correct else '#f5f5f5'"
-								vAlign="middle"
-								fontColor="#494949">
-									<para tal:content="answer_stat/answer">
-										answer
-									</para>
-							</td>
-							<td tal:content="answer_stat/count"
-								tal:attributes="fontColor python: '#2ecc71' if answer_stat.is_correct else '#e74c3c'"
-								fontSize="14" fontName="Helvetica-Bold"
-								topPadding="20"
-								bottomPadding="20"
-								align="decimal"
-								vAlign="middle" >
-								count
-							</td>
-							<td tal:content="answer_stat/perc_s"
-								tal:attributes="fontColor python: '#2ecc71' if answer_stat.is_correct else '#e74c3c'"
-								fontSize="14" fontName="Helvetica-Bold"
-								topPadding="20"
-								bottomPadding="20"
-								rightPadding="20"
-								align="decimal"
-								vAlign="middle" >
-								perc
-							</td>
-						</tr>
-					</blockTable>
-				</pto>
+					<blockTableStyle id="new" >
+						<lineStyle 	thickness="2" 
+									start="0,0" stop="-1,-1" 
+									kind="linebelow" colorName="white" />	
+						<blockTextColor start="0,0" stop="-1,0" colorName="#b8b8b8" />
+						<blockFont start="0,0" stop="-1,0" name="Helvetica-Bold" size="10" />			
+					</blockTableStyle>		
+						
+					<tr>
+						<td />
+						<td />
+						<td align="right">Count</td>
+						<td align="right">Percent</td>
+					</tr>
+						
+					<tr tal:repeat="answer_stat question_part/answer_stats">
+						<td tal:content="string:${answer_stat/letter_prefix}."
+							tal:attributes="background python: '#cbf2db' if answer_stat.is_correct else '#f5f5f5'"
+							align="right" 
+							vAlign="middle"
+							leftPadding="20"
+							topPadding="20"
+							bottomPadding="20"
+							fontSize="12" fontName="Helvetica-Bold">
+							A
+						</td>
+						<td tal:attributes="background python: '#cbf2db' if answer_stat.is_correct else '#f5f5f5'"
+							vAlign="middle"
+							fontColor="#494949">
+								<para tal:content="answer_stat/answer">
+									answer
+								</para>
+						</td>
+						<td tal:content="answer_stat/count"
+							tal:attributes="fontColor python: '#2ecc71' if answer_stat.is_correct else '#e74c3c'"
+							fontSize="14" fontName="Helvetica-Bold"
+							topPadding="20"
+							bottomPadding="20"
+							align="right"
+							vAlign="middle" >
+							count
+						</td>
+						<td tal:content="answer_stat/perc_s"
+							tal:attributes="fontColor python: '#2ecc71' if answer_stat.is_correct else '#e74c3c'"
+							fontSize="14" fontName="Helvetica-Bold"
+							topPadding="20"
+							bottomPadding="20"
+							align="right"
+							vAlign="middle" >
+							perc
+						</td>
+					</tr>
+				</blockTable>
 				
 				<!-- Handle multi-column answers -->
-				<pto>
-					<pto_header>
-						<blockTable alignment="left"
-								colWidths="6% 25% 25% 7% 7%"
-								tal:condition="python: question_part.answer_stats and isinstance( question_part.answer_stats[0].answer, tuple )">
-							<blockTableStyle id="new" >
-								<lineStyle 	thickness="2" 
-											start="0,0" stop="-1,-1" 
-											kind="linebelow" colorName="white" />
-								<blockTextColor start="0,0" stop="-1,0" colorName="#b8b8b8" />
-								<blockFont start="0,0" stop="-1,0" name="Helvetica-Bold" size="10" />							
-							</blockTableStyle>		
-								
-							<tr>
-								<td />
-								<td />
-								<td />
-								<td align="decimal">Count</td>
-								<td align="decimal">Percent</td>
-							</tr>	
-						</blockTable>
-					</pto_header>
-					<blockTable alignment="left"
-								colWidths="6% 25% 25% 7% 7%"
-								tal:condition="python: question_part.answer_stats and isinstance( question_part.answer_stats[0].answer, tuple )">
-						<blockTableStyle id="new" >
-							<lineStyle 	thickness="2" 
-										start="0,0" stop="-1,-1" 
-										kind="linebelow" colorName="white" />
-							<lineStyle 	thickness="2" 
-										start="1,0" stop="1,-1" 
-										kind="lineafter" colorName="white" />	
-							<blockTextColor start="0,0" stop="-1,0" colorName="#b8b8b8" />
-							<blockFont start="0,0" stop="-1,0" name="Helvetica-Bold" size="10" />							
-						</blockTableStyle>		
-							
-						<tr>
-							<td />
-							<td />
-							<td />
-							<td align="decimal">Count</td>
-							<td align="decimal">Percent</td>
-						</tr>	
-							
-						<tr tal:repeat="answer_stat question_part/answer_stats">
-							<td tal:content="string:${answer_stat/letter_prefix}."
-								tal:attributes="background python: '#cbf2db' if answer_stat.is_correct else '#f5f5f5'"
-								align="right" 
-								vAlign="middle"
-								leftPadding="20"
-								topPadding="20"
-								bottomPadding="20"
-								fontSize="12" fontName="Helvetica-Bold">
-								A
-							</td>
-							<td tal:attributes="background python: '#cbf2db' if answer_stat.is_correct else '#f5f5f5'"
-								vAlign="middle"
-								fontColor="#494949">
-									<para tal:content="python: answer_stat.answer[0]">
-										answer
-									</para>
-							</td>
-							<td tal:attributes="background python: '#cbf2db' if answer_stat.is_correct else '#f5f5f5'"
-								vAlign="middle"
-								leftPadding="20"
-								fontColor="#494949">
-									<para tal:content="python: answer_stat.answer[1]">
-										answer
-									</para>
-							</td>
-							<td tal:content="answer_stat/count"
-								tal:attributes="fontColor python: '#2ecc71' if answer_stat.is_correct else '#e74c3c'"
-								fontSize="14" fontName="Helvetica-Bold"
-								topPadding="20"
-								bottomPadding="20"
-								align="decimal"
-								vAlign="middle" >
-								count
-							</td>
-							<td tal:content="answer_stat/perc_s"
-								tal:attributes="fontColor python: '#2ecc71' if answer_stat.is_correct else '#e74c3c'"
-								fontSize="14" fontName="Helvetica-Bold"
-								topPadding="20"
-								bottomPadding="20"
-								rightPadding="20"
-								align="decimal"
-								vAlign="middle" >
-								perc
-							</td>
-						</tr>
-					</blockTable>
-				</pto>
+				<blockTable alignment="left"
+							colWidths="6% 25% 25% 7% 7%"
+							repeatRows="1"
+							tal:condition="python: question_part.answer_stats and isinstance( question_part.answer_stats[0].answer, tuple )">
+					<blockTableStyle id="new" >
+						<lineStyle 	thickness="2" 
+									start="0,0" stop="-1,-1" 
+									kind="linebelow" colorName="white" />
+						<lineStyle 	thickness="2" 
+									start="1,0" stop="1,-1" 
+									kind="lineafter" colorName="white" />	
+						<blockTextColor start="0,0" stop="-1,0" colorName="#b8b8b8" />
+						<blockFont start="0,0" stop="-1,0" name="Helvetica-Bold" size="10" />							
+					</blockTableStyle>		
+						
+					<tr>
+						<td />
+						<td />
+						<td />
+						<td align="right">Count</td>
+						<td align="right">Percent</td>
+					</tr>	
+						
+					<tr tal:repeat="answer_stat question_part/answer_stats">
+						<td tal:content="string:${answer_stat/letter_prefix}."
+							tal:attributes="background python: '#cbf2db' if answer_stat.is_correct else '#f5f5f5'"
+							align="right" 
+							vAlign="middle"
+							leftPadding="20"
+							topPadding="20"
+							bottomPadding="20"
+							fontSize="12" fontName="Helvetica-Bold">
+							A
+						</td>
+						<td tal:attributes="background python: '#cbf2db' if answer_stat.is_correct else '#f5f5f5'"
+							vAlign="middle"
+							fontColor="#494949">
+								<para tal:content="python: answer_stat.answer[0]">
+									answer
+								</para>
+						</td>
+						<td tal:attributes="background python: '#cbf2db' if answer_stat.is_correct else '#f5f5f5'"
+							vAlign="middle"
+							leftPadding="20"
+							fontColor="#494949">
+								<para tal:content="python: answer_stat.answer[1]">
+									answer
+								</para>
+						</td>
+						<td tal:content="answer_stat/count"
+							tal:attributes="fontColor python: '#2ecc71' if answer_stat.is_correct else '#e74c3c'"
+							fontSize="14" fontName="Helvetica-Bold"
+							topPadding="20"
+							bottomPadding="20"
+							align="right"
+							vAlign="middle" >
+							count
+						</td>
+						<td tal:content="answer_stat/perc_s"
+							tal:attributes="fontColor python: '#2ecc71' if answer_stat.is_correct else '#e74c3c'"
+							fontSize="14" fontName="Helvetica-Bold"
+							topPadding="20"
+							bottomPadding="20"
+							align="right"
+							vAlign="middle" >
+							perc
+						</td>
+					</tr>
+				</blockTable>
 			</metal:block>
 			</keepTogether>
 		</tal:block>

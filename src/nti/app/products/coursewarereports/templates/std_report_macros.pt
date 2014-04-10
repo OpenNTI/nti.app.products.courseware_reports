@@ -53,7 +53,8 @@
 				   spaceBefore="10"/>
 				   
 		<!-- column header, should match the 0,0:-1,0 entry below -->		   
-		<paraStyle name="header" textColor="#b8b8b8" fontName="Helvetica-Bold" size="10" />		   
+		<paraStyle name="header" textColor="#b8b8b8" fontName="Helvetica-Bold" size="10" />		 
+		<paraStyle name="header_r" textColor="#b8b8b8" fontName="Helvetica-Bold" size="10" alignment="right" />		
 		
 		<!-- data, should match the entry below -->		   
 		<paraStyle name="data" textColor="#757474" fontName="Helvetica" size="12" />		

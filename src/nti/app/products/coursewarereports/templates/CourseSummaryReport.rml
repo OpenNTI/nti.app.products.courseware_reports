@@ -60,23 +60,8 @@
 			Self-Assessments: Attempts Made
 		</h2>
 
-		<pto>
-			<pto_header>
-				<blockTable style='default' tal:condition="options/self_assessment_data">
-					<tr>
-						<td align="center"><para style="header">Assessment Title</para></td>
-						<td align="center"><para style="header">By For-Credit Students</para></td>
-						<td align="center"><para style="header">For-Credit Student Attempts</para></td>
-						<td align="center"><para style="header">By Non-Credit Students</para></td>
-						<td align="center"><para style="header">Non-Credit Student Attempts</para></td>
-						<td align="center"><para style="header">Total Attempts</para></td>
-						<td align="center"><para style="header">Average Attempts Per Student</para></td>
-						<td align="center"><para style="header">For-Credit Students (%)</para></td>
-						<td align="center"><para style="header">Non-Credit Students (%)</para></td>
-					</tr>
-				</blockTable>
-			</pto_header>
-			<blockTable style='default' tal:condition="options/self_assessment_data">
+			<blockTable style='default' tal:condition="options/self_assessment_data"
+						repeatRows="1">
 				<tr>
 					<td align="center"><para style="header">Assessment Title</para></td>
 					<td align="center"><para style="header">By For-Credit Students</para></td>
@@ -100,7 +85,6 @@
 					<td align="decimal" tal:content="item/non_credit_percent_contributed_str">Percent Attempted</td>
 				</tr>
 			</blockTable>
-		</pto>
 		
 		<para tal:condition="not:options/self_assessment_data">
 			This course contains no self-assessments.
@@ -110,20 +94,8 @@
 		<h2 style="h2">
 			Assignments: Submissions
 		</h2>
-		<pto>
-			<pto_header>
-				<blockTable style='default' tal:condition="options/assignment_data">
-					<tr>
-						<td align="center"><para style="header">Assignment Title</para></td>
-						<td align="center"><para style="header">For-Credit Students</para></td>
-						<td align="center"><para style="header">Non-Credit Students</para></td>
-						<td align="center"><para style="header">Total Students</para></td>
-						<td align="center"><para style="header">For-Credit <br/> Students (%)</para></td>
-						<td align="center"><para style="header">Non-Credit <br/> Students (%)</para></td>
-					</tr>
-				</blockTable>
-			</pto_header>
-			<blockTable style='default' tal:condition="options/assignment_data">
+			<blockTable style='default' tal:condition="options/assignment_data"
+						repeatRows="1">
 				<tr>
 					<td align="center"><para style="header">Assignment Title</para></td>
 					<td align="center"><para style="header">For-Credit Students</para></td>
@@ -141,7 +113,6 @@
 					<td align="decimal" tal:content="item/non_credit_attempted_perc">Percent attempted</td>
 				</tr>
 			</blockTable>
-		</pto>
 		
 		<para tal:condition="not:options/assignment_data">
 			This course contains no assignments.
@@ -150,20 +121,8 @@
 		<h2 style="h2">
 			Assignments: Results
 		</h2>
-		<pto>
-			<pto_header>
-				<blockTable style='default' tal:condition="options/assignment_data">
-					<tr>
-						<td align="center"><para style="header">Assignment Title</para></td>
-						<td align="center"><para style="header">Average: For-Credit</para></td>
-						<td align="center"><para style="header">Average: Non-Credit</para></td>
-						<td align="center"><para style="header">Average: All</para></td>
-						<td align="center"><para style="header">Median: All</para></td>
-						<td align="center"><para style="header">Standard Deviation: All</para></td>
-					</tr>
-				</blockTable>
-			</pto_header>
-			<blockTable style='default' tal:condition="options/assignment_data">
+			<blockTable style='default' tal:condition="options/assignment_data"
+						repeatRows="1">
 				<tr>
 					<td align="center"><para style="header">Assignment Title</para></td>
 					<td align="center"><para style="header">Average: For-Credit</para></td>
@@ -181,7 +140,6 @@
 					<td align="decimal" tal:content="item/std_dev_grade">Standard Deviation</td>
 				</tr>
 			</blockTable>
-		</pto>
 		
 		<para tal:condition="not:options/assignment_data">
 			This course contains no assignments.
@@ -308,18 +266,8 @@
 					Forum Breakdown
 				</h2>
 				
-				<pto>
-					<pto_header>
-						<blockTable colWidths="30% 20% 20% 30%" style='default'>
-						<tr>
-							<td>Forum Name</td>
-							<td>Discussion Count</td>
-							<td>Comment Count</td>
-							<td>Last Updated</td>
-						</tr>
-					</blockTable>
-					</pto_header>
-					<blockTable colWidths="30% 20% 20% 30%" style='default'>
+					<blockTable colWidths="30% 20% 20% 30%" style='default'
+								repeatRows="1">
 						<tr>
 							<td>Forum Name</td>
 							<td>Discussion Count</td>
@@ -333,7 +281,6 @@
 							<td tal:content="item/last_modified">25</td>
 						</tr>
 					</blockTable>
-				</pto>
 
 				<setNextTemplate name="table_pie" />
 		
@@ -385,7 +332,8 @@
 				alignment="left"
 				colWidths="20% 10% 10%" 
 				tal:define="perf options/engagement_to_performance"
-				tal:condition="options/engagement_to_performance">
+				tal:condition="options/engagement_to_performance"
+				repeatRows="1">
 			<tr>
 				<td align="center"><para style="header">Quartile</para></td>
 				<td align="center"><para style="header">Student Count in Quartile</para></td>
@@ -421,7 +369,8 @@
 		<blockTable style='default' 
 				colWidths="36% 8% 8% 8% 8% 8% 8% 8% 8%" 
 				tal:define="perf options/engagement_to_performance"
-				tal:condition="options/engagement_to_performance">
+				tal:condition="options/engagement_to_performance"
+				repeatRows="1">
 			<tr>
 				<td align="center"><para style="header">Assignment Title</para></td>
 				<td align="center"><para style="header">First Quartile</para></td>
