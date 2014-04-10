@@ -1175,7 +1175,6 @@ class AssignmentSummaryReportPdf(_AbstractReportView):
 		if (	IQMultipleChoicePart.providedBy(question_part)
 			and not IQMultipleChoiceMultipleAnswerPart.providedBy(question_part)
 			and isinstance(response, int)):
-			
 			# We have indexes into single multiple choice answers
 			# convert int indexes into actual values
 			self._add_multiple_choice_to_answer_stats( 	answer_stat, 
@@ -1185,7 +1184,6 @@ class AssignmentSummaryReportPdf(_AbstractReportView):
 		elif (	IQMultipleChoicePart.providedBy(question_part)
 			and IQMultipleChoiceMultipleAnswerPart.providedBy(question_part)
 			and response):		
-
 			# We are losing empty responses
 			# The solutions should be int indexes, as well as our responses
 			for r in response:
@@ -1207,11 +1205,8 @@ class AssignmentSummaryReportPdf(_AbstractReportView):
 											lambda: response in solutions )
 		
 		#TODO Can we handle IQFilePart? Is there anything we need to handle?	
-		elif (	IQMatchingPart.providedBy( question_part ) ):
+		elif ( IQMatchingPart.providedBy( question_part ) ):
 			#This handles both matching and ordering questions
-			#We may need a different AnswerStat type if we want to 
-			#display anything different in report, perhaps just multiple
-			#content slots.
 			for key, val in response.items():
 				left = question_part.labels[ int( key ) ]
 				left = self._get_displayable( left )
@@ -1219,7 +1214,8 @@ class AssignmentSummaryReportPdf(_AbstractReportView):
 				right = question_part.values[val]
 				right = self._get_displayable( right )
 				
-				content = left + ' -> ' + right
+				content = (left, right)
+				
 				#Just need to check if our given key-value pair is in 
 				#the solution mappings
 				check_correct = lambda: question_part.solutions[0].value[ key ] == val
