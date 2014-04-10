@@ -89,20 +89,33 @@
 			This discussion does not have any comments by for-credit students.
 		</para>	
 		
-		<blockTable style="table_user_1"
+		<pto>
+			<pto_header>
+				<blockTable style="table_user_1"
 					tal:condition="options/for_credit_user_stats"
 					alignment="left" colWidths="30% 30% 12%">
-			<tr>
-				<td>Name</td>
-				<td>Login</td>
-				<td>Comments</td>
-			</tr>
-			<tr tal:repeat="item options/for_credit_user_stats">
-				<td tal:content="item/username/display">user1</td>
-				<td tal:content="item/username/username">user2</td>
-				<td align="decimal" tal:content="item/total_comment_count">3</td>
-			</tr>
-		</blockTable>
+					<tr>
+						<td>Name</td>
+						<td>Login</td>
+						<td>Comments</td>
+					</tr>
+				</blockTable>
+			</pto_header>
+			<blockTable style="table_user_1"
+						tal:condition="options/for_credit_user_stats"
+						alignment="left" colWidths="30% 30% 12%">
+				<tr>
+					<td>Name</td>
+					<td>Login</td>
+					<td>Comments</td>
+				</tr>
+				<tr tal:repeat="item options/for_credit_user_stats">
+					<td tal:content="item/username/display">user1</td>
+					<td tal:content="item/username/username">user2</td>
+					<td align="decimal" tal:content="item/total_comment_count">3</td>
+				</tr>
+			</blockTable>
+		</pto>	
 		
 		<h2 style="h2">
 			Non-Credit Comment Activity
@@ -111,17 +124,30 @@
 			This discussion does not have any comments by non-credit students.
 		</para>	
 		
-		<blockTable style="table_user_1"
-					tal:condition="options/non_credit_user_stats"
-					alignment="left" colWidths="30% 12%">
-			<tr>
-				<td>Name</td>
-				<td>Comments</td>
-			</tr>
-			<tr tal:repeat="item options/non_credit_user_stats">
-				<td tal:content="item/username/display">user1</td>
-				<td align="decimal" tal:content="item/total_comment_count">3</td>
-			</tr>
-		</blockTable>
+		
+		<pto>
+			<pto_header>
+				<blockTable style="table_user_1"
+						tal:condition="options/non_credit_user_stats"
+						alignment="left" colWidths="30% 12%">
+				<tr>
+					<td>Name</td>
+					<td>Comments</td>
+				</tr>
+			</blockTable>
+			</pto_header>
+			<blockTable style="table_user_1"
+						tal:condition="options/non_credit_user_stats"
+						alignment="left" colWidths="30% 12%">
+				<tr>
+					<td>Name</td>
+					<td>Comments</td>
+				</tr>
+				<tr tal:repeat="item options/non_credit_user_stats">
+					<td tal:content="item/username/display">user1</td>
+					<td align="decimal" tal:content="item/total_comment_count">3</td>
+				</tr>
+			</blockTable>
+		</pto>	
 
 </metal:block>

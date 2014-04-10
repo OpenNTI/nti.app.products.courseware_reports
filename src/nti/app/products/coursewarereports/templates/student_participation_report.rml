@@ -42,20 +42,35 @@
 		This table shows the discussions created by ${options/user/display}.
 	</para>
 	
-		<blockTable style='default' 
-					colWidths="35% 55% 10%"
-					tal:condition="options/topics_created">
-			<tr>
-				<td><para style="header">Discussion Name</para></td>
-				<td><para style="header">Forum Name</para></td>
-				<td><para style="header">Created Date</para></td>
-			</tr>
-			<tr tal:repeat="item options/topics_created">
-				<td tal:content="item/topic_name">The Topic Name</td>
-				<td tal:content="item/forum_name">Forum Name</td>
-				<td tal:content="item/created/date">Created Date</td>
-			</tr>
-		</blockTable>
+		
+		<pto>
+			<pto_header>
+				<blockTable style='default' 
+						colWidths="35% 55% 10%"
+						tal:condition="options/topics_created">
+					<tr>
+						<td><para style="header">Discussion Name</para></td>
+						<td><para style="header">Forum Name</para></td>
+						<td><para style="header">Created Date</para></td>
+					</tr>
+				</blockTable>
+			</pto_header>
+			<blockTable style='default' 
+						colWidths="35% 55% 10%"
+						tal:condition="options/topics_created">
+				<tr>
+					<td><para style="header">Discussion Name</para></td>
+					<td><para style="header">Forum Name</para></td>
+					<td><para style="header">Created Date</para></td>
+				</tr>
+				<tr tal:repeat="item options/topics_created">
+					<td tal:content="item/topic_name">The Topic Name</td>
+					<td tal:content="item/forum_name">Forum Name</td>
+					<td tal:content="item/created/date">Created Date</td>
+				</tr>
+			</blockTable>
+		</pto>
+		
 		<para tal:condition="not:options/topics_created">
 			This student has not created any discussions.
 		</para>
@@ -70,20 +85,34 @@
 		each forum discussion in the course. 
 	</para>
 	
-		<blockTable style='default' 
-					colWidths="40% 40% 20%"
-					tal:condition="options/comment_count_by_topic">
-			<tr>
-				<td>Forum Name</td>
-				<td>Discussion Name</td>
-				<td>Comment Count</td>
-			</tr>
-			<tr tal:repeat="item options/comment_count_by_topic">
-				<td tal:content="python:item[0].__parent__.title">The Forum Name</td>
-				<td tal:content="python:item[0].title">Topic Name</td>
-				<td align="decimal" tal:content="python:item[1]">Comment Count</td>
-			</tr>
-		</blockTable>
+		<pto>
+			<pto_header>
+				<blockTable style='default' 
+						colWidths="40% 40% 20%"
+						tal:condition="options/comment_count_by_topic">
+					<tr>
+						<td>Forum Name</td>
+						<td>Discussion Name</td>
+						<td>Comment Count</td>
+					</tr>
+				</blockTable>
+			</pto_header>
+			<blockTable style='default' 
+						colWidths="40% 40% 20%"
+						tal:condition="options/comment_count_by_topic">
+				<tr>
+					<td>Forum Name</td>
+					<td>Discussion Name</td>
+					<td>Comment Count</td>
+				</tr>
+				<tr tal:repeat="item options/comment_count_by_topic">
+					<td tal:content="python:item[0].__parent__.title">The Forum Name</td>
+					<td tal:content="python:item[0].title">Topic Name</td>
+					<td align="decimal" tal:content="python:item[1]">Comment Count</td>
+				</tr>
+			</blockTable>
+		</pto>
+		
 		<para tal:condition="not:options/comment_count_by_topic">
 			This student has not posted any comments.
 		</para>
@@ -98,6 +127,16 @@
 	<h2 style="h2" spaceAfter="0.3in" spaceBefore="0.5in">
 		Self-Assessments
 	</h2>	
+	
+	<pto>
+		<pto_header>
+			<blockTable style='default' alignment="left" colWidths="44% 10%" tal:condition="options/self_assessment_title_to_count">
+				<tr>
+					<td>Assessment Title</td>
+					<td>Attempts</td>
+				</tr>
+			</blockTable>
+		</pto_header>
 		<blockTable style='default' alignment="left" colWidths="44% 10%" tal:condition="options/self_assessment_title_to_count">
 			<tr>
 				<td>Assessment Title</td>
@@ -107,16 +146,8 @@
 				<td tal:content="python:item[0]">The Assessment Title</td>
 				<td align="decimal" tal:content="python:item[1]">Times Taken</td>
 			</tr>
-			<tr tal:condition="False">
-				<td>The Topic Name</td>
-				<td>Forum Name</td>
-			</tr>
-
-			<tr tal:condition="False">
-				<td>The Topic Name</td>
-				<td>Forum Name</td>
-			</tr>
 		</blockTable>
+	</pto>
 		
 		<para tal:condition="not:options/self_assessment_title_to_count">
 			This course contains no self-assessments.
@@ -126,6 +157,20 @@
 		Assignments
 	</h2>
 	
+	<pto>
+		<pto_header>
+			<blockTable style='default' 
+					colWidths="44% 18% 18% 10% 10%"
+					tal:condition="options/assignments">
+				<tr>
+					<td><para style="header">Assignment Name</para></td>
+					<td><para style="header">Date Submitted</para></td>
+					<td><para style="header">Date Due</para></td>
+					<td><para style="header">Grade</para></td>
+					<td><para style="header">Feedback Comments</para></td>
+				</tr>
+			</blockTable>
+		</pto_header>
 		<blockTable style='default' 
 					colWidths="44% 18% 18% 10% 10%"
 					tal:condition="options/assignments">
@@ -144,18 +189,9 @@
 				<td align="decimal" tal:content="item/grade_value">A+</td>
 				<td align="decimal" tal:content="item/history/FeedbackCount | default"></td>
 			</tr>
-			<tr tal:condition="False">
-				<td>Chortle</td>
-				<td>-</td>
-				<td></td>
-			</tr>
-
-			<tr tal:condition="False">
-				<td>Making Sound</td>
-				<td>2014-10-22</td>
-				<td>B+</td>
-			</tr>
 		</blockTable>
+	</pto>
+	
 		<para tal:condition="not:options/assignments">
 			This course contains no assignments.
 		</para>
