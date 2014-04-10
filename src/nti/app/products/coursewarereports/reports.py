@@ -576,9 +576,3 @@ def _finalize_answer_stats( answer_stats, total_submits ):
 		sub.letter_prefix = letters[j]
 		sub.perc_s = '%0.1f%%' % ( sub.count * 100.0 / total_submits ) if total_submits else 'N/A'
 		
-ROMAN_NUMERALS = [ 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X' ]		
-	
-def _get_roman_numeral(idx):
-	if idx < len( ROMAN_NUMERALS ):
-		return ROMAN_NUMERALS[idx]	
-	return 'X+'		

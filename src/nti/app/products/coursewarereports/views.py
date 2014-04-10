@@ -30,13 +30,14 @@ from .reports import _assignment_stat_for_column
 from .reports import _build_question_stats
 from .reports import _QuestionPartStat
 from .reports import _QuestionStat
-from .reports import _get_roman_numeral
 
 from zope import component
 from zope import interface
 
 from six import string_types
 from numbers import Number
+
+from docutils.utils import roman
 
 from numpy import percentile
 
@@ -1069,6 +1070,7 @@ class CourseSummaryReportPdf(_AbstractReportView):
 from nti.app.assessment.interfaces import IUsersCourseAssignmentHistoryItem
 from nti.assessment.interfaces import IQAssessedQuestionSet
 from nti.assessment.interfaces import IQMultipleChoicePart
+from nti.assessment.interfaces import IQMatchingPart
 from nti.assessment.interfaces import IQMultipleChoiceMultipleAnswerPart
 from nti.contentfragments.interfaces import IPlainTextContentFragment
 
@@ -1090,23 +1092,6 @@ class AssignmentSummaryReportPdf(_AbstractReportView):
 	def _build_assignment_data(self, options):
 		stats = [_assignment_stat_for_column(self, self.context)]
 		options['assignment_data'] = stats
-
-	def _add_multiple_choice_to_answer_stats(self,answer_stats,response,question_part,check_correct):
-		"""Adds the multiple choice response to our answer_stats"""
-		#We could have empty strings or 'None' here; slot that in our 'empty' answer area
-		response_val = question_part.choices[response] if response is not None and response != '' else ''
-		self._add_val_to_answer_stats(answer_stats, response_val, check_correct)
-
-	def _add_val_to_answer_stats(self,answer_stats,response,check_correct):
-		"""Adds a response value to our answer_stats"""
-		if isinstance(response, string_types):
-			response = IPlainTextContentFragment(response)
-			
-		if response in answer_stats:
-			answer_stats[response].count += 1
-		else:
-			is_correct = check_correct()
-			answer_stats[response] = _AnswerStat(response,is_correct)
 
 	def _build_question_data(self, options):
 		assignment = component.queryUtility(IQAssignment, name=self.context.AssignmentId)
@@ -1179,7 +1164,7 @@ class AssignmentSummaryReportPdf(_AbstractReportView):
 			#First time seeing this question, initialize our question parts since they won't change
 			question_part_stats = {}
 			for idx in range(len(question.parts)):
-				question_part_stats[idx] = _QuestionPartStat( _get_roman_numeral( idx ) )
+				question_part_stats[idx] = _QuestionPartStat( roman.toRoman( idx + 1 ) )
 				
 			question_stats[ question_id ] = _QuestionStat( question_part_stats )
 			
@@ -1208,23 +1193,64 @@ class AssignmentSummaryReportPdf(_AbstractReportView):
 															r, 
 															question_part,
 															lambda: r in question_part.solutions[0].value )
-		#TODO We should be able to handle freeform multiple answer as well
-		# Solutions and respones should be a list of strings
-		# Freeform multi-answer strings
-		#	-list of responses
-		#	-list of solutions
-		#TODO Can we handle matching (and ordering)
-		#	For those, each answer available will have correct and incorrect answers
 		elif isinstance(response, string_types):
+			#IQFreeResponsePart?
 			# Freeform answers
 			response = response.lower()	
 			#TODO We should be able to look in the solutions list for even the 
 			#multiple choice types correct (probably a rare use-case)
 			#TODO What case do non-strings occur in?		
-			solutions = (x.value.lower() if isinstance(x.value, string_types) else x for x in question_part.solutions)
+			solutions = (	x.value.lower() if isinstance(x.value, string_types) else x 
+							for x in question_part.solutions )
 			self._add_val_to_answer_stats( 	answer_stat,
 											response,
 											lambda: response in solutions )
+		
+		#TODO Can we handle IQFilePart? Is there anything we need to handle?	
+		elif (	IQMatchingPart.providedBy( question_part ) ):
+			#This handles both matching and ordering questions
+			#We may need a different AnswerStat type if we want to 
+			#display anything different in report, perhaps just multiple
+			#content slots.
+			for key, val in response.items():
+				left = question_part.labels[ int( key ) ]
+				left = self._get_displayable( left )
+				
+				right = question_part.values[val]
+				right = self._get_displayable( right )
+				
+				content = left + ' -> ' + right
+				#Just need to check if our given key-value pair is in 
+				#the solution mappings
+				check_correct = lambda: question_part.solutions[0].value[ key ] == val
+				self._add_displayable_to_answer_stat( 	answer_stat, 
+														content, 
+														check_correct )
+	
+	
+	def _add_multiple_choice_to_answer_stats( self, answer_stat, response, question_part, check_correct ):
+		"""Adds the multiple choice response to our answer_stats"""
+		#We could have empty strings or 'None' here; slot that in our 'empty' answer area
+		response_val = question_part.choices[response] if response is not None and response != '' else ''
+		self._add_val_to_answer_stats(answer_stat, response_val, check_correct)
+
+	def _add_val_to_answer_stats( self, answer_stat, response, check_correct ):
+		"""Adds a response value to our answer_stats"""
+		response = self._get_displayable( response )
+		self._add_displayable_to_answer_stat( answer_stat, response, check_correct )
+	
+	def _add_displayable_to_answer_stat( self, answer_stat, response, check_correct ):		
+		"""Adds a response value to our answer_stats"""
+		if response in answer_stat:
+			answer_stat[response].count += 1
+		else:
+			is_correct = check_correct()
+			answer_stat[response] = _AnswerStat( response, is_correct )
+		
+	def _get_displayable( self, input ):
+		if isinstance(input, string_types):
+			input = IPlainTextContentFragment(input)
+		return input
 			
 	def __call__(self):
 		self._check_access()
