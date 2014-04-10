@@ -95,13 +95,13 @@
 					repeatRows="1">
 			<tr>
 				<td>Name</td>
-				<td>Login</td>
-				<td align="right">Comments</td>
+				<td align="left" >Login</td>
+				<td>Comments</td>
 			</tr>
 			<tr tal:repeat="item options/for_credit_user_stats">
 				<td tal:content="item/username/display">user1</td>
-				<td tal:content="item/username/username">user2</td>
-				<td align="right" tal:content="item/total_comment_count">3</td>
+				<td align="left" tal:content="item/username/username">user2</td>
+				<td tal:content="item/total_comment_count">3</td>
 			</tr>
 		</blockTable>
 		
@@ -119,11 +119,11 @@
 					repeatRows="1">
 			<tr>
 				<td>Name</td>
-				<td align="right">Comments</td>
+				<td>Comments</td>
 			</tr>
 			<tr tal:repeat="item options/non_credit_user_stats">
 				<td tal:content="item/username/display">user1</td>
-				<td align="right" tal:content="item/total_comment_count">3</td>
+				<td tal:content="item/total_comment_count">3</td>
 			</tr>
 		</blockTable>
 

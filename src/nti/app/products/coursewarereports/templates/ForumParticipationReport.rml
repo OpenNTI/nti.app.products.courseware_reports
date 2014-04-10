@@ -56,25 +56,25 @@
 			Comments
 		</h1>
 		
-		<blockTable style='table_user_2'
-					colWidths="40% 21% 15% 12% 12%" 
-					tal:condition="options/comment_count_by_topic"
-					repeatRows="1" >
-			<tr>
-				<td><para style="header">Discussion Name</para></td>
-				<td><para style="header">Creator</para></td>
-				<td><para style="header_r">Created Date</para></td>
-				<td><para style="header_r">Comments</para></td>
-				<td><para style="header_r">Distinct Users</para></td>
-			</tr>
-			<tr tal:repeat="item options/comment_count_by_topic">
-				<td> <para tal:content="item/title" style="data">Forum title</para></td>
-				<td tal:content="item/creator/display">Steve</td>
-				<td align="right" tal:content="item/created/date">2014-01-01</td>
-				<td align="right" tal:content="item/comment_count">25</td>
-				<td align="right" tal:content="item/distinct_user_count">3</td>
-			</tr>
-		</blockTable>
+			<blockTable style='table_user_2'
+						colWidths="40% 21% 15% 12% 12%" 
+						tal:condition="options/comment_count_by_topic"
+						repeatRows="1" >
+				<tr>
+					<td><para style="header">Discussion Name</para></td>
+					<td><para style="header">Creator</para></td>
+					<td><para style="header_r">Created Date</para></td>
+					<td><para style="header_r">Comments</para></td>
+					<td><para style="header_r">Distinct Users</para></td>
+				</tr>
+				<tr tal:repeat="item options/comment_count_by_topic">
+					<td> <para tal:content="item/title" style="data">Forum title</para></td>
+					<td align="left" tal:content="item/creator/display">Steve</td>
+					<td tal:content="item/created/date">2014-01-01</td>
+					<td tal:content="item/comment_count">25</td>
+					<td tal:content="item/distinct_user_count">3</td>
+				</tr>
+			</blockTable>
 		
 		
 		<para tal:condition="not:options/comment_count_by_topic">
@@ -166,15 +166,15 @@
 					repeatRows="1" >
 			<tr>
 				<td>Name</td>
-				<td>Login</td>
+				<td align="left">Login</td>
 				<td><para style="header_r">Discussions Created</para></td>
-				<td align="right">Comments</td>
+				<td>Comments</td>
 			</tr>
 			<tr tal:repeat="item options/for_credit_user_stats">
 				<td tal:content="item/username/display">user1</td>
-				<td tal:content="item/username/username">user2</td>
-				<td align="right" tal:content="item/topics_created">1</td>
-				<td align="right" tal:content="item/total_comment_count">3</td>
+				<td align="left" tal:content="item/username/username">user2</td>
+				<td tal:content="item/topics_created">1</td>
+				<td tal:content="item/total_comment_count">3</td>
 			</tr>
 		</blockTable>
 		
@@ -194,12 +194,12 @@
 			<tr>
 				<td>Name</td>
 				<td><para style="header_r">Discussions Created</para></td>
-				<td align="right">Comments</td>
+				<td>Comments</td>
 			</tr>
 			<tr tal:repeat="item options/non_credit_user_stats">
 				<td tal:content="item/username/display">user1</td>
-				<td align="right" tal:content="item/topics_created">1</td>
-				<td align="right" tal:content="item/total_comment_count">3</td>
+				<td tal:content="item/topics_created">1</td>
+				<td tal:content="item/total_comment_count">3</td>
 			</tr>
 		</blockTable>
 

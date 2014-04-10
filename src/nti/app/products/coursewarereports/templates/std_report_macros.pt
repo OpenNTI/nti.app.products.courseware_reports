@@ -71,6 +71,10 @@
 			<!-- Data rows -->
 			<blockTextColor start="0,1" stop="-1,-1" colorName="#757474" />
 			<blockFont start="0,1" stop="-1,-1" name="Helvetica" size="12" />
+			
+			<!-- First column onward. Since we have one fixed decimal point,
+				 we should be able to line everything except the first column-->
+			<blockAlignment start="1,0" stop="-1,-1" value="right" />
 
 		</blockTableStyle>
 		
@@ -90,6 +94,10 @@
 			<!-- Username column #1 -->
 			<blockTextColor start="0,1" stop="0,-1" colorName="#3fb3f6" />
 			
+			<!-- First column onward. Since we have one fixed decimal point,
+				 we should be able to line everything except the first column-->
+			<blockAlignment start="1,0" stop="-1,-1" value="right" />
+			
 		</blockTableStyle>
 		
 		<blockTableStyle id="table_user_2">
@@ -108,6 +116,10 @@
 			
 			<!-- Username column #2 -->
 			<blockTextColor start="1,1" stop="1,-1" colorName="#3fb3f6" />
+			
+			<!-- First column onward. Since we have one fixed decimal point,
+				 we should be able to line everything except the first column-->
+			<blockAlignment start="1,0" stop="-1,-1" value="right" />
 			
 		</blockTableStyle>
 		
@@ -194,7 +206,7 @@
 
 
 	<metal:macro metal:define-macro="comment_table" >
-		<blockTable alignment="left" colWidths="60% 12% 12%" style="table_user_1">
+		<blockTable alignment="left" colWidths="60% 15% 15%" style="table_user_1">
 			<tr>
 				<td>Name</td>
 				<td>Count</td>
@@ -202,8 +214,8 @@
 			</tr>
 			<tr tal:repeat="item python: [x for x in top_commenters] ">
 				<td tal:content="item/display">Display Name</td>
-				<td align="decimal" tal:content="item/count">count</td>
-				<td align="decimal" tal:content="python: '%0.1f%%' % item.perc">percent</td>
+				<td tal:content="item/count">count</td>
+				<td tal:content="python: '%0.1f%%' % item.perc">percent</td>
 			</tr>
 		</blockTable>
 	</metal:macro>
@@ -302,17 +314,17 @@
 			<tr>
 				<td>Type</td>
 				<td>Count</td>
-				<td><para style="header">
+				<td><para style="header_r">
 					Unique<br/>
 					Contributors
 				</para></td>
-				<td><para style="header">Unique Percent Contributed</para></td>
+				<td><para style="header_r">Unique Percent Contributed</para></td>
 			</tr>
 			<tr tal:repeat="item engagement_stat">
 				<td tal:content="item/name">Notes</td>
-				<td align="decimal" tal:content="item/count">25</td>
-				<td align="decimal" tal:content="item/unique_count">100</td>
-				<td align="decimal" tal:content="item/unique_perc_s">25</td>
+				<td tal:content="item/count">25</td>
+				<td tal:content="item/unique_count">100</td>
+				<td tal:content="item/unique_perc_s">25</td>
 			</tr>
 		</blockTable>
 	</metal:macro>
