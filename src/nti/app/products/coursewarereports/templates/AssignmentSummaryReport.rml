@@ -5,11 +5,14 @@
 
 
 		<para style="normal" fontSize="12" spaceAfter=".1in">
-			This report analyzes <u>${context/displayName}</u>.  The report 
-			includes information about the assignment statistics, assignment results, and a
-			view into results by question. 
+			This report includes information about the assignment statistics, assignment results, and a
+			view into results by question for the assignment <u>${context/displayName}</u>.
 		</para>
 		<hr width="100%" />
+
+		<h1 style="h1" fontSize="25" spaceAfter=".3in" spaceBefore=".1in">
+			Assignments
+		</h1>
 
 		<h2 style="h2" spaceAfter=".3in">
 			Assignment Statistics
@@ -73,7 +76,7 @@
 					
 			<keepTogether>
 			<h2 style="h2" fontSize="10" spaceBefore=".3in" fontName="Helvetica-Bold" spaceAfter=".2" keepWithNext='true' 
-				tal:content="string:${question/title}: (Average Score ${question/avg_score})">
+				tal:content="string:${question/title}: Average Score ${question/avg_score}">
 				Question Number
 			</h2>
 			<para style="subdesc" tal:content="question/content" spaceAfter=".1in" >
@@ -91,6 +94,7 @@
 					Part I
 				</h3>
 
+	
 				<!-- Single column answers -->
 				<blockTable alignment="left"
 							colWidths="6% 50% 7% 7%"
@@ -99,7 +103,16 @@
 						<lineStyle 	thickness="2" 
 									start="0,0" stop="-1,-1" 
 									kind="linebelow" colorName="white" />	
+						<blockTextColor start="0,0" stop="-1,0" colorName="#b8b8b8" />
+						<blockFont start="0,0" stop="-1,0" name="Helvetica-Bold" size="10" />			
 					</blockTableStyle>		
+						
+					<tr>
+						<td />
+						<td />
+						<td align="decimal">Count</td>
+						<td align="decimal">Percent</td>
+					</tr>
 						
 					<tr tal:repeat="answer_stat question_part/answer_stats">
 						<td tal:content="string:${answer_stat/letter_prefix}."
@@ -133,6 +146,7 @@
 							fontSize="14" fontName="Helvetica-Bold"
 							topPadding="20"
 							bottomPadding="20"
+							rightPadding="20"
 							align="decimal"
 							vAlign="middle" >
 							perc
@@ -150,8 +164,18 @@
 									kind="linebelow" colorName="white" />
 						<lineStyle 	thickness="2" 
 									start="1,0" stop="1,-1" 
-									kind="lineafter" colorName="white" />					
+									kind="lineafter" colorName="white" />	
+						<blockTextColor start="0,0" stop="-1,0" colorName="#b8b8b8" />
+						<blockFont start="0,0" stop="-1,0" name="Helvetica-Bold" size="10" />							
 					</blockTableStyle>		
+						
+					<tr>
+						<td />
+						<td />
+						<td />
+						<td align="decimal">Count</td>
+						<td align="decimal">Percent</td>
+					</tr>	
 						
 					<tr tal:repeat="answer_stat question_part/answer_stats">
 						<td tal:content="string:${answer_stat/letter_prefix}."
@@ -193,6 +217,7 @@
 							fontSize="14" fontName="Helvetica-Bold"
 							topPadding="20"
 							bottomPadding="20"
+							rightPadding="20"
 							align="decimal"
 							vAlign="middle" >
 							perc
