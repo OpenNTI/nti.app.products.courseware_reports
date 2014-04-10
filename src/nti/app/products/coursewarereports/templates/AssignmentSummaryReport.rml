@@ -173,6 +173,7 @@
 						</td>
 						<td tal:attributes="background python: '#cbf2db' if answer_stat.is_correct else '#f5f5f5'"
 							vAlign="middle"
+							leftPadding="20"
 							fontColor="#494949">
 								<para tal:content="python: answer_stat.answer[1]">
 									answer

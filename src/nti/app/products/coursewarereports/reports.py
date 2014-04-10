@@ -544,7 +544,7 @@ def _build_question_stats( ordered_questions, question_stats ):
 			content = IPlainTextContentFragment( q.parts[0].content )
 
 		#Averaging all the parts to get the question assessment grade
-		question_avg_assessed_s = '%0.1f' % average( question_part_grades )
+		question_avg_assessed_s = '%0.1f' % average( question_part_grades ) if question_part_grades else 'N/A'
 
 		stat = _QuestionStat( question_parts, title, content, question_avg_assessed_s )
 		results.append( stat )
