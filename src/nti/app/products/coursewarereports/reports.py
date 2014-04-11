@@ -368,13 +368,13 @@ _AssignmentStat = namedtuple('_AssignmentStat',
 							  'non_credit_avg_grade', 'median_grade', 'std_dev_grade',
 							  'attempted_perc', 'for_credit_attempted_perc', 'non_credit_attempted_perc' ))
 
-def _assignment_stat_for_column(self, column, filter=None):
+def _assignment_stat_for_column(report, column, filter=None):
 	count = len(column)
 	keys = set(column)
 
 	# TODO Case sensitivity issue?
 	# TODO We need explicit non-credit too
-	for_credit_keys = self.for_credit_student_usernames.intersection(keys)
+	for_credit_keys = report.for_credit_student_usernames.intersection(keys)
 	for_credit_grade_points = list()
 	non_credit_grade_points = list()
 	all_grade_points = list()
@@ -453,20 +453,20 @@ def _assignment_stat_for_column(self, column, filter=None):
 	median_grade_s = '%0.1f' % median_grade
 	std_dev_grade_s = '%0.1f' % std_dev_grade
 
-	if self.count_all_students:
-		per_attempted = (count / self.count_all_students) * 100.0
+	if report.count_all_students:
+		per_attempted = (count / report.count_all_students) * 100.0
 		per_attempted_s = '%0.1f' % per_attempted
 	else:
 		per_attempted_s = 'N/A'
 
-	if self.count_credit_students:
-		for_credit_per = (for_credit_total / self.count_credit_students) * 100.0
+	if report.count_credit_students:
+		for_credit_per = (for_credit_total / report.count_credit_students) * 100.0
 		for_credit_per_s = '%0.1f' % for_credit_per
 	else:
 		for_credit_per_s = 'N/A'
 		
-	if self.count_non_credit_students:
-		non_credit_per = (non_credit_total / self.count_non_credit_students) * 100.0
+	if report.count_non_credit_students:
+		non_credit_per = (non_credit_total / report.count_non_credit_students) * 100.0
 		non_credit_per_s = '%0.1f' % non_credit_per
 	else:
 		non_credit_per_s = 'N/A'

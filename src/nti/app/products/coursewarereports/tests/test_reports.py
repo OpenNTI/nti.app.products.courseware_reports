@@ -15,10 +15,21 @@ from ..reports import _TopCreators
 from ..reports import _StudentInfo
 from ..reports import _common_buckets
 from ..reports import _build_buckets_options
+from ..reports import _get_top_answers
+from ..reports import _finalize_answer_stats
+from ..reports import _build_question_stats
+from ..reports import _assignment_stat_for_column
+from ..reports import _AssignmentStat
+
+from ..views import _AnswerStat
+
+from nti.contentfragments.interfaces import PlainTextContentFragment
 
 from collections import namedtuple
 
 from datetime import datetime
+
+from six import string_types
 
 import time
 
@@ -36,6 +47,7 @@ from hamcrest import greater_than
 from hamcrest import less_than
 from hamcrest import less_than_or_equal_to
 from hamcrest import close_to
+from hamcrest import is_
 
 class TestReports( unittest.TestCase ):
 
@@ -54,7 +66,124 @@ class TestReports( unittest.TestCase ):
 		adjusted = _adjust_date( d )
 		assert_that( adjusted, not_none() )
 		assert_that( adjusted.tzname(), not_none() )
+		
+	def test_finalize_answer_stats(self):
+		_finalize_answer_stats( [], 4 )	
+		
+		answers = [ _AnswerStat( 'bleh', False ) ]
+		_finalize_answer_stats( answers, 0 )	
+		assert_that( answers[0].letter_prefix, not_none() )
+		assert_that( answers[0].perc_s, not_none() )
+		
+		answers = [ _AnswerStat( 'bleh', False ), 
+					_AnswerStat( 'bleh', False ),
+					_AnswerStat( 'bleh', False ),
+					_AnswerStat( 'bleh', False ) ]
+		_finalize_answer_stats( answers, 4 )
+		for a in answers:
+			assert_that( a.letter_prefix, not_none() )
+			assert_that( a.perc_s, equal_to( '25.0%' ) )
 	
+	def test_get_top_answers(self):
+		results = _get_top_answers( {} )	
+		assert_that( results, not_none() )
+		assert_that( results, has_length( 0 ) )
+		
+		answers = { 'bleh':_AnswerStat( 'bleh', False ) }
+		results = _get_top_answers( answers )	
+		
+		assert_that( results, not_none() )
+		assert_that( results, has_length( 1 ) )
+		
+		#9 stats
+		stat1 = _AnswerStat( 'key1', False ); stat1.count = 7
+		stat2 = _AnswerStat( 'key2', False ); stat2.count = 5 
+		stat3 = _AnswerStat( 'key3', False ); stat3.count = 5 
+		stat4 = _AnswerStat( 'key4', False ); stat4.count = 6 
+		stat5 = _AnswerStat( 'key5', False ); stat5.count = 6 
+		stat6 = _AnswerStat( 'key6', False ); stat6.count = 9 
+		stat7 = _AnswerStat( 'key7', False ); stat7.count = 8 
+		stat8 = _AnswerStat( 'key8', False ); stat8.count = 4 
+		stat9 = _AnswerStat( 'key9', True ) 
+		answers = { stat1.answer: stat1, 
+					stat2.answer: stat2,
+					stat3.answer: stat3,
+					stat4.answer: stat4,
+					stat5.answer: stat5,
+					stat6.answer: stat6,
+					stat7.answer: stat7,
+					stat8.answer: stat8,
+					stat9.answer: stat9 }
+		results = _get_top_answers( answers )	
+		
+		assert_that( results, not_none() )
+		assert_that( results, has_length( 8 ) )
+		assert_that( results[0].answer, equal_to( 'key6' ) )
+		
+		corrects = [ x for x in results if x.is_correct ]
+		assert_that( corrects, not_none() )
+		assert_that( corrects, has_length( 1 ) )
+		assert_that( corrects, only_contains( stat9 ) )
+
+_quests = namedtuple( '_quests', ( 'ntiid', 'content' ))
+_q_stats = namedtuple( 'q_stats', ( 'question_part_stats', 'submission_count' ) )
+	
+class TestBuildQuestions( unittest.TestCase ):
+	
+	def test_empty(self):
+		results = _build_question_stats( [], None )
+		assert_that( results, not_none() )
+	
+	def test_single(self):
+		q1s = _quests( 1, PlainTextContentFragment( 'content1' ) )
+		
+		results = _build_question_stats( [q1s], {} )
+		assert_that( results, not_none() )
+		assert_that( results, has_length( 1 ) )
+		assert_that( results[0].question_part_stats, not_none() )
+		assert_that( results[0].avg_score, not_none() )
+		assert_that( isinstance( results[0].avg_score, string_types ) )
+		
+	def test_multi(self):
+		q1s = _quests( 1, PlainTextContentFragment( 'content1' ) )
+		q2s = _quests( 2, PlainTextContentFragment( 'content2' ) )
+		
+		results = _build_question_stats( [q1s,q2s], {} )
+		assert_that( results, not_none() )
+		assert_that( results, has_length( 2 ) )
+		assert_that( results[0].question_part_stats, not_none() )
+		assert_that( results[0].avg_score, not_none() )
+		assert_that( isinstance( results[0].avg_score, string_types ) )	
+		
+	def test_single_with_stats(self):
+		q1s = _quests( 1, PlainTextContentFragment( 'content1' ) )
+		
+		results = _build_question_stats( [q1s], {1:_q_stats( {}, 0 ) } )
+		assert_that( results, not_none() )
+		assert_that( results, has_length( 1 ) )
+		assert_that( results[0].question_part_stats, not_none() )
+		assert_that( results[0].avg_score, not_none() )
+		assert_that( isinstance( results[0].avg_score, string_types ) )
+		
+		#FIXME
+		results = _build_question_stats( [q1s], {1:_q_stats( {}, 0 ) } )
+		assert_that( results, not_none() )
+		assert_that( results, has_length( 1 ) )
+		assert_that( results[0].question_part_stats, not_none() )
+		assert_that( results[0].avg_score, not_none() )
+		assert_that( isinstance( results[0].avg_score, string_types ) )
+		
+	def test_multi_with_stats(self):
+		q1s = _quests( 1, PlainTextContentFragment( 'content1' ) )
+		q2s = _quests( 2, PlainTextContentFragment( 'content2' ) )
+		
+		#FIXME
+		results = _build_question_stats( [q1s,q2s], {} )
+		assert_that( results, not_none() )
+		assert_that( results, has_length( 2 ) )
+		assert_that( results[0].question_part_stats, not_none() )
+		assert_that( results[0].avg_score, not_none() )
+		assert_that( isinstance( results[0].avg_score, string_types ) )		
 	
 class TestQuestionStats( unittest.TestCase ):		
 	"""
@@ -333,5 +462,87 @@ class TestTopCreators( unittest.TestCase ):
 		assert_that( self.top_creators.percent_contributed( 1, 1 ), equal_to( 100 ) ) 
 		assert_that( self.top_creators.percent_contributed_str(), not_none() ) 
 		assert_that( self.top_creators.for_credit_percent_contributed_str(), not_none() ) 
-		assert_that( self.top_creators.non_credit_percent_contributed_str(), not_none() ) 			
+		assert_that( self.top_creators.non_credit_percent_contributed_str(), not_none() ) 	
+
+_report = namedtuple( '_report', ( 	'for_credit_student_usernames', 
+									'open_student_usernames', 
+									'count_all_students',
+									'count_credit_students',
+									'count_non_credit_students' ) )
+_grade = namedtuple( '_grade', 'value' )
+		
+class _Column(object):
+	
+	def __init__( self, displayName, DueDate, objects ):	
+		self.displayName = displayName
+		self.DueDate = DueDate
+		self.objects = objects
+	
+	def len(self):
+		return len(self.objects)
+	
+	def __len__(self):
+		return self.len()
+		
+	def __iter__(self):
+		return (x for x in self.objects)
+	
+	def items(self):
+		return self.objects.items()
+	
+class TestBuildAssignmentStats( unittest.TestCase ):
+	
+	def test_empty(self):
+		report = _report( set(), [], 0, 0 , 0 )
+		col = _Column( 'bane', 'date', {} )
+		stat = _assignment_stat_for_column( report, col )		
+		assert_that( stat, not_none() )
+		assert_that( stat, is_( _AssignmentStat ) )
+		
+	def test_building(self):
+		report = _report( {'fc1','fc2'}, {'nc1','nc2'}, 4, 2, 2 )
+		col_items = { 	'fc1':_grade(40), 
+						'fc2':_grade(80), 
+						'nc2':_grade(30), 
+						'dropped':_grade(0)  }
+		col = _Column( 'name1', 'date1', col_items )
+		stat = _assignment_stat_for_column( report, col )		
+
+		assert_that( stat, not_none() )
+		assert_that( stat, is_( _AssignmentStat ) )
+		assert_that( stat.count, is_( 4 ) )
+#		assert_that( stat.total, is_( 3 ) )
+		assert_that( stat.for_credit_total, is_( 2 ) )
+		assert_that( stat.non_credit_total, is_( 2 ) ) #FIXME
+#		assert_that( stat.avg_grade, is_( '50.0' ) )
+		assert_that( stat.for_credit_avg_grade, is_( '60.0' ) )
+#		assert_that( stat.non_credit_avg_grade, is_( '30.0' ) )
+		assert_that( stat.attempted_perc, not_none() )
+		assert_that( stat.for_credit_attempted_perc, not_none() )
+		assert_that( stat.non_credit_attempted_perc, not_none() )
+		
+	def test_building_filter(self):
+		report = _report( {'fc1','fc2'}, {'nc1','nc2'}, 4, 2, 2 )
+		col_items = { 	'fc1':_grade(40), 
+						'fc2':_grade(80), 
+						'nc2':_grade(30), 
+						'dropped':_grade(0)  }
+		filter = {'fc2'}
+		col = _Column( 'name1', 'date1', col_items )
+		stat = _assignment_stat_for_column( report, col, filter )		
+
+		assert_that( stat, not_none() )
+		assert_that( stat, is_( _AssignmentStat ) )
+		assert_that( stat.count, is_( 4 ) )
+		assert_that( stat.total, is_( 1 ) )
+		assert_that( stat.for_credit_total, is_( 1 ) )
+		assert_that( stat.non_credit_total, is_( 0 ) )
+		assert_that( stat.avg_grade, is_( '80.0' ) )
+		assert_that( stat.for_credit_avg_grade, is_( '80.0' ) )
+		assert_that( stat.non_credit_avg_grade, is_( 'N/A' ) )
+		assert_that( stat.attempted_perc, not_none() )
+		assert_that( stat.for_credit_attempted_perc, not_none() )
+		assert_that( stat.non_credit_attempted_perc, not_none() )
+		
+		
 		

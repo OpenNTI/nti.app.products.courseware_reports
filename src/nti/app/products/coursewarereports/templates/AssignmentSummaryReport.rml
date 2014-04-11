@@ -97,7 +97,7 @@
 	
 				<!-- Single column answers -->
 				<blockTable alignment="left"
-							colWidths="6% 50% 7% 7%"
+							colWidths="6% 50% 7% 8%"
 							repeatRows="1"
 							tal:condition="python: question_part.answer_stats and not isinstance( question_part.answer_stats[0].answer, tuple )">
 					<blockTableStyle id="new" >
@@ -156,7 +156,7 @@
 				
 				<!-- Handle multi-column answers -->
 				<blockTable alignment="left"
-							colWidths="6% 25% 25% 7% 7%"
+							colWidths="6% 25% 25% 7% 8%"
 							repeatRows="1"
 							tal:condition="python: question_part.answer_stats and isinstance( question_part.answer_stats[0].answer, tuple )">
 					<blockTableStyle id="new" >

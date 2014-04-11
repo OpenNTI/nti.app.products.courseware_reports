@@ -155,7 +155,7 @@
 		
 		<para style="subdesc" spaceAfter=".1in">
 			The following items show activity taking place in ${context/__name__}. This information
-			includes the number of discussions, comments, notes, and highlights created by all the students
+			includes the number of notes, highlights, discussions, and comments created by all the students
 			in the course, where applicable. 
 		</para>
 		<hr width="100%" />

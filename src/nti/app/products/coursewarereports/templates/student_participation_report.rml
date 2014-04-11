@@ -85,7 +85,7 @@
 			<tr tal:repeat="item options/comment_count_by_topic">
 				<td align="left" tal:content="python:item[0].__parent__.title">The Forum Name</td>
 				<td align="left" tal:content="python:item[0].title">Topic Name</td>
-				<td align="right" tal:content="python:item[1]">Comment Count</td>
+				<td tal:content="python:item[1]">Comment Count</td>
 			</tr>
 		</blockTable>
 		
