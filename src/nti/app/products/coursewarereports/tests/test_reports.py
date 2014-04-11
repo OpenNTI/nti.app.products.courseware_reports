@@ -20,6 +20,8 @@ from ..reports import _finalize_answer_stats
 from ..reports import _build_question_stats
 from ..reports import _assignment_stat_for_column
 from ..reports import _AssignmentStat
+from ..reports import _QuestionPartStat
+from ..reports import _QuestionStat
 
 from ..views import _AnswerStat
 
@@ -48,6 +50,9 @@ from hamcrest import less_than
 from hamcrest import less_than_or_equal_to
 from hamcrest import close_to
 from hamcrest import is_
+from hamcrest import is_in
+from hamcrest import is_not
+from hamcrest import contains
 
 class TestReports( unittest.TestCase ):
 
@@ -97,7 +102,7 @@ class TestReports( unittest.TestCase ):
 		
 		#9 stats
 		stat1 = _AnswerStat( 'key1', False ); stat1.count = 7
-		stat2 = _AnswerStat( 'key2', False ); stat2.count = 5 
+		stat2 = _AnswerStat( 'key2', False ); stat2.count = 3
 		stat3 = _AnswerStat( 'key3', False ); stat3.count = 5 
 		stat4 = _AnswerStat( 'key4', False ); stat4.count = 6 
 		stat5 = _AnswerStat( 'key5', False ); stat5.count = 6 
@@ -120,6 +125,9 @@ class TestReports( unittest.TestCase ):
 		assert_that( results, has_length( 8 ) )
 		assert_that( results[0].answer, equal_to( 'key6' ) )
 		
+		assert_that( stat9, is_in( results ) )
+		assert_that( stat2, is_not( is_in( results ) ) ) 
+		
 		corrects = [ x for x in results if x.is_correct ]
 		assert_that( corrects, not_none() )
 		assert_that( corrects, has_length( 1 ) )
@@ -138,6 +146,7 @@ class TestBuildQuestions( unittest.TestCase ):
 		q1s = _quests( 1, PlainTextContentFragment( 'content1' ) )
 		
 		results = _build_question_stats( [q1s], {} )
+		
 		assert_that( results, not_none() )
 		assert_that( results, has_length( 1 ) )
 		assert_that( results[0].question_part_stats, not_none() )
@@ -149,6 +158,7 @@ class TestBuildQuestions( unittest.TestCase ):
 		q2s = _quests( 2, PlainTextContentFragment( 'content2' ) )
 		
 		results = _build_question_stats( [q1s,q2s], {} )
+		
 		assert_that( results, not_none() )
 		assert_that( results, has_length( 2 ) )
 		assert_that( results[0].question_part_stats, not_none() )
@@ -158,52 +168,76 @@ class TestBuildQuestions( unittest.TestCase ):
 	def test_single_with_stats(self):
 		q1s = _quests( 1, PlainTextContentFragment( 'content1' ) )
 		
-		results = _build_question_stats( [q1s], {1:_q_stats( {}, 0 ) } )
+		results = _build_question_stats( [q1s], {1:_QuestionStat( {} ) } )
+		
+		#Empty stat
 		assert_that( results, not_none() )
 		assert_that( results, has_length( 1 ) )
 		assert_that( results[0].question_part_stats, not_none() )
-		assert_that( results[0].avg_score, not_none() )
+		assert_that( results[0].avg_score, is_('N/A') )
 		assert_that( isinstance( results[0].avg_score, string_types ) )
 		
-		#FIXME
-		results = _build_question_stats( [q1s], {1:_q_stats( {}, 0 ) } )
+		#Stat with no assessments
+		q_part_stat = _QuestionPartStat( 'I' )
+		q_part_stat.assessed_values = []
+		q_stat = _QuestionStat( {1:q_part_stat})
+		results = _build_question_stats( [q1s], {1:q_stat} )
+		
 		assert_that( results, not_none() )
 		assert_that( results, has_length( 1 ) )
-		assert_that( results[0].question_part_stats, not_none() )
-		assert_that( results[0].avg_score, not_none() )
-		assert_that( isinstance( results[0].avg_score, string_types ) )
+		assert_that( results[0].question_part_stats, has_length( 1 ) )
+		assert_that( results[0].avg_score, is_('N/A') )
+		assert_that( results[0].question_part_stats[0].avg_score, is_( 'N/A' ) )
+		
+		#Stat with assessments and answers
+		stat1 = _AnswerStat( 'key1', False ); stat1.count = 5
+		stat2 = _AnswerStat( 'key2', True ); stat2.count = 3
+		stat3 = _AnswerStat( 'key3', True ); stat3.count = 7 
+		answers = { stat1.answer: stat1, 
+					stat2.answer: stat2,
+					stat3.answer: stat3 }
+		
+		q_part_stat = _QuestionPartStat( 'I', answers )
+		q_part_stat.assessed_values = [ 0, 1.0 ]
+		q_stat = _QuestionStat( {1:q_part_stat} )
+		results = _build_question_stats( [q1s], {1:q_stat} )
+		
+		assert_that( results, not_none() )
+		assert_that( results, has_length( 1 ) )
+		assert_that( results[0].avg_score, is_('50.0') )
+		assert_that( results[0].question_part_stats, has_length( 1 ) )
+		assert_that( results[0].question_part_stats[0].avg_score, is_( '50.0' ) )
+		
+		q_part_ordered_answer_stats = results[0].question_part_stats[0].answer_stats
+		assert_that( q_part_ordered_answer_stats, has_length( 3 )  )
+		assert_that( q_part_ordered_answer_stats, contains( stat3, stat1, stat2 )  )
 		
 	def test_multi_with_stats(self):
 		q1s = _quests( 1, PlainTextContentFragment( 'content1' ) )
 		q2s = _quests( 2, PlainTextContentFragment( 'content2' ) )
 		
-		#FIXME
-		results = _build_question_stats( [q1s,q2s], {} )
+		#Multi-questions/multi-parts
+		#Question One
+		q_part_stat = _QuestionPartStat( 'I' )
+		q_part_stat.assessed_values = [ 0, 1.0 ]
+		q_part_stat2 = _QuestionPartStat( 'II' )
+		q_part_stat2.assessed_values = [ 1.0, 1.0 ]
+		q_stat = _QuestionStat( {1:q_part_stat, 2:q_part_stat2} )
+		
+		#Question Two
+		q_part_stat = _QuestionPartStat( 'II' )
+		q_part_stat.assessed_values = [ 1.0 ]
+		q_stat2 = _QuestionStat( {1:q_part_stat} )
+		
+		results = _build_question_stats( [q1s,q2s], {1:q_stat, 2:q_stat2} )
+		
 		assert_that( results, not_none() )
 		assert_that( results, has_length( 2 ) )
-		assert_that( results[0].question_part_stats, not_none() )
-		assert_that( results[0].avg_score, not_none() )
-		assert_that( isinstance( results[0].avg_score, string_types ) )		
-	
-class TestQuestionStats( unittest.TestCase ):		
-	"""
-	Assessed-vals{question_id}
-		-> assessed_parts{idx}
-			-> (assessed_vals)
-	
-	Submissions{question_id}
-		-> _QuestionStat.answerStat{idx}
-			-> (submission)
-	
-	def _build_question_stats( ordered_questions, submissions, assessed_values ):
-	"""
-	pass
-# 	def build_data(self):
-# 		questions = 
-# 		
-# 	
-# 	def test_build_question_stats(self):
-			
+		assert_that( results[0].question_part_stats, has_length( 2 ) )
+		assert_that( results[0].question_part_stats[0].avg_score, is_( '50.0' ) )
+		assert_that( results[0].question_part_stats[1].avg_score, is_( '100.0' ) )
+		assert_that( results[0].avg_score, id( '75.0' ) )
+		assert_that( results[1].avg_score, id( '100.0' ) )
 		
 	
 _cd = namedtuple( '_cd', ( 'created', 'creator' ))

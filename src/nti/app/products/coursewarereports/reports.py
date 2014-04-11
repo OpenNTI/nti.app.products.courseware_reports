@@ -520,7 +520,7 @@ def _build_question_stats( ordered_questions, question_stats ):
 		question_part_grades = []
 		
 		#Go through each question part
-		for idx, question_part_stat in question_part_stats.items():
+		for question_part_stat in question_part_stats.values():
 			#Do we have an unassessed question?
 			avg_assessed_s = 'N/A'
 			if question_part_stat.assessed_values:
