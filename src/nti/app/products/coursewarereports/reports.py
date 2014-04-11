@@ -147,10 +147,6 @@ class _TopCreators(object):
 	def _do_get_largest(self,data,total_to_change):
 		# Returns the top commenter names, up to (arbitrarily) 10
 		# of them, with the next being 'everyone else'
-		# In typical data, 'everyone else' far overwhelms
-		# the top 10 commenters, so we are giving it a small value
-		# (one-eighth of the pie),
-		# TODO: Better way to do this?
 		largest = heapq.nlargest(10, data.items(), key=lambda x: x[1])
 		
 		largest = [ self._build_student_info(x) for x in largest ]
@@ -257,16 +253,15 @@ def _common_buckets(objects,report,object_create_date,agg_creators=None):
 	The argument can be an iterable sequence, we sort a copy.
 
 	"""
-	# Group the forum objects by day
-	# Since we want deltas, everything is staying in UTC
-	# TODO We need to convert these to our timestamp again
-	# TODO We shouldnt need to groupby anymore either, but we could
+	# We are not converting these to our timezone.  Since we're 
+	# bucketing by weeks, fine-grained timezone adjustments
+	# are not likely to be worthwhile. 
 	day_key = lambda x: x.created.date()
 	objects = sorted(objects, key=day_key)
 	object_create_date = object_create_date.date()
 	start_monday = object_create_date - timedelta( days=object_create_date.weekday() )
 
-	forum_objects_by_day = BTrees.family64.II.BTree()
+	forum_objects_by_day = []
 	forum_objects_by_week_number = BTrees.family64.II.BTree()
 	top_creators = _TopCreators( report )
 	top_creators.aggregate_creators = agg_creators
@@ -279,10 +274,6 @@ def _common_buckets(objects,report,object_create_date,agg_creators=None):
 		count = len(group)
 		for o in group:
 			top_creators.incr_username(o.creator.username)
-
-		#TODO not used
-		day_delta = (k - object_create_date).days
-		forum_objects_by_day[day_delta] = count
 
 		group_monday = k - timedelta( days=k.weekday() )
 		week_num = ( (group_monday - start_monday).days // 7 )
@@ -496,18 +487,6 @@ class _QuestionStat(object):
 		self.content = content
 		self.avg_score = avg_score
 
-"""
-Assessed-vals{question_id}
-	-> assessed_parts{idx}
-		-> (assessed_vals)
-
-Submissions{question_id}
-	-> _QuestionStat.question_part_stat{idx}
-		-> _QuestionPartStat.answer_stats{idx}
-			-> (AnswerStats)
-
-"""
-
 def _build_question_stats( ordered_questions, question_stats ):
 	"""From questions_stats, return fully formed question_stat objects"""
 	results = []
@@ -530,6 +509,7 @@ def _build_question_stats( ordered_questions, question_stats ):
 				
 				question_part_grades.append( avg_assessed )
 
+			# We may want to display *all* of the available multiple choice answers. If so, this is the place.
 			top_answer_stats = _get_top_answers( question_part_stat.answer_stats )
 			_finalize_answer_stats( top_answer_stats, total_submits )
 			
@@ -551,9 +531,7 @@ def _build_question_stats( ordered_questions, question_stats ):
 	return results
 
 def _get_top_answers( answer_stats ):
-	# If this gets big, we'll need to do something different, like just showing top-answers.
-	# TODO Do we want to truncate the multiple choice questions at all?
-	# Arbitrarily picking how many
+	# Arbitrarily picking how many to trim our list down to.
 	# 	->8 since it fits on page with header, currently.
 	# We order by popularity; we could do by content perhaps.
 	top_answer_stats = heapq.nlargest( 8, answer_stats.values(), key=lambda x: x.count )

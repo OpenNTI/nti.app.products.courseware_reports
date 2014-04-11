@@ -280,7 +280,6 @@ class TestBuckets( unittest.TestCase ):
 		start_date = datetime( year=2014, month=4, day=5, hour=0, minute=30 )
 		buckets = _common_buckets( self.objects, _MockReport( [] ), start_date )
 		assert_that( buckets, not_none() )
-		assert_that( buckets.count_by_day, has_length( 8 ) )
 		#We have a bucket for each week
 		assert_that( buckets.count_by_week_number, has_length( 4 ) )
 		assert_that( buckets.top_creators, not_none() )
@@ -296,7 +295,7 @@ class TestBuckets( unittest.TestCase ):
 		#Different start dates do not change counts
 		start_date = datetime( year=2014, month=12, day=5, hour=0, minute=30 )
 		buckets = _common_buckets( self.objects, _MockReport( [] ), start_date )
-		assert_that( buckets.count_by_day, has_length( 8 ) )
+		
 		#We have a bucket for each week
 		assert_that( buckets.count_by_week_number, has_length( 4 ) )
 		assert_that( buckets.top_creators, not_none() )
@@ -305,7 +304,6 @@ class TestBuckets( unittest.TestCase ):
 		
 		start_date = datetime( year=2011, month=3, day=5, hour=0, minute=30 )
 		buckets = _common_buckets( self.objects, _MockReport( [] ), start_date )
-		assert_that( buckets.count_by_day, has_length( 8 ) )
 		#We have a bucket for each week
 		assert_that( buckets.count_by_week_number, has_length( 4 ) )
 		assert_that( buckets.top_creators, not_none() )
@@ -337,7 +335,6 @@ class TestBuckets( unittest.TestCase ):
 		forum_stat = _build_buckets_options( options, buckets )
 		
 		assert_that( forum_stat, not_none() )
-		assert_that( forum_stat.forum_objects_by_day, has_length( 8 ) )
 		assert_that( forum_stat.forum_objects_by_week_number, has_length( 4 ) )
 		assert_that( 	forum_stat.forum_objects_by_week_number_series(), 
 						has_length( greater_than( 4 ) ) )
