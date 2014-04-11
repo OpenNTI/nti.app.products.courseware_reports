@@ -46,6 +46,7 @@ from collections import namedtuple
 from collections import defaultdict
 
 from datetime import timedelta
+from datetime import datetime
 
 from itertools import chain
 
@@ -230,6 +231,15 @@ class _AbstractReportView(AbstractAuthenticatedView,
 		"""Returns a set of filtered objects"""
 		return [ x for x in objects
 				if not IDeletedObjectPlaceholder.providedBy( x ) ]
+		
+	def generate_footer( self ):
+		date = _adjust_date( datetime.now() )
+		date = date.strftime( '%b %d, %Y %I:%M %p' )
+		title = self.report_title
+		course = self.course.__name__
+		student = getattr( self, 'student_user', '' )
+		return "%s %s %s %s" % ( title, course, student, date )
+		
 
 class _AssignmentInfo(object):
 
@@ -415,6 +425,8 @@ class StudentParticipationReportPdf(_AbstractReportView):
 			A :class:`ForumObjectsStat`
 
 		"""
+		self.footer = self.generate_footer()
+		
 		self._check_access()
 		# Collect data and return it in a form to be rendered
 		# (a dictionary containing data and callable objects)
@@ -485,7 +497,7 @@ class ForumParticipationReportPdf(_AbstractReportView):
 			comments = self.filter_objects( topic.values() )
 						
 			count = len( comments )
-			user_count = len( {c.creator for c in comments } )
+			user_count = len( {c.creator for c in comments} )
 			creator = self.get_student_info( topic.creator )
 			created = topic.created
 			comment_count_by_topic.append( self.TopicStats( topic.title, creator, created, count, user_count ))
@@ -567,6 +579,7 @@ class ForumParticipationReportPdf(_AbstractReportView):
 			A sequence sorted by username, of objects with `username`,
 			`topics_created` and `total_comment_count`.
 		"""
+		self.footer = self.generate_footer()
 		
 		self._check_access()
 		options = self.options
@@ -614,6 +627,8 @@ class TopicParticipationReportPdf(ForumParticipationReportPdf):
 			A sequence of usernames, plus the `series` representing their
 			contribution to the forum.
 		"""
+		self.footer = self.generate_footer()
+		
 		self._check_access()
 		options = self.options
 		self._build_top_commenters(options)
@@ -1034,6 +1049,8 @@ class CourseSummaryReportPdf(_AbstractReportView):
 		options['engagement_to_performance'] = _EngagementPerfStat( first_quart, second_quart, third_quart, fourth_quart )		
 
 	def __call__(self):
+		self.footer = self.generate_footer()
+		
 		self._check_access()
 		options = self.options
 		
@@ -1231,6 +1248,8 @@ class AssignmentSummaryReportPdf(_AbstractReportView):
 		return input
 			
 	def __call__(self):
+		self.footer = self.generate_footer()
+		
 		self._check_access()
 		options = self.options
 		self._build_assignment_data(options)
