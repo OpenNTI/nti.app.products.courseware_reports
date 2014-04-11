@@ -493,7 +493,7 @@ class _Column(object):
 class TestBuildAssignmentStats( unittest.TestCase ):
 	
 	def test_empty(self):
-		report = _report( set(), [], 0, 0 , 0 )
+		report = _report( set(), set(), 0, 0 , 0 )
 		col = _Column( 'bane', 'date', {} )
 		stat = _assignment_stat_for_column( report, col )		
 		assert_that( stat, not_none() )
@@ -511,12 +511,12 @@ class TestBuildAssignmentStats( unittest.TestCase ):
 		assert_that( stat, not_none() )
 		assert_that( stat, is_( _AssignmentStat ) )
 		assert_that( stat.count, is_( 4 ) )
-#		assert_that( stat.total, is_( 3 ) )
+		assert_that( stat.total, is_( 3 ) )
 		assert_that( stat.for_credit_total, is_( 2 ) )
-		assert_that( stat.non_credit_total, is_( 2 ) ) #FIXME
-#		assert_that( stat.avg_grade, is_( '50.0' ) )
+		assert_that( stat.non_credit_total, is_( 1 ) )
+		assert_that( stat.avg_grade, is_( '50.0' ) )
 		assert_that( stat.for_credit_avg_grade, is_( '60.0' ) )
-#		assert_that( stat.non_credit_avg_grade, is_( '30.0' ) )
+		assert_that( stat.non_credit_avg_grade, is_( '30.0' ) )
 		assert_that( stat.attempted_perc, not_none() )
 		assert_that( stat.for_credit_attempted_perc, not_none() )
 		assert_that( stat.non_credit_attempted_perc, not_none() )

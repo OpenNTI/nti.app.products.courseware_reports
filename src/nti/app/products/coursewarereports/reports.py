@@ -372,17 +372,14 @@ def _assignment_stat_for_column(report, column, filter=None):
 	count = len(column)
 	keys = set(column)
 
-	# TODO Case sensitivity issue?
-	# TODO We need explicit non-credit too
 	for_credit_keys = report.for_credit_student_usernames.intersection(keys)
+	non_credit_keys = report.open_student_usernames.intersection(keys)
 	for_credit_grade_points = list()
 	non_credit_grade_points = list()
 	all_grade_points = list()
 	for_credit_total = non_credit_total = 0
 
-	# Separate credit and non-credit
 	for username, grade in column.items():
-		
 		#Skip if not in filter
 		if filter is not None and username not in filter:
 			continue
@@ -400,12 +397,14 @@ def _assignment_stat_for_column(report, column, filter=None):
 				pass
 		
 		# We still increase count of attempts, even if the assignment is ungraded.
+		# We skip any non credit/non-credit students, which should be any
+		# instructors or dropped students.
 		if username in for_credit_keys:
 			for_credit_total += 1
 			if grade_val is not None:
 				all_grade_points.append( grade_val )
 				for_credit_grade_points.append( grade_val )
-		else:
+		elif username in non_credit_keys:
 			non_credit_total += 1
 			if grade_val is not None:
 				all_grade_points.append( grade_val )
