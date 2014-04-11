@@ -30,6 +30,7 @@ from .reports import _assignment_stat_for_column
 from .reports import _build_question_stats
 from .reports import _QuestionPartStat
 from .reports import _QuestionStat
+from .reports import _DateCategoryAccum
 
 from zope import component
 from zope import interface
@@ -954,32 +955,13 @@ class CourseSummaryReportPdf(_AbstractReportView):
 		accum_dates_list = ( x['group_dates'] for x in forum_stats.values() )
 		accum_dates = list( chain.from_iterable( accum_dates_list ) )
 		accum_dates = sorted( accum_dates )
-		dates = []
 		
-		start_date = self.course_start_date.date()
-		start_monday = start_date - timedelta( days=start_date.weekday() )
-		old_week_num = None
-		#We have our sorted dates now. Just need to normalize them by week.
-		#FIXME and clean this up
-		for k in accum_dates:
-			group_monday = k - timedelta( days=k.weekday() )
-			week_num = ( (group_monday - start_monday).days // 7 )
-
-			if old_week_num is None:
-				old_week_num = week_num
-				dates.append( group_monday )
-
-			if week_num != old_week_num:
-				#Check for week gaps and fill
-				for f in range(old_week_num - week_num + 1, 0):
-					#Add negative weeks to retain order
-					old_monday = group_monday + timedelta( weeks=1 * f )
-					dates.append( old_monday )
-				dates.append( group_monday )	
-				old_week_num = week_num
+		#Now get our date fields
+		date_accum = _DateCategoryAccum( self.course_start_date )
+		dates = date_accum.accum_all( accum_dates )
 			
-		new_buckets = _CommonBuckets(None, acc_week, None, dates)
-		agg_stat = _build_buckets_options({},new_buckets)
+		new_buckets = _CommonBuckets( None, acc_week, None, dates )
+		agg_stat = _build_buckets_options( {},new_buckets )
 		options['aggregate_forum_stats'] = agg_stat
 
 		options['forum_stats'] = [x[1] for x in sorted(forum_stats.items())]

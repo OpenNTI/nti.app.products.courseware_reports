@@ -22,6 +22,7 @@ from ..reports import _assignment_stat_for_column
 from ..reports import _AssignmentStat
 from ..reports import _QuestionPartStat
 from ..reports import _QuestionStat
+from ..reports import _DateCategoryAccum
 
 from ..views import _AnswerStat
 
@@ -238,7 +239,45 @@ class TestBuildQuestions( unittest.TestCase ):
 		assert_that( results[0].question_part_stats[1].avg_score, is_( '100.0' ) )
 		assert_that( results[0].avg_score, id( '75.0' ) )
 		assert_that( results[1].avg_score, id( '100.0' ) )
+
+
+class TestDateAccum( unittest.TestCase ):
 		
+	def test_date_accum_empty(self):
+		start_date = datetime( year=2014, month=4, day=5, hour=0, minute=30 )
+		date_accum = _DateCategoryAccum( start_date )
+		date_accum.accum_all( [] )
+		dates = date_accum.get_dates()
+		
+		assert_that( dates, not_none() )
+		assert_that( dates, has_length( 0 ) )
+		
+	def test_date_accum(self):
+		# Five different weeks with values over a five week window
+		#Week1
+		d1 = datetime( year=2014, month=3, day=28, hour=0, minute=30 ).date()
+		#Week2, seven total
+		d2 = datetime( year=2014, month=4, day=1, hour=0, minute=30 ).date()
+		d3 = datetime( year=2014, month=4, day=2, hour=0, minute=30 ).date()
+		d4 = datetime( year=2014, month=4, day=3, hour=0, minute=30 ).date()
+		d5 = datetime( year=2014, month=4, day=4, hour=0, minute=30 ).date()
+		d6 = datetime( year=2014, month=4, day=5, hour=0, minute=30 ).date()
+		d7 = datetime( year=2014, month=4, day=5, hour=0, minute=30 ).date()
+		d8 = datetime( year=2014, month=4, day=5, hour=0, minute=30 ).date()
+		#Week3
+		d9 = datetime( year=2014, month=4, day=9, hour=0, minute=30 ).date()
+		#Week4
+		#Week5
+		d10 = datetime( year=2014, month=4, day=27, hour=0, minute=30 ).date()
+		input_dates = [d1,d2,d3,d4,d5,d6,d7,d8,d9,d10]
+		
+		start_date = datetime( year=2014, month=4, day=5, hour=0, minute=30 )
+		date_accum = _DateCategoryAccum( start_date )
+		date_accum.accum_all( input_dates )
+		dates = date_accum.get_dates()
+		
+		assert_that( dates, not_none() )
+		assert_that( dates, has_length( 5 ) )	
 	
 _cd = namedtuple( '_cd', ( 'created', 'creator' ))
 _cr = namedtuple( '_cr', 'username' )		

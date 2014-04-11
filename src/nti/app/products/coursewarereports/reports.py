@@ -241,7 +241,46 @@ class _TopCreators(object):
 	def non_credit_percent_contributed_str(self):
 		return "%0.1f" % self.percent_contributed( self.max_contributors_non_credit, self.unique_contributors_non_credit )
 
-def _common_buckets(objects,report,object_create_date,agg_creators=None):
+class _DateCategoryAccum(object):
+	"""	Will accumulate 'date' objects based on inbound dates and return a week number.
+		The date inputs *must* be in sorted order. Otherwise, our behavior is undefined."""
+	
+	def __init__( self, start_date ):
+		self.dates = []
+		self.old_week_num = None
+		
+		start_date = start_date.date()
+		self.start_monday = start_date - timedelta( days=start_date.weekday() )
+
+	def accum_all( self, dates ):
+		"""Given a list of sorted dates, accumulate them"""
+		for d in dates:
+			self.accum( d )
+		return self.get_dates()
+
+	def accum( self, input_date ):
+		group_monday = input_date - timedelta( days=input_date.weekday() )
+		week_num = ( (group_monday - self.start_monday).days // 7 )
+		
+		if self.old_week_num is None:
+			self.old_week_num = week_num
+			self.dates.append( group_monday )
+		
+		if week_num != self.old_week_num:
+			#Check for week gaps and fill
+			for f in range(self.old_week_num - week_num + 1, 0):
+				#Add negative weeks to retain order
+				old_monday = group_monday + timedelta( weeks=1 * f )
+				self.dates.append( old_monday )
+			self.dates.append( group_monday )
+			self.old_week_num = week_num
+			
+		return week_num
+
+	def get_dates( self ):
+		return self.dates
+
+def _common_buckets( objects,report,object_create_date,agg_creators=None ):
 	"""
 	Given a list of :class:`ICreated` objects,
 	return a :class:`_CommonBuckets` containing three members:
@@ -258,44 +297,28 @@ def _common_buckets(objects,report,object_create_date,agg_creators=None):
 	# are not likely to be worthwhile. 
 	day_key = lambda x: x.created.date()
 	objects = sorted(objects, key=day_key)
-	object_create_date = object_create_date.date()
-	start_monday = object_create_date - timedelta( days=object_create_date.weekday() )
+	date_accum = _DateCategoryAccum( object_create_date )
 
 	forum_objects_by_day = []
 	forum_objects_by_week_number = BTrees.family64.II.BTree()
 	top_creators = _TopCreators( report )
 	top_creators.aggregate_creators = agg_creators
 
-	dates = []
-	old_week_num = None
-	
 	for k, g in groupby(objects, day_key):
 		group = list(g)
 		count = len(group)
 		for o in group:
 			top_creators.incr_username(o.creator.username)
 
-		group_monday = k - timedelta( days=k.weekday() )
-		week_num = ( (group_monday - start_monday).days // 7 )
-		
-		if old_week_num is None:
-			old_week_num = week_num
-			dates.append( group_monday )
-		
-		if week_num != old_week_num:
-			#Check for week gaps and fill
-			for f in range(old_week_num - week_num + 1, 0):
-				#Add negative weeks to retain order
-				old_monday = group_monday + timedelta( weeks=1 * f )
-				dates.append( old_monday )
-			dates.append( group_monday )
-			old_week_num = week_num
+		week_num = date_accum.accum( k )
 
 		if week_num in forum_objects_by_week_number:
 			forum_objects_by_week_number[week_num] += count
 		else:
 			forum_objects_by_week_number[week_num] = count
 
+	dates = date_accum.get_dates()
+	
 	return _CommonBuckets(forum_objects_by_day, forum_objects_by_week_number, top_creators, dates)
 
 ForumObjectsStat = namedtuple('ForumObjectsStat',
