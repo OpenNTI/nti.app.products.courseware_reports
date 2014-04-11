@@ -51,6 +51,8 @@
 		
 		<paraStyle name="sendTo" leftIndent="0.5in" parent="normal" textColor="#494949"
 				   spaceBefore="10"/>
+		
+		<paraStyle name="footer" textColor="#b8b8b8" fontSize="10" />		   
 				   
 		<!-- column header, should match the 0,0:-1,0 entry below -->		   
 		<paraStyle name="header" textColor="#b8b8b8" fontName="Helvetica-Bold" size="10" />		 

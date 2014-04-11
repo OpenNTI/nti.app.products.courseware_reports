@@ -26,7 +26,8 @@
 			<frame id="first" x1="0.5in" y1="0.5in" width="10in" height="7.2in" showBoundary="0"/>
 			<pageGraphics>
 				<place x=".5in" y="0.1in" width="5in" height=".3in">
-                	<para 	tal:content="view/footer">
+                	<para 	style="footer"
+                			tal:content="view/footer">
                 			Student Participation Report - wood1608 - CHEM4970 - Apr 11, 2014 01:06 PM
                 	</para>
 				</place>
@@ -41,7 +42,8 @@
 			<frame id="callout" x1="8in" y1="5.5in" width="4in" height="4in" showBoundary="0" />
 			<pageGraphics>
 				<place x=".5in" y="0.1in" width="5in" height=".3in">
-                	<para 	tal:content="view/footer">
+                	<para 	style="footer"
+                			tal:content="view/footer">
                 			Student Participation Report - wood1608 - CHEM4970 - Apr 11, 2014 01:06 PM
                 	</para>
 				</place>
@@ -56,7 +58,8 @@
 			<frame id="pie_frame" x1="5.5in" y1="0in" width="5in" height="7in" showBoundary="0" />
 			<pageGraphics>
 				<place x=".5in" y="0.1in" width="5in" height=".3in">
-                	<para 	tal:content="view/footer">
+                	<para 	style="footer"
+                			tal:content="view/footer">
                 			Student Participation Report - wood1608 - CHEM4970 - Apr 11, 2014 01:06 PM
                 	</para>
 				</place>
