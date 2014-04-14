@@ -1220,7 +1220,7 @@ class AssignmentSummaryReportPdf(_AbstractReportView):
 											lambda: response in solutions )
 		
 		#TODO Can we handle IQFilePart? Is there anything we need to handle?	
-		elif ( IQMatchingPart.providedBy( question_part ) ):
+		elif IQMatchingPart.providedBy( question_part ):
 			#This handles both matching and ordering questions
 			for key, val in response.items():
 				left = question_part.labels[ int( key ) ]

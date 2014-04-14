@@ -281,7 +281,7 @@
 				  dwidth="4in" dheight="4in"
 				  x="1in" y="0"
 				  width="4in" height="4in"
-				  checkLabelOverlap='false'
+				  checkLabelOverlap='true'
 				  strokeWidth="0"
 				  tal:condition="not: top_commenters/aggregate_remainder|options/top_commenters/aggregate_remainder"
 				  tal:attributes="dwidth top_commenters_ill_width|default;
@@ -335,7 +335,7 @@
 				  metal:define-macro="engagement_stats_pie" >	
 		<pieChart dx="1.5in" dy=".8in" dwidth="3in" dheight="3in" x="0in" y="0" width="2.5in"
 					height="2.5in"		  
-				  	checkLabelOverlap='false'
+				  	checkLabelOverlap='true'
 				  	strokeWidth="0"
 				  	tal:define="data engagement_stat"
 				  	tal:condition="engagement_stat">

@@ -28,7 +28,7 @@
 		<illustration width="4in" height="4in">
 		<pieChart dx="2in" dy="0in" dwidth="4in" dheight="4in" x="1in" y="0" width="4in"
 				  height="4in"
-				  checkLabelOverlap='false'
+				  checkLabelOverlap='true'
 				  tal:condition="options/count_open" 
 				  strokeWidth="0"
 				  startAngle="180">
