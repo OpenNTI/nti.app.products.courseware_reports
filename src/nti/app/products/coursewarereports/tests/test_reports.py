@@ -593,7 +593,7 @@ class TestBuildAssignmentStats( unittest.TestCase ):
 		
 	def test_building_filter(self):
 		report = _report( {'fc1','fc2'}, {'nc1','nc2'}, 4, 2, 2 )
-		col_items = { 	'fc1':_grade(40), 
+		col_items = { 	'FC1':_grade(40), 
 						'fc2':_grade(80), 
 						'nc2':_grade(30), 
 						'dropped':_grade(0)  }
