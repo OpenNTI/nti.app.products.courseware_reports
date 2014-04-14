@@ -240,7 +240,19 @@ class _AbstractReportView(AbstractAuthenticatedView,
 		course = self.course.__name__
 		student = getattr( self, 'student_user', '' )
 		return "%s %s %s %s" % ( title, course, student, date )
+	
+	def generate_semester( self ):
+		start_date = self.course_start_date
+		start_month = start_date.month if start_date else None
+		if start_month < 5:
+			semester = 'Spring'
+		elif start_month < 9:
+			semester = 'Summer'
+		else:
+			semester = 'Fall'
 		
+		start_year = start_date.year if start_date else None
+		return '%s %s' % ( semester, start_year ) if start_date else ''
 
 class _AssignmentInfo(object):
 
@@ -426,8 +438,6 @@ class StudentParticipationReportPdf(_AbstractReportView):
 			A :class:`ForumObjectsStat`
 
 		"""
-		self.footer = self.generate_footer()
-		
 		self._check_access()
 		# Collect data and return it in a form to be rendered
 		# (a dictionary containing data and callable objects)
@@ -580,8 +590,6 @@ class ForumParticipationReportPdf(_AbstractReportView):
 			A sequence sorted by username, of objects with `username`,
 			`topics_created` and `total_comment_count`.
 		"""
-		self.footer = self.generate_footer()
-		
 		self._check_access()
 		options = self.options
 		self._build_top_commenters(options)
@@ -628,8 +636,6 @@ class TopicParticipationReportPdf(ForumParticipationReportPdf):
 			A sequence of usernames, plus the `series` representing their
 			contribution to the forum.
 		"""
-		self.footer = self.generate_footer()
-		
 		self._check_access()
 		options = self.options
 		self._build_top_commenters(options)
@@ -1061,8 +1067,6 @@ class CourseSummaryReportPdf(_AbstractReportView):
 		options['engagement_to_performance'] = _EngagementPerfStat( first_quart, second_quart, third_quart, fourth_quart )		
 
 	def __call__(self):
-		self.footer = self.generate_footer()
-		
 		self._check_access()
 		options = self.options
 		
@@ -1260,8 +1264,6 @@ class AssignmentSummaryReportPdf(_AbstractReportView):
 		return input
 			
 	def __call__(self):
-		self.footer = self.generate_footer()
-		
 		self._check_access()
 		options = self.options
 		self._build_assignment_data(options)

@@ -27,7 +27,7 @@
 			<pageGraphics>
 				<place x=".5in" y="0.1in" width="5in" height=".3in">
                 	<para 	style="footer"
-                			tal:content="view/footer">
+                			tal:content="view/generate_footer">
                 			Student Participation Report - wood1608 - CHEM4970 - Apr 11, 2014 01:06 PM
                 	</para>
 				</place>
@@ -43,7 +43,7 @@
 			<pageGraphics>
 				<place x=".5in" y="0.1in" width="5in" height=".3in">
                 	<para 	style="footer"
-                			tal:content="view/footer">
+                			tal:content="view/generate_footer">
                 			Student Participation Report - wood1608 - CHEM4970 - Apr 11, 2014 01:06 PM
                 	</para>
 				</place>
@@ -59,7 +59,7 @@
 			<pageGraphics>
 				<place x=".5in" y="0.1in" width="5in" height=".3in">
                 	<para 	style="footer"
-                			tal:content="view/footer">
+                			tal:content="view/generate_footer">
                 			Student Participation Report - wood1608 - CHEM4970 - Apr 11, 2014 01:06 PM
                 	</para>
 				</place>

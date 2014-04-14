@@ -13,5 +13,5 @@
 </tr>
 <tr>
 	<td>Course:</td>
-	<td tal:content="context/_private_course_instance/__name__">CLC 3400</td>
+	<td>${context/_private_course_instance/__name__}   ${view/__parent__/generate_semester}</td>
 </tr>

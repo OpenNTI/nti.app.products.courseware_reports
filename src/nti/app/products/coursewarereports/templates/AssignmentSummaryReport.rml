@@ -61,7 +61,7 @@
 
 		<nextPage />
 
-		<h1 style="h1" spaceAfter=".3in" spaceBefore="1in" >
+		<h1 style="h1" fontSize="23" spaceAfter=".2in" spaceBefore="0in" >
 			Question Breakdown
 		</h1>
 		
@@ -105,7 +105,7 @@
 									start="0,0" stop="-1,-1" 
 									kind="linebelow" colorName="white" />	
 						<blockTextColor start="0,0" stop="-1,0" colorName="#b8b8b8" />
-						<blockFont start="0,0" stop="-1,0" name="Helvetica-Bold" size="10" />			
+						<blockFont start="0,0" stop="-1,0" name="Helvetica-Bold" size="10" />	
 					</blockTableStyle>		
 						
 					<tr>
