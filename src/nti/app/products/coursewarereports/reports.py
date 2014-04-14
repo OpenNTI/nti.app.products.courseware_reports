@@ -384,16 +384,16 @@ _AssignmentStat = namedtuple('_AssignmentStat',
 
 def _assignment_stat_for_column(report, column, filter=None):
 	count = len(column)
-	keys = set(column)
 
-	for_credit_keys = report.for_credit_student_usernames.intersection(keys)
-	non_credit_keys = report.open_student_usernames.intersection(keys)
+	for_credit_keys = report.for_credit_student_usernames
+	non_credit_keys = report.open_student_usernames
 	for_credit_grade_points = list()
 	non_credit_grade_points = list()
 	all_grade_points = list()
 	for_credit_total = non_credit_total = 0
 
 	for username, grade in column.items():
+		username = username.lower()
 		#Skip if not in filter
 		if filter is not None and username not in filter:
 			continue
