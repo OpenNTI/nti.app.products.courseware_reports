@@ -66,6 +66,7 @@ from zope.intid.interfaces import IIntIds
 from nti.utils.property import Lazy
 
 from nti.app.assessment.interfaces import ICourseAssignmentCatalog
+from nti.app.assessment.interfaces import ICourseAssessmentItemCatalog
 from nti.app.assessment.interfaces import IUsersCourseAssignmentHistory
 
 from nti.assessment.interfaces import IQAssignment
@@ -735,6 +736,17 @@ class CourseSummaryReportPdf(_AbstractReportView):
 		containers_in_course = set()
 		if root:
 			_recur( root,containers_in_course )
+			
+		#Add in our self-assessments	
+		#self_assessments = _get_self_assessments_for_course(self.course)
+		catalog = ICourseAssessmentItemCatalog(self.course)
+		containers_in_course = containers_in_course.union( [x.ntiid for x in catalog.iter_assessment_items()] )
+		
+		self_assessments = _get_self_assessments_for_course(self.course)
+		self_assessment_containerids = {x.__parent__.ntiid for x in self_assessments}
+		self_assessment_qsids = {x.ntiid: x for x in self_assessments}	
+		containers_in_course = containers_in_course.union( self_assessment_containerids )
+		containers_in_course = containers_in_course.union( self_assessment_qsids )
 			
 		#Add in our assignments	
 		assignment_catalog = ICourseAssignmentCatalog( self.course )
