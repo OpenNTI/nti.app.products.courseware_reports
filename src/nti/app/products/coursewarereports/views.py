@@ -668,7 +668,9 @@ class CourseSummaryReportPdf(_AbstractReportView):
 
 	report_title = _('Course Summary Report')
 	assessment_aggregator = None
-	engagement_aggregator = None
+	comment_aggregator = None
+	note_aggregator = None
+	highlight_aggregator = None
 
 	def _build_enrollment_info(self, options):
 
@@ -777,6 +779,11 @@ class CourseSummaryReportPdf(_AbstractReportView):
 		all_hls = intids_of_hls
 		
 		containers_in_course = self._get_containers_in_course()
+		
+		with open( '/Users/jzuech/reports/new' + self.course.__name__ , 'a' ) as f:
+			for c in sorted( containers_in_course ):
+				f.write( c.encode('utf-8') )
+				f.write( '\n' )
 
 		#Now we should have our whole tree of ntiids, intersect with our vals
 		intids_of_objects_in_course_containers = md_catalog['containerId'].apply({'any_of': containers_in_course})
@@ -790,6 +797,7 @@ class CourseSummaryReportPdf(_AbstractReportView):
 		#If we want top noters/highlighters, we should use TopCreators
 		notes = ResultSet( intids_of_notes, self.uidutil )
 		note_creators = _TopCreators( self )
+		note_creators.aggregate_creators = self.note_aggregator
 		for note in notes:
 			note_creators.incr_username( note.creator.username )
 		
@@ -809,6 +817,7 @@ class CourseSummaryReportPdf(_AbstractReportView):
 		#Highlights
 		highlights = ResultSet(intids_of_hls, self.uidutil)
 		hl_creators = _TopCreators( self )
+		hl_creators.aggregate_creators = self.highlight_aggregator
 		for hl in highlights:
 			hl_creators.incr_username( hl.creator.username )
 		
@@ -952,7 +961,7 @@ class CourseSummaryReportPdf(_AbstractReportView):
 
 		forum_stats = dict()
 		agg_creators = _TopCreators( self )
-		agg_creators.aggregate_creators = self.engagement_aggregator
+		agg_creators.aggregate_creators = self.comment_aggregator
 
 		for key, forum in self.course.Discussions.items():
 			forum_stat = forum_stats[key] = dict()
@@ -1024,27 +1033,44 @@ class CourseSummaryReportPdf(_AbstractReportView):
 		TODO: toggle these numbers
 			-verify
 			-add stats by quartile (count, avg(assessment), avg(comment_count), quartile_val) Engagement_stat	
-			-		
+			-Reverse this logic, see how top performers participate
 		"""
-		agg_map = self.engagement_aggregator._data
+		assessment_weight = 10
+		comment_weight = 4
+		note_weight = 4
+		#highlight_weight = 1
+		
+		agg_map = self.highlight_aggregator._data
 		
 		for k,v in self.assessment_aggregator._data.items():
-			#self-assessments are weighted 2
-			#comments are weighted 1
-			weighted_val = 2 * v
+			weighted_val = assessment_weight * v
 			if k in agg_map:
 				agg_map[k] += weighted_val
 			else:
 				agg_map[k] = weighted_val 
 				
-		quartiles = percentile( [x[1] for x in agg_map.items()], [75, 50, 25] ) 		
+		for k,v in self.comment_aggregator._data.items():
+			weighted_val = comment_weight * v
+			if k in agg_map:
+				agg_map[k] += weighted_val
+			else:
+				agg_map[k] = weighted_val 	
+				
+		for k,v in self.note_aggregator._data.items():
+			weighted_val = note_weight * v
+			if k in agg_map:
+				agg_map[k] += weighted_val
+			else:
+				agg_map[k] = weighted_val 			
+				
+		quartiles = percentile( [x[1] for x in agg_map.items()], [75, 50, 25] ) 			
 
 		first = list()
 		second = list()
 		third = list()
 		fourth = list()
 		
-		for x,v in map.items():
+		for x,v in agg_map.items():
 			if v >= quartiles[0]:
 				first.append( x )
 			elif v >= quartiles[1]:
@@ -1070,13 +1096,17 @@ class CourseSummaryReportPdf(_AbstractReportView):
 		self._check_access()
 		options = self.options
 		
-		#self.assessment_aggregator = _TopCreators(self.for_credit_student_usernames, self.get_student_info)
-		#self.engagement_aggregator = _TopCreators(self.for_credit_student_usernames, self.get_student_info)
+# 		self.assessment_aggregator = _TopCreators( self )
+# 		self.comment_aggregator = _TopCreators( self )
+# 		self.note_aggregator = _TopCreators( self )
+# 		self.highlight_aggregator = _TopCreators( self )
+
 		self._build_engagement_data(options)
 		self._build_enrollment_info(options)
 		self._build_self_assessment_data(options)
 		options['assignment_data'] = self._build_assignment_data(options)
 		self._build_top_commenters(options)
+		
 		#Must do this last
 		#self._build_engagement_perf(options)
 		options['engagement_to_performance'] = ()

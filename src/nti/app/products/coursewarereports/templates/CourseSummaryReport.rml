@@ -335,27 +335,27 @@
 				tal:condition="options/engagement_to_performance"
 				repeatRows="1">
 			<tr>
-				<td align="center"><para style="header">Quartile</para></td>
-				<td align="center"><para style="header">Student Count in Quartile</para></td>
-				<td align="center"><para style="header">Quartile Boundary</para></td>
+				<td><para style="header">Quartile</para></td>
+				<td><para style="header_r">Student Count in Quartile</para></td>
+				<td><para style="header_r">Quartile Boundary</para></td>
 			</tr>
 			<tr>
-				<td><para tal:content="perf/first/name">Title</para></td>
+				<td><para style="data" tal:content="perf/first/name">Title</para></td>
 				<td tal:content="perf/first/count">Count</td>
 				<td tal:content="perf/first/value">Value</td>
 			</tr>
 			<tr>
-				<td><para tal:content="perf/second/name">Title</para></td>
+				<td><para style="data" tal:content="perf/second/name">Title</para></td>
 				<td tal:content="perf/second/count">Count</td>
 				<td tal:content="perf/second/value">Value</td>
 			</tr>
 			<tr>
-				<td><para tal:content="perf/third/name">Title</para></td>
+				<td><para style="data" tal:content="perf/third/name">Title</para></td>
 				<td tal:content="perf/third/count">Count</td>
 				<td tal:content="perf/third/value">Value</td>
 			</tr>
 			<tr>
-				<td><para tal:content="perf/fourth/name">Title</para></td>
+				<td><para style="data" tal:content="perf/fourth/name">Title</para></td>
 				<td tal:content="perf/fourth/count">Count</td>
 				<td tal:content="perf/fourth/value">Value</td>
 			</tr>
@@ -372,18 +372,18 @@
 				tal:condition="options/engagement_to_performance"
 				repeatRows="1">
 			<tr>
-				<td align="center"><para style="header">Assignment Title</para></td>
-				<td align="center"><para style="header">First Quartile</para></td>
-				<td><para style="header">First Quartile Count</para></td>
-				<td align="center"><para style="header">Second Quartile</para></td>
-				<td><para style="header">Second Quartile Count</para></td>
-				<td align="center"><para style="header">Third Quartile</para></td>
-				<td><para style="header">Third Quartile Count</para></td>
-				<td align="center"><para style="header">Fourth Quartile</para></td>
-				<td><para style="header">Fourth Quartile Count</para></td>
+				<td><para style="header">Assignment Title</para></td>
+				<td><para style="header_r">First Quartile</para></td>
+				<td><para style="header_r">First Quartile Count</para></td>
+				<td><para style="header_r">Second Quartile</para></td>
+				<td><para style="header_r">Second Quartile Count</para></td>
+				<td><para style="header_r">Third Quartile</para></td>
+				<td><para style="header_r">Third Quartile Count</para></td>
+				<td><para style="header_r">Fourth Quartile</para></td>
+				<td><para style="header_r">Fourth Quartile Count</para></td>
 			</tr>
 			<tr tal:repeat="item python: range(len(perf.first))">
-				<td><para tal:content="python:  perf.first.assignment_stat[item].title">Title</para></td>
+				<td><para style="data" tal:content="python:  perf.first.assignment_stat[item].title">Title</para></td>
 				<td tal:content="python: perf.first.assignment_stat[item].avg_grade">First</td>
 				<td tal:content="python: perf.first.assignment_stat[item].total">First</td>
 				<td tal:content="python: perf.second.assignment_stat[item].avg_grade">Second</td>
