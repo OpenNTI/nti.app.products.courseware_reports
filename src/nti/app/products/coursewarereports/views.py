@@ -780,10 +780,10 @@ class CourseSummaryReportPdf(_AbstractReportView):
 		
 		containers_in_course = self._get_containers_in_course()
 		
-		with open( '/Users/jzuech/reports/new' + self.course.__name__ , 'a' ) as f:
-			for c in sorted( containers_in_course ):
-				f.write( c.encode('utf-8') )
-				f.write( '\n' )
+# 		with open( '/Users/jzuech/reports/new' + self.course.__name__ , 'a' ) as f:
+# 			for c in sorted( containers_in_course ):
+# 				f.write( c.encode('utf-8') )
+# 				f.write( '\n' )
 
 		#Now we should have our whole tree of ntiids, intersect with our vals
 		intids_of_objects_in_course_containers = md_catalog['containerId'].apply({'any_of': containers_in_course})
