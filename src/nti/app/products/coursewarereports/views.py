@@ -745,7 +745,8 @@ class CourseSummaryReportPdf(_AbstractReportView):
 		if root:
 			_recur( root,containers_in_course )
 			
-		#Add in our self-assessments	
+		# Add in our self-assessments	
+		# We filter out questions in assignments here for some reason
 		#self_assessments = _get_self_assessments_for_course(self.course)
 		catalog = ICourseAssessmentItemCatalog(self.course)
 		containers_in_course = containers_in_course.union( [x.ntiid for x in catalog.iter_assessment_items()] )
@@ -780,11 +781,6 @@ class CourseSummaryReportPdf(_AbstractReportView):
 		
 		containers_in_course = self._get_containers_in_course()
 		
-# 		with open( '/Users/jzuech/reports/new' + self.course.__name__ , 'a' ) as f:
-# 			for c in sorted( containers_in_course ):
-# 				f.write( c.encode('utf-8') )
-# 				f.write( '\n' )
-
 		#Now we should have our whole tree of ntiids, intersect with our vals
 		intids_of_objects_in_course_containers = md_catalog['containerId'].apply({'any_of': containers_in_course})
 
@@ -912,36 +908,48 @@ class CourseSummaryReportPdf(_AbstractReportView):
 # 			for n in node.values():
 # 				_recur(n, accum)
 
-#		Exclude engagement_by_place data until we fully flesh out the details
-# 		data = list()
-# 
-# 		stat = namedtuple('Stat',
-# 						  ('title', 'note_count', 'hl_count'))
-# 
-# 		for unit in outline.values():
-# 			for lesson in unit.values():
-# 				ntiids = set()
-# 				_recur(lesson, ntiids)
-# 				for x in list(ntiids):
-# 					try:
-# 						kid = lib.pathToNTIID(x)[-1]
-# 						ntiids.update( kid.embeddedContainerNTIIDs )
-# 					except TypeError:
-# 						pass
-# 
-# 					for kid in lib.childrenOfNTIID(x):
-# 						ntiids.add(kid.ntiid)
-# 						ntiids.update(kid.embeddedContainerNTIIDs)
-# 				ntiids.discard(None)
-# 				local_notes = md_catalog['containerId'].apply({'any_of': ntiids})
-# 				local_notes = intersection(local_notes, all_notes)
-# 				local_hls = md_catalog['containerId'].apply({'any_of': ntiids})
-# 				local_hls = intersection(local_hls, all_hls)
-# 
-# 				data.append( stat( lesson.title, len(local_notes), len(local_hls)) )
-# 
-# 		# Keep these in lesson order
-# 		options['placed_engagement_data'] = data
+# 		Exclude engagement_by_place data until we fully flesh out the details
+#  		data = list()
+#  
+#  		stat = namedtuple('Stat',
+#  						  ('title', 'note_count', 'hl_count'))
+#  
+#  		for unit in outline.values():
+#  			for lesson in unit.values():
+#  				ntiids = set()
+#  				_recur(lesson, ntiids)
+#  				for x in list(ntiids):
+#  					try:
+#  						kid = lib.pathToNTIID(x)[-1]
+#  						ntiids.update( kid.embeddedContainerNTIIDs )
+#  					except TypeError:
+#  						pass
+#  
+#  					for kid in lib.childrenOfNTIID(x):
+#  						ntiids.add(kid.ntiid)
+#  						ntiids.update(kid.embeddedContainerNTIIDs)
+#  				ntiids.discard(None)
+#  				local_notes = md_catalog['containerId'].apply({'any_of': ntiids})
+#  				local_notes = intersection(local_notes, all_notes)
+#  				local_hls = md_catalog['containerId'].apply({'any_of': ntiids})
+#  				local_hls = intersection(local_hls, all_hls)
+#  
+#  				data.append( stat( lesson.title, len(local_notes), len(local_hls)) )
+ 
+  		data = list()
+ 
+ 		stat = namedtuple('Stat',
+ 						  ('title', 'note_count', 'hl_count'))
+ 
+ 		for c in sorted( containers_in_course ):
+			local_notes = md_catalog['containerId'].apply({'any_of': {c}})
+			local_notes = intersection(local_notes, all_notes)
+			local_hls = md_catalog['containerId'].apply({'any_of': {c}})
+			local_hls = intersection(local_hls, all_hls)
+
+			data.append( stat( c.title, len(local_notes), len(local_hls)) )
+
+ 		options['placed_engagement_data'] = data
 
 
 	def _build_assignment_data(self, options, filter=None):

@@ -150,7 +150,7 @@
 				This table shows the number of comments participants have posted 
 				to <u>${context/title|context/__name__}</u>. Those who have not contributed are excluded from the table.
 		</para>
-		
+
 		<hr width="100%" />
 		
 		<h2 style="h2">
@@ -160,6 +160,7 @@
 			This forum does not have any comments by for-credit students.
 		</para>	
 		
+		<keepInFrame frame="first" onOverflow="overflow" >
 		<blockTable style="table_user_1"
 					tal:condition="options/for_credit_user_stats"
 					alignment="left" colWidths="30% 30% 12% 12%"
@@ -177,7 +178,7 @@
 				<td tal:content="item/total_comment_count">3</td>
 			</tr>
 		</blockTable>
-		
+		</keepInFrame>
 		
 		<h2 style="h2">
 			Non-Credit Comment Activity

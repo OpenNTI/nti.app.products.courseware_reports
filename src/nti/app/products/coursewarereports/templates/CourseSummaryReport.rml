@@ -49,7 +49,9 @@
 		</pieChart>
 		</illustration>
 
-		<condPageBreak height="3in" />
+		<condPageBreak height="4in" />
+		<!-- Have to do this to keep RML from producing a blank page before this large table -->
+		<setNextFrame name="first" />
 
 		<h1 style="h1" spaceBefore="1in" spaceAfter=".4in" keepWithNext='true'>
 			Assignments and Assessments
@@ -90,6 +92,9 @@
 			This course contains no self-assessments.
 		</para>
 
+		<condPageBreak height="4in" />
+		<!-- Have to do this to keep RML from producing a blank page before this large table -->
+		<setNextFrame name="first" />
 
 		<h2 style="h2">
 			Assignments: Submissions
@@ -117,6 +122,10 @@
 		<para tal:condition="not:options/assignment_data">
 			This course contains no assignments.
 		</para>	
+
+		<condPageBreak height="4in" />
+		<!-- Have to do this to keep RML from producing a blank page before this large table -->
+		<setNextFrame name="first" />
 
 		<h2 style="h2">
 			Assignments: Results
@@ -205,33 +214,36 @@
 		
 		<setNextTemplate name="main"/>
 		
-		
-		
-<!--!
 		<nextPage />
+		<!-- Have to do this to keep RML from producing a blank page before this large table -->
+		<setNextFrame name="first" />
 
-		<h2 style="h2">
-			Engagement By Place
+		<h2 style="h2"
+			tal:condition="options/placed_engagement_data">
+			Activity: By Location
 		</h2>
-		
+
+<!--		
 		<para tal:condition="not:options/placed_engagement_data">
 			This course does not have any engagement-by-place data.
 		</para>
-		
+-->		
 		<blockTable style='default'
-					tal:condition="options/placed_engagement_data">
+					colWidths="82% 9% 9%"
+					tal:condition="options/placed_engagement_data"
+					repeatRows="1" >
 			<tr>
 				<td>Place</td>
 				<td>Notes</td>
 				<td>Highlights</td>
 			</tr>
-			<tr tal:repeat="item options/placed_engagement_data">
-				<td tal:content="item/title">Title</td>
+			<tr tal:repeat="item python: [x for x in options['placed_engagement_data'] if x.note_count > 0 or x.hl_count > 0]">
+				<td><para style="data" tal:content="item/title">Title</para></td>
 				<td tal:content="item/note_count">Notes</td>
 				<td tal:content="item/hl_count">25</td>
 			</tr>
 		</blockTable>
--->
+
 		<nextPage />
 
 		<h1 style="h1" spaceBefore=".5in" spaceAfter=".5in" keepWithNext='true'>
