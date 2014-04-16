@@ -1281,7 +1281,7 @@ class AssignmentSummaryReportPdf(_AbstractReportView):
 		"""Adds the multiple choice response to our answer_stats"""
 		try:
 			response_val = question_part.choices[response]
-		except TypeError:
+		except (TypeError,IndexError):
 			# Possibly here due to empty answers or stale, incorrect data
 			response_val = ''
 		self._add_val_to_answer_stats(answer_stat, response_val, check_correct)
