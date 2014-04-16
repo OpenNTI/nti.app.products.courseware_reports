@@ -790,7 +790,6 @@ class CourseSummaryReportPdf(_AbstractReportView):
 									  intids_of_objects_in_course_containers )
 
 		#We could filter notes and highlights (exclude deleted)
-		#If we want top noters/highlighters, we should use TopCreators
 		notes = ResultSet( intids_of_notes, self.uidutil )
 		note_creators = _TopCreators( self )
 		note_creators.aggregate_creators = self.note_aggregator
@@ -1150,7 +1149,8 @@ class AssignmentSummaryReportPdf(_AbstractReportView):
 		assignment = component.queryUtility(IQAssignment, name=self.context.AssignmentId)
 		if assignment is None:
 			#Maybe this is something without an assignment, like Attendance?
-			#In ou-alpha, CS1300-exercise1
+			#TODO In ou-alpha, CS1300-exercise1
+			options['question_stats'] = None
 			return
 
 		ordered_questions = []
@@ -1279,8 +1279,9 @@ class AssignmentSummaryReportPdf(_AbstractReportView):
 	
 	def _add_multiple_choice_to_answer_stats( self, answer_stat, response, question_part, check_correct ):
 		"""Adds the multiple choice response to our answer_stats"""
-		#We could have empty strings or 'None' here; slot that in our 'empty' answer area
-		response_val = question_part.choices[response] if response is not None and response != '' else ''
+		# We could have empty strings or 'None' here; slot that in our 'empty' answer area
+		# TODO Why would we have a non-empty string here?
+		response_val = question_part.choices[response] if ( response is not None and response != '' and not isinstance(response, string_types) ) else ''
 		self._add_val_to_answer_stats(answer_stat, response_val, check_correct)
 
 	def _add_val_to_answer_stats( self, answer_stat, response, check_correct ):
