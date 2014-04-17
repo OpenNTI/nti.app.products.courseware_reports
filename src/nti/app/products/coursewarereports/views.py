@@ -899,6 +899,8 @@ class CourseSummaryReportPdf(_AbstractReportView):
 
 		options['engagement_data'] = _EngagementStats( for_credit_stats, non_credit_stats, aggregate_stats )
 
+#TODO Below we pull notes/highlights per course location
+
 # 		outline = self.course.Outline
 # 		def _recur(node, accum):
 # 			ntiid = getattr(node, 'ContentNTIID', getattr(node, '_v_ContentNTIID', None))
@@ -937,16 +939,18 @@ class CourseSummaryReportPdf(_AbstractReportView):
  
   		data = list()
  
- 		stat = namedtuple('Stat',
- 						  ('title', 'note_count', 'hl_count'))
+#TODO Below we pull notes/highlights per NTIID in course 
  
- 		for c in sorted( containers_in_course ):
-			local_notes = md_catalog['containerId'].apply({'any_of': {c}})
-			local_notes = intersection(local_notes, all_notes)
-			local_hls = md_catalog['containerId'].apply({'any_of': {c}})
-			local_hls = intersection(local_hls, all_hls)
-
-			data.append( stat( c.title, len(local_notes), len(local_hls)) )
+#  		stat = namedtuple('Stat',
+#  						  ('title', 'note_count', 'hl_count'))
+#  
+#  		for c in sorted( containers_in_course ):
+# 			local_notes = md_catalog['containerId'].apply({'any_of': {c}})
+# 			local_notes = intersection(local_notes, all_notes)
+# 			local_hls = md_catalog['containerId'].apply({'any_of': {c}})
+# 			local_hls = intersection(local_hls, all_hls)
+# 
+# 			data.append( stat( c.title, len(local_notes), len(local_hls)) )
 
  		options['placed_engagement_data'] = data
 

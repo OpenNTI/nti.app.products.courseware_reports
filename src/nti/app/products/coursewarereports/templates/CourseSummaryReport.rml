@@ -211,23 +211,24 @@
 				  metal:use-macro="macro:engagement_stats_pie"
 				  tal:condition="options/engagement_data/non_credit" >
 		</illustration>
-		
+	
 		<setNextTemplate name="main"/>
-		
+
+
 		<nextPage />
 		<!-- Have to do this to keep RML from producing a blank page before this large table -->
 		<setNextFrame name="first" />
 
+<!--
+Removing activity by place for now
 		<h2 style="h2"
 			tal:condition="options/placed_engagement_data">
 			Activity: By Location
 		</h2>
 
-<!--		
 		<para tal:condition="not:options/placed_engagement_data">
 			This course does not have any engagement-by-place data.
 		</para>
--->		
 		<blockTable style='default'
 					colWidths="82% 9% 9%"
 					tal:condition="options/placed_engagement_data"
@@ -245,6 +246,8 @@
 		</blockTable>
 
 		<nextPage />
+
+-->
 
 		<h1 style="h1" spaceBefore=".5in" spaceAfter=".5in" keepWithNext='true'>
 			Discussions
