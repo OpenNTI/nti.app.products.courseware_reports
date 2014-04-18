@@ -61,9 +61,13 @@
 
 		<nextPage />
 
-		<h1 style="h1" fontSize="23" spaceAfter=".2in" spaceBefore="0in" >
+		<h1 style="h1" fontSize="22" spaceAfter=".2in" spaceBefore=".1in" >
 			Question Breakdown
 		</h1>
+		
+		<para style="normal" fontSize="10" spaceBefore=".1in" spaceAfter=".1in">
+			Answers are ordered according to the number of students who chose them.
+		</para>
 		
 		<hr width="100%" />
 		

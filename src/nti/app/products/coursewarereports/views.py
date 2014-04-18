@@ -1299,7 +1299,7 @@ class AssignmentSummaryReportPdf(_AbstractReportView):
 		"""Adds a response value to our answer_stats"""
 		if not response:
 			# For empty strings, add a placeholder
-			response = '[left blank]'
+			response = '[unanswered]'
 		
 		if response in answer_stat:
 			answer_stat[response].count += 1
