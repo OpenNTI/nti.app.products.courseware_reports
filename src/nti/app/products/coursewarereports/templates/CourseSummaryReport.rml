@@ -26,19 +26,26 @@
 		</para>		
 
 		<illustration width="4in" height="4in">
-		<pieChart dx="2in" dy="0in" dwidth="4in" dheight="4in" x="1in" y="0" width="4in"
-				  height="4in"
+		<pieChart dx="1in" dy="0in" 
+				  dwidth="6in" dheight="4in" 
+				  x="1in" y="0" 
+				  width="6in" height="4in"
 				  checkLabelOverlap='true'
 				  tal:condition="options/count_open" 
+				  pointerLabelMode="LeftAndRight"
+				  sameRadii="true"
+				  xRadius="3in"
 				  strokeWidth="0"
 				  startAngle="180">
-			<labels>
-				<label>Non-Credit (${options/count_open})</label>
-				<label>For-Credit (${options/count_for_credit})</label>
-			</labels>
 			<slices>
-				<slice fillColor="#3498db" />
-				<slice fillColor="#1abc9c" popout="10" />
+				<slice fillColor="#3498db">
+					<label fillColor="#757474">Non-Credit (${options/count_open})</label>
+					<pointer strokeColor="#757474" piePad=".3in" />
+				</slice>
+				<slice fillColor="#1abc9c" popout="10">
+					<label fillColor="#757474">For-Credit (${options/count_for_credit})</label>
+					<pointer strokeColor="#757474" piePad=".3in" />
+				</slice>
 			</slices>
 			<data>
 				<series>

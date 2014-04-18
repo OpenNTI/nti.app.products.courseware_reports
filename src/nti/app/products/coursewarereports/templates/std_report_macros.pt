@@ -331,20 +331,18 @@
 		</blockTable>
 	</metal:macro>
 	
-	<illustration width="4in" height="3.5in"
+	<illustration width="4.5in" height="3.5in"
 				  metal:define-macro="engagement_stats_pie" >	
-		<pieChart dx="1.5in" dy=".8in" dwidth="3in" dheight="3in" x="0in" y="0" width="2.5in"
+		<pieChart 	dx="1in" dy=".8in" dwidth="4.5in" dheight="3.5in" x="0" y="0" 
+					width="4.5in"
 					height="2.5in"		  
 				  	checkLabelOverlap='true'
 				  	strokeWidth="0"
+				  	sameRadii="true"
+				  	xRadius="2.5in"
+				  	pointerLabelMode="LeftAndRight"
 				  	tal:define="data engagement_stat"
 				  	tal:condition="engagement_stat">
-			<labels>
-				<label 	tal:repeat="item python: [x for x in data if data.count]"
-						tal:content="item/name">
-					Name
-				</label>
-			</labels>
 			<data>
 				<!-- Deals very badly with 0 size slices -->
 				<series>
@@ -354,8 +352,15 @@
 				</series>
 			</data>
 			<slices>
-				<slice tal:repeat="item python: [x for x in data if data.count]"
-					   tal:attributes="fillColor item/color"/>
+				<slice fontSize="9"
+					   tal:repeat="item python: [x for x in data if data.count]"
+					   tal:attributes="fillColor item/color" >
+					   <label 	fillColor="#757474"
+					   			tal:content="item/name">
+					   		Notes
+					   </label>
+					   <pointer strokeColor="#757474" />
+				</slice>
 			</slices>
 		</pieChart>
 	</illustration>
