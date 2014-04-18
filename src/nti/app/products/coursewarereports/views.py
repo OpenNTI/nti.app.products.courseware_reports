@@ -1297,6 +1297,10 @@ class AssignmentSummaryReportPdf(_AbstractReportView):
 	
 	def _add_displayable_to_answer_stat( self, answer_stat, response, check_correct ):		
 		"""Adds a response value to our answer_stats"""
+		if not response:
+			# For empty strings, add a placeholder
+			response = '[left blank]'
+		
 		if response in answer_stat:
 			answer_stat[response].count += 1
 		else:

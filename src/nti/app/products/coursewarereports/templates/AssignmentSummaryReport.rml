@@ -5,8 +5,8 @@
 
 
 		<para style="normal" fontSize="12" spaceAfter=".1in">
-			This report includes information about the assignment statistics, assignment results, and a
-			view into results by question for the assignment <u>${context/displayName}</u>.
+			This report includes information about the assignment submission, assignment results, and a
+			breakdown of answers per question for the assignment <u>${context/displayName}</u>.
 		</para>
 		<hr width="100%" />
 
@@ -15,7 +15,7 @@
 		</h1>
 
 		<h2 style="h2" spaceAfter=".3in">
-			Assignment Statistics
+			Assignment Submission
 		</h2>
 		
 		<blockTable style='default' >

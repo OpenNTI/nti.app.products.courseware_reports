@@ -570,9 +570,10 @@ def _get_top_answers( answer_stats ):
 def _finalize_answer_stats( answer_stats, total_submits ):
 	"""Modifies the incoming answer_stats with relevant values"""
 	# Now update the letter and perc values for our answer_stats
-	letters = string.ascii_uppercase
+	#letters = string.ascii_uppercase
 	for j in range( len( answer_stats ) ):
 		sub = answer_stats[j]
-		sub.letter_prefix = letters[j]
+		#sub.letter_prefix = letters[j]
+		sub.letter_prefix = str( j + 1 )
 		sub.perc_s = '%0.1f%%' % ( sub.count * 100.0 / total_submits ) if total_submits else 'N/A'
 		
