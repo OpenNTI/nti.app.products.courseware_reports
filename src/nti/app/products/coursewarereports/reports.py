@@ -575,5 +575,5 @@ def _finalize_answer_stats( answer_stats, total_submits ):
 		sub = answer_stats[j]
 		#sub.letter_prefix = letters[j]
 		sub.letter_prefix = str( j + 1 )
-		sub.perc_s = '%0.1f%%' % ( sub.count * 100.0 / total_submits ) if total_submits else 'N/A'
+		sub.perc_s = '%0.1f' % ( sub.count * 100.0 / total_submits ) if total_submits else 'N/A'
 		

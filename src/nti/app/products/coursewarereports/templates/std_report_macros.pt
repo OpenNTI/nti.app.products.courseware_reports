@@ -217,7 +217,7 @@
 			<tr tal:repeat="item python: [x for x in top_commenters] ">
 				<td tal:content="item/display">Display Name</td>
 				<td tal:content="item/count">count</td>
-				<td tal:content="python: '%0.1f%%' % item.perc">percent</td>
+				<td tal:content="python: '%0.1f' % item.perc">percent</td>
 			</tr>
 		</blockTable>
 	</metal:macro>
@@ -317,10 +317,10 @@
 				<td>Type</td>
 				<td>Count</td>
 				<td><para style="header_r">
-					Unique<br/>
+					Student<br/>
 					Contributors
 				</para></td>
-				<td><para style="header_r">Unique Percent Contributed</para></td>
+				<td><para style="header_r">Student Percent Contributed</para></td>
 			</tr>
 			<tr tal:repeat="item engagement_stat">
 				<td tal:content="item/name">Notes</td>
