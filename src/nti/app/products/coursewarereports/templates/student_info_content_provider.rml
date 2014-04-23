@@ -1,13 +1,15 @@
 
-<tr tal:condition="view/__parent__/options/user/display">
+<tr tal:condition="view/__parent__/options/user/display"
+	tal:define="display_name view/__parent__/options/user/display">
 	<td>Name:</td>
-	<td tal:content="view/__parent__/options/user/display">
+	<td tal:content="display_name">
 		Display name
 	</td>
 </tr>
-<tr tal:condition="view/__parent__/options/user/username">
+<tr tal:condition="view/__parent__/options/user/username"
+	tal:define="username view/__parent__/options/user/username" >
 	<td>Login:</td>
-	<td tal:content="view/__parent__/options/user/username">
+	<td tal:content="username">
 		Username
 	</td>
 </tr>
