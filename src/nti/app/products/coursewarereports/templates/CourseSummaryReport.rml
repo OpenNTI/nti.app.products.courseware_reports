@@ -55,9 +55,9 @@
 		</pieChart>
 		</illustration>
 
-		<condPageBreak height="4in" />
 		<!-- Have to do this to keep RML from producing a blank page before this large table -->
 		<setNextFrame name="first" />
+		<condPageBreak height="4in" />
 
 		<h1 style="h1" spaceBefore="1in" spaceAfter=".4in" keepWithNext='true'>
 			Assignments and Assessments
@@ -98,9 +98,9 @@
 			This course contains no self-assessments.
 		</para>
 
-		<condPageBreak height="4in" />
 		<!-- Have to do this to keep RML from producing a blank page before this large table -->
 		<setNextFrame name="first" />
+		<condPageBreak height="4in" />
 
 		<h2 style="h2">
 			Assignments: Submissions
@@ -129,9 +129,9 @@
 			This course contains no assignments.
 		</para>	
 
-		<condPageBreak height="4in" />
 		<!-- Have to do this to keep RML from producing a blank page before this large table -->
 		<setNextFrame name="first" />
+		<condPageBreak height="4in" />
 
 		<h2 style="h2">
 			Assignments: Results
@@ -220,10 +220,7 @@
 	
 		<setNextTemplate name="main"/>
 
-
 		<nextPage />
-		<!-- Have to do this to keep RML from producing a blank page before this large table -->
-		<setNextFrame name="first" />
 
 <!--
 Removing activity by place for now
@@ -281,6 +278,8 @@ Removing activity by place for now
 							  metal:use-macro="macro:forum_participation_over_time">
 				</illustration>
 
+				<!-- Have to do this to keep RML from producing a blank page before this large table -->
+				<setNextFrame name="first" />
 				<nextPage />
 				
 				<h2 style="h2">

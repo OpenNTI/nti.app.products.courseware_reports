@@ -82,6 +82,8 @@
 		
 		<hr width="100%" />
 		
+		<setNextFrame name="first" />
+		
 		<h2 style="h2">
 			For-Credit Comment Activity
 		</h2>
@@ -104,6 +106,9 @@
 				<td tal:content="item/total_comment_count">3</td>
 			</tr>
 		</blockTable>
+		
+		<setNextFrame name="first" />
+		<condPageBreak height="4in" />
 		
 		<h2 style="h2">
 			Non-Credit Comment Activity

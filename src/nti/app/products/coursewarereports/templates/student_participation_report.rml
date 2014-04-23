@@ -31,7 +31,7 @@
 	</para>
 
 	<nextPage />
-
+	<setNextFrame name="first" />
 
 	<h2 style="h2" spaceAfter="0.3in">
 		Discussions Created
@@ -62,6 +62,9 @@
 		<para tal:condition="not:options/topics_created">
 			This student has not created any discussions.
 		</para>
+
+	<setNextFrame name="first" />
+	<condPageBreak height="4in" />
 
 	<h2 style="h2" spaceAfter="0.3in" spaceBefore="0.5in">
 		Comments
@@ -100,6 +103,8 @@
 	</h1>
 		<hr width="100%" />
 		
+	<setNextFrame name="first" />
+		
 	<h2 style="h2" spaceAfter="0.3in" spaceBefore="0.5in">
 		Self-Assessments
 	</h2>	
@@ -122,6 +127,9 @@
 		<para tal:condition="not:options/self_assessment_title_to_count">
 			This course contains no self-assessments.
 		</para>
+
+	<setNextFrame name="first" />
+	<condPageBreak height="4in" />
 
 	<h2 style="h2" spaceAfter="0.3in" spaceBefore="0.5in">
 		Assignments
