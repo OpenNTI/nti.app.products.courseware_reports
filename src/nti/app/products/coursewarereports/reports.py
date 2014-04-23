@@ -503,7 +503,7 @@ class _QuestionPartStat(object):
 
 class _QuestionStat(object):
 	"""Holds stat and display information for a particular question."""
-	def __init__(self, question_part_stats, title=None, content=None, avg_score=0, submission_count=1 ):
+	def __init__(self, question_part_stats, title=None, content=None, avg_score=0, submission_count=0 ):
 		self.question_part_stats = question_part_stats
 		self.submission_count = submission_count
 		self.title = title

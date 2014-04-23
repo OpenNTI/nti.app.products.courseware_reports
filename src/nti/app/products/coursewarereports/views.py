@@ -1180,9 +1180,11 @@ class AssignmentSummaryReportPdf(_AbstractReportView):
 					
 					question = qids_to_q[question_submission.questionId]
 					
-					question_part_stats = self._get_question_part_stats( 	question_stats, 
-																			question_submission.questionId,
-																			question )
+					question_stat = self._get_question_stat( 	question_stats, 
+																question_submission.questionId,
+																question )
+					question_stat.submission_count += 1
+					question_part_stats = question_stat.question_part_stats
 						
 					for idx in range( len(question.parts) ):
 						question_part = question.parts[idx] 
@@ -1192,7 +1194,7 @@ class AssignmentSummaryReportPdf(_AbstractReportView):
 						self._accumulate_response( question_part, response, answer_stat )
 
 			pending = history.pendingAssessment
-			#Do we have to worry about assessed values without submissions?
+			
 			for maybe_assessed in pending.parts:
 				if not IQAssessedQuestionSet.providedBy(maybe_assessed):
 					continue
@@ -1201,31 +1203,32 @@ class AssignmentSummaryReportPdf(_AbstractReportView):
 						
 						assessed_part = assessed_question.parts[idx]
 						val = assessed_part.assessedValue
-						#We may not have a grade yet
+						# We may not have a grade yet
 						if val is not None:
-							#Assuming we've already seen every question at this point due to submissions above
-							question_stat = question_stats[assessed_question.questionId]
+							# We may have assessed values without submissions, perhaps due to weird alpha data.
+							question_stat = self._get_question_stat( question_stats,
+																	 assessed_question.questionId,
+																	 assessed_question )
 							question_part_stats = question_stat.question_part_stats
 							question_part_stats[idx].assessed_values.append( val )
 
 		options['question_stats'] = _build_question_stats( ordered_questions, question_stats )
 
 
-	def _get_question_part_stats( self, question_stats, question_id, question ):
-		"""Retrieves question_part_stats for the given question, building if necessary"""
+	def _get_question_stat( self, question_stats, question_id, question ):
+		"""Retrieves question_stat for the given question, building if necessary"""
 		if question_id in question_stats:
 			question_stat = question_stats[ question_id ]
 			question_part_stats = question_stat.question_part_stats
-			question_stat.submission_count += 1
 		else:
 			#First time seeing this question, initialize our question parts since they won't change
 			question_part_stats = {}
 			for idx in range(len(question.parts)):
 				question_part_stats[idx] = _QuestionPartStat( roman.toRoman( idx + 1 ) )
 				
-			question_stats[ question_id ] = _QuestionStat( question_part_stats )
+			question_stats[ question_id ] = question_stat = _QuestionStat( question_part_stats )
 			
-		return question_part_stats
+		return question_stat
 	
 	def _accumulate_response( self, question_part, response, answer_stat ):
 		"""Adds the response information to our answer_stats"""
