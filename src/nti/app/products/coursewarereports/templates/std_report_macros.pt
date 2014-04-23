@@ -183,9 +183,10 @@
 				<labels fontName="Helvetica" fontSize="10" fillColor="#b8b8b8"/>
 			</valueAxis>
 			<texts >
-				<text x="4in" y="-0.6in" textAnchor="middle"
-					  fontName="Helvetica-Bold" fontSize="16"
-					  fillColor="#757474" >
+				<text 	x="4in" textAnchor="middle"
+						tal:attributes="y python: '-0.8in' if len( forum_stat.forum_objects_by_week_number_categories ) > 12 else '-0.6in'"
+					  	fontName="Helvetica-Bold" fontSize="16"
+					  	fillColor="#757474" >
 					Week
 				</text>
 				<text x="1.6in" y="0.5in" angle="90" textAnchor="middle"
