@@ -106,7 +106,7 @@
 	
 		<blockTable style='default' 
 					alignment="left" 
-					colWidths="44% 10%" 
+					colWidths="54% 10%" 
 					tal:condition="options/self_assessment_title_to_count"
 					repeatRows="1">
 			<tr>
@@ -114,7 +114,7 @@
 				<td>Attempts</td>
 			</tr>
 			<tr tal:repeat="item options/self_assessment_title_to_count">
-				<td tal:content="python:item[0]">The Assessment Title</td>
+				<td><para style="data" tal:content="python:item[0]">The Assessment Title</para></td>
 				<td tal:content="python:item[1]">Times Taken</td>
 			</tr>
 		</blockTable>
@@ -139,7 +139,7 @@
 				<td><para style="header_r">Feedback Comments</para></td>
 			</tr>
 			<tr tal:repeat="item options/assignments">
-				<td tal:content="item/title">The Assignment Name</td>
+				<td><para style="data" tal:content="item/title">The Assignment Name</para></td>
 				<td align="left" 
 					tal:content="item/submitted | default"
 					tal:attributes="fontColor python: 'red' if item.submitted_late else default"></td>
