@@ -35,14 +35,13 @@
 				  pointerLabelMode="LeftAndRight"
 				  sameRadii="true"
 				  xRadius="3in"
-				  strokeWidth="0"
 				  startAngle="180">
 			<slices>
-				<slice fillColor="#3498db">
+				<slice strokeColor="#40b450" fillColor="#40b450" >
 					<label fillColor="#757474">Non-Credit (${options/count_open})</label>
 					<pointer strokeColor="#757474" piePad=".3in" />
 				</slice>
-				<slice fillColor="#1abc9c" popout="10">
+				<slice strokeColor="#3fb3f6" fillColor="#3fb3f6" popout="10">
 					<label fillColor="#757474">For-Credit (${options/count_for_credit})</label>
 					<pointer strokeColor="#757474" piePad=".3in" />
 				</slice>
