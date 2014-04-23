@@ -278,25 +278,30 @@
 		</barChart>	
 		
 		<pieChart dx="0in" dy="0in"
-				  dwidth="4in" dheight="4in"
-				  x="1in" y="0"
-				  width="4in" height="4in"
+				  dwidth="5.5in" dheight="5in"
+				  x="0in" y="0"
+				  width="5.5in" height="5in"
 				  checkLabelOverlap='true'
 				  strokeWidth="0"
+				  sameRadii="true"
+				  xRadius="5in"
+				  pointerLabelMode="LeftAndRight"
+				  showBoundary="1"
 				  tal:condition="not: top_commenters/aggregate_remainder|options/top_commenters/aggregate_remainder"
 				  tal:attributes="dwidth top_commenters_ill_width|default;
 								  dheight top_commenters_ill_height|default;
 								  width top_commenters_chart_width|default;
 								  height top_commenters_chart_height|default">
-			<labels>
-				<label tal:repeat="item top_commenters|options/top_commenters"
-					   tal:content="python: item.display + ' (%0.1f%%)' % item.perc">User1</label>
-				<label tal:condition="False">User2</label>
-				<label tal:condition="False">User3</label>
-			</labels>
 			<slices>
-				<slice tal:repeat="item top_commenters|options/top_commenters"
-					   tal:attributes="fillColor python:top_commenters_colors[repeat.item.number]" />
+				<slice  fontSize="9"
+						tal:repeat="item top_commenters|options/top_commenters"
+					   	tal:attributes="fillColor python:top_commenters_colors[repeat.item.number]">
+					 	<label 	fillColor="#757474"
+					   			tal:content="python: item.display + ' (%0.1f%%)' % item.perc">
+					   		User1
+					   </label>
+					   <pointer strokeColor="#757474" piePad=".2in" />
+				</slice>
 			</slices>
 			<data>
 				<series tal:content="top_commenters/series|options/top_commenters/series">
