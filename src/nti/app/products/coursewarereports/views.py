@@ -538,11 +538,11 @@ class ForumParticipationReportPdf(_AbstractReportView):
 		options['for_credit_user_stats'] = fc_stats = for_credit_stats[0]
 		options['non_credit_user_stats'] = nc_stats = non_credit_stats[0]
 		only_one = for_credit_stats[1] + non_credit_stats[1]
-		total_distinct_count = len(fc_stats) + len(nc_stats)
+		unique_count = for_credit_stats[2] + non_credit_stats[2]
 		
 		#Could probably break this into three parts if we want
-		if fc_stats or nc_stats:
-			options['percent_users_comment_more_than_once'] = "%0.2f" % ((total_distinct_count - only_one) / total_distinct_count * 100.0)
+		if unique_count:
+			options['percent_users_comment_more_than_once'] = "%0.1f" % ((unique_count - only_one) / unique_count * 100.0)
 		else:
 			options['percent_users_comment_more_than_once'] = '0.0'
 
@@ -550,6 +550,7 @@ class ForumParticipationReportPdf(_AbstractReportView):
 		"""Returns sorted user stats for the given set of users"""
 		user_stats = list()
 		only_one = 0
+		unique_count = 0
 		for uname in users:
 			student_info = self.get_student_info( uname )
 			stat = self.UserStats(	student_info, 
@@ -558,9 +559,11 @@ class ForumParticipationReportPdf(_AbstractReportView):
 			user_stats.append(stat)
 			if stat.total_comment_count == 1:
 				only_one += 1
+			if stat.total_comment_count > 0:
+				unique_count += 1
 				
 		user_stats.sort( key=lambda x: x.username.display.lower() )
-		return (user_stats,only_one)
+		return (user_stats,only_one,unique_count)
 
 	def __call__(self):
 		"""
