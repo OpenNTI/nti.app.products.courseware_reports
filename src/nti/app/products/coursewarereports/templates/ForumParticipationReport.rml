@@ -51,7 +51,7 @@
 		</para>
 
 		<setNextFrame name="first" />
-		<condPageBreak height="4in" />
+		<nextPage />
 
 		<h1 style="h1" spaceBefore=".5in" spaceAfter=".7in">
 			Comments

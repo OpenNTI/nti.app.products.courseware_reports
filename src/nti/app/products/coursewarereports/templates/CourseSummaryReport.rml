@@ -57,7 +57,7 @@
 
 		<!-- Have to do this to keep RML from producing a blank page before this large table -->
 		<setNextFrame name="first" />
-		<condPageBreak height="4in" />
+		<nextPage/>
 
 		<h1 style="h1" spaceBefore="1in" spaceAfter=".4in" keepWithNext='true'>
 			Assignments and Assessments
