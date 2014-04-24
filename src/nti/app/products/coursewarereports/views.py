@@ -1282,6 +1282,11 @@ class AssignmentSummaryReportPdf(_AbstractReportView):
 				self._add_displayable_to_answer_stat( 	answer_stat, 
 														content, 
 														check_correct )
+		elif response is None:
+			# Unanswered questions get placed in our placeholder
+			self._add_displayable_to_answer_stat( 	answer_stat, 
+													response, 
+													lambda: False )
 	
 	
 	def _add_multiple_choice_to_answer_stats( self, answer_stat, response, question_part, check_correct ):
