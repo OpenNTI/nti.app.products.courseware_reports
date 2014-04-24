@@ -1185,7 +1185,7 @@ class AssignmentSummaryReportPdf(_AbstractReportView):
 					
 					question_stat = self._get_question_stat( 	question_stats, 
 																question_submission.questionId,
-																question )
+																question.parts )
 					question_stat.submission_count += 1
 					question_part_stats = question_stat.question_part_stats
 						
@@ -1211,14 +1211,14 @@ class AssignmentSummaryReportPdf(_AbstractReportView):
 							# We may have assessed values without submissions, perhaps due to weird alpha data.
 							question_stat = self._get_question_stat( question_stats,
 																	 assessed_question.questionId,
-																	 assessed_question )
+																	 assessed_question.parts )
 							question_part_stats = question_stat.question_part_stats
 							question_part_stats[idx].assessed_values.append( val )
 
 		options['question_stats'] = _build_question_stats( ordered_questions, question_stats )
 
 
-	def _get_question_stat( self, question_stats, question_id, question ):
+	def _get_question_stat( self, question_stats, question_id, parts ):
 		"""Retrieves question_stat for the given question, building if necessary"""
 		if question_id in question_stats:
 			question_stat = question_stats[ question_id ]
@@ -1226,7 +1226,7 @@ class AssignmentSummaryReportPdf(_AbstractReportView):
 		else:
 			#First time seeing this question, initialize our question parts since they won't change
 			question_part_stats = {}
-			for idx in range(len(question.parts)):
+			for idx in range(len( parts )):
 				question_part_stats[idx] = _QuestionPartStat( roman.toRoman( idx + 1 ) )
 				
 			question_stats[ question_id ] = question_stat = _QuestionStat( question_part_stats )
