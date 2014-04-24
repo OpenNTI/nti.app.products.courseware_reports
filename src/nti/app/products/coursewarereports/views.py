@@ -234,7 +234,7 @@ class _AbstractReportView(AbstractAuthenticatedView,
 				if not IDeletedObjectPlaceholder.providedBy( x ) ]
 		
 	def generate_footer( self ):
-		date = _adjust_date( datetime.now() )
+		date = _adjust_date( datetime.utcnow() )
 		date = date.strftime( '%b %d, %Y %I:%M %p' )
 		title = self.report_title
 		course = self.course.__name__
@@ -1255,12 +1255,12 @@ class AssignmentSummaryReportPdf(_AbstractReportView):
 															question_part,
 															lambda: r in question_part.solutions[0].value )
 		elif isinstance(response, string_types):
-			#IQFreeResponsePart?
+			# IQFreeResponsePart?
 			# Freeform answers
 			response = response.lower()	
-			#TODO We should be able to look in the solutions list for even the 
-			#multiple choice types correct (probably a rare use-case)
-			#TODO What case do non-strings occur in?		
+			# TODO We should be able to look in the solutions list for even the 
+			# multiple choice types correct (probably a rare use-case)
+			# TODO What case do non-strings occur in?		
 			solutions = (	x.value.lower() if isinstance(x.value, string_types) else x 
 							for x in question_part.solutions )
 			self._add_val_to_answer_stats( 	answer_stat,
@@ -1269,7 +1269,7 @@ class AssignmentSummaryReportPdf(_AbstractReportView):
 		
 		#TODO Can we handle IQFilePart? Is there anything we need to handle?	
 		elif IQMatchingPart.providedBy( question_part ):
-			#This handles both matching and ordering questions
+			# This handles both matching and ordering questions
 			for key, val in response.items():
 				left = question_part.labels[ int( key ) ]
 				left = self._get_displayable( left )
@@ -1279,8 +1279,8 @@ class AssignmentSummaryReportPdf(_AbstractReportView):
 				
 				content = (left, right)
 				
-				#Just need to check if our given key-value pair is in 
-				#the solution mappings
+				# Just need to check if our given key-value pair is in 
+				# the solution mappings
 				check_correct = lambda: question_part.solutions[0].value[ key ] == val
 				self._add_displayable_to_answer_stat( 	answer_stat, 
 														content, 
