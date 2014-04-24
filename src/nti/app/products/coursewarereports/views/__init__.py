@@ -8,14 +8,14 @@ __docformat__ = "restructuredtext en"
 
 logger = __import__('logging').getLogger(__name__)
 
-from . import MessageFactory as _
-from . import VIEW_STUDENT_PARTICIPATION
-from . import VIEW_TOPIC_PARTICIPATION
-from . import VIEW_FORUM_PARTICIPATION
-from . import VIEW_COURSE_SUMMARY
-from . import VIEW_ASSIGNMENT_SUMMARY
+from .. import MessageFactory as _
+from .. import VIEW_STUDENT_PARTICIPATION
+from .. import VIEW_TOPIC_PARTICIPATION
+from .. import VIEW_FORUM_PARTICIPATION
+from .. import VIEW_COURSE_SUMMARY
+from .. import VIEW_ASSIGNMENT_SUMMARY
 
-from .interfaces import IPDFReportView 
+from ..interfaces import IPDFReportView
 
 from .reports import _TopCreators
 from .reports import _StudentInfo
@@ -129,6 +129,8 @@ from pyramid.httpexceptions import HTTPForbidden
 class _AbstractReportView(AbstractAuthenticatedView,
 						  BrowserPagelet):
 
+	family = BTrees.family64
+
 	def __init__(self, context, request):
 		self.options = {}
 		# Our two parents take different arguments
@@ -208,7 +210,7 @@ class _AbstractReportView(AbstractAuthenticatedView,
 
 	@Lazy
 	def all_user_intids(self):
-		ids = BTrees.family64.II.TreeSet()
+		ids = self.family.II.TreeSet()
 		ids.update( IEnumerableEntityContainer(self.course.legacy_community).iter_intids() )
 		return ids
 	
@@ -456,7 +458,7 @@ class StudentParticipationReportPdf(_AbstractReportView):
 		return options
 
 
-from .decorators import course_from_forum
+from ..decorators import course_from_forum
 
 @view_config(context=ICommunityForum,
 			 name=VIEW_FORUM_PARTICIPATION)
@@ -995,7 +997,7 @@ class CourseSummaryReportPdf(_AbstractReportView):
 			
 		#Need to accumulate these
 		#TODO rework this
-		acc_week = BTrees.family64.II.BTree()
+		acc_week = self.family.II.BTree()
 		
 		#Aggregate weekly numbers
 		for key, stat in forum_stats.items():

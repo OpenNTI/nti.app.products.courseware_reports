@@ -35,6 +35,8 @@ from nti.contentfragments.interfaces import IPlainTextContentFragment
 import reportlab.platypus.paragraph
 _reportlab_paragraph = reportlab.platypus.paragraph
 
+family64 = BTrees.family64
+
 class _SplitText(unicode):
 	pass
 reportlab.platypus.paragraph._SplitText = _SplitText
@@ -302,7 +304,7 @@ def _common_buckets( objects,report,object_create_date,agg_creators=None ):
 	date_accum = _DateCategoryAccum( object_create_date )
 
 	forum_objects_by_day = []
-	forum_objects_by_week_number = BTrees.family64.II.BTree()
+	forum_objects_by_week_number = family64.II.BTree()
 	top_creators = _TopCreators( report )
 	top_creators.aggregate_creators = agg_creators
 
