@@ -24,7 +24,7 @@ from ..reports import _QuestionPartStat
 from ..reports import _QuestionStat
 from ..reports import _DateCategoryAccum
 
-from ..views import _AnswerStat
+from .. import _AnswerStat
 
 from nti.contentfragments.interfaces import PlainTextContentFragment
 
