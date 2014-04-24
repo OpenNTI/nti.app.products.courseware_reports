@@ -1,28 +1,26 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-$Id$
+.. $Id$
 """
 from __future__ import print_function, unicode_literals, absolute_import, division
 __docformat__ = "restructuredtext en"
 
 logger = __import__('logging').getLogger(__name__)
 
+import heapq
 from itertools import groupby
-from collections import namedtuple
 from datetime import datetime
 from datetime import timedelta
+from collections import namedtuple
 
-import BTrees
 import pytz
-import string
+import BTrees
 
-import heapq
-
+from numpy import std
+from numpy import median
 from numpy import asarray
 from numpy import average
-from numpy import median
-from numpy import std
 from numbers import Number
 
 from nti.app.assessment.interfaces import ICourseAssessmentItemCatalog
@@ -35,6 +33,8 @@ from nti.contentfragments.interfaces import IPlainTextContentFragment
 # XXX: Fix a unicode decode issue.
 # TODO: Make this a formal patch
 import reportlab.platypus.paragraph
+_reportlab_paragraph = reportlab.platypus.paragraph
+
 class _SplitText(unicode):
 	pass
 reportlab.platypus.paragraph._SplitText = _SplitText
@@ -105,22 +105,24 @@ class _StudentInfo( namedtuple( '_StudentInfo',
 
 class _TopCreators(object):
 	"""Accumulate stats in three parts: for credit students, tourists, and aggregate"""
+
+	family = BTrees.family64
 	total = 0
 	title = ''
 	max_contributors = None
-	max_contributors_for_credit = None
-	max_contributors_non_credit = None
 	aggregate_creators = None
 	aggregate_remainder = None
+	max_contributors_for_credit = None
+	max_contributors_non_credit = None
 
-	def __init__(self,report):
+	def __init__(self, report):
+		self._data = self.family.OI.BTree()
+		self._get_student_info = report.get_student_info
 		self.max_contributors = report.count_all_students
+		self._non_credit_students = report.open_student_usernames
 		self.max_contributors_for_credit = report.count_credit_students
 		self.max_contributors_non_credit = report.count_non_credit_students
-		self._get_student_info = report.get_student_info
 		self._for_credit_students = report.for_credit_student_usernames
-		self._non_credit_students = report.open_student_usernames
-		self._data = BTrees.family64.OI.BTree()
 
 	@property
 	def _for_credit_data(self):
@@ -496,7 +498,7 @@ def _assignment_stat_for_column(report, column, filter=None):
 class _QuestionPartStat(object):
 	"""Holds stat and display information for a particular question part."""
 	def __init__(self, letter_prefix, answer_stats=None, avg_score=0):
-		self.answer_stats = answer_stats if answer_stats else {}
+		self.answer_stats = answer_stats if answer_stats is not None else {}
 		self.letter_prefix = letter_prefix
 		self.avg_score = avg_score
 		self.assessed_values = []
