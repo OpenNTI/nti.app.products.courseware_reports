@@ -88,7 +88,7 @@ class TestReports( unittest.TestCase ):
 		_finalize_answer_stats( answers, 4 )
 		for a in answers:
 			assert_that( a.letter_prefix, not_none() )
-			assert_that( a.perc_s, equal_to( '25.0%' ) )
+			assert_that( a.perc_s, equal_to( '25.0' ) )
 	
 	def test_get_top_answers(self):
 		results = _get_top_answers( {} )	
@@ -133,6 +133,61 @@ class TestReports( unittest.TestCase ):
 		assert_that( corrects, not_none() )
 		assert_that( corrects, has_length( 1 ) )
 		assert_that( corrects, only_contains( stat9 ) )
+		
+	def test_get_top_answers_high_cardinality(self):
+		results = _get_top_answers( {} )	
+		assert_that( results, not_none() )
+		assert_that( results, has_length( 0 ) )
+		
+		answers = { 'bleh':_AnswerStat( 'bleh', False ) }
+		results = _get_top_answers( answers )	
+		
+		assert_that( results, not_none() )
+		assert_that( results, has_length( 1 ) )
+		
+		# 8 correct and incorrect stats, but the correct answers are not popular
+		stat1 = _AnswerStat( 'key1', False ); stat1.count = 7
+		stat2 = _AnswerStat( 'key2', False ); stat2.count = 3
+		stat3 = _AnswerStat( 'key3', False ); stat3.count = 5 
+		stat4 = _AnswerStat( 'key4', False ); stat4.count = 6 
+		stat5 = _AnswerStat( 'key5', False ); stat5.count = 6 
+		stat6 = _AnswerStat( 'key6', False ); stat6.count = 9 
+		stat7 = _AnswerStat( 'key7', False ); stat7.count = 8 
+		stat8 = _AnswerStat( 'key8', False ); stat8.count = 4 
+		stat9 = _AnswerStat( 'key9', True ) 
+		stat10 = _AnswerStat( 'key10', True ) 
+		stat11 = _AnswerStat( 'key11', True ) 
+		stat12 = _AnswerStat( 'key12', True ) 
+		stat13 = _AnswerStat( 'key13', True ) 
+		stat14 = _AnswerStat( 'key14', True ) 
+		stat15 = _AnswerStat( 'key15', True ) 
+		stat16 = _AnswerStat( 'key16', True ) 
+		answers = { stat1.answer: stat1, 
+					stat2.answer: stat2,
+					stat3.answer: stat3,
+					stat4.answer: stat4,
+					stat5.answer: stat5,
+					stat6.answer: stat6,
+					stat7.answer: stat7,
+					stat8.answer: stat8,
+					stat9.answer: stat9,
+					stat10.answer: stat10,
+					stat11.answer: stat11,
+					stat12.answer: stat12,
+					stat13.answer: stat13,
+					stat14.answer: stat14,
+					stat15.answer: stat15,
+					stat16.answer: stat16 }
+		
+		results = _get_top_answers( answers )	
+		
+		assert_that( results, not_none() )
+		assert_that( results, has_length( 8 ) )
+		
+		# All of the top results are correct answers
+		incorrects = [ x for x in results if not x.is_correct ]
+		assert_that( incorrects, not_none() )
+		assert_that( incorrects, has_length( 0 ) )
 
 _quests = namedtuple( '_quests', ( 'ntiid', 'content' ))
 _q_stats = namedtuple( 'q_stats', ( 'question_part_stats', 'submission_count' ) )
