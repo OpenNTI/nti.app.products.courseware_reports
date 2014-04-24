@@ -122,7 +122,7 @@ from nti.contenttypes.courses.interfaces import is_instructed_by_name
 from pyramid.httpexceptions import HTTPForbidden
 
 @view_defaults(route_name='objects.generic.traversal',
-			   renderer="templates/std_report_layout.rml",
+			   renderer="../templates/std_report_layout.rml",
 			   request_method='GET',
 			   permission=ACT_READ)
 @interface.implementer(IPDFReportView)
