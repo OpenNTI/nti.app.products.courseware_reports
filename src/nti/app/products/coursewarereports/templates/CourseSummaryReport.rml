@@ -279,8 +279,8 @@ Removing activity by place for now
 				</illustration>
 
 				<!-- Have to do this to keep RML from producing a blank page before this large table -->
-				<setNextFrame name="first" />
 				<nextPage />
+				<setNextFrame name="first" />
 				
 				<h2 style="h2">
 					Forum Breakdown
