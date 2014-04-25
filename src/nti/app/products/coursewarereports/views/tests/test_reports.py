@@ -1,61 +1,56 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 from __future__ import print_function, unicode_literals, absolute_import, division
 __docformat__ = "restructuredtext en"
 
-logger = __import__('logging').getLogger(__name__)
-
-#disable: accessing protected members, too many methods
-#pylint: disable=W0212,R0904
+# disable: accessing protected members, too many methods
+# pylint: disable=W0212,R0904
 
 import unittest
 
-from ..reports import _format_datetime
-from ..reports import _adjust_timestamp
+from hamcrest import is_
+from hamcrest import none
+from hamcrest import empty
+from hamcrest import is_in
+from hamcrest import is_not
+from hamcrest import contains
+from hamcrest import close_to
+from hamcrest import equal_to
+from hamcrest import not_none
+from hamcrest import has_length
+from hamcrest import assert_that
+from hamcrest import greater_than
+from hamcrest import only_contains
+from hamcrest import greater_than_or_equal_to
+
+import time
+from six import string_types
+from datetime import datetime
+from collections import namedtuple
+
+from nti.contentfragments.interfaces import PlainTextContentFragment
+
+from .. import _AnswerStat
+
+from ..reports import _QuestionStat
+from ..reports import _AssignmentStat
+from ..reports import _QuestionPartStat
+from ..reports import _DateCategoryAccum
+
 from ..reports import _adjust_date
 from ..reports import _TopCreators
 from ..reports import _StudentInfo
 from ..reports import _common_buckets
-from ..reports import _build_buckets_options
 from ..reports import _get_top_answers
-from ..reports import _finalize_answer_stats
+from ..reports import _format_datetime
+from ..reports import _adjust_timestamp
 from ..reports import _build_question_stats
+from ..reports import _build_buckets_options
+from ..reports import _finalize_answer_stats
 from ..reports import _assignment_stat_for_column
-from ..reports import _AssignmentStat
-from ..reports import _QuestionPartStat
-from ..reports import _QuestionStat
-from ..reports import _DateCategoryAccum
 
-from .. import _AnswerStat
-
-from nti.contentfragments.interfaces import PlainTextContentFragment
-
-from collections import namedtuple
-
-from datetime import datetime
-
-from six import string_types
-
-import time
-
-from hamcrest import assert_that
-from hamcrest import not_none
-from hamcrest import none
-from hamcrest import empty
-from hamcrest import equal_to
-from hamcrest import has_property
-from hamcrest import has_length
-from hamcrest import contains_string
-from hamcrest import only_contains
-from hamcrest import greater_than_or_equal_to
-from hamcrest import greater_than
-from hamcrest import less_than
-from hamcrest import less_than_or_equal_to
-from hamcrest import close_to
-from hamcrest import is_
-from hamcrest import is_in
-from hamcrest import is_not
-from hamcrest import contains
-
-class TestReports( unittest.TestCase ):
+class TestReports(unittest.TestCase):
 
 	def test_format_date( self ):
 		time = datetime.now()
@@ -189,6 +184,8 @@ class TestReports( unittest.TestCase ):
 		assert_that( incorrects, not_none() )
 		assert_that( incorrects, has_length( 0 ) )
 
+# ==================
+	
 _quests = namedtuple( '_quests', ( 'ntiid', 'content' ))
 _q_stats = namedtuple( 'q_stats', ( 'question_part_stats', 'submission_count' ) )
 	
@@ -295,7 +292,8 @@ class TestBuildQuestions( unittest.TestCase ):
 		assert_that( results[0].avg_score, id( '75.0' ) )
 		assert_that( results[1].avg_score, id( '100.0' ) )
 
-
+# ==================
+	
 class TestDateAccum( unittest.TestCase ):
 		
 	def test_date_accum_empty(self):
@@ -333,10 +331,12 @@ class TestDateAccum( unittest.TestCase ):
 		
 		assert_that( dates, not_none() )
 		assert_that( dates, has_length( 5 ) )	
-	
+
+# ==================	
+
 _cd = namedtuple( '_cd', ( 'created', 'creator' ))
 _cr = namedtuple( '_cr', 'username' )		
-		
+	
 class TestBuckets( unittest.TestCase ):
 	
 	def setUp(self):
@@ -361,7 +361,6 @@ class TestBuckets( unittest.TestCase ):
 			
 	def test_empty(self):
 		empty_objects = []
-		empty_for_credit = []
 		buckets = _common_buckets( empty_objects, _MockReport( [] ), datetime.now() )
 		assert_that( buckets, not_none() )
 		assert_that( buckets.count_by_day, empty() )
@@ -370,7 +369,6 @@ class TestBuckets( unittest.TestCase ):
 		assert_that( buckets.group_dates, empty() )
 		
 	def test_buckets(self):
-		empty_for_credit = []
 		start_date = datetime( year=2014, month=4, day=5, hour=0, minute=30 )
 		buckets = _common_buckets( self.objects, _MockReport( [] ), start_date )
 		assert_that( buckets, not_none() )
@@ -405,9 +403,8 @@ class TestBuckets( unittest.TestCase ):
 		assert_that( buckets.group_dates, has_length( 5 ) )
 		
 	def test_empty_options(self):
-		empty_objects = []
-		empty_for_credit = []
 		options = {}
+		empty_objects = []
 		buckets = _common_buckets( empty_objects, _MockReport( [] ), datetime.now() )	
 		forum_stat = _build_buckets_options( options, buckets )
 		
@@ -421,7 +418,6 @@ class TestBuckets( unittest.TestCase ):
 		assert_that( forum_stat.forum_objects_by_week_number_categories, not_none() )
 		
 	def test_options(self):	
-		empty_for_credit = []
 		options = {}
 		start_date = datetime( year=2014, month=4, day=5, hour=0, minute=30 )
 		buckets = _common_buckets( self.objects, _MockReport( [] ), start_date )
@@ -437,6 +433,8 @@ class TestBuckets( unittest.TestCase ):
 		assert_that( forum_stat.forum_objects_by_week_number_value_max, not_none() )
 		assert_that( 	forum_stat.forum_objects_by_week_number_categories, 
 						has_length( greater_than_or_equal_to( 5 ) ) )
+	
+# ==================
 
 def _mock_student_info( self_placeholder, username ):
 	return _StudentInfo( username + "_alias", username )	
@@ -486,7 +484,6 @@ class TestTopCreators( unittest.TestCase ):
 		assert_that( self.top_creators.percent_contributed_str(), not_none() ) 
 		assert_that( self.top_creators.for_credit_percent_contributed_str(), not_none() ) 
 		assert_that( self.top_creators.non_credit_percent_contributed_str(), not_none() ) 
-		
 		
 	def test_single(self):
 		for_credit = 'for_credit1'
@@ -539,13 +536,13 @@ class TestTopCreators( unittest.TestCase ):
 		
 		self.top_creators = _TopCreators( _MockReport( [ for_credit, for_credit2 ], [non_credit1,non_credit2] ) )
 		
-		for i in range(5):
+		for _ in xrange(5):
 			self.top_creators.incr_username( for_credit )
 			self.top_creators.incr_username( non_credit1 )
 		
-		for i in range(10):
+		for _ in xrange(10):
 			self.top_creators.incr_username( non_credit2 )
-
+	
 		assert_that( self.top_creators.total, equal_to( 20 ) )
 		assert_that( self.top_creators._for_credit_data, has_length( 1 ) )
 		assert_that( 	self.top_creators._for_credit_data.keys(), 
@@ -589,13 +586,15 @@ class TestTopCreators( unittest.TestCase ):
 		assert_that( self.top_creators.for_credit_percent_contributed_str(), not_none() ) 
 		assert_that( self.top_creators.non_credit_percent_contributed_str(), not_none() ) 	
 
+# ==================
+	
 _report = namedtuple( '_report', ( 	'for_credit_student_usernames', 
-									'open_student_usernames', 
+									'open_student_usernames',
 									'count_all_students',
 									'count_credit_students',
-									'count_non_credit_students' ) )
+									'count_non_credit_students'))
 _grade = namedtuple( '_grade', 'value' )
-		
+
 class _Column(object):
 	
 	def __init__( self, displayName, DueDate, objects ):	
@@ -615,7 +614,7 @@ class _Column(object):
 	def items(self):
 		return self.objects.items()
 	
-class TestBuildAssignmentStats( unittest.TestCase ):
+class TestBuildAssignmentStats(unittest.TestCase):
 	
 	def test_empty(self):
 		report = _report( set(), set(), 0, 0 , 0 )
@@ -632,7 +631,7 @@ class TestBuildAssignmentStats( unittest.TestCase ):
 						'dropped':_grade(0)  }
 		col = _Column( 'name1', 'date1', col_items )
 		stat = _assignment_stat_for_column( report, col )		
-
+	
 		assert_that( stat, not_none() )
 		assert_that( stat, is_( _AssignmentStat ) )
 		assert_that( stat.count, is_( 4 ) )
@@ -652,10 +651,10 @@ class TestBuildAssignmentStats( unittest.TestCase ):
 						'fc2':_grade(80), 
 						'nc2':_grade(30), 
 						'dropped':_grade(0)  }
-		filter = {'fc2'}
+		_filter = {'fc2'}
 		col = _Column( 'name1', 'date1', col_items )
-		stat = _assignment_stat_for_column( report, col, filter )		
-
+		stat = _assignment_stat_for_column(report, col, _filter)
+	
 		assert_that( stat, not_none() )
 		assert_that( stat, is_( _AssignmentStat ) )
 		assert_that( stat.count, is_( 4 ) )
@@ -668,6 +667,4 @@ class TestBuildAssignmentStats( unittest.TestCase ):
 		assert_that( stat.attempted_perc, not_none() )
 		assert_that( stat.for_credit_attempted_perc, not_none() )
 		assert_that( stat.non_credit_attempted_perc, not_none() )
-		
-		
-		
+
