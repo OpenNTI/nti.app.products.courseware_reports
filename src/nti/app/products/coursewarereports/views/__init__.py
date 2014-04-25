@@ -1212,20 +1212,20 @@ class AssignmentSummaryReportPdf(_AbstractReportView):
 
 		options['question_stats'] = _build_question_stats( ordered_questions, question_stats )
 
-
 	def _get_question_stat( self, question_stats, question_id, parts ):
 		"""Retrieves question_stat for the given question, building if necessary"""
 		if question_id in question_stats:
 			question_stat = question_stats[ question_id ]
 			question_part_stats = question_stat.question_part_stats
 		else:
-			#First time seeing this question, initialize our question parts since they won't change
 			question_part_stats = {}
-			for idx in range(len( parts )):
+			question_stats[question_id ] = question_stat = _QuestionStat(question_part_stats)
+		
+		# make sure the data we always have the correct number of parts
+		for idx in xrange(len(parts)):
+			if idx not in question_part_stats:
 				question_part_stats[idx] = _QuestionPartStat( roman.toRoman( idx + 1 ) )
-				
-			question_stats[ question_id ] = question_stat = _QuestionStat( question_part_stats )
-			
+
 		return question_stat
 	
 	def _accumulate_response( self, question_part, response, answer_stat ):
