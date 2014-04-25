@@ -18,20 +18,21 @@ from .. import VIEW_STUDENT_PARTICIPATION
 
 from ..interfaces import IPDFReportView
 
-from .reports import _TopCreators
-from .reports import _StudentInfo
-from .reports import _common_buckets
-from .reports import _CommonBuckets
-from .reports import _build_buckets_options
-from .reports import _get_self_assessments_for_course
-from .reports import _adjust_timestamp
-from .reports import _adjust_date
-from .reports import _format_datetime
-from .reports import _assignment_stat_for_column
-from .reports import _build_question_stats
-from .reports import _QuestionPartStat
-from .reports import _QuestionStat
-from .reports import _DateCategoryAccum
+from ..reports import _AnswerStat
+from ..reports import _TopCreators
+from ..reports import _StudentInfo
+from ..reports import _common_buckets
+from ..reports import _CommonBuckets
+from ..reports import _build_buckets_options
+from ..reports import _get_self_assessments_for_course
+from ..reports import _adjust_timestamp
+from ..reports import _adjust_date
+from ..reports import _format_datetime
+from ..reports import _assignment_stat_for_column
+from ..reports import _build_question_stats
+from ..reports import _QuestionPartStat
+from ..reports import _QuestionStat
+from ..reports import _DateCategoryAccum
 
 from zope import component
 from zope import interface
@@ -1135,15 +1136,6 @@ from nti.assessment.interfaces import IQMultipleChoicePart
 from nti.assessment.interfaces import IQMatchingPart
 from nti.assessment.interfaces import IQMultipleChoiceMultipleAnswerPart
 from nti.contentfragments.interfaces import IPlainTextContentFragment
-
-class _AnswerStat(object):
-	"""Holds stat and display information for a particular answer."""
-	def __init__(self, answer, is_correct):
-		self.answer = answer
-		self.is_correct = is_correct
-		self.count = 1
-		self.perc_s = None
-		self.letter_prefix = None
 		
 @view_config(context=IGradeBookEntry,
 			 name=VIEW_ASSIGNMENT_SUMMARY)

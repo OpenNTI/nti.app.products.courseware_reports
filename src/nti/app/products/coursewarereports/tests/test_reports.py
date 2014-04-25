@@ -31,7 +31,7 @@ from collections import namedtuple
 
 from nti.contentfragments.interfaces import PlainTextContentFragment
 
-from .. import _AnswerStat
+from ..reports import _AnswerStat
 
 from ..reports import _QuestionStat
 from ..reports import _AssignmentStat

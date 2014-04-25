@@ -104,7 +104,6 @@ class _StudentInfo( namedtuple( '_StudentInfo',
 	def __new__( self, display, username, count=None, perc=None ):
 		return super(_StudentInfo,self).__new__( self,display,username,count,perc )
 
-
 class _TopCreators(object):
 	"""Accumulate stats in three parts: for credit students, tourists, and aggregate"""
 
@@ -283,6 +282,15 @@ class _DateCategoryAccum(object):
 
 	def get_dates( self ):
 		return self.dates
+
+class _AnswerStat(object):
+	"""Holds stat and display information for a particular answer."""
+	def __init__(self, answer, is_correct):
+		self.answer = answer
+		self.is_correct = is_correct
+		self.count = 1
+		self.perc_s = None
+		self.letter_prefix = None
 
 def _common_buckets( objects,report,object_create_date,agg_creators=None ):
 	"""
@@ -582,4 +590,4 @@ def _finalize_answer_stats( answer_stats, total_submits ):
 		#sub.letter_prefix = letters[j]
 		sub.letter_prefix = str( j + 1 )
 		sub.perc_s = '%0.1f' % ( sub.count * 100.0 / total_submits ) if total_submits else 'N/A'
-		
+
