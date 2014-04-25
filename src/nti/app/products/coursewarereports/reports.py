@@ -394,7 +394,7 @@ _AssignmentStat = namedtuple('_AssignmentStat',
 							  'non_credit_avg_grade', 'median_grade', 'std_dev_grade',
 							  'attempted_perc', 'for_credit_attempted_perc', 'non_credit_attempted_perc' ))
 
-def _assignment_stat_for_column(report, column, filter=None):
+def _assignment_stat_for_column(report, column, predicate=None):
 	count = len(column)
 
 	for_credit_keys = report.for_credit_student_usernames
@@ -406,8 +406,8 @@ def _assignment_stat_for_column(report, column, filter=None):
 
 	for username, grade in column.items():
 		username = username.lower()
-		#Skip if not in filter
-		if filter is not None and username not in filter:
+		# Skip if not in predicate
+		if predicate is not None and username not in predicate:
 			continue
 		
 		grade_val = None
