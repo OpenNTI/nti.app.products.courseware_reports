@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-$Id$
+.. $Id$
 """
 from __future__ import print_function, unicode_literals, absolute_import, division
 __docformat__ = "restructuredtext en"
@@ -9,11 +9,12 @@ __docformat__ = "restructuredtext en"
 logger = __import__('logging').getLogger(__name__)
 
 from .. import MessageFactory as _
-from .. import VIEW_STUDENT_PARTICIPATION
-from .. import VIEW_TOPIC_PARTICIPATION
-from .. import VIEW_FORUM_PARTICIPATION
+
 from .. import VIEW_COURSE_SUMMARY
 from .. import VIEW_ASSIGNMENT_SUMMARY
+from .. import VIEW_TOPIC_PARTICIPATION
+from .. import VIEW_FORUM_PARTICIPATION
+from .. import VIEW_STUDENT_PARTICIPATION
 
 from ..interfaces import IPDFReportView
 
@@ -537,8 +538,8 @@ class ForumParticipationReportPdf(_AbstractReportView):
 		for_credit_stats = self._build_user_stats_with_keys(for_credit_users, commenters, creators)
 		non_credit_stats = self._build_user_stats_with_keys(non_credit_users, commenters, creators)
 
-		options['for_credit_user_stats'] = fc_stats = for_credit_stats[0]
-		options['non_credit_user_stats'] = nc_stats = non_credit_stats[0]
+		options['for_credit_user_stats'] = for_credit_stats[0]
+		options['non_credit_user_stats'] = non_credit_stats[0]
 		only_one = for_credit_stats[1] + non_credit_stats[1]
 		unique_count = for_credit_stats[2] + non_credit_stats[2]
 		
@@ -781,8 +782,8 @@ class CourseSummaryReportPdf(_AbstractReportView):
 		intids_of_hls = intersection( intids_of_hls,
 									  self.intids_created_by_everyone )
 
-		all_notes = intids_of_notes
-		all_hls = intids_of_hls
+		# all_notes = intids_of_notes
+		# all_hls = intids_of_hls
 		
 		containers_in_course = self._get_containers_in_course()
 		
@@ -941,11 +942,11 @@ class CourseSummaryReportPdf(_AbstractReportView):
 #  				local_hls = intersection(local_hls, all_hls)
 #  
 #  				data.append( stat( lesson.title, len(local_notes), len(local_hls)) )
- 
-  		data = list()
- 
+
+		data = list()
+
 #TODO Below we pull notes/highlights per NTIID in course 
- 
+
 #  		stat = namedtuple('Stat',
 #  						  ('title', 'note_count', 'hl_count'))
 #  
@@ -957,17 +958,17 @@ class CourseSummaryReportPdf(_AbstractReportView):
 # 
 # 			data.append( stat( c.title, len(local_notes), len(local_hls)) )
 
- 		options['placed_engagement_data'] = data
+		options['placed_engagement_data'] = data
 
 
-	def _build_assignment_data(self, options, filter=None):
+	def _build_assignment_data(self, options, predicate=None):
 		gradebook = IGradeBook(self.course)
 		assignment_catalog = ICourseAssignmentCatalog(self.course)
 
 		stats = list()
 		for asg in assignment_catalog.iter_assignments():
 			column = gradebook.getColumnForAssignmentId(asg.ntiid)
-			stats.append(_assignment_stat_for_column(self, column, filter))
+			stats.append(_assignment_stat_for_column(self, column, predicate))
 
 		stats.sort(key=lambda x: (x.due_date is None, x.due_date, x.title))
 		return stats
@@ -1320,10 +1321,10 @@ class AssignmentSummaryReportPdf(_AbstractReportView):
 			is_correct = check_correct()
 			answer_stat[response] = _AnswerStat( response, is_correct )
 		
-	def _get_displayable( self, input ):
-		if isinstance(input, string_types):
-			input = IPlainTextContentFragment(input)
-		return input
+	def _get_displayable(self, source):
+		if isinstance(source, string_types):
+			source = IPlainTextContentFragment(source)
+		return source
 			
 	def __call__(self):
 		self._check_access()
