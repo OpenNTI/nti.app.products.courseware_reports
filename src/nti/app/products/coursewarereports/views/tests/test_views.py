@@ -1,38 +1,29 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""
-
-
-.. $Id$
-"""
 
 from __future__ import print_function, unicode_literals, absolute_import, division
 __docformat__ = "restructuredtext en"
 
-logger = __import__('logging').getLogger(__name__)
-
-#disable: accessing protected members, too many methods
-#pylint: disable=W0212,R0904
-
-import unittest
+# disable: accessing protected members, too many methods
+# pylint: disable=W0212,R0904
 
 from hamcrest import assert_that
 from hamcrest import has_property
 from hamcrest import contains_string
 
-from nti.app.testing.application_webtest import ApplicationLayerTest
-from nti.app.testing.decorators import WithSharedApplicationMockDS
+from .. import VIEW_COURSE_SUMMARY
+from .. import VIEW_ASSIGNMENT_SUMMARY
+from .. import VIEW_FORUM_PARTICIPATION
+from .. import VIEW_TOPIC_PARTICIPATION
+from .. import VIEW_STUDENT_PARTICIPATION
 
 from nti.app.products.courseware.tests import InstructedCourseApplicationTestLayer
 
-from .. import VIEW_STUDENT_PARTICIPATION
-from .. import VIEW_FORUM_PARTICIPATION
-from .. import VIEW_TOPIC_PARTICIPATION
-from .. import VIEW_COURSE_SUMMARY
-from .. import VIEW_ASSIGNMENT_SUMMARY
-
-from nti.app.assessment.tests import RegisterAssignmentsForEveryoneLayer
 from nti.app.assessment.tests import RegisterAssignmentLayerMixin
+from nti.app.assessment.tests import RegisterAssignmentsForEveryoneLayer
+
+from nti.app.testing.decorators import WithSharedApplicationMockDS
+from nti.app.testing.application_webtest import ApplicationLayerTest
 
 class TestStudentParticipationReport(ApplicationLayerTest):
 
@@ -150,11 +141,9 @@ class TestCourseSummaryReport(ApplicationLayerTest):
 		res = self.testapp.get(report_href, extra_environ=instructor_environ)
 		assert_that( res, has_property('content_type', 'application/pdf') )
 
-
-from nti.externalization.externalization import to_external_object
 from nti.assessment.submission import AssignmentSubmission
 from nti.assessment.submission import QuestionSetSubmission
-
+from nti.externalization.externalization import to_external_object
 
 class TestAssignmentSummaryReport(RegisterAssignmentLayerMixin,
 								  ApplicationLayerTest):
