@@ -63,7 +63,7 @@
 			This student has not created any discussions.
 		</para>
 
-	<setNextFrame name="first" />
+	<nextFrame name="first" />
 	<condPageBreak height="4in" />
 
 	<h2 style="h2" spaceAfter="0.3in" spaceBefore="0.5in">
