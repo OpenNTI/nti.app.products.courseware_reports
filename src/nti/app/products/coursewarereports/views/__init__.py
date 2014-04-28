@@ -83,6 +83,8 @@ from nti.dataserver.interfaces import IUser
 from nti.dataserver.interfaces import IDeletedObjectPlaceholder
 from nti.dataserver.users.interfaces import IFriendlyNamed
 from nti.dataserver.users.users import User
+from nti.dataserver.users.users import Community
+from nti.dataserver.users.users import Everyone
 
 from nti.dataserver.contenttypes.forums.interfaces import ICommunityBoard
 from nti.dataserver.contenttypes.forums.interfaces import ICommunityForum
@@ -669,6 +671,10 @@ _EngagementStats = namedtuple( '_EngagmentStats',
 _EngagementStat = namedtuple( '_EngagementStat',
 							( 'name', 'count', 'unique_count', 'unique_perc_s', 'color' ) )
 
+_NoteStat = namedtuple( '_NoteStat',
+							( 'shared_public', 'shared_course', 'shared_other' ) )
+
+
 @view_config(context=ICourseInstance,
 			 name=VIEW_COURSE_SUMMARY)
 class CourseSummaryReportPdf(_AbstractReportView):
@@ -800,8 +806,26 @@ class CourseSummaryReportPdf(_AbstractReportView):
 		notes = ResultSet( intids_of_notes, self.uidutil )
 		note_creators = _TopCreators( self )
 		note_creators.aggregate_creators = self.note_aggregator
+		
+		shared_public = 0
+		shared_course = 0
+		shared_other = 0
+		
 		for note in notes:
 			note_creators.incr_username( note.creator.username )
+			
+			# We may want to integrate this into TopCreators perhaps, especially 
+			# if we want this broken down by student type.
+			contains_everyone = any( isinstance(x,Everyone) for x in note.sharingTargets )
+			if contains_everyone:
+				shared_public += 1
+			elif any( isinstance(x,Community) for x in note.sharingTargets ):
+				# TODO Is this right? Just a community non-everyone instnace?
+				shared_course += 1
+			else:
+				shared_other += 1 
+				
+		options['note_stat'] = _NoteStat( shared_public, shared_course, shared_other )		
 		
 		for_credit_note_count = note_creators.for_credit_total
 		non_credit_note_count = note_creators.non_credit_total

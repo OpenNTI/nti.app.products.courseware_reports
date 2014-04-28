@@ -212,6 +212,58 @@
 				  tal:condition="options/engagement_data/non_credit" >
 		</illustration>
 	
+<!--	
+		<nextPage />
+		<nextFrame name="table_frame" />
+		
+		<h2 style="h2">
+			Activity: Aggregate
+		</h2>
+		<para tal:condition="not:options/engagement_data/aggregate">
+			This course does not have any non-credit student activity.
+		</para>
+		
+		<metal:macro 	tal:define="engagement_stat options/engagement_data/aggregate"
+						metal:use-macro="macro:engagement_stats_table"
+						tal:condition="options/engagement_data/aggregate"  />
+				
+		<h2 style="h2">
+			Note Sharing
+		</h2>
+						
+		<blockTable style='default'
+					colWidths="35% 15%"
+					tal:condition="options/note_stat"
+					alignment="left"
+					repeatRows="1" >
+			<tr>
+				<td></td>
+				<td>Count</td>
+			</tr>
+			<tr>
+				<td>Public</td>
+				<td tal:content="options/note_stat/shared_public">11</td>
+			</tr>
+			<tr>
+				<td>Course</td>
+				<td tal:content="options/note_stat/shared_course">15</td>
+			</tr>
+			<tr>
+				<td>Other (Private)</td>
+				<td tal:content="options/note_stat/shared_other">25</td>
+			</tr>
+		</blockTable>				
+						
+		<nextFrame name="pie_frame" />
+		
+		<illustration width="4in" height="5in"
+			  	  tal:define="engagement_stat options/engagement_data/aggregate"
+				  metal:use-macro="macro:engagement_stats_pie"
+				  tal:condition="options/engagement_data/aggregate" >
+		</illustration>				
+-->						
+						
+	
 		<setNextTemplate name="main"/>
 
 		<nextPage />
