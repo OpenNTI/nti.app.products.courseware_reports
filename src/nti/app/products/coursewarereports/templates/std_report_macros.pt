@@ -37,10 +37,10 @@
 	
 		<paraStyle name="h1" fontSize="30" textColor="#494949" fontName="Helvetica"/>
 		
-		<paraStyle name="h2" fontSize="15" textColor="#494949" fontName="Helvetica" keepWithNext="true"
+		<paraStyle name="h2" fontSize="15" textColor="#494949" fontName="Helvetica"
 					spaceBefore=".5in" spaceAfter=".3in"/>
 					
-		<paraStyle name="h3" fontSize="10" textColor="#494949" fontName="Helvetica" keepWithNext="true"
+		<paraStyle name="h3" fontSize="10" textColor="#494949" fontName="Helvetica"
 					spaceBefore=".3in" spaceAfter=".3in"/>			
 		
 		<paraStyle name="normal" fontName="Helvetica" fontSize="12" textColor="#494949"

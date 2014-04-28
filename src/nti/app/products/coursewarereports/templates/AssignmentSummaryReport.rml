@@ -37,7 +37,7 @@
 			</tr>
 		</blockTable>
 		
-		<h2 style="h2" spaceBefore=".7in" spaceAfter=".3in" keepWithNext='true'>
+		<h2 style="h2" spaceBefore=".7in" spaceAfter=".3in">
 			Assignment Results
 		</h2>
 		<blockTable style='default'>
@@ -79,7 +79,7 @@
 					tal:condition="options/question_stats">
 					
 			<keepTogether>
-			<h2 style="h2" fontSize="10" spaceBefore=".3in" fontName="Helvetica-Bold" spaceAfter=".2" keepWithNext='true' 
+			<h2 style="h2" fontSize="10" spaceBefore=".3in" fontName="Helvetica-Bold" spaceAfter=".2"
 				tal:content="string:${question/title}: Average Score ${question/avg_score}">
 				Question Number
 			</h2>

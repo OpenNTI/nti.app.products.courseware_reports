@@ -31,7 +31,6 @@
 	</para>
 
 	<nextPage />
-	<setNextFrame name="first" />
 
 	<h2 style="h2" spaceAfter="0.3in">
 		Discussions Created
@@ -63,7 +62,6 @@
 			This student has not created any discussions.
 		</para>
 
-	<nextFrame name="first" />
 	<condPageBreak height="4in" />
 
 	<h2 style="h2" spaceAfter="0.3in" spaceBefore="0.5in">
@@ -103,8 +101,6 @@
 	</h1>
 		<hr width="100%" />
 		
-	<setNextFrame name="first" />
-		
 	<h2 style="h2" spaceAfter="0.3in" spaceBefore="0.5in">
 		Self-Assessments
 	</h2>	
@@ -128,8 +124,6 @@
 			This course contains no self-assessments.
 		</para>
 
-	<setNextFrame name="first" />
-	<condPageBreak height="4in" />
 
 	<h2 style="h2" spaceAfter="0.3in" spaceBefore="0.5in">
 		Assignments
@@ -161,4 +155,36 @@
 			This course contains no assignments.
 		</para>
 		
+
+
+		
+		<!-- Used to investigate large table formatting -->
+		<!-- Headers that try to keepWithNext for large tables (multi-page)
+			 seem to cause a blank page insertion -->
+<!--			 
+		<condPageBreak height="4in" />
+
+		<h2 style="h2"
+			keepWithNext="False"
+			tal:condition="False" >
+			Non-Credit Comment Activity
+		</h2>
+		
+		<blockTable style='default' 
+					colWidths="44% 18% 18%"
+					tal:condition="False"
+					repeatRows="1">
+			<tr>
+				<td><para style="header">Assignment Name</para></td>
+				<td><para style="header">Date Submitted</para></td>
+				<td><para style="header">Date Due</para></td>
+			</tr>
+			<tr tal:repeat="item python: [ ('Assignment One', 'Today', 'Tomorrow') for x in range(25) ]">
+				<td><para style="data" tal:content="python: item[0]">A</para></td>
+				<td align="left" tal:content="python: item[1]">B</td>
+				<td tal:content="python: item[2]">C/td>
+			</tr>
+		</blockTable>
+-->		
+	
 </metal:block>

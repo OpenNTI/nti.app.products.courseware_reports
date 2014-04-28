@@ -50,7 +50,6 @@
 			more than one comment.
 		</para>
 
-		<setNextFrame name="first" />
 		<nextPage />
 
 		<h1 style="h1" spaceBefore=".5in" spaceAfter=".7in">
@@ -154,8 +153,6 @@
 
 		<hr width="100%" />
 		
-		<setNextFrame name="first" />
-		
 		<h2 style="h2">
 			For-Credit Comment Activity
 		</h2>
@@ -181,7 +178,6 @@
 			</tr>
 		</blockTable>
 		
-		<setNextFrame name="first" />
 		<condPageBreak height="4in" />
 		
 		<h2 style="h2">
