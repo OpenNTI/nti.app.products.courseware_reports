@@ -211,7 +211,8 @@
 				  metal:use-macro="macro:engagement_stats_pie"
 				  tal:condition="options/engagement_data/non_credit" >
 		</illustration>
-	
+
+
 <!--	
 		<nextPage />
 		<nextFrame name="table_frame" />
@@ -262,7 +263,6 @@
 				  tal:condition="options/engagement_data/aggregate" >
 		</illustration>				
 -->						
-						
 	
 		<setNextTemplate name="main"/>
 

@@ -84,7 +84,7 @@ from nti.dataserver.interfaces import IDeletedObjectPlaceholder
 from nti.dataserver.users.interfaces import IFriendlyNamed
 from nti.dataserver.users.users import User
 from nti.dataserver.users.users import Community
-from nti.dataserver.users.users import Everyone
+from nti.dataserver.users.friends_lists import DynamicFriendsList
 
 from nti.dataserver.contenttypes.forums.interfaces import ICommunityBoard
 from nti.dataserver.contenttypes.forums.interfaces import ICommunityForum
@@ -814,13 +814,11 @@ class CourseSummaryReportPdf(_AbstractReportView):
 		for note in notes:
 			note_creators.incr_username( note.creator.username )
 			
-			# We may want to integrate this into TopCreators perhaps, especially 
-			# if we want this broken down by student type.
-			contains_everyone = any( isinstance(x,Everyone) for x in note.sharingTargets )
+			contains_everyone = any( isinstance(x,Community) for x in note.sharingTargets )
+			
 			if contains_everyone:
 				shared_public += 1
-			elif any( isinstance(x,Community) for x in note.sharingTargets ):
-				# TODO Is this right? Just a community non-everyone instnace?
+			elif any( isinstance(x,DynamicFriendsList) for x in note.sharingTargets ):
 				shared_course += 1
 			else:
 				shared_other += 1 
