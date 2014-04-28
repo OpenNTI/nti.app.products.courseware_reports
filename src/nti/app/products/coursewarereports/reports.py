@@ -574,11 +574,10 @@ def _get_top_answers( answer_stats ):
 	if len( answer_stats.values() ) > len( top_answer_stats ):
 		missing_corrects = [x for x in answer_stats.values() 
 							if x.is_correct and x not in top_answer_stats]
-		if missing_corrects:
-			# Ok, our correct answer(s) isn't in our trimmed-down set; make it so.
-			# Maybe we should be more pragmatic here to make sure we aren't losing 
-			# relevant information.
-			top_answer_stats = top_answer_stats[:-1 * len(missing_corrects)] + missing_corrects
+		
+		# We do not want to overwrite any already-included correct answers; 
+		# maybe we should just append these correct answers?
+		top_answer_stats += missing_corrects
 	return top_answer_stats
 
 def _finalize_answer_stats( answer_stats, total_submits ):

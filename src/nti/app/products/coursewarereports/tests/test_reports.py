@@ -118,11 +118,10 @@ class TestReports(unittest.TestCase):
 		results = _get_top_answers( answers )	
 		
 		assert_that( results, not_none() )
-		assert_that( results, has_length( 8 ) )
+		assert_that( results, has_length( 9 ) )
 		assert_that( results[0].answer, equal_to( 'key6' ) )
 		
 		assert_that( stat9, is_in( results ) )
-		assert_that( stat2, is_not( is_in( results ) ) ) 
 		
 		corrects = [ x for x in results if x.is_correct ]
 		assert_that( corrects, not_none() )
@@ -177,12 +176,10 @@ class TestReports(unittest.TestCase):
 		results = _get_top_answers( answers )	
 		
 		assert_that( results, not_none() )
-		assert_that( results, has_length( 8 ) )
+		assert_that( results, has_length( 16 ) )
 		
-		# All of the top results are correct answers
 		incorrects = [ x for x in results if not x.is_correct ]
 		assert_that( incorrects, not_none() )
-		assert_that( incorrects, has_length( 0 ) )
 
 # ==================
 	
