@@ -33,9 +33,13 @@ from ..reports import _build_question_stats
 from ..reports import _QuestionPartStat
 from ..reports import _QuestionStat
 from ..reports import _DateCategoryAccum
+from ..reports import _do_get_containers_in_course
 
 from zope import component
 from zope import interface
+
+import gzip
+from io import BytesIO
 
 from six import string_types
 from numbers import Number
@@ -64,6 +68,9 @@ from zope.catalog.interfaces import ICatalog
 from zope.catalog.catalog import ResultSet 
 
 from zope.intid.interfaces import IIntIds
+from zope.traversing.interfaces import IPathAdapter
+from zope.location.interfaces import IContained
+from zope.container import contained as zcontained
 
 from nti.utils.property import Lazy
 
@@ -75,6 +82,7 @@ from nti.assessment.interfaces import IQAssignment
 
 from nti.contenttypes.courses.interfaces import ICourseInstance
 from nti.app.products.courseware.interfaces import ICourseInstanceEnrollment
+from nti.app.products.courseware.interfaces import ICourseCatalog
 from nti.app.products.gradebook.interfaces import IGrade
 from nti.app.products.gradebook.interfaces import IGradeBook
 from nti.app.products.gradebook.interfaces import IGradeBookEntry
@@ -83,8 +91,7 @@ from nti.dataserver.interfaces import IUser
 from nti.dataserver.interfaces import IDeletedObjectPlaceholder
 from nti.dataserver.users.interfaces import IFriendlyNamed
 from nti.dataserver.users.users import User
-from nti.dataserver.users.users import Community
-from nti.dataserver.users.friends_lists import DynamicFriendsList
+from nti.dataserver.users.entity import Entity
 
 from nti.dataserver.contenttypes.forums.interfaces import ICommunityBoard
 from nti.dataserver.contenttypes.forums.interfaces import ICommunityForum
@@ -97,6 +104,7 @@ from nti.dataserver.metadata_index import CATALOG_NAME
 from nti.app.base.abstract_views import AbstractAuthenticatedView
 
 from nti.dataserver.authorization import ACT_READ
+from nti.dataserver.authorization import ACT_MODERATE
 
 CHART_COLORS = ['#1abc9c', '#3498db', '#3f5770', '#e74c3c', '#af7ac4', '#f1c40f', '#e67e22', '#bcd3c7', '#16a085', '#e364ae', '#c0392b', '#2980b9', '#8e44ad' ]
 
@@ -740,42 +748,8 @@ class CourseSummaryReportPdf(_AbstractReportView):
 		options['self_assessment_data'] = sorted(title_to_count.values(),
 												 key=lambda x: x.title)
 
-	def _get_containers_in_course(self):
-		lib = component.getUtility(IContentPackageLibrary)
-		paths = lib.pathToNTIID( self.course.legacy_content_package.ntiid )
-		root = paths[0] if paths else None
-
-		def _recur( node, accum ):
-			#Get our embedded ntiids and recursively fetch our children's ntiids
-			ntiid = node.ntiid
-			accum.update( node.embeddedContainerNTIIDs )
-			if ntiid:
-				accum.add( ntiid )
-			for n in node.children:	
-				_recur( n, accum )
-
-		containers_in_course = set()
-		if root:
-			_recur( root,containers_in_course )
-			
-		# Add in our self-assessments	
-		# We filter out questions in assignments here for some reason
-		#self_assessments = _get_self_assessments_for_course(self.course)
-		catalog = ICourseAssessmentItemCatalog(self.course)
-		containers_in_course = containers_in_course.union( [x.ntiid for x in catalog.iter_assessment_items()] )
-		
-		self_assessments = _get_self_assessments_for_course(self.course)
-		self_assessment_containerids = {x.__parent__.ntiid for x in self_assessments}
-		self_assessment_qsids = {x.ntiid: x for x in self_assessments}	
-		containers_in_course = containers_in_course.union( self_assessment_containerids )
-		containers_in_course = containers_in_course.union( self_assessment_qsids )
-			
-		#Add in our assignments	
-		assignment_catalog = ICourseAssignmentCatalog( self.course )
-		containers_in_course = containers_in_course.union( ( asg.ntiid for asg in assignment_catalog.iter_assignments() ) )	
-		containers_in_course.discard( None )
-		
-		return containers_in_course
+	def _get_containers_in_course(self):	
+		return _do_get_containers_in_course(self.course)
 
 	def _build_engagement_data(self, options):
 		md_catalog = self.md_catalog
@@ -791,7 +765,6 @@ class CourseSummaryReportPdf(_AbstractReportView):
 
 		# all_notes = intids_of_notes
 		# all_hls = intids_of_hls
-		
 		containers_in_course = self._get_containers_in_course()
 		
 		#Now we should have our whole tree of ntiids, intersect with our vals
@@ -806,24 +779,9 @@ class CourseSummaryReportPdf(_AbstractReportView):
 		notes = ResultSet( intids_of_notes, self.uidutil )
 		note_creators = _TopCreators( self )
 		note_creators.aggregate_creators = self.note_aggregator
-		
-		shared_public = 0
-		shared_course = 0
-		shared_other = 0
-		
+
 		for note in notes:
 			note_creators.incr_username( note.creator.username )
-			
-			contains_everyone = any( isinstance(x,Community) for x in note.sharingTargets )
-			
-			if contains_everyone:
-				shared_public += 1
-			elif any( isinstance(x,DynamicFriendsList) for x in note.sharingTargets ):
-				shared_course += 1
-			else:
-				shared_other += 1 
-				
-		options['note_stat'] = _NoteStat( shared_public, shared_course, shared_other )		
 		
 		for_credit_note_count = note_creators.for_credit_total
 		non_credit_note_count = note_creators.non_credit_total
@@ -1346,3 +1304,81 @@ class AssignmentSummaryReportPdf(_AbstractReportView):
 		self._build_assignment_data(options)
 		self._build_question_data(options)
 		return options
+	
+@interface.implementer(IPathAdapter, IContained)
+class ReportAdapter(zcontained.Contained):
+
+	__name__ = 'reports'
+
+	def __init__(self, context, request):
+		self.context = context
+		self.request = request
+		self.__parent__ = context
+	
+@view_config(route_name='objects.generic.traversal',
+			 name='shared_notes',
+			 renderer='rest',
+			 request_method='GET',
+			 permission=ACT_MODERATE)
+def shared_notes(request):
+	"""	Return the shared_note count by course.  The shared notes are broken down
+		by public, course-only, and private."""
+	stream = BytesIO()
+	gzstream = gzip.GzipFile(fileobj=stream, mode="wb")
+	response = request.response
+	response.content_encoding = b'gzip'
+	response.content_type = b'application/json; charset=UTF-8'
+	response.content_disposition = b'attachment; filename="shared_notes.csv.gz"'
+
+	def all_usernames(course):
+		everyone = course.legacy_community
+		everyone_usernames = {x.lower() for x in IEnumerableEntityContainer(everyone).iter_usernames()}
+		return everyone_usernames
+		
+	course_catalog = component.getUtility(ICourseCatalog)
+	md_catalog = component.getUtility(ICatalog,CATALOG_NAME)
+	uidutil = component.getUtility(IIntIds)
+	
+	intersection = md_catalog.family.IF.intersection
+	intids_of_notes = md_catalog['mimeType'].apply({'any_of': ('application/vnd.nextthought.note',)})	
+	
+	for course in course_catalog:
+		course = ICourseInstance(course)
+		course_containers = _do_get_containers_in_course( course )
+		intids_of_objects_in_course_containers = md_catalog['containerId'].apply({'any_of': course_containers})
+		course_intids_of_notes = intersection( 	intids_of_notes,
+												intids_of_objects_in_course_containers )
+		notes = ResultSet( course_intids_of_notes, uidutil )
+		
+		scopes = course.LegacyScopes
+		public = scopes['public']
+		private = scopes['restricted']
+			
+		public_object = Entity.get_entity( public )
+		private_object = Entity.get_entity( private )
+		
+		shared_public = 0
+		shared_course = 0
+		shared_other = 0
+		
+		course_users = all_usernames( course )
+		
+		notes = (x for x in notes if x.creator.username.lower() in course_users)
+		
+		for note in notes:
+			if public_object in note.sharingTargets:
+				shared_public += 1
+			elif private_object in note.sharingTargets:
+				shared_course += 1
+			else:
+				shared_other += 1 
+				
+		val = '%s,%s,%s,%s' % ( course.__name__, shared_public, shared_course, shared_other )
+		gzstream.write( val.encode('utf-8') )
+		gzstream.write( '\n' )
+
+	gzstream.flush()
+	gzstream.close()
+	stream.seek(0)
+	response.body_file = stream
+	return response	

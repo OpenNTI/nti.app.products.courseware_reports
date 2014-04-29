@@ -213,7 +213,6 @@
 		</illustration>
 
 
-<!--	
 		<nextPage />
 		<nextFrame name="table_frame" />
 		
@@ -262,7 +261,7 @@
 				  metal:use-macro="macro:engagement_stats_pie"
 				  tal:condition="options/engagement_data/aggregate" >
 		</illustration>				
--->						
+
 	
 		<setNextTemplate name="main"/>
 

@@ -24,11 +24,21 @@ from numpy import average
 from numbers import Number
 
 from nti.app.assessment.interfaces import ICourseAssessmentItemCatalog
+from nti.app.assessment.interfaces import ICourseAssignmentCatalog
+from nti.app.assessment.interfaces import IUsersCourseAssignmentHistory
+
+from nti.contenttypes.courses.interfaces import ICourseInstance
 
 from nti.assessment.interfaces import IQAssignment
 from nti.assessment.interfaces import IQuestionSet
 
 from nti.contentfragments.interfaces import IPlainTextContentFragment
+
+from nti.dataserver.users import Entity
+from nti.dataserver.interfaces import IEnumerableEntityContainer
+from nti.contentlibrary.interfaces import IContentPackageLibrary
+
+from zope import component
 
 # XXX: Fix a unicode decode issue.
 # TODO: Make this a formal patch
@@ -590,3 +600,39 @@ def _finalize_answer_stats( answer_stats, total_submits ):
 		sub.letter_prefix = str( j + 1 )
 		sub.perc_s = '%0.1f' % ( sub.count * 100.0 / total_submits ) if total_submits else 'N/A'
 
+def _do_get_containers_in_course( course ):
+	lib = component.getUtility(IContentPackageLibrary)
+	paths = lib.pathToNTIID( course.legacy_content_package.ntiid )
+	root = paths[0] if paths else None
+
+	def _recur( node, accum ):
+		#Get our embedded ntiids and recursively fetch our children's ntiids
+		ntiid = node.ntiid
+		accum.update( node.embeddedContainerNTIIDs )
+		if ntiid:
+			accum.add( ntiid )
+		for n in node.children:	
+			_recur( n, accum )
+
+	containers_in_course = set()
+	if root:
+		_recur( root,containers_in_course )
+		
+	# Add in our self-assessments	
+	# We filter out questions in assignments here for some reason
+	#self_assessments = _get_self_assessments_for_course(self.course)
+	catalog = ICourseAssessmentItemCatalog(course)
+	containers_in_course = containers_in_course.union( [x.ntiid for x in catalog.iter_assessment_items()] )
+	
+	self_assessments = _get_self_assessments_for_course(course)
+	self_assessment_containerids = {x.__parent__.ntiid for x in self_assessments}
+	self_assessment_qsids = {x.ntiid: x for x in self_assessments}	
+	containers_in_course = containers_in_course.union( self_assessment_containerids )
+	containers_in_course = containers_in_course.union( self_assessment_qsids )
+		
+	#Add in our assignments	
+	assignment_catalog = ICourseAssignmentCatalog( course )
+	containers_in_course = containers_in_course.union( ( asg.ntiid for asg in assignment_catalog.iter_assignments() ) )	
+	containers_in_course.discard( None )
+	
+	return containers_in_course

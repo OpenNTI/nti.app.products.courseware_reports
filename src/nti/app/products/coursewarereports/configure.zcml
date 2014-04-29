@@ -37,6 +37,11 @@
 		id="nti.actions.courseware.view_reports"
 		title="View reports" />
 
+	<adapter name="reports"
+			 for="nti.dataserver.interfaces.IDataserverFolder pyramid.interfaces.IRequest"
+			 factory=".views.ReportAdapter"
+			 provides="zope.traversing.interfaces.IPathAdapter" />
+
 	<!-- A subscriber for getting the student participation report from course enrollment records -->
 	<subscriber factory=".decorators._StudentParticipationReport"
 				provides="nti.externalization.interfaces.IExternalMappingDecorator" />
