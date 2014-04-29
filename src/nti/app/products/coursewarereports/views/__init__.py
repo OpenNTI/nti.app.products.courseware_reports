@@ -663,7 +663,6 @@ class TopicParticipationReportPdf(ForumParticipationReportPdf):
 
 		return options
 
-from nti.dataserver.users import Entity
 from nti.dataserver.interfaces import IEnumerableEntityContainer
 from nti.contentlibrary.interfaces import IContentPackageLibrary
 

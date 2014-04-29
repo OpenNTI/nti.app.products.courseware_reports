@@ -25,17 +25,12 @@ from numbers import Number
 
 from nti.app.assessment.interfaces import ICourseAssessmentItemCatalog
 from nti.app.assessment.interfaces import ICourseAssignmentCatalog
-from nti.app.assessment.interfaces import IUsersCourseAssignmentHistory
-
-from nti.contenttypes.courses.interfaces import ICourseInstance
 
 from nti.assessment.interfaces import IQAssignment
 from nti.assessment.interfaces import IQuestionSet
 
 from nti.contentfragments.interfaces import IPlainTextContentFragment
 
-from nti.dataserver.users import Entity
-from nti.dataserver.interfaces import IEnumerableEntityContainer
 from nti.contentlibrary.interfaces import IContentPackageLibrary
 
 from zope import component
