@@ -212,7 +212,7 @@
 				  tal:condition="options/engagement_data/non_credit" >
 		</illustration>
 
-
+<!-- Aggregate activity view and note sharing stats
 		<nextPage />
 		<nextFrame name="table_frame" />
 		
@@ -261,7 +261,7 @@
 				  metal:use-macro="macro:engagement_stats_pie"
 				  tal:condition="options/engagement_data/aggregate" >
 		</illustration>				
-
+-->
 	
 		<setNextTemplate name="main"/>
 
