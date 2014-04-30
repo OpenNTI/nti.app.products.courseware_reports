@@ -1314,6 +1314,8 @@ class ReportAdapter(zcontained.Contained):
 		self.request = request
 		self.__parent__ = context
 	
+import csv
+	
 @view_config(route_name='objects.generic.traversal',
 			 name='shared_notes',
 			 renderer='rest',
@@ -1323,11 +1325,13 @@ def shared_notes(request):
 	"""	Return the shared_note count by course.  The shared notes are broken down
 		by public, course-only, and private."""
 	stream = BytesIO()
-	gzstream = gzip.GzipFile(fileobj=stream, mode="wb")
+	writer = csv.writer( stream )
 	response = request.response
-	response.content_encoding = b'gzip'
-	response.content_type = b'application/json; charset=UTF-8'
-	response.content_disposition = b'attachment; filename="shared_notes.csv.gz"'
+	response.content_encoding = str( 'identity' )
+	response.content_type = str( 'text/csv; charset=UTF-8' )
+	response.content_disposition = str( 'attachment; filename="shared_notes.csv"' )
+	
+	writer.writerow( ['Course', 'Public', 'Course', 'Other (Private)'] )
 
 	def all_usernames(course):
 		everyone = course.legacy_community
@@ -1372,12 +1376,9 @@ def shared_notes(request):
 			else:
 				shared_other += 1 
 				
-		val = '%s,%s,%s,%s' % ( course.__name__, shared_public, shared_course, shared_other )
-		gzstream.write( val.encode('utf-8') )
-		gzstream.write( '\n' )
+		writer.writerow( [course.__name__, shared_public, shared_course, shared_other] )
 
-	gzstream.flush()
-	gzstream.close()
+	stream.flush()
 	stream.seek(0)
 	response.body_file = stream
 	return response	
