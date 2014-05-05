@@ -13,6 +13,7 @@
 	<include package="zope.component" />
 
 	<include file="meta.zcml" package="zope.security" />
+	<include file="meta.zcml" package="zope.securitypolicy" />
 
 	<!-- This should happen early -->
 	<include package="nti.app.pyramid_zope" />
@@ -36,6 +37,24 @@
 	<permission
 		id="nti.actions.courseware.view_reports"
 		title="View reports" />
+	<!--
+		The instructors/TA of a course (locally added to this role
+		for the course) can view reports
+	-->
+	<grant
+		permission="nti.actions.courseware.view_reports"
+		role="nti.roles.course_instructor" />
+	<grant
+		permission="nti.actions.courseware.view_reports"
+		role="nti.roles.course_ta" />
+	<role
+		id="nti.roles.courseware.report_viewer"
+		title="Globally accessible report viewing"
+		description="Other people perhaps not associated with the course at
+		all might also be able to view reports." />
+	<grant
+		permission="nti.actions.courseware.view_reports"
+		role="nti.roles.courseware.report_viewer" />
 
 	<adapter name="reports"
 			 for="nti.dataserver.interfaces.IDataserverFolder pyramid.interfaces.IRequest"
@@ -61,7 +80,7 @@
 	<!-- A subscriber for getting the assignment summary report from the gradebook -->
 	<subscriber factory=".decorators._AssignmentSummaryReport"
 				provides="nti.externalization.interfaces.IExternalMappingDecorator" />
-				
+
 	<!-- Default layout for reports -->
 	<!--
 		NOTE: Not really necessary, each report view
@@ -209,20 +228,20 @@
 		name="comment_table"
 		for="zope.interface.Interface"
 		view="zope.interface.Interface"
-		layer="pyramid.interfaces.IRequest" />	
+		layer="pyramid.interfaces.IRequest" />
 	<z3c:macro
 		template="templates/std_report_macros.pt"
 		name="engagement_stats_table"
 		for="zope.interface.Interface"
 		view="zope.interface.Interface"
-		layer="pyramid.interfaces.IRequest" />	
+		layer="pyramid.interfaces.IRequest" />
 	<z3c:macro
 		template="templates/std_report_macros.pt"
 		name="engagement_stats_pie"
 		for="zope.interface.Interface"
 		view="zope.interface.Interface"
-		layer="pyramid.interfaces.IRequest" />	
-	
+		layer="pyramid.interfaces.IRequest" />
+
 
 	<!-- A default header_table that does nothing -->
 	<adapter name="header_table"
