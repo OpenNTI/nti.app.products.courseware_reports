@@ -38,6 +38,7 @@ from ..reports import _do_get_containers_in_course
 from zope import component
 from zope import interface
 
+import textwrap
 import gzip
 from io import BytesIO
 
@@ -267,6 +268,9 @@ class _AbstractReportView(AbstractAuthenticatedView,
 		
 		start_year = start_date.year if start_date else None
 		return '%s %s' % ( semester, start_year ) if start_date else ''
+	
+	def wrap_text( self, text, size ):
+		return textwrap.fill( text, size )
 
 class _AssignmentInfo(object):
 

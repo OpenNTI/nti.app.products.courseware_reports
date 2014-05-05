@@ -251,8 +251,8 @@
 				  tal:attributes="width top_commenters_ill_width|default;
 								  height top_commenters_ill_height|default">
 					
-		<!-- We prefer to use a pie-chart, unless there is a remainder (e.g. 'aggregate_remainder').  
-			If so, we will fall back to a bar chart.  -->			
+		<!-- 	We will use a pie-chart, unless there is a remainder (e.g. 'aggregate_remainder').  
+				If so, we will fall back to a bar chart.  -->			
 								  
 		<barChart dx="0in" dy="0in"
 				  dwidth="4in" dheight="4in"
@@ -271,7 +271,7 @@
 				<labels fontName="Helvetica" fontSize="10" fillColor="#b8b8b8"/>
 				<categoryNames >
 					<name 	tal:repeat="commenter top_commenters" 
-							tal:content="commenter/display" >
+							tal:content="python: view.wrap_text( commenter.display, 25 )" >
 						Commenter
 					</name>
 				</categoryNames>
