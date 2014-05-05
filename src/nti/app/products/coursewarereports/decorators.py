@@ -33,10 +33,12 @@ from . import VIEW_TOPIC_PARTICIPATION
 from . import VIEW_COURSE_SUMMARY
 from . import VIEW_ASSIGNMENT_SUMMARY
 
+from .interfaces import ACT_VIEW_REPORTS
+from zope.security.management import checkPermission
+
 LINKS = ext_interfaces.StandardExternalFields.LINKS
 from nti.dataserver.links import Link
 
-from nti.contenttypes.courses.interfaces import is_instructed_by_name
 
 class _AbstractInstructedByDecorator(AbstractAuthenticatedRequestAwareDecorator):
 	# TODO: This needs to go away in favor of the specific permission
@@ -46,8 +48,8 @@ class _AbstractInstructedByDecorator(AbstractAuthenticatedRequestAwareDecorator)
 		return context
 
 	def _predicate(self, context, result):
-		return is_instructed_by_name(self._course_from_context(context),
-									 self.request.authenticated_userid)
+		return checkPermission(ACT_VIEW_REPORTS.id,
+							   self._course_from_context(context))
 
 def course_from_forum(forum):
 	board = forum.__parent__
@@ -65,6 +67,11 @@ class _StudentParticipationReport(_AbstractInstructedByDecorator):
 	"""
 	A link to return the student participation report.
 	"""
+
+	def _course_from_context(self, context):
+		return ICourseInstance(context)
+
+
 	def _do_decorate_external( self, context, result_map ):
 		links = result_map.setdefault( LINKS, [] )
 		links.append( Link( context,

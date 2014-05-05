@@ -35,17 +35,17 @@
 
 
 	<permission
-		id="nti.actions.courseware.view_reports"
+		id="nti.actions.coursewarereports.view_reports"
 		title="View reports" />
 	<!--
 		The instructors/TA of a course (locally added to this role
 		for the course) can view reports
 	-->
 	<grant
-		permission="nti.actions.courseware.view_reports"
+		permission="nti.actions.coursewarereports.view_reports"
 		role="nti.roles.course_instructor" />
 	<grant
-		permission="nti.actions.courseware.view_reports"
+		permission="nti.actions.coursewarereports.view_reports"
 		role="nti.roles.course_ta" />
 	<role
 		id="nti.roles.courseware.report_viewer"
@@ -53,8 +53,19 @@
 		description="Other people perhaps not associated with the course at
 		all might also be able to view reports." />
 	<grant
-		permission="nti.actions.courseware.view_reports"
+		permission="nti.actions.coursewarereports.view_reports"
 		role="nti.roles.courseware.report_viewer" />
+
+	<!--
+		Manually grant some accounts access to these roles for now,
+		pending better group integration.
+		NOTE: These definitions do not accept '@' in the principal
+		name because it doesn't conform to the ID schema.
+	-->
+	<!--
+	<grant principal="grey.allman@nextthought.com"
+		   role="nti.roles.courseware.report_viewer" />
+	-->
 
 	<adapter name="reports"
 			 for="nti.dataserver.interfaces.IDataserverFolder pyramid.interfaces.IRequest"

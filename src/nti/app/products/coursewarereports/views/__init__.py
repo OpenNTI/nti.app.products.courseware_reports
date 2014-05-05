@@ -17,10 +17,10 @@ from .. import VIEW_FORUM_PARTICIPATION
 from .. import VIEW_STUDENT_PARTICIPATION
 
 from ..interfaces import IPDFReportView
+from ..interfaces import ACT_VIEW_REPORTS
 
 from ..reports import _AnswerStat
 from ..reports import _TopCreators
-from ..reports import _StudentInfo
 from ..reports import _common_buckets
 from ..reports import _CommonBuckets
 from ..reports import _build_buckets_options
@@ -66,12 +66,13 @@ from pyramid.traversal import find_interface
 from z3c.pagelet.browser import BrowserPagelet
 
 from zope.catalog.interfaces import ICatalog
-from zope.catalog.catalog import ResultSet 
+from zope.catalog.catalog import ResultSet
 
 from zope.intid.interfaces import IIntIds
 from zope.traversing.interfaces import IPathAdapter
 from zope.location.interfaces import IContained
 from zope.container import contained as zcontained
+from zope.security.management import checkPermission
 
 from nti.utils.property import Lazy
 
@@ -124,12 +125,12 @@ FORUM_OBJECT_MIMETYPES = ['application/vnd.nextthought.forums.generalforumcommen
 ENGAGEMENT_OBJECT_MIMETYPES = ['application/vnd.nextthought.note',
 							   'application/vnd.nextthought.highlight']
 
-class _StudentInfo( namedtuple( '_StudentInfo', 
+class _StudentInfo( namedtuple( '_StudentInfo',
 								('display', 'username', 'count', 'perc' ))):
 	"""Holds general student info. 'count' and 'perc' are optional values"""
-	def __new__( self, display, username, count=None, perc=None ):
-		return super(_StudentInfo,self).__new__( self,display,username,count,perc )
-	
+	def __new__( cls, display, username, count=None, perc=None ):
+		return super(_StudentInfo,cls).__new__( cls, display, username, count, perc )
+
 
 from nti.contenttypes.courses.interfaces import is_instructed_by_name
 from pyramid.httpexceptions import HTTPForbidden
@@ -154,7 +155,7 @@ class _AbstractReportView(AbstractAuthenticatedView,
 			self.filename = request.view_name
 
 	def _check_access(self):
-		if not is_instructed_by_name(self.course, self.request.authenticated_userid):
+		if not checkPermission(ACT_VIEW_REPORTS.id, self.course):
 			raise HTTPForbidden()
 
 	@property
@@ -176,7 +177,7 @@ class _AbstractReportView(AbstractAuthenticatedView,
 	@Lazy
 	def intids_created_by_students(self):
 		return self.md_catalog['creator'].apply({'any_of': self.all_student_usernames})
-	
+
 	@Lazy
 	def intids_created_by_everyone(self):
 		return self.md_catalog['creator'].apply({'any_of': self.all_usernames})
@@ -203,7 +204,7 @@ class _AbstractReportView(AbstractAuthenticatedView,
 	@Lazy
 	def all_student_usernames(self):
 		return self.all_usernames - self.instructor_usernames
-	
+
 	@Lazy
 	def all_usernames(self):
 		everyone = self.course.legacy_community
@@ -216,7 +217,7 @@ class _AbstractReportView(AbstractAuthenticatedView,
 	@Lazy
 	def count_credit_students(self):
 		return len(self.for_credit_student_usernames)
-	
+
 	@Lazy
 	def count_non_credit_students(self):
 		return len(self.open_student_usernames)
@@ -226,7 +227,7 @@ class _AbstractReportView(AbstractAuthenticatedView,
 		ids = self.family.II.TreeSet()
 		ids.update( IEnumerableEntityContainer(self.course.legacy_community).iter_intids() )
 		return ids
-	
+
 	def get_student_info(self,username):
 		"""Given a username, return a _StudentInfo tuple"""
 		user = User.get_user( username )
@@ -240,14 +241,14 @@ class _AbstractReportView(AbstractAuthenticatedView,
 		display_name = user.alias or user.realname or user.username
 		#Do not display username of open students
 		user_name = "" if user.username.lower() not in self.for_credit_student_usernames else user.username
-	
+
 		return _StudentInfo( display_name, user_name )
-	
+
 	def filter_objects(self,objects):
 		"""Returns a set of filtered objects"""
 		return [ x for x in objects
 				if not IDeletedObjectPlaceholder.providedBy( x ) ]
-		
+
 	def generate_footer( self ):
 		date = _adjust_date( datetime.utcnow() )
 		date = date.strftime( '%b %d, %Y %I:%M %p' )
@@ -255,7 +256,7 @@ class _AbstractReportView(AbstractAuthenticatedView,
 		course = self.course.__name__
 		student = getattr( self, 'student_user', '' )
 		return "%s %s %s %s" % ( title, course, student, date )
-	
+
 	def generate_semester( self ):
 		start_date = self.course_start_date
 		start_month = start_date.month if start_date else None
@@ -265,10 +266,10 @@ class _AbstractReportView(AbstractAuthenticatedView,
 			semester = 'Summer'
 		else:
 			semester = 'Fall'
-		
+
 		start_year = start_date.year if start_date else None
 		return '%s %s' % ( semester, start_year ) if start_date else ''
-	
+
 	def wrap_text( self, text, size ):
 		return textwrap.fill( text, size )
 
@@ -321,11 +322,11 @@ class StudentParticipationReportPdf(_AbstractReportView):
 		intids_of_forum_objects_created_by_student = md_catalog.family.IF.intersection(intids_created_by_student, intids_of_forum_objects)
 		forum_objects_created_by_student = ResultSet(intids_of_forum_objects_created_by_student,
 													 uidutil )
-		
+
 		#Grab by course, ignore deleted comments and those before course start
 		live_objects = self.filter_objects( (	x for x in forum_objects_created_by_student
 											if 	find_interface(x, ICommunityBoard) == course_board) )
-		
+
 		# Group the forum objects by day and week
 		time_buckets = _common_buckets(	live_objects,
 										self,
@@ -411,8 +412,8 @@ class StudentParticipationReportPdf(_AbstractReportView):
 				submitted = ''
 			due_date = assignment.available_for_submission_ending
 			submitted_late = submitted > due_date if due_date and submitted else False
-			
-			asg_data.append(_AssignmentInfo(assignment.title, submitted, 
+
+			asg_data.append(_AssignmentInfo(assignment.title, submitted,
 											submitted_late,
 											grade_value, history_item,
 											due_date) )
@@ -461,7 +462,7 @@ class StudentParticipationReportPdf(_AbstractReportView):
 		# (a dictionary containing data and callable objects)
 		options = self.options
 		self._build_user_info(options)
-		
+
 		self._build_forum_data(options)
 
 		# Each self-assessment and how many times taken (again bulkData)
@@ -507,7 +508,7 @@ class ForumParticipationReportPdf(_AbstractReportView):
 					#TODO can we use filter_objects?
 					if not IDeletedObjectPlaceholder.providedBy( comment ):
 						yield comment
-		buckets = _common_buckets(	_all_comments(), 
+		buckets = _common_buckets(	_all_comments(),
 									self,
 									self.course_start_date,
 									self.agg_creators)
@@ -521,17 +522,17 @@ class ForumParticipationReportPdf(_AbstractReportView):
 	def _build_comment_count_by_topic(self, options):
 		comment_count_by_topic = list()
 		top_creators = _TopCreators( self )
-		
+
 		for topic in self.context.values():
 			comments = self.filter_objects( topic.values() )
-						
+
 			count = len( comments )
 			user_count = len( {c.creator for c in comments} )
 			creator = self.get_student_info( topic.creator )
 			created = topic.created
 			comment_count_by_topic.append( self.TopicStats( topic.title, creator, created, count, user_count ))
 
-			top_creators.incr_username( topic.creator.username ) 
+			top_creators.incr_username( topic.creator.username )
 
 		comment_count_by_topic.sort( key=lambda x: (x.created, x.title) )
 		options['comment_count_by_topic'] = comment_count_by_topic
@@ -549,7 +550,7 @@ class ForumParticipationReportPdf(_AbstractReportView):
 
 		for_credit_users = set(commenters.for_credit_keys()) | set(creators.for_credit_keys())
 		non_credit_users = set(commenters.non_credit_keys()) | set(creators.non_credit_keys())
-		
+
 		for_credit_stats = self._build_user_stats_with_keys(for_credit_users, commenters, creators)
 		non_credit_stats = self._build_user_stats_with_keys(non_credit_users, commenters, creators)
 
@@ -557,7 +558,7 @@ class ForumParticipationReportPdf(_AbstractReportView):
 		options['non_credit_user_stats'] = non_credit_stats[0]
 		only_one = for_credit_stats[1] + non_credit_stats[1]
 		unique_count = for_credit_stats[2] + non_credit_stats[2]
-		
+
 		#Could probably break this into three parts if we want
 		if unique_count:
 			options['percent_users_comment_more_than_once'] = "%0.1f" % ((unique_count - only_one) / unique_count * 100.0)
@@ -571,15 +572,15 @@ class ForumParticipationReportPdf(_AbstractReportView):
 		unique_count = 0
 		for uname in users:
 			student_info = self.get_student_info( uname )
-			stat = self.UserStats(	student_info, 
-									creators.get(uname, 0), 
+			stat = self.UserStats(	student_info,
+									creators.get(uname, 0),
 									commenters.get(uname, 0) )
 			user_stats.append(stat)
 			if stat.total_comment_count == 1:
 				only_one += 1
 			if stat.total_comment_count > 0:
 				unique_count += 1
-				
+
 		user_stats.sort( key=lambda x: x.username.display.lower() )
 		return (user_stats,only_one,unique_count)
 
@@ -634,7 +635,7 @@ class TopicParticipationReportPdf(ForumParticipationReportPdf):
 
 	def _build_top_commenters(self, options):
 		live_objects = self.filter_objects( self.context.values() )
-		buckets = _common_buckets(	live_objects, 
+		buckets = _common_buckets(	live_objects,
 									self,
 									self.course_start_date )
 		options['top_commenters'] = buckets.top_creators
@@ -751,7 +752,7 @@ class CourseSummaryReportPdf(_AbstractReportView):
 		options['self_assessment_data'] = sorted(title_to_count.values(),
 												 key=lambda x: x.title)
 
-	def _get_containers_in_course(self):	
+	def _get_containers_in_course(self):
 		return _do_get_containers_in_course(self.course)
 
 	def _build_engagement_data(self, options):
@@ -769,7 +770,7 @@ class CourseSummaryReportPdf(_AbstractReportView):
 		# all_notes = intids_of_notes
 		# all_hls = intids_of_hls
 		containers_in_course = self._get_containers_in_course()
-		
+
 		#Now we should have our whole tree of ntiids, intersect with our vals
 		intids_of_objects_in_course_containers = md_catalog['containerId'].apply({'any_of': containers_in_course})
 
@@ -785,17 +786,17 @@ class CourseSummaryReportPdf(_AbstractReportView):
 
 		for note in notes:
 			note_creators.incr_username( note.creator.username )
-		
+
 		for_credit_note_count = note_creators.for_credit_total
 		non_credit_note_count = note_creators.non_credit_total
 		total_note_count = note_creators.total
-		
+
 		for_credit_unique_note = note_creators.unique_contributors_for_credit
 		for_credit_perc_s_note = note_creators.for_credit_percent_contributed_str()
-		
+
 		non_credit_unique_note = note_creators.unique_contributors_non_credit
 		non_credit_perc_s_note = note_creators.non_credit_percent_contributed_str()
-		
+
 		total_unique_note = note_creators.unique_contributors
 		total_perc_s_note = note_creators.percent_contributed_str()
 
@@ -805,17 +806,17 @@ class CourseSummaryReportPdf(_AbstractReportView):
 		hl_creators.aggregate_creators = self.highlight_aggregator
 		for hl in highlights:
 			hl_creators.incr_username( hl.creator.username )
-		
+
 		for_credit_hl_count = hl_creators.for_credit_total
 		non_credit_hl_count = hl_creators.non_credit_total
 		total_hl_count = hl_creators.total
-		
+
 		for_credit_unique_hl = hl_creators.unique_contributors_for_credit
 		for_credit_perc_s_hl = hl_creators.for_credit_percent_contributed_str()
-		
+
 		non_credit_unique_hl = hl_creators.unique_contributors_non_credit
 		non_credit_perc_s_hl = hl_creators.non_credit_percent_contributed_str()
-		
+
 		total_unique_hl = hl_creators.unique_contributors
 		total_perc_s_hl = hl_creators.percent_contributed_str()
 
@@ -834,13 +835,13 @@ class CourseSummaryReportPdf(_AbstractReportView):
 		for_credit_discussion_count = discussion_creators.for_credit_total
 		non_credit_discussion_count = discussion_creators.non_credit_total
 		total_discussion_count = discussion_creators.total
-		
+
 		for_credit_unique_discussion = discussion_creators.unique_contributors_for_credit
 		for_credit_perc_s_discussion = discussion_creators.for_credit_percent_contributed_str()
-		
+
 		non_credit_unique_discussion = discussion_creators.unique_contributors_non_credit
 		non_credit_perc_s_discussion = discussion_creators.non_credit_percent_contributed_str()
-		
+
 		total_unique_discussion = discussion_creators.unique_contributors
 		total_perc_s_discussion = discussion_creators.percent_contributed_str()
 
@@ -848,21 +849,21 @@ class CourseSummaryReportPdf(_AbstractReportView):
 		for_credit_comment_count = comment_creators.for_credit_total
 		non_credit_comment_count = comment_creators.non_credit_total
 		total_comment_count = comment_creators.total
-		
+
 		for_credit_unique_comment = comment_creators.unique_contributors_for_credit
 		for_credit_perc_s_comment = comment_creators.for_credit_percent_contributed_str()
-		
+
 		non_credit_unique_comment = comment_creators.unique_contributors_non_credit
 		non_credit_perc_s_comment = comment_creators.non_credit_percent_contributed_str()
-		
+
 		total_unique_comment = comment_creators.unique_contributors
 		total_perc_s_comment = comment_creators.percent_contributed_str()
-		
+
 		note_color = CHART_COLORS[0]
 		hl_color = CHART_COLORS[5]
 		discussion_color = CHART_COLORS[2]
 		comments_color = CHART_COLORS[1]
-		
+
 		for_credit_notes =  _EngagementStat( 'Notes', for_credit_note_count, for_credit_unique_note, for_credit_perc_s_note, note_color )
 		for_credit_hls = _EngagementStat( 'Highlights', for_credit_hl_count, for_credit_unique_hl, for_credit_perc_s_hl, hl_color )
 		for_credit_discussions = _EngagementStat( 'Discussions Created', for_credit_discussion_count, for_credit_unique_discussion, for_credit_perc_s_discussion, discussion_color )
@@ -901,10 +902,10 @@ class CourseSummaryReportPdf(_AbstractReportView):
 
 # 		Exclude engagement_by_place data until we fully flesh out the details
 #  		data = list()
-#  
+#
 #  		stat = namedtuple('Stat',
 #  						  ('title', 'note_count', 'hl_count'))
-#  
+#
 #  		for unit in outline.values():
 #  			for lesson in unit.values():
 #  				ntiids = set()
@@ -915,7 +916,7 @@ class CourseSummaryReportPdf(_AbstractReportView):
 #  						ntiids.update( kid.embeddedContainerNTIIDs )
 #  					except TypeError:
 #  						pass
-#  
+#
 #  					for kid in lib.childrenOfNTIID(x):
 #  						ntiids.add(kid.ntiid)
 #  						ntiids.update(kid.embeddedContainerNTIIDs)
@@ -924,22 +925,22 @@ class CourseSummaryReportPdf(_AbstractReportView):
 #  				local_notes = intersection(local_notes, all_notes)
 #  				local_hls = md_catalog['containerId'].apply({'any_of': ntiids})
 #  				local_hls = intersection(local_hls, all_hls)
-#  
+#
 #  				data.append( stat( lesson.title, len(local_notes), len(local_hls)) )
 
 		data = list()
 
-#TODO Below we pull notes/highlights per NTIID in course 
+#TODO Below we pull notes/highlights per NTIID in course
 
 #  		stat = namedtuple('Stat',
 #  						  ('title', 'note_count', 'hl_count'))
-#  
+#
 #  		for c in sorted( containers_in_course ):
 # 			local_notes = md_catalog['containerId'].apply({'any_of': {c}})
 # 			local_notes = intersection(local_notes, all_notes)
 # 			local_hls = md_catalog['containerId'].apply({'any_of': {c}})
 # 			local_hls = intersection(local_hls, all_hls)
-# 
+#
 # 			data.append( stat( c.title, len(local_notes), len(local_hls)) )
 
 		options['placed_engagement_data'] = data
@@ -970,20 +971,20 @@ class CourseSummaryReportPdf(_AbstractReportView):
 			forum_view = ForumParticipationReportPdf(forum, self.request)
 			forum_view.agg_creators = agg_creators
 			forum_view.options = forum_stat
-			
+
 			last_mod_ts = forum.NewestDescendantCreatedTime
 			last_mod_time = _adjust_timestamp( last_mod_ts ) if last_mod_ts > 0 else None
 			forum_stat['last_modified'] = _format_datetime( last_mod_time ) if last_mod_time else 'N/A'
-			
+
 			forum_view.for_credit_student_usernames = self.for_credit_student_usernames
 			forum_view()
 			forum_stat['discussion_count'] = len( self.filter_objects( forum.values() ) )
 			forum_stat['total_comments'] = sum( [x.comment_count for x in forum_stat['comment_count_by_topic']] )
-			
+
 		#Need to accumulate these
 		#TODO rework this
 		acc_week = self.family.II.BTree()
-		
+
 		#Aggregate weekly numbers
 		for key, stat in forum_stats.items():
 			forum_stat = stat['all_forum_participation']
@@ -993,22 +994,22 @@ class CourseSummaryReportPdf(_AbstractReportView):
 					acc_week[week] += val
 				else:
 					acc_week[week] = val
-		
+
 		#Now we have to come up with our categories
 		accum_dates_list = ( x['group_dates'] for x in forum_stats.values() )
 		accum_dates = list( chain.from_iterable( accum_dates_list ) )
 		accum_dates = sorted( accum_dates )
-		
+
 		#Now get our date fields
 		date_accum = _DateCategoryAccum( self.course_start_date )
 		dates = date_accum.accum_all( accum_dates )
-			
+
 		new_buckets = _CommonBuckets( None, acc_week, None, dates )
 		agg_stat = _build_buckets_options( {},new_buckets )
 		options['aggregate_forum_stats'] = agg_stat
 
 		options['forum_stats'] = [x[1] for x in sorted(forum_stats.items())]
-		
+
 		options['aggregate_creators'] = agg_creators
 		options['top_commenters_colors'] = CHART_COLORS
 
@@ -1033,44 +1034,44 @@ class CourseSummaryReportPdf(_AbstractReportView):
 						-Min
 		TODO: toggle these numbers
 			-verify
-			-add stats by quartile (count, avg(assessment), avg(comment_count), quartile_val) Engagement_stat	
+			-add stats by quartile (count, avg(assessment), avg(comment_count), quartile_val) Engagement_stat
 			-Reverse this logic, see how top performers participate
 		"""
 		assessment_weight = 10
 		comment_weight = 4
 		note_weight = 4
 		#highlight_weight = 1
-		
+
 		agg_map = self.highlight_aggregator._data
-		
+
 		for k,v in self.assessment_aggregator._data.items():
 			weighted_val = assessment_weight * v
 			if k in agg_map:
 				agg_map[k] += weighted_val
 			else:
-				agg_map[k] = weighted_val 
-				
+				agg_map[k] = weighted_val
+
 		for k,v in self.comment_aggregator._data.items():
 			weighted_val = comment_weight * v
 			if k in agg_map:
 				agg_map[k] += weighted_val
 			else:
-				agg_map[k] = weighted_val 	
-				
+				agg_map[k] = weighted_val
+
 		for k,v in self.note_aggregator._data.items():
 			weighted_val = note_weight * v
 			if k in agg_map:
 				agg_map[k] += weighted_val
 			else:
-				agg_map[k] = weighted_val 			
-				
-		quartiles = percentile( [x[1] for x in agg_map.items()], [75, 50, 25] ) 			
+				agg_map[k] = weighted_val
+
+		quartiles = percentile( [x[1] for x in agg_map.items()], [75, 50, 25] )
 
 		first = list()
 		second = list()
 		third = list()
 		fourth = list()
-		
+
 		for x,v in agg_map.items():
 			if v >= quartiles[0]:
 				first.append( x )
@@ -1081,22 +1082,22 @@ class CourseSummaryReportPdf(_AbstractReportView):
 			else:
 				fourth.append( x )
 
-		first_stats = self._build_assignment_data(options, first)	
-		second_stats = self._build_assignment_data(options, second)	
-		third_stats = self._build_assignment_data(options, third)	
-		fourth_stats = self._build_assignment_data(options, fourth)		
-		
+		first_stats = self._build_assignment_data(options, first)
+		second_stats = self._build_assignment_data(options, second)
+		third_stats = self._build_assignment_data(options, third)
+		fourth_stats = self._build_assignment_data(options, fourth)
+
 		first_quart = _EngagementQuartileStat( 'First', len(first), quartiles[0], first_stats )
 		second_quart = _EngagementQuartileStat( 'Second', len(second), quartiles[1], second_stats )
 		third_quart = _EngagementQuartileStat( 'Third', len(third), quartiles[2], third_stats )
 		fourth_quart = _EngagementQuartileStat( 'Fourth', len(fourth), 0, fourth_stats )
-		
-		options['engagement_to_performance'] = _EngagementPerfStat( first_quart, second_quart, third_quart, fourth_quart )		
+
+		options['engagement_to_performance'] = _EngagementPerfStat( first_quart, second_quart, third_quart, fourth_quart )
 
 	def __call__(self):
 		self._check_access()
 		options = self.options
-		
+
 # 		self.assessment_aggregator = _TopCreators( self )
 # 		self.comment_aggregator = _TopCreators( self )
 # 		self.note_aggregator = _TopCreators( self )
@@ -1107,7 +1108,7 @@ class CourseSummaryReportPdf(_AbstractReportView):
 		self._build_self_assessment_data(options)
 		options['assignment_data'] = self._build_assignment_data(options)
 		self._build_top_commenters(options)
-		
+
 		#Must do this last
 		#self._build_engagement_perf(options)
 		options['engagement_to_performance'] = ()
@@ -1119,7 +1120,7 @@ from nti.assessment.interfaces import IQMultipleChoicePart
 from nti.assessment.interfaces import IQMatchingPart
 from nti.assessment.interfaces import IQMultipleChoiceMultipleAnswerPart
 from nti.contentfragments.interfaces import IPlainTextContentFragment
-		
+
 @view_config(context=IGradeBookEntry,
 			 name=VIEW_ASSIGNMENT_SUMMARY)
 class AssignmentSummaryReportPdf(_AbstractReportView):
@@ -1146,7 +1147,7 @@ class AssignmentSummaryReportPdf(_AbstractReportView):
 				qids_to_q[q.ntiid] = q
 
 		column = self.context
-		question_stats = {} 
+		question_stats = {}
 
 		for grade in column.values():
 			try:
@@ -1155,33 +1156,33 @@ class AssignmentSummaryReportPdf(_AbstractReportView):
 				continue
 
 			submission = history.Submission
-			
+
 			for set_submission in submission.parts:
 				for question_submission in set_submission.questions:
-					
+
 					question = qids_to_q[question_submission.questionId]
-					
-					question_stat = self._get_question_stat( 	question_stats, 
+
+					question_stat = self._get_question_stat( 	question_stats,
 																question_submission.questionId,
 																question.parts )
 					question_stat.submission_count += 1
 					question_part_stats = question_stat.question_part_stats
-						
+
 					for idx in range( len(question.parts) ):
-						question_part = question.parts[idx] 
+						question_part = question.parts[idx]
 						response = question_submission.parts[idx]
 						answer_stat = question_part_stats[idx].answer_stats
 
 						self._accumulate_response( question_part, response, answer_stat )
 
 			pending = history.pendingAssessment
-			
+
 			for maybe_assessed in pending.parts:
 				if not IQAssessedQuestionSet.providedBy(maybe_assessed):
 					continue
 				for assessed_question in maybe_assessed.questions:
 					for idx in range(len(assessed_question.parts)):
-						
+
 						assessed_part = assessed_question.parts[idx]
 						val = assessed_part.assessedValue
 						# We may not have a grade yet
@@ -1203,14 +1204,14 @@ class AssignmentSummaryReportPdf(_AbstractReportView):
 		else:
 			question_part_stats = {}
 			question_stats[ question_id ] = question_stat = _QuestionStat(question_part_stats)
-		
+
 		# make sure the data we always have the correct number of parts
 		for idx in xrange(len(parts)):
 			if idx not in question_part_stats:
 				question_part_stats[idx] = _QuestionPartStat( roman.toRoman( idx + 1 ) )
 
 		return question_stat
-	
+
 	def _accumulate_response( self, question_part, response, answer_stat ):
 		"""Adds the response information to our answer_stats"""
 		if (	IQMultipleChoicePart.providedBy(question_part)
@@ -1218,58 +1219,58 @@ class AssignmentSummaryReportPdf(_AbstractReportView):
 			and isinstance(response, int)):
 			# We have indexes into single multiple choice answers
 			# convert int indexes into actual values
-			self._add_multiple_choice_to_answer_stats( 	answer_stat, 
-														response, 
+			self._add_multiple_choice_to_answer_stats( 	answer_stat,
+														response,
 														question_part,
 														lambda: response == question_part.solutions[0].value )
 		elif (	IQMultipleChoicePart.providedBy(question_part)
 			and IQMultipleChoiceMultipleAnswerPart.providedBy(question_part)
-			and response):		
+			and response):
 			# We are losing empty responses
 			# The solutions should be int indexes, as well as our responses
 			for r in response:
-				self._add_multiple_choice_to_answer_stats( 	answer_stat, 
-															r, 
+				self._add_multiple_choice_to_answer_stats( 	answer_stat,
+															r,
 															question_part,
 															lambda: r in question_part.solutions[0].value )
 		elif isinstance(response, string_types):
 			# IQFreeResponsePart?
 			# Freeform answers
-			response = response.lower()	
-			# TODO We should be able to look in the solutions list for even the 
+			response = response.lower()
+			# TODO We should be able to look in the solutions list for even the
 			# multiple choice types correct (probably a rare use-case)
-			# TODO What case do non-strings occur in?		
-			solutions = (	x.value.lower() if isinstance(x.value, string_types) else x 
+			# TODO What case do non-strings occur in?
+			solutions = (	x.value.lower() if isinstance(x.value, string_types) else x
 							for x in question_part.solutions )
 			self._add_val_to_answer_stats( 	answer_stat,
 											response,
 											lambda: response in solutions )
-		
-		#TODO Can we handle IQFilePart? Is there anything we need to handle?	
+
+		#TODO Can we handle IQFilePart? Is there anything we need to handle?
 		elif IQMatchingPart.providedBy( question_part ):
 			# This handles both matching and ordering questions
 			for key, val in response.items():
 				left = question_part.labels[ int( key ) ]
 				left = self._get_displayable( left )
-				
+
 				right = question_part.values[val]
 				right = self._get_displayable( right )
-				
+
 				content = (left, right)
-				
-				# Just need to check if our given key-value pair is in 
+
+				# Just need to check if our given key-value pair is in
 				# the solution mappings
 				check_correct = lambda: question_part.solutions[0].value[ key ] == val
-				self._add_displayable_to_answer_stat( 	answer_stat, 
-														content, 
+				self._add_displayable_to_answer_stat( 	answer_stat,
+														content,
 														check_correct )
 		elif response is None:
 			# Unanswered questions get placed in our placeholder
-			self._add_displayable_to_answer_stat( 	answer_stat, 
-													response, 
+			self._add_displayable_to_answer_stat( 	answer_stat,
+													response,
 													lambda: False )
-	
-	
+
+
 	def _add_multiple_choice_to_answer_stats( self, answer_stat, response, question_part, check_correct ):
 		"""Adds the multiple choice response to our answer_stats"""
 		try:
@@ -1283,31 +1284,31 @@ class AssignmentSummaryReportPdf(_AbstractReportView):
 		"""Adds a response value to our answer_stats"""
 		response = self._get_displayable( response )
 		self._add_displayable_to_answer_stat( answer_stat, response, check_correct )
-	
-	def _add_displayable_to_answer_stat( self, answer_stat, response, check_correct ):		
+
+	def _add_displayable_to_answer_stat( self, answer_stat, response, check_correct ):
 		"""Adds a response value to our answer_stats"""
 		if not response:
 			# For empty strings, add a placeholder
 			response = '[unanswered]'
-		
+
 		if response in answer_stat:
 			answer_stat[response].count += 1
 		else:
 			is_correct = check_correct()
 			answer_stat[response] = _AnswerStat( response, is_correct )
-		
+
 	def _get_displayable(self, source):
 		if isinstance(source, string_types):
 			source = IPlainTextContentFragment(source)
 		return source
-			
+
 	def __call__(self):
 		self._check_access()
 		options = self.options
 		self._build_assignment_data(options)
 		self._build_question_data(options)
 		return options
-	
+
 @interface.implementer(IPathAdapter, IContained)
 class ReportAdapter(zcontained.Contained):
 
@@ -1317,9 +1318,9 @@ class ReportAdapter(zcontained.Contained):
 		self.context = context
 		self.request = request
 		self.__parent__ = context
-	
+
 import csv
-	
+
 @view_config(route_name='objects.generic.traversal',
 			 name='shared_notes',
 			 renderer='rest',
@@ -1334,21 +1335,21 @@ def shared_notes(request):
 	response.content_encoding = str( 'identity' )
 	response.content_type = str( 'text/csv; charset=UTF-8' )
 	response.content_disposition = str( 'attachment; filename="shared_notes.csv"' )
-	
+
 	writer.writerow( ['Course', 'Public', 'Course', 'Other (Private)'] )
 
 	def all_usernames(course):
 		everyone = course.legacy_community
 		everyone_usernames = {x.lower() for x in IEnumerableEntityContainer(everyone).iter_usernames()}
 		return everyone_usernames
-		
+
 	course_catalog = component.getUtility(ICourseCatalog)
 	md_catalog = component.getUtility(ICatalog,CATALOG_NAME)
 	uidutil = component.getUtility(IIntIds)
-	
+
 	intersection = md_catalog.family.IF.intersection
-	intids_of_notes = md_catalog['mimeType'].apply({'any_of': ('application/vnd.nextthought.note',)})	
-	
+	intids_of_notes = md_catalog['mimeType'].apply({'any_of': ('application/vnd.nextthought.note',)})
+
 	for course in course_catalog:
 		course = ICourseInstance(course)
 		course_containers = _do_get_containers_in_course( course )
@@ -1356,33 +1357,33 @@ def shared_notes(request):
 		course_intids_of_notes = intersection( 	intids_of_notes,
 												intids_of_objects_in_course_containers )
 		notes = ResultSet( course_intids_of_notes, uidutil )
-		
+
 		scopes = course.LegacyScopes
 		public = scopes['public']
 		private = scopes['restricted']
-			
+
 		public_object = Entity.get_entity( public )
 		private_object = Entity.get_entity( private )
-		
+
 		shared_public = 0
 		shared_course = 0
 		shared_other = 0
-		
+
 		course_users = all_usernames( course )
-		
+
 		notes = (x for x in notes if x.creator.username.lower() in course_users)
-		
+
 		for note in notes:
 			if public_object in note.sharingTargets:
 				shared_public += 1
 			elif private_object in note.sharingTargets:
 				shared_course += 1
 			else:
-				shared_other += 1 
-				
+				shared_other += 1
+
 		writer.writerow( [course.__name__, shared_public, shared_course, shared_other] )
 
 	stream.flush()
 	stream.seek(0)
 	response.body_file = stream
-	return response	
+	return response
