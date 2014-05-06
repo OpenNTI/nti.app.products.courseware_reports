@@ -3,6 +3,7 @@
 			xmlns:browser="http://namespaces.zope.org/browser"
 			xmlns:i18n="http://namespaces.zope.org/i18n"
 			xmlns:ext="http://nextthought.com/ntp/ext"
+			xmlns:sp="http://nextthought.com/ntp/securitypolicy"
 			xmlns:zcml="http://namespaces.zope.org/zcml"
 			xmlns:z3c="http://namespaces.zope.org/z3c"
 			i18n_domain="nti.app.products.courseware_reports">
@@ -14,6 +15,7 @@
 
 	<include file="meta.zcml" package="zope.security" />
 	<include file="meta.zcml" package="zope.securitypolicy" />
+	<include file="meta.zcml" package="nti.securitypolicy" />
 
 	<!-- This should happen early -->
 	<include package="nti.app.pyramid_zope" />
@@ -59,13 +61,19 @@
 	<!--
 		Manually grant some accounts access to these roles for now,
 		pending better group integration.
-		NOTE: These definitions do not accept '@' in the principal
-		name because it doesn't conform to the ID schema.
 	-->
 	<!--
-	<grant principal="grey.allman@nextthought.com"
-		   role="nti.roles.courseware.report_viewer" />
+		 The principal has to be defined first, even though this isn't
+		 the one we actually use.
 	-->
+	<sp:principal
+		id="grey.allman@nextthought.com"
+		login="grey.allman@nextthought.com"
+		title="Grey Allman" />
+
+	<sp:grant principal="grey.allman@nextthought.com"
+			  role="nti.roles.courseware.report_viewer" />
+
 
 	<adapter name="reports"
 			 for="nti.dataserver.interfaces.IDataserverFolder pyramid.interfaces.IRequest"
