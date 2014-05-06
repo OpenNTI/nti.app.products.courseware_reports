@@ -36,6 +36,7 @@ from . import VIEW_ASSIGNMENT_SUMMARY
 from .interfaces import ACT_VIEW_REPORTS
 from zope.security.management import checkPermission
 
+
 LINKS = ext_interfaces.StandardExternalFields.LINKS
 from nti.dataserver.links import Link
 
@@ -48,8 +49,10 @@ class _AbstractInstructedByDecorator(AbstractAuthenticatedRequestAwareDecorator)
 		return context
 
 	def _predicate(self, context, result):
-		return checkPermission(ACT_VIEW_REPORTS.id,
-							   self._course_from_context(context))
+		# TODO: This can probably go back to using the AuthorizationPolicy methods
+		# now that we're integrating the two
+		return self._is_authenticated and  checkPermission(ACT_VIEW_REPORTS.id,
+														   self._course_from_context(context))
 
 def course_from_forum(forum):
 	board = forum.__parent__
