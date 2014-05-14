@@ -457,9 +457,9 @@ class TestTopCreators( unittest.TestCase ):
 	def test_empty(self):
 		assert_that( self.top_creators._for_credit_data, empty() )
 		assert_that( self.top_creators._non_credit_data, empty() )
-		assert_that( self.top_creators._get_largest(), empty() )
-		assert_that( self.top_creators._get_for_credit_largest(), empty() )
-		assert_that( self.top_creators.series(), not_none() )
+		assert_that( self.top_creators._get_largest, empty() )
+		assert_that( self.top_creators._get_for_credit_largest, empty() )
+		assert_that( self.top_creators.series, not_none() )
 		assert_that( self.top_creators.unique_contributors_for_credit, equal_to( 0 ) )
 		assert_that( self.top_creators.unique_contributors_non_credit, equal_to( 0 ) )
 		assert_that( self.top_creators.for_credit_total, equal_to( 0 ) )
@@ -492,8 +492,8 @@ class TestTopCreators( unittest.TestCase ):
 		assert_that( self.top_creators._for_credit_data, has_length( 1 ) )
 		assert_that( self.top_creators._for_credit_data.keys(), only_contains( for_credit ) )
 		assert_that( self.top_creators._non_credit_data, empty() )
-		assert_that( self.top_creators._get_largest(), has_length( 1 ) )
-		assert_that( self.top_creators._get_for_credit_largest(), has_length( 1 ) )
+		assert_that( self.top_creators._get_largest, has_length( 1 ) )
+		assert_that( self.top_creators._get_for_credit_largest, has_length( 1 ) )
 		assert_that( self.top_creators.unique_contributors_for_credit, equal_to( 1 ) )
 		assert_that( self.top_creators.unique_contributors_non_credit, equal_to( 0 ) )
 		assert_that( self.top_creators.for_credit_total, equal_to( 1 ) )
@@ -547,10 +547,10 @@ class TestTopCreators( unittest.TestCase ):
 		assert_that( self.top_creators._non_credit_data, has_length( 2 ) )
 		assert_that( 	self.top_creators._non_credit_data.keys(), 
 						only_contains( non_credit1, non_credit2 ) )
-		assert_that( self.top_creators._get_largest(), has_length( 3 ) )
-		assert_that( 	self.top_creators._get_largest()[0].username, 
+		assert_that( self.top_creators._get_largest, has_length( 3 ) )
+		assert_that( 	self.top_creators._get_largest[0].username, 
 						equal_to( 'non_credit2' ) ) 
-		assert_that( self.top_creators._get_for_credit_largest(), has_length( 1 ) )
+		assert_that( self.top_creators._get_for_credit_largest, has_length( 1 ) )
 		assert_that( self.top_creators.unique_contributors_for_credit, equal_to( 1 ) )
 		assert_that( self.top_creators.unique_contributors_non_credit, equal_to( 2 ) )
 		assert_that( self.top_creators.for_credit_total, equal_to( 5 ) )
