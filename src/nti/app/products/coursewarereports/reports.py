@@ -23,6 +23,8 @@ from numpy import asarray
 from numpy import average
 from numbers import Number
 
+from nti.utils.property import Lazy
+
 from nti.app.assessment.interfaces import ICourseAssessmentItemCatalog
 from nti.app.assessment.interfaces import ICourseAssignmentCatalog
 
@@ -138,9 +140,11 @@ class _TopCreators(object):
 	def _non_credit_data(self):
 		return {username: i for username, i in self._data.items() if username.lower() in self._non_credit_students}
 
+	@Lazy
 	def _get_largest(self):
 		return self._do_get_largest(self._data, self.total)
 
+	@Lazy
 	def _get_for_credit_largest(self):
 		return self._do_get_largest(self._for_credit_data, self.for_credit_total)
 
@@ -169,14 +173,15 @@ class _TopCreators(object):
 		return largest
 
 	def __iter__(self):
-		return iter(self._get_largest())
+		return iter(self._get_largest)
 
 	def __bool__(self):
 		return bool(self._data)
 	__nonzero__ = __bool__
 
+	@Lazy
 	def series(self):
-		return ' '.join( ('%d' % x.count for x in self._get_largest() ) )
+		return ' '.join( ('%d' % x.count for x in self._get_largest ) )
 
 	@property
 	def unique_contributors(self):
