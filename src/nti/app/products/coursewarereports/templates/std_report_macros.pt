@@ -52,7 +52,7 @@
 		<paraStyle name="sendTo" leftIndent="0.5in" parent="normal" textColor="#494949"
 				   spaceBefore="10"/>
 		
-		<paraStyle name="footer" fontName="OpenSans" textColor="#b8b8b8" fontSize="10" />		   
+		<paraStyle name="footer" fontName="OpenSansLight" textColor="#b8b8b8" fontSize="10" />		   
 				   
 		<!-- column header, should match the 0,0:-1,0 entry below -->		   
 		<paraStyle name="header" textColor="#b8b8b8" fontName="OpenSansBold" size="10" />		 
@@ -149,6 +149,7 @@
 		</blockTableStyle>
 		
 		<blockTableStyle id="header_table">
+			<blockFont start="0,0" stop="-1,-1" name="OpenSans" size="10" />
 		</blockTableStyle>
 
 	</stylesheet>
@@ -318,6 +319,7 @@
 								  height top_commenters_chart_height|default">
 			<slices>
 				<slice  fontSize="9"
+						fontName="OpenSans"
 						tal:repeat="item top_commenters|options/top_commenters"
 					   	tal:attributes="fillColor python:top_commenters_colors[repeat.item.number];
 					   					strokeColor python:top_commenters_colors[repeat.item.number]">
@@ -383,6 +385,7 @@
 			</data>
 			<slices>
 				<slice 	fontSize="9"
+						fontName="OpenSans"
 					   	tal:repeat="item python: [x for x in data if data.count]"
 					   	tal:attributes=" fillColor item/color;
 					   					strokeColor item/color" >

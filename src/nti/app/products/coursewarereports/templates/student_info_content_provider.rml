@@ -2,7 +2,7 @@
 <tr tal:condition="view/__parent__/options/user/display"
 	tal:define="display_name view/__parent__/options/user/display">
 	<td>Name:</td>
-	<td fontName="OpenSans" tal:content="display_name">
+	<td tal:content="display_name">
 		Display name
 	</td>
 </tr>
