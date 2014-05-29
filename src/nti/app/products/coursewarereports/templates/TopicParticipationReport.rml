@@ -18,7 +18,8 @@
 			This chart shows the number of comments made each week
 			in <u>${context/title|context/__name__}</u> since it was posted.
 		</para>
-		<para tal:condition="not:options/all_forum_participation/forum_objects_by_week_number">
+		<para 	style="subdesc" 
+				tal:condition="not:options/all_forum_participation/forum_objects_by_week_number">
 			This topic does not have any comments.
 		</para>		
 
@@ -52,7 +53,8 @@
 						tal:condition="options/top_commenters"
 						metal:use-macro="macro:comment_table" />
 						
-		<para tal:condition="not:options/top_commenters">
+		<para 	style="subdesc"
+				tal:condition="not:options/top_commenters">
 			This topic does not have any comments.
 		</para>				
 		
@@ -85,7 +87,8 @@
 		<h2 style="h2">
 			For-Credit Comment Activity
 		</h2>
-		<para tal:condition="not:options/for_credit_user_stats">
+		<para 	style="subdesc"
+				tal:condition="not:options/for_credit_user_stats">
 			This discussion does not have any comments by for-credit students.
 		</para>	
 		
@@ -110,7 +113,8 @@
 		<h2 style="h2">
 			Non-Credit Comment Activity
 		</h2>
-		<para tal:condition="not:options/non_credit_user_stats">
+		<para 	style="subdesc"
+				tal:condition="not:options/non_credit_user_stats">
 			This discussion does not have any comments by non-credit students.
 		</para>	
 		

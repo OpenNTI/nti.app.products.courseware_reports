@@ -71,7 +71,8 @@
 		
 		<hr width="100%" />
 		
-		<para tal:condition="not:options/question_stats">
+		<para 	style="subdesc"
+				tal:condition="not:options/question_stats">
 			This assignment does not have any questions.
 		</para>
 		
@@ -79,7 +80,7 @@
 					tal:condition="options/question_stats">
 					
 			<keepTogether>
-			<h2 style="h2" fontSize="10" spaceBefore=".3in" fontName="Helvetica-Bold" spaceAfter=".2"
+			<h2 style="h2" fontSize="10" spaceBefore=".3in" spaceAfter=".2"
 				tal:content="string:${question/title}: Average Score ${question/avg_score}">
 				Question Number
 			</h2>
@@ -92,7 +93,7 @@
 				<nextPage tal:condition="python: repeat.question_part.number > 1" />
 
 				<h3 style="h3"
-					spaceBefore="0in" fontName="Helvetica-Bold" spaceAfter=".2"
+					spaceBefore="0in" spaceAfter=".2"
 					tal:content="string:Part ${question_part/letter_prefix}"
 					tal:condition="python: len(question.question_part_stats) > 1">
 					Part I
@@ -109,7 +110,7 @@
 									start="0,0" stop="-1,-1" 
 									kind="linebelow" colorName="white" />	
 						<blockTextColor start="0,0" stop="-1,0" colorName="#b8b8b8" />
-						<blockFont start="0,0" stop="-1,0" name="Helvetica-Bold" size="10" />	
+						<blockFont start="0,0" stop="-1,0" name="OpenSansBold" size="10" />	
 					</blockTableStyle>		
 						
 					<tr>
@@ -127,7 +128,7 @@
 							leftPadding="20"
 							topPadding="20"
 							bottomPadding="20"
-							fontSize="12" fontName="Helvetica-Bold">
+							fontSize="12" fontName="OpenSansBold">
 							A
 						</td>
 						<td tal:attributes="background python: '#cbf2db' if answer_stat.is_correct else '#f5f5f5'"
@@ -139,7 +140,7 @@
 						</td>
 						<td tal:content="answer_stat/count"
 							tal:attributes="fontColor python: '#2ecc71' if answer_stat.is_correct else '#e74c3c'"
-							fontSize="14" fontName="Helvetica-Bold"
+							fontSize="14" fontName="OpenSansBold"
 							topPadding="20"
 							bottomPadding="20"
 							align="right"
@@ -148,7 +149,7 @@
 						</td>
 						<td tal:content="answer_stat/perc_s"
 							tal:attributes="fontColor python: '#2ecc71' if answer_stat.is_correct else '#e74c3c'"
-							fontSize="14" fontName="Helvetica-Bold"
+							fontSize="14" fontName="OpenSansBold"
 							topPadding="20"
 							bottomPadding="20"
 							align="right"
@@ -171,7 +172,7 @@
 									start="1,0" stop="1,-1" 
 									kind="lineafter" colorName="white" />	
 						<blockTextColor start="0,0" stop="-1,0" colorName="#b8b8b8" />
-						<blockFont start="0,0" stop="-1,0" name="Helvetica-Bold" size="10" />							
+						<blockFont start="0,0" stop="-1,0" name="OpenSansBold" size="10" />							
 					</blockTableStyle>		
 						
 					<tr>
@@ -190,7 +191,7 @@
 							leftPadding="20"
 							topPadding="20"
 							bottomPadding="20"
-							fontSize="12" fontName="Helvetica-Bold">
+							fontSize="12" fontName="OpenSansBold">
 							A
 						</td>
 						<td tal:attributes="background python: '#cbf2db' if answer_stat.is_correct else '#f5f5f5'"
@@ -210,7 +211,7 @@
 						</td>
 						<td tal:content="answer_stat/count"
 							tal:attributes="fontColor python: '#2ecc71' if answer_stat.is_correct else '#e74c3c'"
-							fontSize="14" fontName="Helvetica-Bold"
+							fontSize="14" fontName="OpenSansBold"
 							topPadding="20"
 							bottomPadding="20"
 							align="right"
@@ -219,7 +220,7 @@
 						</td>
 						<td tal:content="answer_stat/perc_s"
 							tal:attributes="fontColor python: '#2ecc71' if answer_stat.is_correct else '#e74c3c'"
-							fontSize="14" fontName="Helvetica-Bold"
+							fontSize="14" fontName="OpenSansBold"
 							topPadding="20"
 							bottomPadding="20"
 							align="right"

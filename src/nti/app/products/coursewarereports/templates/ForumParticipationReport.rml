@@ -27,7 +27,8 @@
 					  tal:condition="options/all_forum_participation/forum_objects_by_week_number"
 					  metal:use-macro="macro:forum_participation_over_time">
 		</illustration>
-		<para tal:condition="not:options/all_forum_participation/forum_objects_by_week_number">
+		<para 	style="subdesc"
+				tal:condition="not:options/all_forum_participation/forum_objects_by_week_number">
 			This forum does not have any comments.
 		</para>
 
@@ -77,7 +78,8 @@
 			</blockTable>
 		
 		
-		<para tal:condition="not:options/comment_count_by_topic">
+		<para 	style="subdesc"
+				tal:condition="not:options/comment_count_by_topic">
 			This forum does not have any comments.
 		</para>
 
@@ -95,7 +97,8 @@
 						tal:condition="options/top_commenters"
 						metal:use-macro="macro:comment_table" />
 						
-		<para tal:condition="not:options/top_commenters">
+		<para 	style="subdesc"
+				tal:condition="not:options/top_commenters">
 			This forum does not have any comments.
 		</para>				
 		
@@ -122,7 +125,8 @@
 		<metal:macro 	tal:define="top_commenters options/top_creators"
 						tal:condition="options/top_creators"
 						metal:use-macro="macro:comment_table" />
-		<para tal:condition="not:options/top_creators">
+		<para 	style="subdesc"
+				tal:condition="not:options/top_creators">
 			This forum did not have any discussions created.
 		</para>						
 		
@@ -156,7 +160,8 @@
 		<h2 style="h2">
 			For-Credit Comment Activity
 		</h2>
-		<para tal:condition="not:options/for_credit_user_stats">
+		<para 	style="subdesc"
+				tal:condition="not:options/for_credit_user_stats">
 			This forum does not have any comments by for-credit students.
 		</para>	
 		
@@ -183,7 +188,8 @@
 		<h2 style="h2">
 			Non-Credit Comment Activity
 		</h2>
-		<para tal:condition="not:options/non_credit_user_stats">
+		<para 	style="subdesc"
+				tal:condition="not:options/non_credit_user_stats">
 			This forum does not have any comments by non-credit students.
 		</para>	
 		

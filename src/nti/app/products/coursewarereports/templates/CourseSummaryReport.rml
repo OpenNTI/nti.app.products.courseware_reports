@@ -21,7 +21,8 @@
 			 ${python:request.localizer.pluralize('student', 'students', options['count_total'])} taking this
 			course.
 		</para>
-		<para tal:condition="not:options/count_open">
+		<para 	style="subdesc"
+				tal:condition="not:options/count_open">
 			This course does not have any users.
 		</para>		
 
@@ -37,11 +38,11 @@
 				  xRadius="3in"
 				  startAngle="180">
 			<slices>
-				<slice strokeColor="#40b450" fillColor="#40b450" >
+				<slice strokeColor="#40b450" fillColor="#40b450" fontName="OpenSans" >
 					<label fillColor="#757474">Non-Credit (${options/count_open})</label>
 					<pointer strokeColor="#757474" piePad=".3in" />
 				</slice>
-				<slice strokeColor="#3fb3f6" fillColor="#3fb3f6" popout="10">
+				<slice strokeColor="#3fb3f6" fillColor="#3fb3f6" popout="10" fontName="OpenSans">
 					<label fillColor="#757474">For-Credit (${options/count_for_credit})</label>
 					<pointer strokeColor="#757474" piePad=".3in" />
 				</slice>
@@ -92,7 +93,8 @@
 				</tr>
 			</blockTable>
 		
-		<para tal:condition="not:options/self_assessment_data">
+		<para 	style="subdesc"
+				tal:condition="not:options/self_assessment_data">
 			This course contains no self-assessments.
 		</para>
 
@@ -121,7 +123,8 @@
 				</tr>
 			</blockTable>
 		
-		<para tal:condition="not:options/assignment_data">
+		<para 	style="subdesc"
+				tal:condition="not:options/assignment_data">
 			This course contains no assignments.
 		</para>	
 
@@ -150,7 +153,8 @@
 				</tr>
 			</blockTable>
 		
-		<para tal:condition="not:options/assignment_data">
+		<para 	style="subdesc"
+				tal:condition="not:options/assignment_data">
 			This course contains no assignments.
 		</para>
 
@@ -173,7 +177,8 @@
 			Activity: For-Credit Students
 		</h2>
 		
-		<para tal:condition="not:options/engagement_data/for_credit">
+		<para 	style="subdesc"
+				tal:condition="not:options/engagement_data/for_credit">
 			This course does not have any for-credit student activity.
 		</para>
 		
@@ -196,7 +201,8 @@
 		<h2 style="h2">
 			Activity: Non-Credit Students
 		</h2>
-		<para tal:condition="not:options/engagement_data/non_credit">
+		<para 	style="subdesc"
+				tal:condition="not:options/engagement_data/non_credit">
 			This course does not have any non-credit student activity.
 		</para>
 		
@@ -219,7 +225,8 @@
 		<h2 style="h2">
 			Activity: Aggregate
 		</h2>
-		<para tal:condition="not:options/engagement_data/aggregate">
+		<para 	style="subdesc"
+				tal:condition="not:options/engagement_data/aggregate">
 			This course does not have any non-credit student activity.
 		</para>
 		
@@ -274,7 +281,8 @@ Removing activity by place for now
 			Activity: By Location
 		</h2>
 
-		<para tal:condition="not:options/placed_engagement_data">
+		<para 	style="subdesc"
+				tal:condition="not:options/placed_engagement_data">
 			This course does not have any engagement-by-place data.
 		</para>
 		<blockTable style='default'
@@ -301,7 +309,8 @@ Removing activity by place for now
 			Discussions
 		</h1>
 		
-		<para tal:condition="not:options/aggregate_forum_stats/forum_objects_by_week_number">
+		<para 	style="subdesc"
+				tal:condition="not:options/aggregate_forum_stats/forum_objects_by_week_number">
 			This course does not have any comments in this course's forums.
 		</para>
 		

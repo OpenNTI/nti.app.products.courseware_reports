@@ -343,7 +343,7 @@
 	<metal:macro metal:define-macro="engagement_stats_table" >
 		<blockTable style='default' 
 					alignment="left"
-					colWidths="38% 20% 22% 20%"
+					colWidths="36% 20% 22% 22%"
 					tal:condition="engagement_stat" >
 			<tr>
 				<td>Type</td>
@@ -352,7 +352,11 @@
 					Student<br/>
 					Contributors
 				</para></td>
-				<td><para style="header_r">Student Percent Contributed</para></td>
+				<td><para style="header_r">
+					Student<br/>
+					Percent<br/>
+					Contributed
+				</para></td>
 			</tr>
 			<tr tal:repeat="item engagement_stat">
 				<td tal:content="item/name">Notes</td>
