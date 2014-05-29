@@ -84,7 +84,9 @@
 				tal:content="string:${question/title}: Average Score ${question/avg_score}">
 				Question Number
 			</h2>
-			<para style="subdesc" tal:content="question/content" spaceAfter=".1in" >
+			<para 	style="question" 
+					tal:content="question/content" 
+					spaceAfter=".1in" >
 				The content of the question.
 			</para>
 
@@ -94,6 +96,7 @@
 
 				<h3 style="h3"
 					spaceBefore="0in" spaceAfter=".2"
+					fontSize="12"
 					tal:content="string:Part ${question_part/letter_prefix}"
 					tal:condition="python: len(question.question_part_stats) > 1">
 					Part I
@@ -110,7 +113,7 @@
 									start="0,0" stop="-1,-1" 
 									kind="linebelow" colorName="white" />	
 						<blockTextColor start="0,0" stop="-1,0" colorName="#b8b8b8" />
-						<blockFont start="0,0" stop="-1,0" name="OpenSansBold" size="10" />	
+						<blockFont start="0,0" stop="-1,0" name="OpenSansSemiBold" size="10" />	
 					</blockTableStyle>		
 						
 					<tr>
@@ -128,19 +131,20 @@
 							leftPadding="20"
 							topPadding="20"
 							bottomPadding="20"
-							fontSize="12" fontName="OpenSansBold">
+							fontSize="12" fontName="OpenSansSemiBold">
 							A
 						</td>
 						<td tal:attributes="background python: '#cbf2db' if answer_stat.is_correct else '#f5f5f5'"
 							vAlign="middle"
 							fontColor="#494949">
-								<para tal:content="answer_stat/answer">
+								<para 	style="answer" 
+										tal:content="answer_stat/answer">
 									answer
 								</para>
 						</td>
 						<td tal:content="answer_stat/count"
 							tal:attributes="fontColor python: '#2ecc71' if answer_stat.is_correct else '#e74c3c'"
-							fontSize="14" fontName="OpenSansBold"
+							fontSize="14" fontName="OpenSansSemiBold"
 							topPadding="20"
 							bottomPadding="20"
 							align="right"
@@ -149,7 +153,7 @@
 						</td>
 						<td tal:content="answer_stat/perc_s"
 							tal:attributes="fontColor python: '#2ecc71' if answer_stat.is_correct else '#e74c3c'"
-							fontSize="14" fontName="OpenSansBold"
+							fontSize="14" fontName="OpenSansSemiBold"
 							topPadding="20"
 							bottomPadding="20"
 							align="right"
@@ -172,7 +176,7 @@
 									start="1,0" stop="1,-1" 
 									kind="lineafter" colorName="white" />	
 						<blockTextColor start="0,0" stop="-1,0" colorName="#b8b8b8" />
-						<blockFont start="0,0" stop="-1,0" name="OpenSansBold" size="10" />							
+						<blockFont start="0,0" stop="-1,0" name="OpenSansSemiBold" size="10" />							
 					</blockTableStyle>		
 						
 					<tr>
@@ -191,7 +195,7 @@
 							leftPadding="20"
 							topPadding="20"
 							bottomPadding="20"
-							fontSize="12" fontName="OpenSansBold">
+							fontSize="12" fontName="OpenSansSemiBold">
 							A
 						</td>
 						<td tal:attributes="background python: '#cbf2db' if answer_stat.is_correct else '#f5f5f5'"
@@ -205,13 +209,14 @@
 							vAlign="middle"
 							leftPadding="20"
 							fontColor="#494949">
-								<para tal:content="python: answer_stat.answer[1]">
+								<para 	style="answer"
+										tal:content="python: answer_stat.answer[1]">
 									answer
 								</para>
 						</td>
 						<td tal:content="answer_stat/count"
 							tal:attributes="fontColor python: '#2ecc71' if answer_stat.is_correct else '#e74c3c'"
-							fontSize="14" fontName="OpenSansBold"
+							fontSize="14" fontName="OpenSansSemiBold"
 							topPadding="20"
 							bottomPadding="20"
 							align="right"
@@ -220,7 +225,7 @@
 						</td>
 						<td tal:content="answer_stat/perc_s"
 							tal:attributes="fontColor python: '#2ecc71' if answer_stat.is_correct else '#e74c3c'"
-							fontSize="14" fontName="OpenSansBold"
+							fontSize="14" fontName="OpenSansSemiBold"
 							topPadding="20"
 							bottomPadding="20"
 							align="right"

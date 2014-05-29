@@ -60,6 +60,11 @@
 		
 		<!-- data, should match the entry below -->		   
 		<paraStyle name="data" textColor="#757474" fontName="OpenSans" size="12" />		
+		
+		<paraStyle name="question" fontName="OpenSans" fontSize="12" textColor="#494949" />
+		
+		<paraStyle name="answer" fontName="OpenSans" fontSize="12" textColor="#494949"
+				   leading="15" />
 
 		<blockTableStyle id="default">
 			<lineStyle 	start="0,0" stop="-1,-1" 

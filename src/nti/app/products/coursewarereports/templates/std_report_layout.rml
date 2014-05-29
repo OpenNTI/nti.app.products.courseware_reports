@@ -12,6 +12,7 @@
 
 	<docinit>
 		<registerTTFont faceName="OpenSans" fileName="[nti.app.products.coursewarereports]/fonts/OpenSans-Regular.ttf" />
+		<registerTTFont faceName="OpenSansSemiBold" fileName="[nti.app.products.coursewarereports]/fonts/OpenSans-Semibold.ttf" />
 		<registerTTFont faceName="OpenSansBold" fileName="[nti.app.products.coursewarereports]/fonts/OpenSans-Bold.ttf" />
 		<registerTTFont faceName="OpenSansLight" fileName="[nti.app.products.coursewarereports]/fonts/OpenSans-Light.ttf" />
 	</docinit>
