@@ -26,7 +26,7 @@
 				  tal:condition="options/student_forum_participation"
 				  metal:use-macro="macro:forum_participation_over_time">
 	</illustration>
-	<para tal:condition="not:options/student_forum_participation/forum_objects_by_week_number">
+	<para style="subdesc" tal:condition="not:options/student_forum_participation/forum_objects_by_week_number">
 			This student has not posted any comments or created any discussions.
 	</para>
 
@@ -60,7 +60,7 @@
 			</tr>
 		</blockTable>
 		
-		<para tal:condition="not:options/topics_created">
+		<para style="subdesc" tal:condition="not:options/topics_created">
 			This student has not created any discussions.
 		</para>
 
@@ -96,7 +96,7 @@
 			</tr>
 		</blockTable>
 		
-		<para tal:condition="not:options/comment_count_by_topic">
+		<para style="subdesc" tal:condition="not:options/comment_count_by_topic">
 			This student has not posted any comments.
 		</para>
 		
@@ -126,7 +126,7 @@
 			</tr>
 		</blockTable>
 		
-		<para tal:condition="not:options/self_assessment_title_to_count">
+		<para style="subdesc" tal:condition="not:options/self_assessment_title_to_count">
 			This course contains no self-assessments.
 		</para>
 
@@ -157,7 +157,7 @@
 			</tr>
 		</blockTable>
 	
-		<para tal:condition="not:options/assignments">
+		<para style="subdesc" tal:condition="not:options/assignments">
 			This course contains no assignments.
 		</para>
 		

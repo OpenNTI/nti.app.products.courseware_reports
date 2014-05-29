@@ -33,33 +33,33 @@
 		<paraStyle 	name="report_title" 
 					fontSize="20" 
 					alignment='right' spaceAfter=".2in" 
-					textColor="#494949" fontName="Helvetica"/>
+					textColor="#494949" fontName="OpenSansLight"/>
 	
-		<paraStyle name="h1" fontSize="30" textColor="#494949" fontName="Helvetica"/>
+		<paraStyle name="h1" fontSize="30" textColor="#494949" fontName="OpenSansLight"/>
 		
-		<paraStyle name="h2" fontSize="15" textColor="#494949" fontName="Helvetica"
+		<paraStyle name="h2" fontSize="15" textColor="#494949" fontName="OpenSans"
 					spaceBefore=".5in" spaceAfter=".3in"/>
 					
-		<paraStyle name="h3" fontSize="10" textColor="#494949" fontName="Helvetica"
+		<paraStyle name="h3" fontSize="10" textColor="#494949" fontName="OpenSans"
 					spaceBefore=".3in" spaceAfter=".3in"/>			
 		
-		<paraStyle name="normal" fontName="Helvetica" fontSize="12" textColor="#494949"
+		<paraStyle name="normal" fontName="OpenSans" fontSize="12" textColor="#494949"
 				   leading="15" spaceAfter=".5in" />
 		
-		<paraStyle name="subdesc" fontName="Helvetica" fontSize="10" textColor="#494949"
+		<paraStyle name="subdesc" fontName="OpenSans" fontSize="10" textColor="#494949"
 				   leading="13" spaceAfter=".5in" />
 		
 		<paraStyle name="sendTo" leftIndent="0.5in" parent="normal" textColor="#494949"
 				   spaceBefore="10"/>
 		
-		<paraStyle name="footer" textColor="#b8b8b8" fontSize="10" />		   
+		<paraStyle name="footer" fontName="OpenSans" textColor="#b8b8b8" fontSize="10" />		   
 				   
 		<!-- column header, should match the 0,0:-1,0 entry below -->		   
-		<paraStyle name="header" textColor="#b8b8b8" fontName="Helvetica-Bold" size="10" />		 
-		<paraStyle name="header_r" textColor="#b8b8b8" fontName="Helvetica-Bold" size="10" alignment="right" />		
+		<paraStyle name="header" textColor="#b8b8b8" fontName="OpenSansBold" size="10" />		 
+		<paraStyle name="header_r" textColor="#b8b8b8" fontName="OpenSansBold" size="10" alignment="right" />		
 		
 		<!-- data, should match the entry below -->		   
-		<paraStyle name="data" textColor="#757474" fontName="Helvetica" size="12" />		
+		<paraStyle name="data" textColor="#757474" fontName="OpenSans" size="12" />		
 
 		<blockTableStyle id="default">
 			<lineStyle 	start="0,0" stop="-1,-1" 
@@ -68,11 +68,11 @@
 					   	colorName="#e9e9e9"/>
 			<!-- Header row -->
 			<blockTextColor start="0,0" stop="-1,0" colorName="#b8b8b8" />
-			<blockFont start="0,0" stop="-1,0" name="Helvetica-Bold" size="10" />
+			<blockFont start="0,0" stop="-1,0" name="OpenSansBold" size="10" />
 			
 			<!-- Data rows -->
 			<blockTextColor start="0,1" stop="-1,-1" colorName="#757474" />
-			<blockFont start="0,1" stop="-1,-1" name="Helvetica" size="12" />
+			<blockFont start="0,1" stop="-1,-1" name="OpenSansLight" size="12" />
 			
 			<!-- First column onward. Since we have one fixed decimal point,
 				 we should be able to line everything except the first column-->
@@ -87,11 +87,11 @@
 					   	colorName="#e9e9e9"/>
 			<!-- Header row -->
 			<blockTextColor start="0,0" stop="-1,0" colorName="#b8b8b8" />
-			<blockFont start="0,0" stop="-1,0" name="Helvetica-Bold" size="10" />
+			<blockFont start="0,0" stop="-1,0" name="OpenSansBold" size="10" />
 			
 			<!-- Data rows -->
 			<blockTextColor start="1,1" stop="-1,-1" colorName="#757474" />
-			<blockFont start="0,1" stop="-1,-1" name="Helvetica" size="12" />
+			<blockFont start="0,1" stop="-1,-1" name="OpenSansLight" size="12" />
 			
 			<!-- Username column #1 -->
 			<blockTextColor start="0,1" stop="0,-1" colorName="#3fb3f6" />
@@ -110,11 +110,11 @@
 					   	colorName="#e9e9e9"/>
 			<!-- Header row -->
 			<blockTextColor start="0,0" stop="-1,0" colorName="#b8b8b8" />
-			<blockFont start="0,0" stop="-1,0" name="Helvetica-Bold" size="10" />
+			<blockFont start="0,0" stop="-1,0" name="OpenSansBold" size="10" />
 			
 			<!-- Data rows -->
 			<blockTextColor start="1,1" stop="-1,-1" colorName="#757474" />
-			<blockFont start="0,1" stop="-1,-1" name="Helvetica" size="12" />
+			<blockFont start="0,1" stop="-1,-1" name="OpenSans" size="12" />
 			
 			<!-- Username column #1 -->
 			<blockTextColor start="0,1" stop="0,-1" colorName="#40b450" />
@@ -133,11 +133,11 @@
 		
 			<!-- Header row -->
 			<blockTextColor start="0,0" stop="-1,0" colorName="#b8b8b8" />
-			<blockFont start="0,0" stop="-1,0" name="Helvetica-Bold" size="10" />
+			<blockFont start="0,0" stop="-1,0" name="OpenSansBold" size="10" />
 			
 			<!-- Data rows -->
 			<blockTextColor start="1,1" stop="-1,-1" colorName="#757474" />
-			<blockFont start="0,1" stop="-1,-1" name="Helvetica" size="12" />
+			<blockFont start="0,1" stop="-1,-1" name="OpenSans" size="12" />
 			
 			<!-- Username column #2 -->
 			<blockTextColor start="1,1" stop="1,-1" colorName="#3fb3f6" />
@@ -185,7 +185,7 @@
 			</bars>
 			<categoryAxis visibleTicks="false" strokeColor="#e9e9e9"
 						tal:condition="forum_stat/forum_objects_by_week_number">
-				<labels fontName="Helvetica" fontSize="10" fillColor="#b8b8b8"
+				<labels fontName="OpenSans" fontSize="10" fillColor="#b8b8b8"
 						tal:attributes="angle python: '45' if len( forum_stat.forum_objects_by_week_number_categories ) > 12 else 0;
 										boxAnchor python: 'ne' if len( forum_stat.forum_objects_by_week_number_categories ) > 12 else None " />
 				<categoryNames >
@@ -203,17 +203,17 @@
 						tal:attributes="valueMax forum_stat/forum_objects_by_week_number_max;
 										valueStep forum_stat/forum_objects_by_week_number_y_step"
 						tal:condition="forum_stat/forum_objects_by_week_number">
-				<labels fontName="Helvetica" fontSize="10" fillColor="#b8b8b8"/>
+				<labels fontName="OpenSans" fontSize="10" fillColor="#b8b8b8"/>
 			</valueAxis>
 			<texts >
 				<text 	x="4in" textAnchor="middle"
 						tal:attributes="y python: '-0.8in' if len( forum_stat.forum_objects_by_week_number_categories ) > 12 else '-0.6in'"
-					  	fontName="Helvetica-Bold" fontSize="16"
+					  	fontName="OpenSansBold" fontSize="16"
 					  	fillColor="#757474" >
 					Week
 				</text>
 				<text x="1.6in" y="0.5in" angle="90" textAnchor="middle"
-					  fontName="Helvetica-Bold" fontSize="16"
+					  fontName="OpenSansBold" fontSize="16"
 					  fillColor="#757474" 
 					  tal:content="value_axis_name">
 					Forum Participation
@@ -268,7 +268,7 @@
 			<categoryAxis visibleTicks="false" strokeColor="#e9e9e9"
 						reverseDirection="true"
 						tal:condition="top_commenters|options/top_commenters">
-				<labels fontName="Helvetica" fontSize="10" fillColor="#b8b8b8"/>
+				<labels fontName="OpenSans" fontSize="10" fillColor="#b8b8b8"/>
 				<categoryNames >
 					<name 	tal:repeat="commenter top_commenters" 
 							tal:content="python: view.wrap_text( commenter.display, 25 )" >
@@ -283,11 +283,11 @@
 						maximumTicks="10"
 						tal:condition="top_commenters|options/top_commenters"
 						tal:attributes="valueMax python: max([x.count for x in top_commenters]) + 1" >
-				<labels fontName="Helvetica" fontSize="10" fillColor="#b8b8b8" />
+				<labels fontName="OpenSans" fontSize="10" fillColor="#b8b8b8" />
 			</valueAxis>
 			<texts >
 				<text x="3.2in" y="-0.6in" textAnchor="middle"
-					  fontName="Helvetica-Bold" fontSize="12"
+					  fontName="OpenSansBold" fontSize="12"
 					  fillColor="#757474" >
 					Number of Comments
 				</text>

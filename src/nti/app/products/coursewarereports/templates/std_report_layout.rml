@@ -11,12 +11,9 @@
 		  tal:attributes="filename view/filename; title view/report_title">
 
 	<docinit>
-		<registerTTFont faceName="OpenSans"
-						tal:attributes="fileName python: __import__( 'pkg_resources' ).resource_filename( 'nti.app.products.coursewarereports', 'fonts/OpenSans-Regular.ttf' ) "/>
-		<registerTTFont faceName="OpenSansBold"
-						tal:attributes="fileName python: __import__( 'pkg_resources' ).resource_filename( 'nti.app.products.coursewarereports', 'fonts/OpenSans-Bold.ttf' ) "/>
-		<registerTTFont faceName="OpenSansLight"
-						tal:attributes="fileName python: __import__( 'pkg_resources' ).resource_filename( 'nti.app.products.coursewarereports', 'fonts/OpenSans-Light.ttf' ) "/>
+		<registerTTFont faceName="OpenSans" fileName="[nti.app.products.coursewarereports]/fonts/OpenSans-Regular.ttf" />
+		<registerTTFont faceName="OpenSansBold" fileName="[nti.app.products.coursewarereports]/fonts/OpenSans-Bold.ttf" />
+		<registerTTFont faceName="OpenSansLight" fileName="[nti.app.products.coursewarereports]/fonts/OpenSans-Light.ttf" />
 	</docinit>
 
 	<template pagesize="(842,595)" leftMargin="72" showBoundary="0">
