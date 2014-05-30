@@ -14,63 +14,32 @@ import urllib
 from nti.appserver.account_recovery_views import find_users_with_email
 from nti.app.products.gradebook.interfaces import NO_SUBMIT_PART_NAME
 
-from ..interfaces import IPDFReportView
-from ..interfaces import ACT_VIEW_REPORTS
-
 from ..reports import _get_self_assessments_for_course
+from ..reports import _do_get_containers_in_course
 
 from zope import component
-from zope import interface
 
 from io import BytesIO
 
 from pyramid.view import view_config
-from pyramid.view import view_defaults
-from pyramid.traversal import find_interface
-
-from z3c.pagelet.browser import BrowserPagelet
 
 from zope.catalog.interfaces import ICatalog
 from zope.catalog.catalog import ResultSet
 
 from zope.intid.interfaces import IIntIds
-from zope.traversing.interfaces import IPathAdapter
-from zope.location.interfaces import IContained
-from zope.container import contained as zcontained
-from zope.security.management import checkPermission
-
-from nti.utils.property import Lazy
 
 from nti.app.assessment.interfaces import ICourseAssignmentCatalog
-from nti.app.assessment.interfaces import ICourseAssessmentItemCatalog
 from nti.app.assessment.interfaces import IUsersCourseAssignmentHistory
 
-from nti.assessment.interfaces import IQAssignment
-
 from nti.contenttypes.courses.interfaces import ICourseInstance
-from nti.app.products.courseware.interfaces import ICourseInstanceEnrollment
 from nti.app.products.courseware.interfaces import ICourseCatalog
-from nti.app.products.gradebook.interfaces import IGrade
 from nti.app.products.gradebook.interfaces import IGradeBook
-from nti.app.products.gradebook.interfaces import IGradeBookEntry
 
-from nti.dataserver.interfaces import IUser
-from nti.dataserver.interfaces import IDeletedObjectPlaceholder
-from nti.dataserver.users.interfaces import IFriendlyNamed
-from nti.dataserver.users.users import User
+from nti.dataserver.interfaces import IEnumerableEntityContainer
+
 from nti.dataserver.users.entity import Entity
 
-from nti.dataserver.contenttypes.forums.interfaces import ICommunityBoard
-from nti.dataserver.contenttypes.forums.interfaces import ICommunityForum
-from nti.dataserver.contenttypes.forums.interfaces import ICommunityHeadlineTopic
-from nti.dataserver.contenttypes.forums.interfaces import ITopic
-from nti.dataserver.contenttypes.forums.interfaces import IGeneralForumComment
-
 from nti.dataserver.metadata_index import CATALOG_NAME
-
-from nti.app.base.abstract_views import AbstractAuthenticatedView
-
-from nti.dataserver.authorization import ACT_READ
 from nti.dataserver.authorization import ACT_MODERATE
 
 @view_config(route_name='objects.generic.traversal',
@@ -175,12 +144,15 @@ def _get_assignment_count(course,user,assignment_catalog):
 
 def _get_final_gradebook_entry(course):
 	gradebook = IGradeBook(course)
-	final_grade_entry = None
 	for part in gradebook.values():
 		for name, entry in part.items():
 			if part.__name__ == NO_SUBMIT_PART_NAME and name == 'Final Grade':
 				return entry
-				
+
+def _get_course(course_name,course_catalog):	
+	for course_entry in course_catalog:
+		if course_entry.__name__ == course_name:
+			return ICourseInstance( course_entry )
 				
 @view_config(route_name='objects.generic.traversal',
 			 name='whitelist_participation',
@@ -201,17 +173,14 @@ def whitelist_participation(request):
 	# -Course
 	values = urllib.unquote( request.body )
 	user_emails = set( values.split() )
-	course_name = 'CHEM4970'
+	course_name = request.headers.get( 'NTcourse' )
 
 	course_catalog = component.getUtility(ICourseCatalog)
 	md_catalog = component.getUtility(ICatalog,CATALOG_NAME)
 	uidutil = component.getUtility(IIntIds)
 	intersection = md_catalog.family.IF.intersection
 
-	# FIXME lookup by course
-	# course = course_catalog[course_name]
-	course = course_catalog[0]
-	course = ICourseInstance(course)
+	course = _get_course(course_name,course_catalog)
 
 	#SelfAssessments
 	self_assessments = _get_self_assessments_for_course(course)
@@ -238,7 +207,7 @@ def whitelist_participation(request):
 		
 		if len( users ) > 1:
 			# TODO What do we do here?
-			#	We could capture all or only capture the first or skip
+			# We could capture all or only capture the first or skip or combine results
 			pass
 		
 		user = users[0]
