@@ -316,7 +316,6 @@
 				  sameRadii="true"
 				  xRadius="5in"
 				  pointerLabelMode="LeftAndRight"
-				  showBoundary="1"
 				  tal:condition="not: top_commenters/aggregate_remainder|options/top_commenters/aggregate_remainder"
 				  tal:attributes="dwidth top_commenters_ill_width|default;
 								  dheight top_commenters_ill_height|default;
