@@ -454,7 +454,7 @@ Removing activity by place for now
 				<td><para style="header_r">Fourth Quartile</para></td>
 				<td><para style="header_r">Fourth Quartile Count</para></td>
 			</tr>
-			<tr tal:repeat="item python: range(len(perf.first))">
+			<tr tal:repeat="item python: range(len(perf.first.assignment_stat))">
 				<td><para style="data" tal:content="python:  perf.first.assignment_stat[item].title">Title</para></td>
 				<td tal:content="python: perf.first.assignment_stat[item].avg_grade">First</td>
 				<td tal:content="python: perf.first.assignment_stat[item].total">First</td>
