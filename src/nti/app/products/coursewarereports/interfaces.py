@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-
-
 .. $Id$
 """
 
@@ -17,13 +15,12 @@ from zope.viewlet.interfaces import IViewletManager
 
 from zope.security.permission import Permission
 
-from nti.utils.schema import TextLine
+from nti.schema.field import TextLine
 
 # Until we have true pluggable auth-folders that we traverse through
 # we might add instructors to a role having this permission using
 # traversal events
 ACT_VIEW_REPORTS = Permission('nti.actions.coursewarereports.view_reports')
-
 
 class IPDFReportView(interface.Interface):
 	"""
