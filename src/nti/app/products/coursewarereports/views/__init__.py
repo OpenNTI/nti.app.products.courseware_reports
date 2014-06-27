@@ -261,11 +261,11 @@ class _AbstractReportView(AbstractAuthenticatedView,
 		start_date = self.course_start_date
 		start_month = start_date.month if start_date else None
 		if start_month < 5:
-			semester = 'Spring'
+			semester = _( 'Spring' )
 		elif start_month < 8:
-			semester = 'Summer'
+			semester = _( 'Summer' )
 		else:
-			semester = 'Fall'
+			semester = _( 'Fall' )
 
 		start_year = start_date.year if start_date else None
 		return '%s %s' % ( semester, start_year ) if start_date else ''
