@@ -109,7 +109,7 @@ def shared_notes(request):
 	response.body_file = stream
 	return response
 
-def _get_self_assessments_for_user( username, intids_of_submitted_qsets, self_assessment_qsids, self_assessments, md_catalog, intersection,uidutil):
+def _get_self_assessments_for_user( username, intids_of_submitted_qsets, self_assessment_qsids, self_assessments, md_catalog, intersection, uidutil ):
 	# FIXME this logic duplicated in .views
 	intids_by_student = md_catalog['creator'].apply({'any_of': (username,)})
 	intids_of_submitted_qsets_by_student = intersection( 	intids_of_submitted_qsets,
@@ -118,11 +118,12 @@ def _get_self_assessments_for_user( username, intids_of_submitted_qsets, self_as
 						if x.questionSetId in self_assessment_qsids]
 
 	title_to_count = dict()
-	# We have to do this in order to see how many distinct self-assessments a user completed
+	
 	def _title_of_qs(qs):
 		if qs.title:
 			return qs.title
 		return qs.__parent__.title
+
 	for asm in self_assessments:
 		title_to_count[_title_of_qs(asm)] = 0
 	for submission in qsets_by_student:
