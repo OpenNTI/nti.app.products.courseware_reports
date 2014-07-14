@@ -894,7 +894,7 @@ class CourseSummaryReportPdf(_AbstractReportView):
 
 # 		outline = self.course.Outline
 # 		def _recur(node, accum):
-# 			ntiid = getattr(node, 'ContentNTIID', getattr(node, '_v_ContentNTIID', None))
+# 			ntiid = getattr(node, 'ContentNTIID', None)
 # 			if ntiid:
 # 				accum.add(ntiid)
 # 			for n in node.values():
@@ -902,10 +902,10 @@ class CourseSummaryReportPdf(_AbstractReportView):
 
 # 		Exclude engagement_by_place data until we fully flesh out the details
 # 		data = list()
-# 
+#
 # 		stat = namedtuple('Stat',
 # 						  ('title', 'note_count', 'hl_count'))
-# 
+#
 # 		for unit in outline.values():
 # 			for lesson in unit.values():
 # 				ntiids = set()
@@ -916,7 +916,7 @@ class CourseSummaryReportPdf(_AbstractReportView):
 # 						ntiids.update( kid.embeddedContainerNTIIDs )
 # 					except TypeError:
 # 						pass
-# 
+#
 # 					for kid in lib.childrenOfNTIID(x):
 # 						ntiids.add(kid.ntiid)
 # 						ntiids.update(kid.embeddedContainerNTIIDs)
@@ -925,7 +925,7 @@ class CourseSummaryReportPdf(_AbstractReportView):
 # 				local_notes = intersection(local_notes, all_notes)
 # 				local_hls = md_catalog['containerId'].apply({'any_of': ntiids})
 # 				local_hls = intersection(local_hls, all_hls)
-# 
+#
 # 				data.append( stat( lesson.title, len(local_notes), len(local_hls)) )
 
 		data = list()
@@ -1112,7 +1112,7 @@ class CourseSummaryReportPdf(_AbstractReportView):
 		#Must do this last
 		#self._build_engagement_perf(options)
 		options['engagement_to_performance'] = ()
-		
+
 		return options
 
 from nti.app.assessment.interfaces import IUsersCourseAssignmentHistoryItem
@@ -1319,5 +1319,3 @@ class ReportAdapter(zcontained.Contained):
 		self.context = context
 		self.request = request
 		self.__parent__ = context
-
-
