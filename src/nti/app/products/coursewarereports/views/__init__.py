@@ -82,9 +82,11 @@ from nti.app.assessment.interfaces import IUsersCourseAssignmentHistory
 
 from nti.assessment.interfaces import IQAssignment
 
+from nti.contenttypes.courses.interfaces import ICourseCatalog
 from nti.contenttypes.courses.interfaces import ICourseInstance
+
 from nti.app.products.courseware.interfaces import ICourseInstanceEnrollment
-from nti.app.products.courseware.interfaces import ICourseCatalog
+
 from nti.app.products.gradebook.interfaces import IGrade
 from nti.app.products.gradebook.interfaces import IGradeBook
 from nti.app.products.gradebook.interfaces import IGradeBookEntry
