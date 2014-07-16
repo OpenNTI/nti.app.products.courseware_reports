@@ -29,15 +29,14 @@ class TestStudentParticipationReport(ApplicationLayerTest):
 
 	layer = RegisterAssignmentsForEveryoneLayer
 
+	# This only works in the OU environment because that's where the purchasables are
+	default_origin = b'http://janux.ou.edu'
+
+
 	@WithSharedApplicationMockDS(users=True,testapp=True,default_authenticate=True)
 	def test_application_view_empty_report(self):
 		# Trivial test to make sure we can fetch the report even with
 		# no data.
-
-		# This only works in the OU environment because that's where the purchasables are
-		extra_env = self.testapp.extra_environ or {}
-		extra_env.update( {b'HTTP_ORIGIN': b'http://janux.ou.edu'} )
-		self.testapp.extra_environ = extra_env
 
 		instructor_environ = self._make_extra_environ(username='harp4162')
 		instructor_environ.update( {b'HTTP_ORIGIN': b'http://janux.ou.edu'} )
@@ -56,16 +55,14 @@ class TestForumParticipationReport(ApplicationLayerTest):
 
 	layer = InstructedCourseApplicationTestLayer
 
+	# This only works in the OU environment because that's where the purchasables are
+	default_origin = b'http://janux.ou.edu'
+
+
 	@WithSharedApplicationMockDS(users=True,testapp=True,default_authenticate=True)
 	def test_application_view_empty_report(self):
 		# Trivial test to make sure we can fetch the report even with
 		# no data.
-
-		# This only works in the OU environment because that's where the purchasables are
-		#/dataserver2/users/CHEM4970.ou.nextthought.com/DiscussionBoard/
-		extra_env = self.testapp.extra_environ or {}
-		extra_env.update( {b'HTTP_ORIGIN': b'http://janux.ou.edu'} )
-		self.testapp.extra_environ = extra_env
 
 		enrollment_res = self.testapp.post_json( '/dataserver2/users/sjohnson@nextthought.com/Courses/EnrolledCourses',
 								'CLC 3403',
@@ -87,16 +84,14 @@ class TestTopicParticipationReport(ApplicationLayerTest):
 
 	layer = InstructedCourseApplicationTestLayer
 
+	# This only works in the OU environment because that's where the purchasables are
+	default_origin = b'http://janux.ou.edu'
+
+
 	@WithSharedApplicationMockDS(users=True,testapp=True,default_authenticate=True)
 	def test_application_view_empty_report(self):
 		# Trivial test to make sure we can fetch the report even with
 		# no data.
-
-		# This only works in the OU environment because that's where the purchasables are
-		extra_env = self.testapp.extra_environ or {}
-		extra_env.update( {b'HTTP_ORIGIN': b'http://janux.ou.edu'} )
-		self.testapp.extra_environ = extra_env
-
 		enrollment_res = self.testapp.post_json( '/dataserver2/users/sjohnson@nextthought.com/Courses/EnrolledCourses',
 								'CLC 3403',
 								status=201 )
@@ -117,18 +112,15 @@ class TestCourseSummaryReport(ApplicationLayerTest):
 
 	layer = InstructedCourseApplicationTestLayer
 
+	# This only works in the OU environment because that's where the purchasables are
+	default_origin = b'http://janux.ou.edu'
+
 	@WithSharedApplicationMockDS(users=True,testapp=True,default_authenticate=True)
 	def test_application_view_empty_report(self):
 		# Trivial test to make sure we can fetch the report even with
 		# no data.
 
-		# This only works in the OU environment because that's where the purchasables are
-		extra_env = self.testapp.extra_environ or {}
-		extra_env.update( {b'HTTP_ORIGIN': b'http://janux.ou.edu'} )
-		self.testapp.extra_environ = extra_env
-
 		instructor_environ = self._make_extra_environ(username='harp4162')
-		instructor_environ.update( {b'HTTP_ORIGIN': b'http://janux.ou.edu'} )
 		enrollment_res = self.testapp.post_json( '/dataserver2/users/harp4162/Courses/EnrolledCourses',
 												 'CLC 3403',
 												 status=201,
@@ -150,15 +142,13 @@ class TestAssignmentSummaryReport(RegisterAssignmentLayerMixin,
 
 	layer = RegisterAssignmentsForEveryoneLayer
 
+	# This only works in the OU environment because that's where the purchasables are
+	default_origin = b'http://janux.ou.edu'
+
 	@WithSharedApplicationMockDS(users=True,testapp=True,default_authenticate=True)
 	def test_application_view_empty_report(self):
 		# Trivial test to make sure we can fetch the report even with
 		# no data.
-
-		# This only works in the OU environment because that's where the purchasables are
-		extra_env = self.testapp.extra_environ or {}
-		extra_env.update( {b'HTTP_ORIGIN': b'http://janux.ou.edu'} )
-		self.testapp.extra_environ = extra_env
 		instructor_environ = self._make_extra_environ(username='harp4162')
 		res = self.testapp.get( '/dataserver2/users/CLC3403.ou.nextthought.com/LegacyCourses/CLC3403/GradeBook/default',
 								extra_environ=instructor_environ)
@@ -173,10 +163,6 @@ class TestAssignmentSummaryReport(RegisterAssignmentLayerMixin,
 
 	@WithSharedApplicationMockDS(users=True,testapp=True,default_authenticate=True)
 	def test_application_view_report(self):
-		# This only works in the OU environment because that's where the purchasables are
-		extra_env = self.testapp.extra_environ or {}
-		extra_env.update( {b'HTTP_ORIGIN': b'http://janux.ou.edu'} )
-		self.testapp.extra_environ = extra_env
 		instructor_environ = self._make_extra_environ(username='harp4162')
 		res = self.testapp.get( '/dataserver2/users/CLC3403.ou.nextthought.com/LegacyCourses/CLC3403/GradeBook/default',
 								extra_environ=instructor_environ)
