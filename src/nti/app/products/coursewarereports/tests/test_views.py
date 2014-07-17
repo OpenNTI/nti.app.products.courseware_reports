@@ -25,6 +25,7 @@ from nti.app.assessment.tests import RegisterAssignmentsForEveryoneLayer
 from nti.app.testing.decorators import WithSharedApplicationMockDS
 from nti.app.testing.application_webtest import ApplicationLayerTest
 
+
 class TestStudentParticipationReport(ApplicationLayerTest):
 
 	layer = RegisterAssignmentsForEveryoneLayer
@@ -39,7 +40,6 @@ class TestStudentParticipationReport(ApplicationLayerTest):
 		# no data.
 
 		instructor_environ = self._make_extra_environ(username='harp4162')
-		instructor_environ.update( {b'HTTP_ORIGIN': b'http://janux.ou.edu'} )
 		enrollment_res = self.testapp.post_json( '/dataserver2/users/harp4162/Courses/EnrolledCourses',
 												 'CLC 3403',
 												 status=201,
@@ -75,7 +75,7 @@ class TestForumParticipationReport(ApplicationLayerTest):
 		forum_res = self.testapp.get( forum_href, extra_environ=instructor_environ )
 
 		report_href = self.require_link_href_with_rel( forum_res.json_body, 'report-' + VIEW_FORUM_PARTICIPATION )
-		assert_that( report_href, contains_string( 'CLC3403.ou.nextthought.com' ) )
+		assert_that( report_href, contains_string( 'CLC3403' ) )
 
 		res = self.testapp.get(report_href, extra_environ=instructor_environ)
 		assert_that( res, has_property('content_type', 'application/pdf') )
@@ -103,7 +103,7 @@ class TestTopicParticipationReport(ApplicationLayerTest):
 		res = self.testapp.post_json( forum_href,{'Class': 'Post', 'body': ['My body'], 'title': 'my title'},
 									  extra_environ=instructor_environ)
 		report_href = self.require_link_href_with_rel( res.json_body, 'report-' + VIEW_TOPIC_PARTICIPATION )
-		assert_that( report_href, contains_string( 'CLC3403.ou.nextthought.com' ) )
+		assert_that( report_href, contains_string( 'CLC3403' ) )
 
 		res = self.testapp.get(report_href, extra_environ=instructor_environ)
 		assert_that( res, has_property('content_type', 'application/pdf') )
@@ -128,7 +128,7 @@ class TestCourseSummaryReport(ApplicationLayerTest):
 
 		course = enrollment_res.json_body['CourseInstance']
 		report_href = self.require_link_href_with_rel( course, 'report-' + VIEW_COURSE_SUMMARY )
-		assert_that( report_href, contains_string( 'CLC3403.ou.nextthought.com' ) )
+		assert_that( report_href, contains_string( 'CLC3403' ) )
 
 		res = self.testapp.get(report_href, extra_environ=instructor_environ)
 		assert_that( res, has_property('content_type', 'application/pdf') )
@@ -145,12 +145,15 @@ class TestAssignmentSummaryReport(RegisterAssignmentLayerMixin,
 	# This only works in the OU environment because that's where the purchasables are
 	default_origin = b'http://janux.ou.edu'
 
+
+	gradebook_path = '/dataserver2/%2B%2Betc%2B%2Bhostsites/platform.ou.edu/%2B%2Betc%2B%2Bsite/Courses/Fall2013/CLC3403_LawAndJustice/GradeBook/default'
+
 	@WithSharedApplicationMockDS(users=True,testapp=True,default_authenticate=True)
 	def test_application_view_empty_report(self):
 		# Trivial test to make sure we can fetch the report even with
 		# no data.
 		instructor_environ = self._make_extra_environ(username='harp4162')
-		res = self.testapp.get( '/dataserver2/users/CLC3403.ou.nextthought.com/LegacyCourses/CLC3403/GradeBook/default',
+		res = self.testapp.get( self.gradebook_path,
 								extra_environ=instructor_environ)
 
 		assignment = res.json_body['Items']['Assignment 1']
@@ -164,7 +167,7 @@ class TestAssignmentSummaryReport(RegisterAssignmentLayerMixin,
 	@WithSharedApplicationMockDS(users=True,testapp=True,default_authenticate=True)
 	def test_application_view_report(self):
 		instructor_environ = self._make_extra_environ(username='harp4162')
-		res = self.testapp.get( '/dataserver2/users/CLC3403.ou.nextthought.com/LegacyCourses/CLC3403/GradeBook/default',
+		res = self.testapp.get( self.gradebook_path,
 								extra_environ=instructor_environ)
 
 		assignment = res.json_body['Items']['Assignment 1']

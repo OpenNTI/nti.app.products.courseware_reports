@@ -32,7 +32,7 @@ from nti.app.assessment.interfaces import ICourseAssignmentCatalog
 from nti.app.assessment.interfaces import IUsersCourseAssignmentHistory
 
 from nti.contenttypes.courses.interfaces import ICourseInstance
-from nti.app.products.courseware.interfaces import ICourseCatalog
+from nti.contenttypes.courses.interfaces import ICourseCatalog
 from nti.app.products.gradebook.interfaces import IGradeBook
 
 from nti.dataserver.interfaces import IEnumerableEntityContainer
@@ -118,7 +118,7 @@ def _get_self_assessments_for_user( username, intids_of_submitted_qsets, self_as
 						if x.questionSetId in self_assessment_qsids]
 
 	title_to_count = dict()
-	
+
 	def _title_of_qs(qs):
 		if qs.title:
 			return qs.title
@@ -133,14 +133,14 @@ def _get_self_assessments_for_user( username, intids_of_submitted_qsets, self_as
 
 def _get_assignment_count(course,user,assignment_catalog):
 	# FIXME this logic duplicated in .views
-	unique_assignment_count = 0	
+	unique_assignment_count = 0
 	histories = component.getMultiAdapter((course, user),
 										  IUsersCourseAssignmentHistory)
 
 	for assignment in assignment_catalog.iter_assignments():
 		history_item = histories.get(assignment.ntiid)
 		if history_item:
-			unique_assignment_count += 1 
+			unique_assignment_count += 1
 	return unique_assignment_count
 
 def _get_final_gradebook_entry(course):
@@ -150,11 +150,11 @@ def _get_final_gradebook_entry(course):
 			if part.__name__ == NO_SUBMIT_PART_NAME and name == 'Final Grade':
 				return entry
 
-def _get_course(course_name,course_catalog):	
+def _get_course(course_name,course_catalog):
 	for course_entry in course_catalog:
 		if course_entry.__name__ == course_name:
 			return ICourseInstance( course_entry )
-				
+
 @view_config(route_name='objects.generic.traversal',
 			 name='whitelist_participation',
 			 renderer='rest',
@@ -205,22 +205,22 @@ def whitelist_participation(request):
 		if not users:
 			writer.writerow( [email + '(NOT FOUND)','N/A','N/A','No','N/A'] )
 			continue
-		
+
 		if len( users ) > 1:
 			# TODO What do we do here?
 			# We could capture all or only capture the first or skip or combine results
 			pass
-		
+
 		user = users[0]
 		username = user.username.lower()
-		
+
 		#Self-Assessments
 		title_to_count = _get_self_assessments_for_user(username,intids_of_submitted_qsets,self_assessment_qsids,self_assessments,md_catalog,intersection, uidutil)
 		unique_self_assessment_count = sum( [1 for x in title_to_count.values() if x] )
-			
+
 		#Assignments
 		unique_assignment_count = _get_assignment_count(course,user,assignment_catalog)
-			
+
 		#Final grade
 		if final_grade_entry.has_key( username ):
 			has_final_grade = 'Yes'
@@ -228,11 +228,10 @@ def whitelist_participation(request):
 		else:
 			has_final_grade = 'No'
 			final_grade_val = '-'
-			
-		writer.writerow( [email, unique_self_assessment_count, unique_assignment_count, has_final_grade, final_grade_val] )	
+
+		writer.writerow( [email, unique_self_assessment_count, unique_assignment_count, has_final_grade, final_grade_val] )
 
 	stream.flush()
 	stream.seek(0)
 	response.body_file = stream
 	return response
-
