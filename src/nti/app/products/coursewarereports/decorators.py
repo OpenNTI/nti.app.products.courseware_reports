@@ -19,6 +19,8 @@ from nti.app.products.courseware.interfaces import ICourseInstanceEnrollment
 from nti.dataserver.contenttypes.forums.interfaces import ICommunityForum
 from nti.dataserver.contenttypes.forums.interfaces import ICommunityHeadlineTopic
 
+from nti.dataserver.traversal import find_interface
+
 from nti.contenttypes.courses.interfaces import ICourseInstance
 from nti.contenttypes.courses.interfaces import ICourseAdministrativeLevel
 
@@ -55,6 +57,15 @@ class _AbstractInstructedByDecorator(AbstractAuthenticatedRequestAwareDecorator)
 														   self._course_from_context(context))
 
 def course_from_forum(forum):
+	# If we are directly enclosed inside a course
+	# (as we should be for non-legacy,) that's what
+	# we want
+	course = find_interface(forum, ICourseInstance)
+	if course is not None:
+		return course
+
+	# otherwise, in the legacy case, we need to tweak
+	# the community to get where we want to go
 	board = forum.__parent__
 	community = board.__parent__
 	courses = ICourseAdministrativeLevel(community, None)

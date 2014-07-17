@@ -99,8 +99,13 @@ class TestTopicParticipationReport(ApplicationLayerTest):
 		board_href = enrollment_res.json_body['CourseInstance']['Discussions']['href']
 		forum_href = board_href + '/Forum'
 		instructor_environ = self._make_extra_environ(username='harp4162')
+		self.testapp.post_json( '/dataserver2/users/harp4162/Courses/EnrolledCourses',
+								'CLC 3403',
+								status=201,
+								extra_environ=instructor_environ)
 		# Create a topic
-		res = self.testapp.post_json( forum_href,{'Class': 'Post', 'body': ['My body'], 'title': 'my title'},
+		res = self.testapp.post_json( forum_href,
+									  {'Class': 'Post', 'body': ['My body'], 'title': 'my title'},
 									  extra_environ=instructor_environ)
 		report_href = self.require_link_href_with_rel( res.json_body, 'report-' + VIEW_TOPIC_PARTICIPATION )
 		assert_that( report_href, contains_string( 'CLC3403' ) )

@@ -39,8 +39,6 @@ from zope import component
 from zope import interface
 
 import textwrap
-import gzip
-from io import BytesIO
 
 from six import string_types
 from numbers import Number
@@ -82,7 +80,7 @@ from nti.app.assessment.interfaces import IUsersCourseAssignmentHistory
 
 from nti.assessment.interfaces import IQAssignment
 
-from nti.contenttypes.courses.interfaces import ICourseCatalog
+from nti.contenttypes.courses.interfaces import ICourseCatalogEntry
 from nti.contenttypes.courses.interfaces import ICourseInstance
 
 from nti.app.products.courseware.interfaces import ICourseInstanceEnrollment
@@ -134,7 +132,7 @@ class _StudentInfo( namedtuple( '_StudentInfo',
 		return super(_StudentInfo,cls).__new__( cls, display, username, count, perc )
 
 
-from nti.contenttypes.courses.interfaces import is_instructed_by_name
+
 from pyramid.httpexceptions import HTTPForbidden
 
 @view_defaults(route_name='objects.generic.traversal',
@@ -160,13 +158,18 @@ class _AbstractReportView(AbstractAuthenticatedView,
 		if not checkPermission(ACT_VIEW_REPORTS.id, self.course):
 			raise HTTPForbidden()
 
-	@property
+	@Lazy
 	def course(self):
 		return ICourseInstance(self.context)
 
-	@property
+	@Lazy
 	def course_start_date(self):
-		entry = self.course.legacy_catalog_entry
+		try:
+			# legacy code path, but faster
+			entry = self.course.legacy_catalog_entry
+		except AttributeError:
+			entry = ICourseCatalogEntry(self.course)
+
 		return entry.StartDate
 
 	@Lazy
@@ -191,9 +194,7 @@ class _AbstractReportView(AbstractAuthenticatedView,
 
 	@Lazy
 	def for_credit_student_usernames(self):
-		restricted_id = self.course.LegacyScopes['restricted']
-		restricted = Entity.get_entity(restricted_id) if restricted_id else None
-
+		restricted = self.course.SharingScopes.get('ForCredit')
 		restricted_usernames = ({x.lower() for x in IEnumerableEntityContainer(restricted).iter_usernames()}
 								if restricted is not None
 								else set())
@@ -209,7 +210,7 @@ class _AbstractReportView(AbstractAuthenticatedView,
 
 	@Lazy
 	def all_usernames(self):
-		everyone = self.course.legacy_community
+		everyone = self.course.SharingScopes['Public']
 		everyone_usernames = {x.lower() for x in IEnumerableEntityContainer(everyone).iter_usernames()}
 		return everyone_usernames
 
@@ -227,7 +228,7 @@ class _AbstractReportView(AbstractAuthenticatedView,
 	@Lazy
 	def all_user_intids(self):
 		ids = self.family.II.TreeSet()
-		ids.update( IEnumerableEntityContainer(self.course.legacy_community).iter_intids() )
+		ids.update( IEnumerableEntityContainer(self.course.SharingScopes['Public']).iter_intids() )
 		return ids
 
 	def get_student_info(self,username):

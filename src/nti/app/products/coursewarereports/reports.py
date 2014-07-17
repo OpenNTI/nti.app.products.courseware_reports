@@ -50,7 +50,7 @@ reportlab.platypus.paragraph._SplitText = _SplitText
 
 def _adjust_timestamp( timestamp ):
 	"""Takes a timestamp and returns a timezoned datetime"""
-	date = datetime.utcfromtimestamp( timestamp ) 
+	date = datetime.utcfromtimestamp( timestamp )
 	return _adjust_date( date )
 
 def _adjust_date( date ):
@@ -105,7 +105,7 @@ def _get_self_assessments_for_course(course):
 _CommonBuckets = namedtuple('_CommonBuckets',
 					  ('count_by_day', 'count_by_week_number', 'top_creators', 'group_dates'))
 
-class _StudentInfo( namedtuple( '_StudentInfo', 
+class _StudentInfo( namedtuple( '_StudentInfo',
 								('display', 'username', 'count', 'perc' ))):
 	"""Holds general student info. 'count' and 'perc' are optional values"""
 	def __new__( self, display, username, count=None, perc=None ):
@@ -160,9 +160,9 @@ class _TopCreators(object):
 		# Returns the top commenter names, up to (arbitrarily) 10
 		# of them, with the next being 'everyone else'
 		largest = heapq.nlargest(10, data.items(), key=lambda x: x[1])
-		
+
 		largest = [ self._build_student_info(x) for x in largest ]
-		
+
 		#Get aggregate remainder
 		if len(data) > len(largest):
 			largest_total = sum( (x.count for x in largest) )
@@ -186,11 +186,11 @@ class _TopCreators(object):
 	@property
 	def unique_contributors(self):
 		return len(self.keys())
-		
+
 	@property
 	def unique_contributors_for_credit(self):
 		return len(self.for_credit_keys())
-	
+
 	@property
 	def unique_contributors_non_credit(self):
 		return len(self.non_credit_keys())
@@ -216,16 +216,16 @@ class _TopCreators(object):
 			self._data[username] += 1
 		else:
 			self._data[username] = 1
-			
+
 		if self.aggregate_creators is not None:
-			self.aggregate_creators.incr_username( username )	
+			self.aggregate_creators.incr_username( username )
 
 	def keys(self):
 		return self._data.keys()
-	
+
 	def for_credit_keys(self):
 		return self._for_credit_data.keys()
-	
+
 	def non_credit_keys(self):
 		return self._non_credit_data.keys()
 
@@ -257,11 +257,11 @@ class _TopCreators(object):
 class _DateCategoryAccum(object):
 	"""	Will accumulate 'date' objects based on inbound dates and return a week number.
 		The date inputs *must* be in sorted order. Otherwise, our behavior is undefined."""
-	
+
 	def __init__( self, start_date ):
 		self.dates = []
 		self.old_week_num = None
-		
+
 		start_date = start_date.date()
 		self.start_monday = start_date - timedelta( days=start_date.weekday() )
 
@@ -274,11 +274,11 @@ class _DateCategoryAccum(object):
 	def accum( self, input_date ):
 		group_monday = input_date - timedelta( days=input_date.weekday() )
 		week_num = ( (group_monday - self.start_monday).days // 7 )
-		
+
 		if self.old_week_num is None:
 			self.old_week_num = week_num
 			self.dates.append( group_monday )
-		
+
 		if week_num != self.old_week_num:
 			#Check for week gaps and fill
 			for f in range(self.old_week_num - week_num + 1, 0):
@@ -287,7 +287,7 @@ class _DateCategoryAccum(object):
 				self.dates.append( old_monday )
 			self.dates.append( group_monday )
 			self.old_week_num = week_num
-			
+
 		return week_num
 
 	def get_dates( self ):
@@ -314,9 +314,9 @@ def _common_buckets( objects,report,object_create_date,agg_creators=None ):
 	The argument can be an iterable sequence, we sort a copy.
 
 	"""
-	# We are not converting these to our timezone.  Since we're 
+	# We are not converting these to our timezone.  Since we're
 	# bucketing by weeks, fine-grained timezone adjustments
-	# are not likely to be worthwhile. 
+	# are not likely to be worthwhile.
 	day_key = lambda x: x.created.date()
 	objects = sorted(objects, key=day_key)
 	date_accum = _DateCategoryAccum( object_create_date )
@@ -340,7 +340,7 @@ def _common_buckets( objects,report,object_create_date,agg_creators=None ):
 			forum_objects_by_week_number[week_num] = count
 
 	dates = date_accum.get_dates()
-	
+
 	return _CommonBuckets(forum_objects_by_day, forum_objects_by_week_number, top_creators, dates)
 
 ForumObjectsStat = namedtuple('ForumObjectsStat',
@@ -419,9 +419,9 @@ def _assignment_stat_for_column(report, column, predicate=None):
 		# Skip if not in predicate
 		if predicate is not None and username not in predicate:
 			continue
-		
+
 		grade_val = None
-		# We could have values (19.3), combinations (19.3 A), or strings ('GR'); 
+		# We could have values (19.3), combinations (19.3 A), or strings ('GR');
 		# Count the latter case and move on
 		if grade.value is not None:
 			try:
@@ -431,7 +431,7 @@ def _assignment_stat_for_column(report, column, predicate=None):
 					grade_val = float( grade.value.split()[0] )
 			except ValueError:
 				pass
-		
+
 		# We still increase count of attempts, even if the assignment is ungraded.
 		# We skip any non credit/non-credit students, which should be any
 		# instructors or dropped students.
@@ -499,7 +499,7 @@ def _assignment_stat_for_column(report, column, predicate=None):
 		for_credit_per_s = '%0.1f' % for_credit_per
 	else:
 		for_credit_per_s = 'N/A'
-		
+
 	if report.count_non_credit_students:
 		non_credit_per = (non_credit_total / report.count_non_credit_students) * 100.0
 		non_credit_per_s = '%0.1f' % non_credit_per
@@ -513,7 +513,7 @@ def _assignment_stat_for_column(report, column, predicate=None):
 							median_grade_s,	std_dev_grade_s,
 							per_attempted_s, for_credit_per_s, non_credit_per_s )
 
-	return stat	
+	return stat
 
 class _QuestionPartStat(object):
 	"""Holds stat and display information for a particular question part."""
@@ -539,10 +539,10 @@ def _build_question_stats( ordered_questions, question_stats ):
 		q_stat = question_stats.get( q.ntiid )
 		question_part_stats = q_stat.question_part_stats if q_stat else {}
 		total_submits = q_stat.submission_count if q_stat else 0
-		
+
 		question_parts = []
 		question_part_grades = []
-		
+
 		#Go through each question part
 		for question_part_stat in question_part_stats.values():
 			#Do we have an unassessed question?
@@ -551,15 +551,15 @@ def _build_question_stats( ordered_questions, question_stats ):
 				avg_assessed = average( question_part_stat.assessed_values )
 				avg_assessed = avg_assessed * 100.0
 				avg_assessed_s = '%0.1f' % avg_assessed
-				
+
 				question_part_grades.append( avg_assessed )
 
 			# We may want to display *all* of the available multiple choice answers. If so, this is the place.
 			top_answer_stats = _get_top_answers( question_part_stat.answer_stats )
 			_finalize_answer_stats( top_answer_stats, total_submits )
-			
-			question_parts.append( _QuestionPartStat( 	question_part_stat.letter_prefix, 
-														top_answer_stats, 
+
+			question_parts.append( _QuestionPartStat( 	question_part_stat.letter_prefix,
+														top_answer_stats,
 														avg_assessed_s ) )
 
 		title = i + 1
@@ -572,7 +572,7 @@ def _build_question_stats( ordered_questions, question_stats ):
 
 		stat = _QuestionStat( question_parts, title, content, question_avg_assessed_s )
 		results.append( stat )
-			
+
 	return results
 
 def _get_top_answers( answer_stats ):
@@ -580,12 +580,12 @@ def _get_top_answers( answer_stats ):
 	# 	->8 since it fits on page with header, currently.
 	# We order by popularity; we could do by content perhaps.
 	top_answer_stats = heapq.nlargest( 8, answer_stats.values(), key=lambda x: x.count )
-	
+
 	if len( answer_stats.values() ) > len( top_answer_stats ):
-		missing_corrects = [x for x in answer_stats.values() 
+		missing_corrects = [x for x in answer_stats.values()
 							if x.is_correct and x not in top_answer_stats]
-		
-		# We do not want to overwrite any already-included correct answers; 
+
+		# We do not want to overwrite any already-included correct answers;
 		# maybe we should just append these correct answers?
 		top_answer_stats += missing_corrects
 	return top_answer_stats
@@ -601,9 +601,10 @@ def _finalize_answer_stats( answer_stats, total_submits ):
 		sub.perc_s = '%0.1f' % ( sub.count * 100.0 / total_submits ) if total_submits else 'N/A'
 
 def _do_get_containers_in_course( course ):
-	lib = component.getUtility(IContentPackageLibrary)
-	paths = lib.pathToNTIID( course.legacy_content_package.ntiid )
-	root = paths[0] if paths else None
+	try:
+		packages = course.ContentPackageBundle.ContentPackages
+	except AttributeError:
+		packages = (course.legacy_content_package,)
 
 	def _recur( node, accum ):
 		#Get our embedded ntiids and recursively fetch our children's ntiids
@@ -611,28 +612,28 @@ def _do_get_containers_in_course( course ):
 		accum.update( node.embeddedContainerNTIIDs )
 		if ntiid:
 			accum.add( ntiid )
-		for n in node.children:	
+		for n in node.children:
 			_recur( n, accum )
 
 	containers_in_course = set()
-	if root:
-		_recur( root,containers_in_course )
-		
-	# Add in our self-assessments	
+	for package in packages:
+		_recur(package, containers_in_course )
+
+	# Add in our self-assessments
 	# We filter out questions in assignments here for some reason
 	#self_assessments = _get_self_assessments_for_course(self.course)
 	catalog = ICourseAssessmentItemCatalog(course)
 	containers_in_course = containers_in_course.union( [x.ntiid for x in catalog.iter_assessment_items()] )
-	
+
 	self_assessments = _get_self_assessments_for_course(course)
 	self_assessment_containerids = {x.__parent__.ntiid for x in self_assessments}
-	self_assessment_qsids = {x.ntiid: x for x in self_assessments}	
+	self_assessment_qsids = {x.ntiid: x for x in self_assessments}
 	containers_in_course = containers_in_course.union( self_assessment_containerids )
 	containers_in_course = containers_in_course.union( self_assessment_qsids )
-		
-	#Add in our assignments	
+
+	#Add in our assignments
 	assignment_catalog = ICourseAssignmentCatalog( course )
-	containers_in_course = containers_in_course.union( ( asg.ntiid for asg in assignment_catalog.iter_assignments() ) )	
+	containers_in_course = containers_in_course.union( ( asg.ntiid for asg in assignment_catalog.iter_assignments() ) )
 	containers_in_course.discard( None )
-	
+
 	return containers_in_course
