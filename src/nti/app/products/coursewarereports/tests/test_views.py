@@ -185,6 +185,12 @@ class TestAssignmentSummaryReport(RegisterAssignmentLayerMixin,
 
 		ext_obj = to_external_object( submission )
 
+		# enroll
+		self.testapp.post_json( '/dataserver2/users/sjohnson@nextthought.com/Courses/EnrolledCourses',
+								'CLC 3403',
+								status=201 )
+
+
 		self.testapp.post_json( '/dataserver2/Objects/' + self.assignment_id,
 								ext_obj)
 		res = self.testapp.get(report_href, extra_environ=instructor_environ)
