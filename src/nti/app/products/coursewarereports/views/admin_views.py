@@ -71,6 +71,12 @@ def shared_notes(request):
 	intersection = md_catalog.family.IF.intersection
 	intids_of_notes = md_catalog['mimeType'].apply({'any_of': ('application/vnd.nextthought.note',)})
 
+	def _check_scopes_in_sharing( other_scopes, note ):
+		for course_only_scope in other_scopes:
+			if course_only_scope in note.sharingTargets:
+				return True
+		return False
+
 	for course in course_catalog:
 		course = ICourseInstance(course)
 		course_containers = _do_get_containers_in_course( course )
@@ -79,12 +85,8 @@ def shared_notes(request):
 												intids_of_objects_in_course_containers )
 		notes = ResultSet( course_intids_of_notes, uidutil )
 
-		scopes = course.LegacyScopes
-		public = scopes['public']
-		private = scopes['restricted']
-
-		public_object = Entity.get_entity( public )
-		private_object = Entity.get_entity( private )
+		public_scope, = course.SharingScopes.getAllScopesImpliedbyScope('Public')
+		other_scopes = [x for x in course.SharingScopes.values() if x != public_scope]
 
 		shared_public = 0
 		shared_course = 0
@@ -94,13 +96,18 @@ def shared_notes(request):
 
 		notes = (x for x in notes if x.creator.username.lower() in course_users)
 
+		# Note: we could also do private if not shared at all
+		# or perhaps we want to store who we're sharing to.
+		result = 'OTHER'
+
 		for note in notes:
-			if public_object in note.sharingTargets:
+			if public_scope in note.sharingTargets:
 				shared_public += 1
-			elif private_object in note.sharingTargets:
-				shared_course += 1
 			else:
-				shared_other += 1
+				if _check_scopes_in_sharing( other_scopes, note ):
+					shared_course += 1
+				else:
+					shared_other += 1
 
 		writer.writerow( [course.__name__, shared_public, shared_course, shared_other] )
 

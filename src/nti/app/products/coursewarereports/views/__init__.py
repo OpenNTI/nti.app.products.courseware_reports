@@ -194,6 +194,7 @@ class _AbstractReportView(AbstractAuthenticatedView,
 
 	@Lazy
 	def for_credit_student_usernames(self):
+		# FIXME This might need to be expanded across scopes
 		restricted = self.course.SharingScopes.get('ForCredit')
 		restricted_usernames = ({x.lower() for x in IEnumerableEntityContainer(restricted).iter_usernames()}
 								if restricted is not None
