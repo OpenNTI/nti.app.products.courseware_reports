@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: nti.app.products.coursewarereports 0.0.0\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2014-03-26 13:32-0500\n"
+"POT-Creation-Date: 2014-08-27 14:25-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,28 +18,43 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 1.3\n"
 
-#: src/nti/app/products/coursewarereports/decorators.py:73
-#: src/nti/app/products/coursewarereports/views.py:425
+#: src/nti/app/products/coursewarereports/decorators.py:94
+#: src/nti/app/products/coursewarereports/views/__init__.py:300
 msgid "Student Participation Report"
 msgstr ""
 
-#: src/nti/app/products/coursewarereports/decorators.py:90
-#: src/nti/app/products/coursewarereports/views.py:601
+#: src/nti/app/products/coursewarereports/decorators.py:111
+#: src/nti/app/products/coursewarereports/views/__init__.py:494
 msgid "Forum Participation Report"
 msgstr ""
 
-#: src/nti/app/products/coursewarereports/decorators.py:107
-#: src/nti/app/products/coursewarereports/views.py:712
+#: src/nti/app/products/coursewarereports/decorators.py:128
 msgid "Topic Participation Report"
 msgstr ""
 
-#: src/nti/app/products/coursewarereports/decorators.py:120
-#: src/nti/app/products/coursewarereports/views.py:854
+#: src/nti/app/products/coursewarereports/decorators.py:141
+#: src/nti/app/products/coursewarereports/views/__init__.py:704
 msgid "Course Summary Report"
 msgstr ""
 
-#: src/nti/app/products/coursewarereports/decorators.py:133
-#: src/nti/app/products/coursewarereports/views.py:1066
+#: src/nti/app/products/coursewarereports/decorators.py:154
+#: src/nti/app/products/coursewarereports/views/__init__.py:1139
 msgid "Assignment Summary Report"
+msgstr ""
+
+#: src/nti/app/products/coursewarereports/views/__init__.py:640
+msgid "Discussion Participation Report"
+msgstr ""
+
+#: src/nti/app/products/coursewarereports/views/__init__.py:274
+msgid "Spring"
+msgstr ""
+
+#: src/nti/app/products/coursewarereports/views/__init__.py:276
+msgid "Summer"
+msgstr ""
+
+#: src/nti/app/products/coursewarereports/views/__init__.py:278
+msgid "Fall"
 msgstr ""
 
