@@ -1261,6 +1261,7 @@ class AssignmentSummaryReportPdf(_AbstractReportView):
 		elif IQMatchingPart.providedBy( question_part ):
 			# This handles both matching and ordering questions
 			for key, val in response.items():
+				val = int( val ) # Somehow, we have string vals stored in some cases
 				left = question_part.labels[ int( key ) ]
 				left = self._get_displayable( left )
 
