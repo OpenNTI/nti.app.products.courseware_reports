@@ -1248,16 +1248,13 @@ class AssignmentSummaryReportPdf(_AbstractReportView):
 			# IQFreeResponsePart?
 			# Freeform answers
 			response = response.lower()
-			# TODO We should be able to look in the solutions list for even the
-			# multiple choice types correct (probably a rare use-case)
-			# TODO What case do non-strings occur in?
+			# In some cases, we have non-strings.
 			solutions = (	x.value.lower() if isinstance(x.value, string_types) else x
 							for x in question_part.solutions )
 			self._add_val_to_answer_stats( 	answer_stat,
 											response,
 											lambda: response in solutions )
 
-		#TODO Can we handle IQFilePart? Is there anything we need to handle?
 		elif IQMatchingPart.providedBy( question_part ):
 			# This handles both matching and ordering questions
 			for key, val in response.items():
