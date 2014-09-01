@@ -236,11 +236,12 @@ class _AbstractReportView(AbstractAuthenticatedView,
 		"""Given a username, return a _StudentInfo tuple"""
 		# Actually, the `creator` field is meant to hold an arbitrary
 		# entity. If it is a user, User.get_user simply returns it.
-		# If it's some other entity object, we blow up with a TypeError
+		# If it's some other entity object, default to 'System'.
 		try:
 			user = User.get_user( username )
 		except TypeError:
 			user = None
+			username = 'System'
 		if user:
 			return self.build_user_info( user )
 		return _StudentInfo( username, username )
