@@ -31,13 +31,10 @@ from nti.app.assessment.interfaces import ICourseAssignmentCatalog
 from nti.assessment.interfaces import IQAssignment
 from nti.assessment.interfaces import IQuestionSet
 
-from nti.dataserver.users.users import User
-
 from nti.contentfragments.interfaces import IPlainTextContentFragment
 
-from nti.contentlibrary.interfaces import IContentPackageLibrary
-
-from zope import component
+from nti.dataserver.users.users import User
+from nti.dataserver.interfaces import SYSTEM_USER_NAME
 
 # XXX: Fix a unicode decode issue.
 # TODO: Make this a formal patch
@@ -214,7 +211,7 @@ class _TopCreators(object):
 		user = User.get_user( username )
 		if user is None:
 			# Use 'system' if we do not have a user here.
-			username = 'System'
+			username =SYSTEM_USER_NAME
 		self.total += 1
 
 		if username in self._data:
