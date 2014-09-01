@@ -31,6 +31,8 @@ from nti.app.assessment.interfaces import ICourseAssignmentCatalog
 from nti.assessment.interfaces import IQAssignment
 from nti.assessment.interfaces import IQuestionSet
 
+from nti.dataserver.users.users import User
+
 from nti.contentfragments.interfaces import IPlainTextContentFragment
 
 from nti.contentlibrary.interfaces import IContentPackageLibrary
@@ -160,7 +162,6 @@ class _TopCreators(object):
 		# Returns the top commenter names, up to (arbitrarily) 10
 		# of them, with the next being 'everyone else'
 		largest = heapq.nlargest(10, data.items(), key=lambda x: x[1])
-
 		largest = [ self._build_student_info(x) for x in largest ]
 
 		#Get aggregate remainder
@@ -210,6 +211,10 @@ class _TopCreators(object):
 		return 0
 
 	def incr_username(self, username):
+		user = User.get_user( username )
+		if user is None:
+			# Use 'system' if we do not have a user here.
+			username = 'System'
 		self.total += 1
 
 		if username in self._data:
