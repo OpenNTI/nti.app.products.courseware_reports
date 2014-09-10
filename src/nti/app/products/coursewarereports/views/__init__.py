@@ -74,7 +74,6 @@ from zope.security.management import checkPermission
 
 from nti.utils.property import Lazy
 
-from nti.app.assessment.interfaces import ICourseAssignmentCatalog
 from nti.app.assessment.interfaces import ICourseAssessmentItemCatalog
 from nti.app.assessment.interfaces import IUsersCourseAssignmentHistory
 
@@ -88,6 +87,8 @@ from nti.app.products.courseware.interfaces import ICourseInstanceEnrollment
 from nti.app.products.gradebook.interfaces import IGrade
 from nti.app.products.gradebook.interfaces import IGradeBook
 from nti.app.products.gradebook.interfaces import IGradeBookEntry
+
+from nti.app.products.gradebook.assignments import get_course_assignments
 
 from nti.dataserver.interfaces import IUser
 from nti.dataserver.interfaces import IDeletedObjectPlaceholder
@@ -399,12 +400,12 @@ class StudentParticipationReportPdf(_AbstractReportView):
 		options['self_assessment_title_to_count'] = sorted(title_to_count.items())
 
 	def _build_assignment_data(self, options):
-		assignment_catalog = ICourseAssignmentCatalog(self.course)
+		assignment_catalog = get_course_assignments( self.course )
 		histories = component.getMultiAdapter((self.course, self.student_user),
 											  IUsersCourseAssignmentHistory)
 
 		asg_data = list()
-		for assignment in assignment_catalog.iter_assignments():
+		for assignment in assignment_catalog:
 			history_item = histories.get(assignment.ntiid)
 			if history_item:
 				grade_value = getattr(IGrade(history_item, None), 'value', '')
@@ -959,10 +960,10 @@ class CourseSummaryReportPdf(_AbstractReportView):
 
 	def _build_assignment_data(self, options, predicate=None):
 		gradebook = IGradeBook(self.course)
-		assignment_catalog = ICourseAssignmentCatalog(self.course)
+		assignment_catalog = get_course_assignments( self.course )
 
 		stats = list()
-		for asg in assignment_catalog.iter_assignments():
+		for asg in assignment_catalog:
 			column = gradebook.getColumnForAssignmentId(asg.ntiid)
 			stats.append(_assignment_stat_for_column(self, column, predicate))
 
