@@ -71,11 +71,8 @@ def shared_notes(request):
 	intersection = md_catalog.family.IF.intersection
 	intids_of_notes = md_catalog['mimeType'].apply({'any_of': ('application/vnd.nextthought.note',)})
 
-	def _check_scopes_in_sharing( other_scopes, note ):
-		for course_only_scope in other_scopes:
-			if course_only_scope in note.sharingTargets:
-				return True
-		return False
+	def _intersect( set1, set2 ):
+		return any( x in set1 for x in set2 )
 
 	for course in course_catalog:
 		course = ICourseInstance(course)
@@ -85,8 +82,8 @@ def shared_notes(request):
 												intids_of_objects_in_course_containers )
 		notes = ResultSet( course_intids_of_notes, uidutil )
 
-		public_scope, = course.SharingScopes.getAllScopesImpliedbyScope('Public')
-		other_scopes = [x for x in course.SharingScopes.values() if x != public_scope]
+		public_scopes = course.SharingScopes.getAllScopesImpliedbyScope('Public')
+		other_scopes = [x for x in course.SharingScopes.values() if x not in public_scopes]
 
 		shared_public = 0
 		shared_course = 0
@@ -96,18 +93,13 @@ def shared_notes(request):
 
 		notes = (x for x in notes if x.creator.username.lower() in course_users)
 
-		# Note: we could also do private if not shared at all
-		# or perhaps we want to store who we're sharing to.
-		result = 'OTHER'
-
 		for note in notes:
-			if public_scope in note.sharingTargets:
+			if _intersect( public_scopes, note.sharingTargets ):
 				shared_public += 1
+			elif _intersect( other_scopes, note.sharingTargets ):
+				shared_course += 1
 			else:
-				if _check_scopes_in_sharing( other_scopes, note ):
-					shared_course += 1
-				else:
-					shared_other += 1
+				shared_other += 1
 
 		writer.writerow( [course.__name__, shared_public, shared_course, shared_other] )
 
@@ -117,7 +109,7 @@ def shared_notes(request):
 	return response
 
 def _get_self_assessments_for_user( username, intids_of_submitted_qsets, self_assessment_qsids, self_assessments, md_catalog, intersection, uidutil ):
-	# FIXME this logic duplicated in .views
+	# XXX this logic duplicated in .views
 	intids_by_student = md_catalog['creator'].apply({'any_of': (username,)})
 	intids_of_submitted_qsets_by_student = intersection( 	intids_of_submitted_qsets,
 															intids_by_student )
@@ -139,7 +131,7 @@ def _get_self_assessments_for_user( username, intids_of_submitted_qsets, self_as
 	return title_to_count
 
 def _get_assignment_count(course,user,assignment_catalog):
-	# FIXME this logic duplicated in .views
+	# XXX this logic duplicated in .views
 	unique_assignment_count = 0
 	histories = component.getMultiAdapter((course, user),
 										  IUsersCourseAssignmentHistory)
