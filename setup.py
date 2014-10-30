@@ -17,12 +17,11 @@ setup(
 	name='nti.app.products.coursewarereports',
 	version=VERSION,
 	author='NextThought',
-	author_email='ntiserverdev@nextthought.com',
+	author_email='josh.zuech@nextthought.com',
 	description="Report generation for courses",
 	long_description=codecs.open('README.rst', encoding='utf-8').read(),
 	license='Proprietary',
 	keywords='pyramid reportlab courses reporting',
-	# url = 'https://github.com/NextThought/nti.nose_traceback_info',
 	classifiers=[
 		'Intended Audience :: Developers',
 		'Natural Language :: English',
@@ -37,18 +36,16 @@ setup(
 	package_dir={'': 'src'},
 	namespace_packages=['nti', 'nti.app', 'nti.app.products'],
 	install_requires=[
-		'nti.app.pyramid_zope',
 		'setuptools',
+        'z3c.rml',
 		'z3c.macro',
 		'z3c.pagelet',
-		'z3c.rml',
 		'z3c.template',
+        'zope.viewlet',
 		'zope.contentprovider',
-		'zope.viewlet'
-		#'nti.app.products.courseware',
-		#'nti.app.products.gradebook',
-		#'nti.app.assessment'
-		# undeclared dep on nti.dataserver
+        'nti.app.pyramid_zope',
+        'nti.app.products.gradebook',
+		'nti.app.products.courseware'
 	],
 	extras_require={
 		'test': tests_require,

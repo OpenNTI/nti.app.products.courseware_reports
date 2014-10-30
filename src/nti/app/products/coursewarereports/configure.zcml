@@ -8,10 +8,10 @@
 			xmlns:z3c="http://namespaces.zope.org/z3c"
 			i18n_domain="nti.app.products.courseware_reports">
 
-
 	<include package="zope.component" file="meta.zcml" />
 	<include package="zope.security" file="meta.zcml" />
 	<include package="zope.component" />
+	<include package="zope.security" />
 
 	<include file="meta.zcml" package="zope.security" />
 	<include file="meta.zcml" package="zope.securitypolicy" />
@@ -35,10 +35,10 @@
 	<!-- I18N -->
 	<i18n:registerTranslations directory="locales" />
 
-
 	<permission
 		id="nti.actions.coursewarereports.view_reports"
 		title="View reports" />
+
 	<!--
 		The instructors/TA of a course (locally added to this role
 		for the course) can view reports
@@ -46,14 +46,17 @@
 	<grant
 		permission="nti.actions.coursewarereports.view_reports"
 		role="nti.roles.course_instructor" />
+
 	<grant
 		permission="nti.actions.coursewarereports.view_reports"
 		role="nti.roles.course_ta" />
+
 	<role
 		id="nti.roles.courseware.report_viewer"
 		title="Globally accessible report viewing"
 		description="Other people perhaps not associated with the course at
 		all might also be able to view reports." />
+
 	<grant
 		permission="nti.actions.coursewarereports.view_reports"
 		role="nti.roles.courseware.report_viewer" />
@@ -73,7 +76,6 @@
 
 	<sp:grant principal="grey.allman@nextthought.com"
 			  role="nti.roles.courseware.report_viewer" />
-
 
 	<adapter name="reports"
 			 for="nti.dataserver.interfaces.IDataserverFolder pyramid.interfaces.IRequest"
@@ -121,7 +123,6 @@
 		template = getViewTemplate() as a class attribute) or they can
 		have a content template registered.
 	-->
-
 	<browser:viewletManager
 		name="header_manager"
 		permission="zope.Public"
@@ -132,6 +133,7 @@
 		template="templates/student_participation_report.rml"
 		for=".views.StudentParticipationReportPdf"
 		layer="pyramid.interfaces.IRequest" />
+
 	<browser:viewlet
 		name="student_info_content_provider"
 		template="templates/student_info_content_provider.rml"
@@ -145,6 +147,7 @@
 		template="templates/ForumParticipationReport.rml"
 		for=".views.ForumParticipationReportPdf"
 		layer="pyramid.interfaces.IRequest" />
+
 	<browser:viewlet
 		name="forum_info_content_provider"
 		template="templates/forum_info_content_provider.rml"
@@ -158,6 +161,7 @@
 		template="templates/TopicParticipationReport.rml"
 		for=".views.TopicParticipationReportPdf"
 		layer="pyramid.interfaces.IRequest" />
+
 	<browser:viewlet
 		name="forum_info_content_provider"
 		template="templates/forum_info_content_provider.rml"
@@ -172,6 +176,7 @@
 		template="templates/CourseSummaryReport.rml"
 		for=".views.CourseSummaryReportPdf"
 		layer="pyramid.interfaces.IRequest" />
+
 	<browser:viewlet
 		name="course_info_content_provider"
 		template="templates/course_info_content_provider.rml"
@@ -185,6 +190,7 @@
 		template="templates/AssignmentSummaryReport.rml"
 		for=".views.AssignmentSummaryReportPdf"
 		layer="pyramid.interfaces.IRequest" />
+
 	<browser:viewlet
 		name="assignment_info_content_provider"
 		template="templates/assignment_info_content_provider.rml"
@@ -224,43 +230,48 @@
 		for="zope.interface.Interface"
 		view=".interfaces.IPDFReportView"
 		layer="pyramid.interfaces.IRequest" />
+
 	<z3c:macro
 		template="templates/std_report_macros.pt"
 		name="template"
 		for="zope.interface.Interface"
 		view=".interfaces.IPDFReportView"
 		layer="pyramid.interfaces.IRequest" />
+
 	<z3c:macro
 		template="templates/std_report_macros.pt"
 		name="forum_participation_over_time"
 		for="zope.interface.Interface"
 		view="zope.interface.Interface"
 		layer="pyramid.interfaces.IRequest" />
+
 	<z3c:macro
 		template="templates/std_report_macros.pt"
 		name="forum_top_commenters"
 		for="zope.interface.Interface"
 		view="zope.interface.Interface"
 		layer="pyramid.interfaces.IRequest" />
+
 	<z3c:macro
 		template="templates/std_report_macros.pt"
 		name="comment_table"
 		for="zope.interface.Interface"
 		view="zope.interface.Interface"
 		layer="pyramid.interfaces.IRequest" />
+
 	<z3c:macro
 		template="templates/std_report_macros.pt"
 		name="engagement_stats_table"
 		for="zope.interface.Interface"
 		view="zope.interface.Interface"
 		layer="pyramid.interfaces.IRequest" />
+
 	<z3c:macro
 		template="templates/std_report_macros.pt"
 		name="engagement_stats_pie"
 		for="zope.interface.Interface"
 		view="zope.interface.Interface"
 		layer="pyramid.interfaces.IRequest" />
-
 
 	<!-- A default header_table that does nothing -->
 	<adapter name="header_table"
@@ -269,5 +280,4 @@
 				  zope.interface.Interface"
 			 provides="zope.contentprovider.interfaces.IContentProvider"
 			 factory=".contentproviders.DummyContentProvider" />
-
 </configure>
