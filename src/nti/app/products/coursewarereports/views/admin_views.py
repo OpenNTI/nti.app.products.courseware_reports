@@ -37,8 +37,6 @@ from nti.app.products.gradebook.interfaces import IGradeBook
 
 from nti.dataserver.interfaces import IEnumerableEntityContainer
 
-from nti.dataserver.users.entity import Entity
-
 from nti.dataserver.metadata_index import CATALOG_NAME
 from nti.dataserver.authorization import ACT_MODERATE
 
