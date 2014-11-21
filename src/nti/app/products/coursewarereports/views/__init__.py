@@ -1257,7 +1257,7 @@ class AssignmentSummaryReportPdf(_AbstractReportView):
 											response,
 											lambda: response in solutions )
 
-		elif IQMatchingPart.providedBy( question_part ):
+		elif IQMatchingPart.providedBy( question_part ) and response:
 			# This handles both matching and ordering questions
 			for key, val in response.items():
 				val = int( val ) # Somehow, we have string vals stored in some cases
