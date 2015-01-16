@@ -676,11 +676,11 @@ class TopicParticipationReportPdf(ForumParticipationReportPdf):
 		# Gather the comments per student username
 		for comment in comments:
 			# Build our parent comment data
-			parent = None
-			if IGeneralForumComment.providedBy( comment.__parent__ ):
-				parent = comment.__parent__
+			parent = getattr( comment, 'inReplyTo', None )
+			parent_comment = None
+			if IGeneralForumComment.providedBy( parent ):
 				parent_creator = self.get_student_info( parent.creator )
-				parent = _CommentInfo( parent_creator.username,
+				parent_comment = _CommentInfo( parent_creator.username,
 										parent_creator.display,
 										_format_datetime( _adjust_date( parent.created ) ),
 										_format_datetime( _adjust_date( parent.modified ) ),
@@ -694,9 +694,10 @@ class TopicParticipationReportPdf(ForumParticipationReportPdf):
 									_format_datetime( _adjust_date( comment.created ) ),
 									_format_datetime( _adjust_date( comment.created ) ),
 									''.join( comment.body ),
-									parent )
+									parent_comment )
 
-			user_comment_dict.setdefault( creator_username, [] ).append( comment )
+			# Note the lower to match what we're doing with enrollments.
+			user_comment_dict.setdefault( creator_username.lower(), [] ).append( comment )
 
 		results = {}
 		# Now populate those comments based on the enrollment scopes of those students.

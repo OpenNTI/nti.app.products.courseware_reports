@@ -304,7 +304,7 @@ class _AnswerStat(object):
 		self.perc_s = None
 		self.letter_prefix = None
 
-def _common_buckets( objects,report,object_create_date,agg_creators=None ):
+def _common_buckets( objects, report, object_create_date, agg_creators=None ):
 	"""
 	Given a list of :class:`ICreated` objects,
 	return a :class:`_CommonBuckets` containing three members:

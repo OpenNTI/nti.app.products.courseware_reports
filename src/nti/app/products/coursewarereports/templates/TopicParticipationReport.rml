@@ -161,6 +161,8 @@
 
 					<!-- FIXME Need style -->
 					<!-- FIXME parent context -->
+					<!-- FIXME HTML Cannot use 'structure', as embedded links will break the template -->
+					<!-- Verify this is correct users/forums for sub-sections -->
 					<tal:block tal:repeat="user_comment python: all_user_comments[1]">
 						<blockTable style="table_user_1"
 								alignment="left" colWidths="12% 12% 18% 18% 40%"
@@ -172,18 +174,30 @@
 								<td>Modified</td>
 								<td>Comment</td>
 							</tr>
+							<tr tal:condition="user_comment/parent">
+								<td tal:content="user_comment/parent/display">user1</td>
+								<td tal:content="user_comment/parent/username">joha9999</td>
+								<td tal:content="user_comment/parent/created">Yesterday</td>
+								<td tal:content="user_comment/parent/modified">Today</td>
+								<td>
+									<para style="data" tal:content="user_comment/parent/content">
+										This course rocks!
+									</para>
+								</td>
+							</tr>
 							<tr>
 								<td tal:content="user_comment/display">user1</td>
 								<td tal:content="user_comment/username">joha9999</td>
 								<td tal:content="user_comment/created">Yesterday</td>
 								<td tal:content="user_comment/modified">Today</td>
 								<td>
-									<para style="data" tal:content="structure user_comment/content">
+									<para style="data" tal:content="user_comment/content">
 										This course rocks!
 									</para>
 								</td>
 							</tr>
 						</blockTable>
+
 					</tal:block>
 
 					<hr width="100%" spaceAfter=".6in" spaceBefore=".4in"/>
