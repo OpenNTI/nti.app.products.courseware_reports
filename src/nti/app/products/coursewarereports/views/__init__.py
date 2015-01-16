@@ -682,8 +682,8 @@ class TopicParticipationReportPdf(ForumParticipationReportPdf):
 				parent_creator = self.get_student_info( parent.creator )
 				parent = _CommentInfo( parent_creator.username,
 										parent_creator.display,
-										parent.created,
-										parent.modified,
+										_format_datetime( _adjust_date( parent.created ) ),
+										_format_datetime( _adjust_date( parent.modified ) ),
 										''.join( parent.body ),
 										None )
 			# Now our comment
@@ -691,8 +691,8 @@ class TopicParticipationReportPdf(ForumParticipationReportPdf):
 			creator = self.get_student_info( creator_username )
 			comment = _CommentInfo( creator.username,
 									creator.display,
-									comment.created,
-									comment.modified,
+									_format_datetime( _adjust_date( comment.created ) ),
+									_format_datetime( _adjust_date( comment.created ) ),
 									''.join( comment.body ),
 									parent )
 

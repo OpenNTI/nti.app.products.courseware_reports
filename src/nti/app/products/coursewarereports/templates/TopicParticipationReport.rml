@@ -157,14 +157,13 @@
 						</tr>
 					</blockTable>
 
-					<hr width="100%" />
+					<hr width="100%" spaceAfter=".4in" spaceBefore=".4in"/>
 
 					<!-- FIXME Need style -->
 					<!-- FIXME parent context -->
-					<!-- FIXME Unencode html -->
 					<tal:block tal:repeat="user_comment python: all_user_comments[1]">
 						<blockTable style="table_user_1"
-								alignment="left" colWidths="8% 8% 8% 8% 68%"
+								alignment="left" colWidths="12% 12% 18% 18% 40%"
 								repeatRows="1">
 							<tr>
 								<td>Name</td>
@@ -174,18 +173,21 @@
 								<td>Comment</td>
 							</tr>
 							<tr>
-								<td tal:content="user_comment/username">user1</td>
-								<td tal:content="user_comment/display">joha9999</td>
+								<td tal:content="user_comment/display">user1</td>
+								<td tal:content="user_comment/username">joha9999</td>
 								<td tal:content="user_comment/created">Yesterday</td>
 								<td tal:content="user_comment/modified">Today</td>
 								<td>
-									<para style="data" tal:content="user_comment/content">
+									<para style="data" tal:content="structure user_comment/content">
 										This course rocks!
 									</para>
 								</td>
 							</tr>
 						</blockTable>
 					</tal:block>
+
+					<hr width="100%" spaceAfter=".6in" spaceBefore=".4in"/>
+
 				</tal:block>
 			</tal:block>
 </metal:block>
