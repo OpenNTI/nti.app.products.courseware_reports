@@ -35,10 +35,11 @@ from ..reports import _QuestionStat
 from ..reports import _DateCategoryAccum
 from ..reports import _do_get_containers_in_course
 
+import textwrap
+import BTrees
+
 from zope import component
 from zope import interface
-
-import textwrap
 
 from six import string_types
 from numbers import Number
@@ -54,8 +55,6 @@ from datetime import timedelta
 from datetime import datetime
 
 from itertools import chain
-
-import BTrees
 
 from pyramid.view import view_config
 from pyramid.view import view_defaults
@@ -74,21 +73,24 @@ from zope.security.management import checkPermission
 
 from nti.utils.property import Lazy
 
+from nti.app.base.abstract_views import AbstractAuthenticatedView
+
 from nti.app.assessment.interfaces import ICourseAssessmentItemCatalog
 from nti.app.assessment.interfaces import IUsersCourseAssignmentHistory
 
 from nti.assessment.interfaces import IQAssignment
-
-from nti.contenttypes.courses.interfaces import ICourseCatalogEntry
-from nti.contenttypes.courses.interfaces import ICourseInstance
+from nti.assessment.__init__ import grader_for_response
+from nti.assessment.randomized.interfaces import IQRandomizedPart
 
 from nti.app.products.courseware.interfaces import ICourseInstanceEnrollment
 
 from nti.app.products.gradebook.interfaces import IGrade
 from nti.app.products.gradebook.interfaces import IGradeBook
 from nti.app.products.gradebook.interfaces import IGradeBookEntry
-
 from nti.app.products.gradebook.assignments import get_course_assignments
+
+from nti.contenttypes.courses.interfaces import ICourseCatalogEntry
+from nti.contenttypes.courses.interfaces import ICourseInstance
 
 from nti.dataserver.interfaces import IUser
 from nti.dataserver.interfaces import IDeletedObjectPlaceholder
@@ -103,8 +105,6 @@ from nti.dataserver.contenttypes.forums.interfaces import ITopic
 from nti.dataserver.contenttypes.forums.interfaces import IGeneralForumComment
 
 from nti.dataserver.metadata_index import CATALOG_NAME
-
-from nti.app.base.abstract_views import AbstractAuthenticatedView
 
 from nti.dataserver.authorization import ACT_READ
 from nti.dataserver.authorization import ACT_MODERATE
@@ -1148,9 +1148,12 @@ class AssignmentSummaryReportPdf(_AbstractReportView):
 		assignment = component.queryUtility(IQAssignment, name=self.context.AssignmentId)
 		if assignment is None:
 			#Maybe this is something without an assignment, like Attendance?
-			#TODO In ou-alpha, CS1300-exercise1
 			options['question_stats'] = None
 			return
+
+		# TODO Need to handle randomized questions.
+		# - We might get this for free since we store our questions by ntiids.
+		# - Verify.
 
 		ordered_questions = []
 		qids_to_q = {}
@@ -1186,7 +1189,8 @@ class AssignmentSummaryReportPdf(_AbstractReportView):
 						response = question_submission.parts[idx]
 						answer_stat = question_part_stats[idx].answer_stats
 
-						self._accumulate_response( question_part, response, answer_stat )
+						# Add to our responses.
+						self._accumulate_response( question_part, response, submission, answer_stat )
 
 			pending = history.pendingAssessment
 
@@ -1225,8 +1229,16 @@ class AssignmentSummaryReportPdf(_AbstractReportView):
 
 		return question_stat
 
-	def _accumulate_response( self, question_part, response, answer_stat ):
+	def _accumulate_response( self, question_part, response, submission, answer_stat ):
 		"""Adds the response information to our answer_stats"""
+		if 		IQRandomizedPart.providedBy(question_part) \
+			and response is not None:
+			# First de-randomize our question part, if necessary.
+			grader = grader_for_response( question_part, response )
+			response = grader.unshuffle(response,
+										user=submission.creator,
+										context=question_part)
+
 		if (	IQMultipleChoicePart.providedBy(question_part)
 			and not IQMultipleChoiceMultipleAnswerPart.providedBy(question_part)
 			and isinstance(response, int)):

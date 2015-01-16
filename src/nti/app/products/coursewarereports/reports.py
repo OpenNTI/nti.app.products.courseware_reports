@@ -538,6 +538,7 @@ def _build_question_stats( ordered_questions, question_stats ):
 	"""From questions_stats, return fully formed question_stat objects"""
 	results = []
 	for i, q in enumerate( ordered_questions ):
+
 		q_stat = question_stats.get( q.ntiid )
 		question_part_stats = q_stat.question_part_stats if q_stat else {}
 		total_submits = q_stat.submission_count if q_stat else 0
@@ -547,7 +548,7 @@ def _build_question_stats( ordered_questions, question_stats ):
 
 		#Go through each question part
 		for question_part_stat in question_part_stats.values():
-			#Do we have an unassessed question?
+			# Do we have an unassessed question?
 			avg_assessed_s = 'N/A'
 			if question_part_stat.assessed_values:
 				avg_assessed = average( question_part_stat.assessed_values )
@@ -556,7 +557,8 @@ def _build_question_stats( ordered_questions, question_stats ):
 
 				question_part_grades.append( avg_assessed )
 
-			# We may want to display *all* of the available multiple choice answers. If so, this is the place.
+			# We may want to display *all* of the available multiple choice answers.
+			# If so, this is the place.
 			top_answer_stats = _get_top_answers( question_part_stat.answer_stats )
 			_finalize_answer_stats( top_answer_stats, total_submits )
 
