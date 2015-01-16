@@ -12,16 +12,16 @@
 		<h1 style="h1" fontSize="24" spaceAfter=".4in">
 			Weekly Activity
 		</h1>
-		
+
 		<para style="subdesc" spaceAfter=".4in"
 				tal:condition="options/all_forum_participation/forum_objects_by_week_number">
 			This chart shows the number of comments made each week
 			in <u>${context/title|context/__name__}</u> since it was posted.
 		</para>
-		<para 	style="subdesc" 
+		<para 	style="subdesc"
 				tal:condition="not:options/all_forum_participation/forum_objects_by_week_number">
 			This topic does not have any comments.
-		</para>		
+		</para>
 
 		<illustration width="5in" height="3in"
 					  tal:define="forum_stat options/all_forum_participation;
@@ -31,43 +31,43 @@
 		</illustration>
 
 		<para style="subdesc" spaceBefore=".8in" tal:condition="options/top_commenters">
-			This discussion has ${options/top_commenters/total} 
+			This discussion has ${options/top_commenters/total}
 			 ${python:request.localizer.pluralize('comment', 'comments', options['top_commenters'].total)} by
-			${python:len(options['top_commenters'].keys())} 
+			${python:len(options['top_commenters'].keys())}
 			 ${python:request.localizer.pluralize('user', 'users', len(options['top_commenters'].keys()))}.
 			It was created on ${context/created/date}, and its most recent activity was on
 			${context/NewestDescendant/created/date}.
 		</para>
 
 		<setNextTemplate name="table_pie" />
-		
+
 		<nextPage />
-		
+
 		<h1 style="h1" spaceAfter="1in">
 			Top Commenters
 		</h1>
-		
+
 		<nextFrame name="table_frame" />
-		
+
 		<metal:macro 	tal:define="top_commenters options/top_commenters"
 						tal:condition="options/top_commenters"
 						metal:use-macro="macro:comment_table" />
-						
+
 		<para 	style="subdesc"
 				tal:condition="not:options/top_commenters">
 			This topic does not have any comments.
-		</para>				
-		
+		</para>
+
 		<nextFrame name="pie_frame" />
-		
+
 		<illustration width="6in" height="6in"
 					  tal:define="top_commenters options/top_commenters;
 								  top_commenters_colors options/top_commenters_colors"
-					  tal:condition="options/top_commenters"	
+					  tal:condition="options/top_commenters"
 					  metal:use-macro="macro:forum_top_commenters">
 		</illustration>
-		
-		
+
+
 		<setNextTemplate name="main"/>
 		<nextPage />
 
@@ -75,23 +75,23 @@
 		<h1 style="h1" spaceAfter=".5in" >
 			Comment Activity
 		</h1>
-		
+
 		<para style="subdesc" spaceAfter=".1in"
 				tal:condition="options/for_credit_user_stats|options/non_credit_user_stats">
-				This table shows the number of comments participants have posted 
+				This table shows the number of comments participants have posted
 				to <u>${context/title|context/__name__}</u>.  Those who have not contributed are excluded from the table.
 		</para>
-		
+
 		<hr width="100%" />
-		
+
 		<h2 style="h2">
 			For-Credit Comment Activity
 		</h2>
 		<para 	style="subdesc"
 				tal:condition="not:options/for_credit_user_stats">
 			This discussion does not have any comments by for-credit students.
-		</para>	
-		
+		</para>
+
 		<blockTable style="table_user_1"
 					tal:condition="options/for_credit_user_stats"
 					alignment="left" colWidths="30% 30% 12%"
@@ -107,18 +107,18 @@
 				<td tal:content="item/total_comment_count">3</td>
 			</tr>
 		</blockTable>
-		
+
 		<condPageBreak height="4in" />
-		
+
 		<h2 style="h2">
 			Non-Credit Comment Activity
 		</h2>
 		<para 	style="subdesc"
 				tal:condition="not:options/non_credit_user_stats">
 			This discussion does not have any comments by non-credit students.
-		</para>	
-		
-		
+		</para>
+
+
 		<blockTable style="table_user_1_non_credit"
 					tal:condition="options/non_credit_user_stats"
 					alignment="left" colWidths="30% 12%"
@@ -133,4 +133,59 @@
 			</tr>
 		</blockTable>
 
+		<nextPage />
+
+			<tal:block tal:repeat="scoped_item options/scoped_user_comments/items">
+				<h2 style="h2" tal:content="python: scoped_item[0]">
+					Non-Credit Comment Activity
+				</h2>
+
+				<tal:block tal:repeat="all_user_comments python: scoped_item[1].items()">
+
+					<!-- FIXME Style conditionally based on credit/non-credit -->
+					<blockTable style="table_user_1"
+							tal:define="student_info python: all_user_comments[0]"
+							alignment="left" colWidths="30% 12%"
+							repeatRows="1">
+						<tr>
+							<td>Name</td>
+							<td align="left" >Login</td>
+						</tr>
+						<tr>
+							<td tal:content="student_info/display">user1</td>
+							<td tal:content="student_info/username">joha9999</td>
+						</tr>
+					</blockTable>
+
+					<hr width="100%" />
+
+					<!-- FIXME Need style -->
+					<!-- FIXME parent context -->
+					<!-- FIXME Unencode html -->
+					<tal:block tal:repeat="user_comment python: all_user_comments[1]">
+						<blockTable style="table_user_1"
+								alignment="left" colWidths="8% 8% 8% 8% 68%"
+								repeatRows="1">
+							<tr>
+								<td>Name</td>
+								<td align="left" >Login</td>
+								<td>Created</td>
+								<td>Modified</td>
+								<td>Comment</td>
+							</tr>
+							<tr>
+								<td tal:content="user_comment/username">user1</td>
+								<td tal:content="user_comment/display">joha9999</td>
+								<td tal:content="user_comment/created">Yesterday</td>
+								<td tal:content="user_comment/modified">Today</td>
+								<td>
+									<para style="data" tal:content="user_comment/content">
+										This course rocks!
+									</para>
+								</td>
+							</tr>
+						</blockTable>
+					</tal:block>
+				</tal:block>
+			</tal:block>
 </metal:block>

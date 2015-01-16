@@ -48,7 +48,7 @@ from docutils.utils import roman
 
 from numpy import percentile
 
-from collections import namedtuple
+from collections import namedtuple, OrderedDict
 from collections import defaultdict
 
 from datetime import timedelta
@@ -657,6 +657,9 @@ class ForumParticipationReportPdf(_AbstractReportView):
 _TopicInfo = namedtuple('_TopicInfo',
 							('topic_name', 'forum_name'))
 
+_CommentInfo = namedtuple('_CommentInfo',
+						('username', 'display', 'created', 'modified', 'content', 'parent'))
+
 @view_config(context=ICommunityHeadlineTopic,
 			 name=VIEW_TOPIC_PARTICIPATION)
 class TopicParticipationReportPdf(ForumParticipationReportPdf):
@@ -668,12 +671,35 @@ class TopicParticipationReportPdf(ForumParticipationReportPdf):
 		return self._course_from_forum(self.context.__parent__)
 
 	def _scoped_comments(self, comments):
-		"Returns a dict of scopes to users to comments."
+		"Returns a sorted dict of scopes to users to comments."
 		user_comment_dict = {}
+		# Gather the comments per student username
 		for comment in comments:
-			user_comment_dict.setdefault( comment.creator.username, [] ).append( comment )
+			# Build our parent comment data
+			parent = None
+			if IGeneralForumComment.providedBy( comment.__parent__ ):
+				parent = comment.__parent__
+				parent_creator = self.get_student_info( parent.creator )
+				parent = _CommentInfo( parent_creator.username,
+										parent_creator.display,
+										parent.created,
+										parent.modified,
+										''.join( parent.body ),
+										None )
+			# Now our comment
+			creator_username = comment.creator.username
+			creator = self.get_student_info( creator_username )
+			comment = _CommentInfo( creator.username,
+									creator.display,
+									comment.created,
+									comment.modified,
+									''.join( comment.body ),
+									parent )
+
+			user_comment_dict.setdefault( creator_username, [] ).append( comment )
 
 		results = {}
+		# Now populate those comments based on the enrollment scopes of those students.
 		for scope_name, scope_students in self._get_enrollment_scope_dict.items():
 			if scope_name == ALL_USERS:
 				continue
@@ -681,7 +707,14 @@ class TopicParticipationReportPdf(ForumParticipationReportPdf):
 				if username in user_comment_dict:
 					scope_dict = results.setdefault( scope_name, {} )
 					scope_dict[ self.get_student_info( username ) ] = user_comment_dict[ username ]
+			# Now sort by username
+			scope_dict = results.get( scope_name, None )
+			if scope_dict is not None:
+				results[scope_name] = OrderedDict( sorted( scope_dict.items() ))
 
+		# Now build our sorted output
+		# { ScopeName : { StudentInfo : (Comments) } }
+		results = OrderedDict( sorted( results.items() ))
 		return results
 
 
