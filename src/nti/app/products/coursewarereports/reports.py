@@ -108,7 +108,7 @@ class _StudentInfo( namedtuple( '_StudentInfo',
 								('display', 'username', 'count', 'perc' ))):
 	"""Holds general student info. 'count' and 'perc' are optional values"""
 	def __new__( self, display, username, count=None, perc=None ):
-		return super(_StudentInfo,self).__new__( self,display,username,count,perc )
+		return super(_StudentInfo,self).__new__( self, display, username, count, perc )
 
 class _TopCreators(object):
 	"""Accumulate stats in three parts: for credit students, tourists, and aggregate"""
@@ -211,7 +211,7 @@ class _TopCreators(object):
 		user = User.get_user( username )
 		if user is None:
 			# Use 'system' if we do not have a user here.
-			username =SYSTEM_USER_NAME
+			username = SYSTEM_USER_NAME
 		self.total += 1
 
 		if username in self._data:

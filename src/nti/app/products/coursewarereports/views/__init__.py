@@ -198,6 +198,8 @@ class _AbstractReportView(AbstractAuthenticatedView,
 		"Build a dict of scope_name to usernames."
 		# XXX We are not exposing these multiple scopes in many places,
 		# including many reports and in TopCreators.
+		# XXX This is confusing if we are nesting scopes.  Perhaps
+		# it makes more sense to keep things in the Credit/NonCredit camps.
 		results = {}
 
 		public_scope = self.course.SharingScopes.get( 'Public', None )
@@ -208,7 +210,7 @@ class _AbstractReportView(AbstractAuthenticatedView,
 
 				scope_users = {x.lower() for x in IEnumerableEntityContainer(scope).iter_usernames()}
 				results[scope_name] = scope_users
-				non_public_users.union( scope_users )
+				non_public_users = non_public_users.union( scope_users )
 
 		all_users = {x.lower() for x in IEnumerableEntityContainer(public_scope).iter_usernames()}
 		results['Public'] = all_users - non_public_users
@@ -216,6 +218,7 @@ class _AbstractReportView(AbstractAuthenticatedView,
 		return results
 
 	def _get_users_for_scope(self, scope_name):
+		"Returns a set of users for the given scope_name, or None if that scope does not exist."
 		scope_dict = self._get_enrollment_scope_dict
 		return scope_dict[scope_name]
 
@@ -664,12 +667,31 @@ class TopicParticipationReportPdf(ForumParticipationReportPdf):
 	def course(self):
 		return self._course_from_forum(self.context.__parent__)
 
+	def _scoped_comments(self, comments):
+		"Returns a dict of scopes to users to comments."
+		user_comment_dict = {}
+		for comment in comments:
+			user_comment_dict.setdefault( comment.creator.username, [] ).append( comment )
+
+		results = {}
+		for scope_name, scope_students in self._get_enrollment_scope_dict.items():
+			if scope_name == ALL_USERS:
+				continue
+			for username in scope_students:
+				if username in user_comment_dict:
+					scope_dict = results.setdefault( scope_name, {} )
+					scope_dict[ self.get_student_info( username ) ] = user_comment_dict[ username ]
+
+		return results
+
+
 	def _build_top_commenters(self, options):
 		live_objects = self.filter_objects( self.context.values() )
 		buckets = _common_buckets(	live_objects,
 									self,
 									self.course_start_date )
-		options['all_comments'] = live_objects
+
+		options['scoped_user_comments'] = self._scoped_comments( live_objects )
 		options['top_commenters'] = buckets.top_creators
 		options['group_dates'] = buckets.group_dates
 		options['top_commenters_colors'] = CHART_COLORS
