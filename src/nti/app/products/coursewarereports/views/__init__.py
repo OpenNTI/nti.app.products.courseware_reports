@@ -132,7 +132,7 @@ class _StudentInfo( namedtuple( '_StudentInfo',
 	def __new__( cls, display, username, count=None, perc=None ):
 		return super(_StudentInfo,cls).__new__( cls, display, username, count, perc )
 
-
+ALL_USERS = 'ALL_USERS'
 
 from pyramid.httpexceptions import HTTPForbidden
 
@@ -194,13 +194,34 @@ class _AbstractReportView(AbstractAuthenticatedView,
 		return {x.id.lower() for x in self.course.instructors}
 
 	@Lazy
+	def _get_enrollment_scope_dict(self):
+		"Build a dict of scope_name to usernames."
+		# XXX We are not exposing these multiple scopes in many places,
+		# including many reports and in TopCreators.
+		results = {}
+
+		public_scope = self.course.SharingScopes.get( 'Public', None )
+		non_public_users = set()
+		for scope_name in self.course.SharingScopes:
+			scope = self.course.SharingScopes.get( scope_name, None )
+			if scope is not None and scope != public_scope:
+
+				scope_users = {x.lower() for x in IEnumerableEntityContainer(scope).iter_usernames()}
+				results[scope_name] = scope_users
+				non_public_users.union( scope_users )
+
+		all_users = {x.lower() for x in IEnumerableEntityContainer(public_scope).iter_usernames()}
+		results['Public'] = all_users - non_public_users
+		results[ALL_USERS] = all_users
+		return results
+
+	def _get_users_for_scope(self, scope_name):
+		scope_dict = self._get_enrollment_scope_dict
+		return scope_dict[scope_name]
+
+	@Lazy
 	def for_credit_student_usernames(self):
-		# FIXME This might need to be expanded across scopes
-		restricted = self.course.SharingScopes.get('ForCredit')
-		restricted_usernames = ({x.lower() for x in IEnumerableEntityContainer(restricted).iter_usernames()}
-								if restricted is not None
-								else set())
-		return restricted_usernames - self.instructor_usernames
+		return self._get_users_for_scope( 'ForCredit' )
 
 	@Lazy
 	def open_student_usernames(self):
@@ -212,9 +233,7 @@ class _AbstractReportView(AbstractAuthenticatedView,
 
 	@Lazy
 	def all_usernames(self):
-		everyone = self.course.SharingScopes['Public']
-		everyone_usernames = {x.lower() for x in IEnumerableEntityContainer(everyone).iter_usernames()}
-		return everyone_usernames
+		return self._get_users_for_scope( ALL_USERS )
 
 	@Lazy
 	def count_all_students(self):
@@ -233,7 +252,7 @@ class _AbstractReportView(AbstractAuthenticatedView,
 		ids.update( IEnumerableEntityContainer(self.course.SharingScopes['Public']).iter_intids() )
 		return ids
 
-	def get_student_info(self,username):
+	def get_student_info(self, username):
 		"""Given a username, return a _StudentInfo tuple"""
 		# Actually, the `creator` field is meant to hold an arbitrary
 		# entity. If it is a user, User.get_user simply returns it.
@@ -247,7 +266,7 @@ class _AbstractReportView(AbstractAuthenticatedView,
 			return self.build_user_info( user )
 		return _StudentInfo( username, username )
 
-	def build_user_info(self,user):
+	def build_user_info(self, user):
 		"""Given a user, return a _StudentInfo tuple"""
 		user = IFriendlyNamed( user )
 		display_name = user.alias or user.realname or user.username
@@ -650,6 +669,7 @@ class TopicParticipationReportPdf(ForumParticipationReportPdf):
 		buckets = _common_buckets(	live_objects,
 									self,
 									self.course_start_date )
+		options['all_comments'] = live_objects
 		options['top_commenters'] = buckets.top_creators
 		options['group_dates'] = buckets.group_dates
 		options['top_commenters_colors'] = CHART_COLORS
@@ -672,7 +692,7 @@ class TopicParticipationReportPdf(ForumParticipationReportPdf):
 		"""
 		self._check_access()
 		options = self.options
-		self._build_top_commenters(options)
+		self._build_top_commenters( options )
 		# This is a placeholder
 		options['top_creators'] = _TopCreators( self )
 		options['topic_info'] = self._build_topic_info()
