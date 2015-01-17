@@ -133,8 +133,6 @@
 			</tr>
 		</blockTable>
 
-		<nextPage />
-
 		<!-- Display:
 			'Public Comments'
 			Username : Login
@@ -144,6 +142,9 @@
 			UserComment
 		-->
 		<tal:block tal:repeat="scoped_item options/scoped_user_comments/items">
+
+			<nextPage />
+
 			<tal:block tal:define="scope_name python: scoped_item[0]">
 
 			<h2 style="h2">
@@ -186,10 +187,12 @@
 				<!-- FIXME Need style -->
 				<!-- FIXME HTML Cannot use 'structure', as embedded links will break the template -->
 				<!-- TODO Verify this is the correct users/forums for sub-sections -->
+				<!-- FIXME Truncate comments that may be too long to fit in table. Template will blow up.
+				-->
 				<tal:block tal:repeat="user_comment python: all_user_comments[1]">
 
 					<blockTable style="table_user_1"
-							alignment="left" colWidths="12% 15% 15% 58%"
+							alignment="left" colWidths="15% 15% 15% 55%"
 							repeatRows="1">
 						<tr>
 							<td>Name</td>
@@ -212,7 +215,7 @@
 							</td>
 						</tr>
 						<tr>
-							<td leftPadding="30">
+							<td tal:attributes="leftPadding python: 30 if user_comment.parent else 0">
 								<para style="data" tal:content="user_comment/display">
 									user1
 								</para>
