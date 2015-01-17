@@ -670,9 +670,9 @@ class TopicParticipationReportPdf(ForumParticipationReportPdf):
 	def course(self):
 		return self._course_from_forum(self.context.__parent__)
 
-	def _scoped_comments(self, comments):
-		"Returns a sorted dict of scopes to users to comments."
-		user_comment_dict = {}
+	def _get_comments_by_user(self, comments):
+		"Return a dict of username to ready-to-output comments."
+		results = {}
 		# Gather the comments per student username
 		for comment in comments:
 			# Build our parent comment data
@@ -697,13 +697,17 @@ class TopicParticipationReportPdf(ForumParticipationReportPdf):
 									parent_comment )
 
 			# Note the lower to match what we're doing with enrollments.
-			user_comment_dict.setdefault( creator_username.lower(), [] ).append( comment )
+			results.setdefault( creator_username.lower(), [] ).append( comment )
+		return results
+
+	def _scoped_comments(self, comments):
+		"Returns a sorted dict of scopes to users to comments."
+		user_comment_dict = self._get_comments_by_user( comments )
 
 		results = {}
 		# Now populate those comments based on the enrollment scopes of those students.
-		for scope_name, scope_students in self._get_enrollment_scope_dict.items():
-			if scope_name == ALL_USERS:
-				continue
+		for scope_name in ('Public', 'ForCredit'):
+			scope_students = self._get_users_for_scope( scope_name )
 			for username in scope_students:
 				if username in user_comment_dict:
 					scope_dict = results.setdefault( scope_name, {} )
