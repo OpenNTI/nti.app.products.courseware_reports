@@ -41,6 +41,8 @@ import BTrees
 from zope import component
 from zope import interface
 
+from lxml import html
+
 from six import string_types
 from numbers import Number
 
@@ -660,6 +662,8 @@ _TopicInfo = namedtuple('_TopicInfo',
 _CommentInfo = namedtuple('_CommentInfo',
 						('username', 'display', 'created', 'modified', 'content', 'parent'))
 
+COMMENT_MAX_LENGTH = 2000
+
 @view_config(context=ICommunityHeadlineTopic,
 			 name=VIEW_TOPIC_PARTICIPATION)
 class TopicParticipationReportPdf(ForumParticipationReportPdf):
@@ -670,11 +674,30 @@ class TopicParticipationReportPdf(ForumParticipationReportPdf):
 	def course(self):
 		return self._course_from_forum(self.context.__parent__)
 
+	def _get_comment_body(self, body):
+		# Need to handle canvas, escape html, etc.
+		# We also need to limit character count because of table/cell/page
+		# constrains in pdf.
+		try:
+			result = ''.join( body )
+			result = html.fromstring( result )
+			result = result.text_content()
+		except TypeError:
+			# Not sure what else we could do with these
+			result = '<Canvas>'
+
+		if len( result ) > COMMENT_MAX_LENGTH:
+			result = result[:COMMENT_MAX_LENGTH] + '...[TRUNCATED]'
+		return result
+
 	def _get_comments_by_user(self, comments):
 		"Return a dict of username to ready-to-output comments."
 		results = {}
 		# Gather the comments per student username
 		for comment in comments:
+			creator_username = comment.creator.username
+			if creator_username in self.instructor_usernames:
+				continue
 			# Build our parent comment data
 			parent = getattr( comment, 'inReplyTo', None )
 			parent_comment = None
@@ -684,16 +707,15 @@ class TopicParticipationReportPdf(ForumParticipationReportPdf):
 										parent_creator.display,
 										_format_datetime( _adjust_date( parent.created ) ),
 										_format_datetime( _adjust_date( parent.modified ) ),
-										''.join( parent.body ),
+										self._get_comment_body( parent.body ),
 										None )
 			# Now our comment
-			creator_username = comment.creator.username
 			creator = self.get_student_info( creator_username )
 			comment = _CommentInfo( creator.username,
 									creator.display,
 									_format_datetime( _adjust_date( comment.created ) ),
 									_format_datetime( _adjust_date( comment.created ) ),
-									''.join( comment.body ),
+									self._get_comment_body( comment.body ),
 									parent_comment )
 
 			# Note the lower to match what we're doing with enrollments.
@@ -712,10 +734,12 @@ class TopicParticipationReportPdf(ForumParticipationReportPdf):
 				if username in user_comment_dict:
 					scope_dict = results.setdefault( scope_name, {} )
 					scope_dict[ self.get_student_info( username ) ] = user_comment_dict[ username ]
-			# Now sort by username
+			# Now sort by lower username
 			scope_dict = results.get( scope_name, None )
 			if scope_dict is not None:
-				results[scope_name] = OrderedDict( sorted( scope_dict.items() ))
+				results[scope_name] = OrderedDict(
+								sorted( scope_dict.items(),
+										key=lambda(k,_): k.display.lower() ))
 
 		# Now build our sorted output
 		# { ScopeName : { StudentInfo : (Comments) } }

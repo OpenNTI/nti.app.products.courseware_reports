@@ -151,55 +151,31 @@
 				${scope_name} Comments
 			</h2>
 
+			<!-- Loop through each user's comments -->
 			<tal:block tal:repeat="all_user_comments python: scoped_item[1].items()">
 
 				<keepTogether>
 
 				<!-- Username header for comments: credit/non-credit -->
-				<blockTable style="table_user_1_non_credit"
-						tal:condition="python: scope_name == 'Public'"
-						tal:define="student_info python: all_user_comments[0]"
-						alignment="left" colWidths="30% 12%"
-						repeatRows="1">
-					<tr>
-						<td>Name</td>
-					</tr>
-					<tr>
-						<td tal:content="student_info/display">user1</td>
-					</tr>
-				</blockTable>
-
-				<blockTable style="table_user_1"
-						tal:condition="not: python: scope_name == 'Public'"
-						tal:define="student_info python: all_user_comments[0]"
-						alignment="left" colWidths="30% 12%"
-						repeatRows="1">
-					<tr>
-						<td>Name</td>
-						<td align="left" >Login</td>
-					</tr>
-					<tr>
-						<td tal:content="student_info/display">user1</td>
-						<td tal:content="student_info/username">joha9999</td>
-					</tr>
-				</blockTable>
+				<tal:block tal:define="student_info python: all_user_comments[0]" >
+				<h3 style="h3">
+					<b>Student:</b> ${student_info/display} (${student_info/username})
+				</h3>
+				</tal:block>
 
 				<!-- FIXME Need style -->
-				<!-- FIXME HTML Cannot use 'structure', as embedded links will break the template -->
+				<!-- HTML Cannot use 'structure', as embedded links will break the template -->
 				<!-- TODO Verify this is the correct users/forums for sub-sections -->
-				<!-- FIXME Truncate comments that may be too long to fit in table. Template will blow up.
-				-->
-				<tal:block tal:repeat="user_comment python: all_user_comments[1]">
-
-					<blockTable style="table_user_1"
-							alignment="left" colWidths="15% 15% 15% 55%"
-							repeatRows="1">
-						<tr>
-							<td>Name</td>
-							<td>Created</td>
-							<td>Modified</td>
-							<td>Comment</td>
-						</tr>
+				<blockTable style="table_user_1"
+						alignment="left" colWidths="15% 15% 15% 55%"
+						repeatRows="1">
+					<tr>
+						<td>Name</td>
+						<td>Created</td>
+						<td>Modified</td>
+						<td>Comment</td>
+					</tr>
+					<tal:block tal:repeat="user_comment python: all_user_comments[1]">
 						<tr tal:condition="user_comment/parent">
 							<td background="#d3d3d3">
 								<para style="data" tal:content="user_comment/parent/display">
@@ -228,13 +204,11 @@
 								</para>
 							</td>
 						</tr>
-					</blockTable>
-
-				</tal:block>
-
-				<hr width="100%" spaceAfter=".6in" spaceBefore=".4in"/>
+					</tal:block>
+				</blockTable>
 
 				</keepTogether>
+
 			</tal:block>
 			</tal:block>
 		</tal:block>
