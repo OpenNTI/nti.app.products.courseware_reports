@@ -158,13 +158,18 @@
 
 				<!-- Username header for comments: credit/non-credit -->
 				<tal:block tal:define="student_info python: all_user_comments[0]" >
-				<h3 style="h3">
-					<b>Student:</b> ${student_info/display} (${student_info/username})
-				</h3>
+					<h3 style="h3" textColor="#3fb3f6"
+						tal:condition="python: scope_name == 'ForCredit'">
+						${student_info/display} (${student_info/username})
+					</h3>
+					<h3 style="h3" textColor="#40b450"
+						tal:condition="not:python: scope_name == 'ForCredit'">
+						${student_info/display}
+					</h3>
 				</tal:block>
 
-				<!-- FIXME Need style -->
 				<!-- HTML Cannot use 'structure', as embedded links will break the template -->
+				<!-- TODO Can we avoid overflow errors, using pseudo tables? -->
 				<!-- TODO Verify this is the correct users/forums for sub-sections -->
 				<blockTable style="table_user_1"
 						alignment="left" colWidths="15% 15% 15% 55%"
@@ -178,7 +183,8 @@
 					<tal:block tal:repeat="user_comment python: all_user_comments[1]">
 						<tr tal:condition="user_comment/parent">
 							<td background="#d3d3d3">
-								<para style="data" tal:content="user_comment/parent/display">
+								<para style="data" tal:content="user_comment/parent/display"
+									tal:attributes="textColor python: '#3fb3f6' if user_comment.parent.scope_name == 'ForCredit' else '#40b450'">
 									user1
 								</para>
 							</td>
@@ -192,7 +198,8 @@
 						</tr>
 						<tr>
 							<td tal:attributes="leftPadding python: 30 if user_comment.parent else 0">
-								<para style="data" tal:content="user_comment/display">
+								<para style="data" tal:content="user_comment/display"
+									tal:attributes="textColor python: '#3fb3f6' if user_comment.scope_name == 'ForCredit' else '#40b450'">
 									user1
 								</para>
 							</td>

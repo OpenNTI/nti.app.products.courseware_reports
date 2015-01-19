@@ -257,7 +257,7 @@ class _AbstractReportView(AbstractAuthenticatedView,
 		ids.update( IEnumerableEntityContainer(self.course.SharingScopes['Public']).iter_intids() )
 		return ids
 
-	def get_student_info(self, username):
+	def get_student_info(self, username ):
 		"""Given a username, return a _StudentInfo tuple"""
 		# Actually, the `creator` field is meant to hold an arbitrary
 		# entity. If it is a user, User.get_user simply returns it.
@@ -660,7 +660,7 @@ _TopicInfo = namedtuple('_TopicInfo',
 							('topic_name', 'forum_name'))
 
 _CommentInfo = namedtuple('_CommentInfo',
-						('username', 'display', 'created', 'modified', 'content', 'parent'))
+						('username', 'display', 'created', 'modified', 'content', 'parent', 'scope_name'))
 
 COMMENT_MAX_LENGTH = 2000
 
@@ -684,10 +684,16 @@ class TopicParticipationReportPdf(ForumParticipationReportPdf):
 			result = result.text_content()
 		except TypeError:
 			# Not sure what else we could do with these
-			result = '<Canvas>'
+			result = '<Non-displayable>'
 
 		if len( result ) > COMMENT_MAX_LENGTH:
 			result = result[:COMMENT_MAX_LENGTH] + '...[TRUNCATED]'
+		return result
+
+	def _get_user_scope_name(self, username):
+		result = 'Public'
+		if username.lower() in self.for_credit_student_usernames:
+			result = 'ForCredit'
 		return result
 
 	def _get_comments_by_user(self, comments):
@@ -702,21 +708,25 @@ class TopicParticipationReportPdf(ForumParticipationReportPdf):
 			parent = getattr( comment, 'inReplyTo', None )
 			parent_comment = None
 			if IGeneralForumComment.providedBy( parent ):
+				scope_name = self._get_user_scope_name( parent.creator.username )
 				parent_creator = self.get_student_info( parent.creator )
 				parent_comment = _CommentInfo( parent_creator.username,
 										parent_creator.display,
 										_format_datetime( _adjust_date( parent.created ) ),
 										_format_datetime( _adjust_date( parent.modified ) ),
 										self._get_comment_body( parent.body ),
-										None )
+										None,
+										scope_name )
 			# Now our comment
-			creator = self.get_student_info( creator_username )
+			scope_name = self._get_user_scope_name( creator_username )
+			creator = self.get_student_info( creator_username  )
 			comment = _CommentInfo( creator.username,
 									creator.display,
 									_format_datetime( _adjust_date( comment.created ) ),
 									_format_datetime( _adjust_date( comment.created ) ),
 									self._get_comment_body( comment.body ),
-									parent_comment )
+									parent_comment,
+									scope_name )
 
 			# Note the lower to match what we're doing with enrollments.
 			results.setdefault( creator_username.lower(), [] ).append( comment )
