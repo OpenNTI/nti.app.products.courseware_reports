@@ -204,12 +204,18 @@ class _AbstractReportView(AbstractAuthenticatedView,
 		# it makes more sense to keep things in the Credit/NonCredit camps.
 		results = {}
 
+		# Lumping purchased in with public.
 		public_scope = self.course.SharingScopes.get( 'Public', None )
+		purchased_scope = self.course.SharingScopes.get( 'Purchased', None )
 		non_public_users = set()
 		for scope_name in self.course.SharingScopes:
 			scope = self.course.SharingScopes.get( scope_name, None )
-			if scope is not None and scope != public_scope:
 
+			if 		scope is not None \
+				and scope not in (public_scope, purchased_scope):
+
+				# If our scope is not 'public'-ish, store it separately.
+				# All credit-type users should end up in ForCredit.
 				scope_users = {x.lower() for x in IEnumerableEntityContainer(scope).iter_usernames()}
 				results[scope_name] = scope_users
 				non_public_users = non_public_users.union( scope_users )
@@ -674,6 +680,18 @@ class TopicParticipationReportPdf(ForumParticipationReportPdf):
 	def course(self):
 		return self._course_from_forum(self.context.__parent__)
 
+
+	def filter_objects(self, comments):
+		"We only want comments for students in this section."
+		# FIXME Make sure other reports do this.
+		results = []
+		filtered_objects = super(TopicParticipationReportPdf, self).filter_objects( comments )
+		for comment in filtered_objects:
+			comment_creator = comment.creator.username.lower()
+			if comment_creator in self.all_student_usernames:
+				results.append( comment )
+		return results
+
 	def _get_comment_body(self, body):
 		# Need to handle canvas, escape html, etc.
 		# We also need to limit character count because of table/cell/page
@@ -738,6 +756,7 @@ class TopicParticipationReportPdf(ForumParticipationReportPdf):
 
 		results = {}
 		# Now populate those comments based on the enrollment scopes of those students.
+		# This ensures we only get those students in our section.
 		for scope_name in ('Public', 'ForCredit'):
 			scope_students = self._get_users_for_scope( scope_name )
 			for username in scope_students:
