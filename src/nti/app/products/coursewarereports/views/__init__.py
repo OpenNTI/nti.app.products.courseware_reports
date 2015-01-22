@@ -97,6 +97,7 @@ from nti.contenttypes.courses.interfaces import ICourseInstance
 
 from nti.dataserver.interfaces import IUser
 from nti.dataserver.interfaces import IDeletedObjectPlaceholder
+from nti.dataserver.interfaces import IUsernameSubstitutionPolicy
 from nti.dataserver.users.interfaces import IFriendlyNamed
 from nti.dataserver.users.users import User
 from nti.dataserver.users.entity import Entity
@@ -289,14 +290,22 @@ class _AbstractReportView(AbstractAuthenticatedView,
 			return self.build_user_info( user )
 		return _StudentInfo( username, username )
 
+	def _replace_username(self, username):
+		policy = component.queryUtility( IUsernameSubstitutionPolicy )
+		result = policy.replace( username ) if policy else username
+		return result
+
 	def build_user_info(self, user):
 		"""Given a user, return a _StudentInfo tuple"""
 		user = IFriendlyNamed( user )
 		display_name = user.alias or user.realname or user.username
-		#Do not display username of open students
-		user_name = "" if user.username.lower() not in self.for_credit_student_usernames else user.username
 
-		return _StudentInfo( display_name, user_name )
+		username = ""
+		#Do not display username of open students
+		if user.username.lower() in self.for_credit_student_usernames:
+			username = self._replace_username( user.username )
+
+		return _StudentInfo( display_name, username )
 
 	def filter_objects(self,objects):
 		"""Returns a set of filtered objects"""
