@@ -133,90 +133,109 @@
 			</tr>
 		</blockTable>
 
-		<!-- Display:
-			'Public Comments'
-			Username : Login
-			_______________
-			ParentComment
-				UserComment
-			UserComment
+		<nextPage />
+
+		<!--
+			-page-break-
+			'Section 500 Comments'
+				'Public Comments'
+					Username : Login
+					_______________
+					ParentComment
+						UserComment
+					UserComment
+				-page-break-
 		-->
-		<tal:block tal:repeat="scoped_item options/scoped_user_comments/items">
+		<!-- Our section -->
+		<tal:block tal:repeat="section_item options/section_scoped_comments/items">
 
-			<nextPage />
+			<!-- Section header, if we have more than one -->
+			<tal:block tal:define="section_name python: section_item[0]">
+				<h2 style="h2" tal:condition="python: len( options['section_scoped_comments'] ) > 1">
+					${section_name} Comments
+				</h2>
+			</tal:block>
 
-			<tal:block tal:define="scope_name python: scoped_item[0]">
+			<!-- Scopes in section -->
+			<tal:block tal:repeat="scoped_item python: section_item[1].items()">
 
-			<h2 style="h2">
-				${scope_name} Comments
-			</h2>
+				<tal:block tal:define="scope_name python: scoped_item[0]">
 
-			<!-- Loop through each user's comments -->
-			<tal:block tal:repeat="all_user_comments python: scoped_item[1].items()">
+				<!-- Scope header, if we have more than one -->
+				<h2 style="h2" tal:condition="python: len( section_item[1].items() ) > 1">
+					${scope_name} Comments
+				</h2>
 
-				<keepTogether>
+				<!-- Loop through each section/scope/user's comments -->
+				<tal:block tal:repeat="all_user_comments python: scoped_item[1].items()">
 
-				<!-- Username header for comments: credit/non-credit -->
-				<tal:block tal:define="student_info python: all_user_comments[0]" >
-					<h3 style="h3" textColor="#3fb3f6"
-						tal:condition="python: scope_name == 'ForCredit'">
-						${student_info/display} (${student_info/username})
-					</h3>
-					<h3 style="h3" textColor="#40b450"
-						tal:condition="not:python: scope_name == 'ForCredit'">
-						${student_info/display}
-					</h3>
-				</tal:block>
+					<keepTogether>
 
-				<!-- HTML Cannot use 'structure', as embedded links will break the template -->
-				<!-- TODO Can we avoid overflow errors, using pseudo tables? -->
-				<!-- TODO Verify this is the correct users/forums for sub-sections -->
-				<blockTable style="table_user_1"
-						alignment="left" colWidths="15% 15% 15% 55%"
-						repeatRows="1">
-					<tr>
-						<td>Name</td>
-						<td>Created</td>
-						<td>Modified</td>
-						<td>Comment</td>
-					</tr>
-					<tal:block tal:repeat="user_comment python: all_user_comments[1]">
-						<tr tal:condition="user_comment/parent">
-							<td background="#d3d3d3">
-								<para style="data" tal:content="user_comment/parent/display"
-									tal:attributes="textColor python: '#3fb3f6' if user_comment.parent.scope_name == 'ForCredit' else '#40b450'">
-									user1
-								</para>
-							</td>
-							<td background="#d3d3d3" tal:content="user_comment/parent/created">Yesterday</td>
-							<td background="#d3d3d3" tal:content="user_comment/parent/modified">Today</td>
-							<td background="#d3d3d3">
-								<para style="data" tal:content="user_comment/parent/content">
-									This course rocks!
-								</para>
-							</td>
-						</tr>
-						<tr>
-							<td tal:attributes="leftPadding python: 30 if user_comment.parent else 0">
-								<para style="data" tal:content="user_comment/display"
-									tal:attributes="textColor python: '#3fb3f6' if user_comment.scope_name == 'ForCredit' else '#40b450'">
-									user1
-								</para>
-							</td>
-							<td tal:content="user_comment/created">Yesterday</td>
-							<td tal:content="user_comment/modified">Today</td>
-							<td>
-								<para style="data" tal:content="user_comment/content">
-									This course rocks!
-								</para>
-							</td>
-						</tr>
+					<!-- Username header for comments: credit/non-credit -->
+					<tal:block tal:define="student_info python: all_user_comments[0]" >
+						<h3 style="h3" textColor="#3fb3f6"
+							tal:condition="python: scope_name == 'ForCredit'">
+							${student_info/display} (${student_info/username})
+						</h3>
+						<h3 style="h3" textColor="#40b450"
+							tal:condition="not:python: scope_name == 'ForCredit'">
+							${student_info/display}
+						</h3>
 					</tal:block>
-				</blockTable>
 
-				</keepTogether>
+					<!-- HTML Cannot use 'structure', as embedded links will break the template -->
+					<!-- Can we avoid overflow errors, using pseudo tables? -->
+					<!-- TODO Verify this is the correct users/forums for sub-sections -->
+					<blockTable style="table_user_1"
+							alignment="left" colWidths="15% 15% 15% 55%"
+							repeatRows="1">
+						<tr>
+							<td>Name</td>
+							<td>Created</td>
+							<td>Modified</td>
+							<td>Comment</td>
+						</tr>
+						<tal:block tal:repeat="user_comment python: all_user_comments[1]">
+							<tr tal:condition="user_comment/parent">
+								<td background="#d3d3d3">
+									<para style="data" tal:content="user_comment/parent/display"
+										tal:attributes="textColor python: '#3fb3f6' if user_comment.parent.scope_name == 'ForCredit' else '#40b450'">
+										user1
+									</para>
+								</td>
+								<td background="#d3d3d3" tal:content="user_comment/parent/created">Yesterday</td>
+								<td background="#d3d3d3" tal:content="user_comment/parent/modified">Today</td>
+								<td background="#d3d3d3">
+									<para style="data" tal:content="user_comment/parent/content">
+										This course rocks!
+									</para>
+								</td>
+							</tr>
+							<tr>
+								<td tal:attributes="leftPadding python: 30 if user_comment.parent else 0">
+									<para style="data" tal:content="user_comment/display"
+										tal:attributes="textColor python: '#3fb3f6' if user_comment.scope_name == 'ForCredit' else '#40b450'">
+										user1
+									</para>
+								</td>
+								<td tal:content="user_comment/created">Yesterday</td>
+								<td tal:content="user_comment/modified">Today</td>
+								<td>
+									<para style="data" tal:content="user_comment/content">
+										This course rocks!
+									</para>
+								</td>
+							</tr>
+						</tal:block>
+					</blockTable>
 
-			</tal:block>
-			</tal:block>
-		</tal:block>
+					</keepTogether>
+
+				</tal:block> <!-- user-comments -->
+				</tal:block> <!-- tal define scope_name -->
+
+				<nextPage />
+
+			</tal:block> <!-- scope block -->
+		</tal:block> <!-- section block -->
 </metal:block>

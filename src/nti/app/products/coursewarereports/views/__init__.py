@@ -91,7 +91,8 @@ from nti.app.products.gradebook.interfaces import IGradeBook
 from nti.app.products.gradebook.interfaces import IGradeBookEntry
 from nti.app.products.gradebook.assignments import get_course_assignments
 
-from nti.contenttypes.courses.interfaces import ICourseCatalogEntry
+from nti.contenttypes.courses.interfaces import ICourseCatalogEntry,\
+	ICourseSubInstance
 from nti.contenttypes.courses.interfaces import ICourseInstance
 
 from nti.dataserver.interfaces import IUser
@@ -135,6 +136,38 @@ class _StudentInfo( namedtuple( '_StudentInfo',
 		return super(_StudentInfo,cls).__new__( cls, display, username, count, perc )
 
 ALL_USERS = 'ALL_USERS'
+
+def _get_enrollment_scope_dict( course ):
+	"Build a dict of scope_name to usernames."
+	# This includes instructors.
+	# XXX We are not exposing these multiple scopes in many places,
+	# including many reports and in TopCreators.
+	# XXX This is confusing if we are nesting scopes.  Perhaps
+	# it makes more sense to keep things in the Credit/NonCredit camps.
+	# Seems like it would make sense to have an Everyone scope...
+	# { Everyone: { Public : ( Open, Purchased ), ForCredit : ( FCD, FCND ) }}
+	results = {}
+
+	# Lumping purchased in with public.
+	public_scope = course.SharingScopes.get( 'Public', None )
+	purchased_scope = course.SharingScopes.get( 'Purchased', None )
+	non_public_users = set()
+	for scope_name in course.SharingScopes:
+		scope = course.SharingScopes.get( scope_name, None )
+
+		if 		scope is not None \
+			and scope not in (public_scope, purchased_scope):
+
+			# If our scope is not 'public'-ish, store it separately.
+			# All credit-type users should end up in ForCredit.
+			scope_users = {x.lower() for x in IEnumerableEntityContainer(scope).iter_usernames()}
+			results[scope_name] = scope_users
+			non_public_users = non_public_users.union( scope_users )
+
+	all_users = {x.lower() for x in IEnumerableEntityContainer(public_scope).iter_usernames()}
+	results['Public'] = all_users - non_public_users
+	results[ALL_USERS] = all_users
+	return results
 
 from pyramid.httpexceptions import HTTPForbidden
 
@@ -202,28 +235,7 @@ class _AbstractReportView(AbstractAuthenticatedView,
 		# including many reports and in TopCreators.
 		# XXX This is confusing if we are nesting scopes.  Perhaps
 		# it makes more sense to keep things in the Credit/NonCredit camps.
-		results = {}
-
-		# Lumping purchased in with public.
-		public_scope = self.course.SharingScopes.get( 'Public', None )
-		purchased_scope = self.course.SharingScopes.get( 'Purchased', None )
-		non_public_users = set()
-		for scope_name in self.course.SharingScopes:
-			scope = self.course.SharingScopes.get( scope_name, None )
-
-			if 		scope is not None \
-				and scope not in (public_scope, purchased_scope):
-
-				# If our scope is not 'public'-ish, store it separately.
-				# All credit-type users should end up in ForCredit.
-				scope_users = {x.lower() for x in IEnumerableEntityContainer(scope).iter_usernames()}
-				results[scope_name] = scope_users
-				non_public_users = non_public_users.union( scope_users )
-
-		all_users = {x.lower() for x in IEnumerableEntityContainer(public_scope).iter_usernames()}
-		results['Public'] = all_users - non_public_users
-		results[ALL_USERS] = all_users
-		return results
+		return _get_enrollment_scope_dict( self.course )
 
 	def _get_users_for_scope(self, scope_name):
 		"Returns a set of users for the given scope_name, or None if that scope does not exist."
@@ -680,10 +692,22 @@ class TopicParticipationReportPdf(ForumParticipationReportPdf):
 	def course(self):
 		return self._course_from_forum(self.context.__parent__)
 
+	@property
+	def instructor_usernames(self):
+		"All instructors from this instance and subinstances."
+		# TODO We may want to do this in other reports.
+		result = {x.id.lower() for x in self.course.instructors}
+
+		subinstances = self.course.SubInstances
+		if subinstances:
+			for subinstance in subinstances.values():
+				subinstance_instr = {x.id.lower() for x in subinstance.instructors}
+				result.update( subinstance_instr )
+		return result
 
 	def filter_objects(self, comments):
 		"We only want comments for students in this section."
-		# FIXME Make sure other reports do this.
+		# TODO Make sure other reports do this.
 		results = []
 		filtered_objects = super(TopicParticipationReportPdf, self).filter_objects( comments )
 		for comment in filtered_objects:
@@ -750,28 +774,51 @@ class TopicParticipationReportPdf(ForumParticipationReportPdf):
 			results.setdefault( creator_username.lower(), [] ).append( comment )
 		return results
 
-	def _scoped_comments(self, comments):
+	def _get_scope_user_dict_for_course(self, user_scope_dict, user_comment_dict):
 		"Returns a sorted dict of scopes to users to comments."
-		user_comment_dict = self._get_comments_by_user( comments )
-
-		results = {}
+		scope_results = {}
 		# Now populate those comments based on the enrollment scopes of those students.
 		# This ensures we only get those students in our section.
 		for scope_name in ('Public', 'ForCredit'):
-			scope_students = self._get_users_for_scope( scope_name )
+			scope_students = user_scope_dict.get( scope_name )
 			for username in scope_students:
 				if username in user_comment_dict:
-					scope_dict = results.setdefault( scope_name, {} )
+					scope_dict = scope_results.setdefault( scope_name, {} )
 					scope_dict[ self.get_student_info( username ) ] = user_comment_dict[ username ]
 			# Now sort by lower username
-			scope_dict = results.get( scope_name, None )
+			scope_dict = scope_results.get( scope_name, None )
 			if scope_dict is not None:
-				results[scope_name] = OrderedDict(
+				scope_results[scope_name] = OrderedDict(
 								sorted( scope_dict.items(),
 										key=lambda(k,_): k.display.lower() ))
 
 		# Now build our sorted output
 		# { ScopeName : { StudentInfo : (Comments) } }
+		scope_results = OrderedDict( sorted( scope_results.items() ))
+		return scope_results
+
+	def _get_section_scoped_comments(self, comments):
+		"Returns a sorted dict of sections to scoped-users to comments."
+		results = {}
+		user_comment_dict = self._get_comments_by_user( comments )
+
+		# We want a map of course/section name to students enrolled in that section
+		# Any top-level course will break down the results by section.
+		# We should have section -> scope_name -> student comments.
+		subinstances = self.course.SubInstances
+		if subinstances:
+			for subinstance_key, subinstance in subinstances.items():
+				scope_dict = _get_enrollment_scope_dict( subinstance )
+				user_comment_dict_by_scope = self._get_scope_user_dict_for_course(
+													scope_dict, user_comment_dict)
+				# Store with a displayable key
+				results[ 'Section ' + subinstance_key ] = user_comment_dict_by_scope
+		else:
+			scope_dict = self._get_enrollment_scope_dict
+			user_comment_dict_by_scope = self._get_scope_user_dict_for_course(
+													scope_dict, user_comment_dict)
+			results[ self.course.__name__ ] = user_comment_dict_by_scope
+
 		results = OrderedDict( sorted( results.items() ))
 		return results
 
@@ -782,7 +829,7 @@ class TopicParticipationReportPdf(ForumParticipationReportPdf):
 									self,
 									self.course_start_date )
 
-		options['scoped_user_comments'] = self._scoped_comments( live_objects )
+		options['section_scoped_comments'] = self._get_section_scoped_comments( live_objects )
 		options['top_commenters'] = buckets.top_creators
 		options['group_dates'] = buckets.group_dates
 		options['top_commenters_colors'] = CHART_COLORS
