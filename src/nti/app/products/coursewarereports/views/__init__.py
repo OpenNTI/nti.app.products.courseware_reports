@@ -297,11 +297,11 @@ class _AbstractReportView(AbstractAuthenticatedView,
 
 	def build_user_info(self, user):
 		"""Given a user, return a _StudentInfo tuple"""
-		user = IFriendlyNamed( user )
-		display_name = user.alias or user.realname or user.username
+		named_user = IFriendlyNamed( user )
+		display_name = named_user.alias or named_user.realname or named_user.username
 
 		username = ""
-		#Do not display username of open students
+		# Do not display username of open students
 		if user.username.lower() in self.for_credit_student_usernames:
 			username = self._replace_username( user.username )
 
