@@ -42,6 +42,7 @@ from nti.contenttypes.courses.interfaces import ICourseCatalog
 
 from nti.app.products.gradebook.interfaces import IGradeBook
 from nti.app.products.courseware.interfaces import ICourseInstanceEnrollment
+from nti.app.products.courseware.workspaces import CourseInstanceEnrollment
 
 from nti.dataserver.interfaces import IUser
 from nti.dataserver.interfaces import IEnumerableEntityContainer
@@ -301,11 +302,11 @@ class InstructorParticipationView( AbstractAuthenticatedView ):
 				if instructor is None:
 					continue
 
-				# FIXME Why do some instructors not have enrollment record?
 				enrollment = component.queryMultiAdapter((course, instructor),
 														ICourseInstanceEnrollment )
 				if enrollment is None:
-					continue
+					# Force it
+					enrollment = CourseInstanceEnrollment( course, instructor )
 
 				spr = InstructorParticipationReport( enrollment, self.request )
 				options = spr()
