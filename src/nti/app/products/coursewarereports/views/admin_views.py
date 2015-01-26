@@ -47,6 +47,8 @@ from nti.app.products.courseware.workspaces import CourseInstanceEnrollment
 from nti.dataserver.interfaces import IUser
 from nti.dataserver.interfaces import IEnumerableEntityContainer
 
+from nti.dataserver.users.users import User
+
 from nti.dataserver.metadata_index import CATALOG_NAME
 
 from nti.dataserver.authorization import ACT_MODERATE
@@ -245,10 +247,12 @@ def whitelist_participation(request):
 	return response
 
 class InstructorParticipationReport( StudentParticipationReportPdf ):
+	"""
+	Collects information that may be useful to analyze instructor
+	participation in a course.
+	"""
 
 	def __call__(self):
-		# Collect data and return it in a form to be rendered
-		# (a dictionary containing data and callable objects)
 		options = self.options
 		self._build_user_info(options)
 
@@ -262,14 +266,16 @@ class InstructorParticipationReport( StudentParticipationReportPdf ):
 			 permission=ACT_NTI_ADMIN)
 class InstructorParticipationView( AbstractAuthenticatedView ):
 	"""
-	A view to pull instructor participation from the catalog.
+	Iterates the catalog and produces instructor participation
+	stats for each instructor in each course.  Optionally filtered
+	by username or by course start date.
 	"""
 
 	def __call__(self):
 		values = self.request.params
 		start_time = parse_datetime( values.get( 'start_time' ) )
 		usernames = values.get( 'usernames' )
-		usernames = set( usernames.split() ) if usernames else None
+		usernames = set( (User.get_user(x) for x in usernames.split()) ) if usernames else ()
 		catalog = component.getUtility( ICourseCatalog )
 
 		response = self.request.response
