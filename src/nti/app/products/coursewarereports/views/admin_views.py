@@ -4,15 +4,21 @@
 .. $Id$
 """
 from __future__ import print_function, unicode_literals, absolute_import, division
+from nti.app.base.abstract_views import AbstractAuthenticatedView
 __docformat__ = "restructuredtext en"
 
 logger = __import__('logging').getLogger(__name__)
 
 import csv
+import time
 import urllib
 
 from nti.appserver.account_recovery_views import find_users_with_email
 from nti.app.products.gradebook.interfaces import NO_SUBMIT_PART_NAME
+
+from . import StudentParticipationReportPdf
+
+from .utils import parse_datetime
 
 from ..reports import _get_self_assessments_for_course
 from ..reports import _do_get_containers_in_course
@@ -33,12 +39,17 @@ from nti.app.assessment.interfaces import IUsersCourseAssignmentHistory
 
 from nti.contenttypes.courses.interfaces import ICourseInstance
 from nti.contenttypes.courses.interfaces import ICourseCatalog
-from nti.app.products.gradebook.interfaces import IGradeBook
 
+from nti.app.products.gradebook.interfaces import IGradeBook
+from nti.app.products.courseware.interfaces import ICourseInstanceEnrollment
+
+from nti.dataserver.interfaces import IUser
 from nti.dataserver.interfaces import IEnumerableEntityContainer
 
 from nti.dataserver.metadata_index import CATALOG_NAME
+
 from nti.dataserver.authorization import ACT_MODERATE
+from nti.dataserver.authorization import ACT_NTI_ADMIN
 
 @view_config(route_name='objects.generic.traversal',
 			 name='shared_notes',
@@ -204,7 +215,6 @@ def whitelist_participation(request):
 			continue
 
 		if len( users ) > 1:
-			# TODO What do we do here?
 			# We could capture all or only capture the first or skip or combine results
 			pass
 
@@ -232,3 +242,81 @@ def whitelist_participation(request):
 	stream.seek(0)
 	response.body_file = stream
 	return response
+
+class InstructorParticipationReport( StudentParticipationReportPdf ):
+
+	def __call__(self):
+		# Collect data and return it in a form to be rendered
+		# (a dictionary containing data and callable objects)
+		options = self.options
+		self._build_user_info(options)
+
+		self._build_forum_data(options)
+		return options
+
+@view_config(route_name='objects.generic.traversal',
+			 name='InstructorParticipation',
+			 renderer='rest',
+			 request_method='GET',
+			 permission=ACT_NTI_ADMIN)
+class InstructorParticipationView( AbstractAuthenticatedView ):
+	"""
+	A view to pull instructor participation from the catalog.
+	"""
+
+	def __call__(self):
+		values = self.request.params
+		start_time = parse_datetime( values.get( 'start_time' ) )
+		usernames = values.get( 'usernames' )
+		usernames = set( usernames.split() ) if usernames else None
+		catalog = component.getUtility( ICourseCatalog )
+
+		response = self.request.response
+		response.content_encoding = str('identity' )
+		response.content_type = str('text/csv; charset=UTF-8')
+		response.content_disposition = str( 'attachment; filename="instructor_participation.csv"' )
+
+		stream = BytesIO()
+		writer = csv.writer(stream)
+		# TODO Feedback, notes, reply-tos
+		# TODO Handle parent/subinstance counts
+		header = ['Display Name', 'Username', 'Course', 'Topics created', 'Comments Created']
+		writer.writerow(header)
+
+		for catalog_entry in catalog.iterCatalogEntries():
+
+			# Filter by start date
+			if 		start_time \
+				and catalog_entry.StartDate \
+				and start_time > time.mktime( catalog_entry.StartDate.timetuple() ):
+				continue
+
+			# Filter by usernames param
+			course = ICourseInstance( catalog_entry )
+			instructors = set( course.instructors )
+			to_check = usernames.intersection( instructors ) if usernames else instructors
+
+			for instructor in to_check:
+				instructor = IUser( instructor, None )
+				if instructor is None:
+					continue
+
+				# FIXME Why do some instructors not have enrollment record?
+				enrollment = component.queryMultiAdapter((course, instructor),
+														ICourseInstanceEnrollment )
+				if enrollment is None:
+					continue
+
+				spr = InstructorParticipationReport( enrollment, self.request )
+				options = spr()
+				user_info = options['user']
+				comments_created = options['total_forum_objects_created']
+				topics_created = len( options['topics_created'] )
+				writer.writerow( (user_info.display, user_info.username,
+								catalog_entry.ProviderUniqueID,
+									topics_created, comments_created ) )
+		stream.flush()
+		stream.seek(0)
+		response.body_file = stream
+		return response
+
