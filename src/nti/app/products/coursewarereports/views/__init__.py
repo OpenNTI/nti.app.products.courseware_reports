@@ -81,6 +81,7 @@ from nti.app.assessment.interfaces import ICourseAssessmentItemCatalog
 from nti.app.assessment.interfaces import IUsersCourseAssignmentHistory
 
 from nti.assessment.interfaces import IQAssignment
+from nti.assessment.interfaces import IQAssignmentDateContext
 from nti.assessment.__init__ import grader_for_response
 from nti.assessment.randomized.interfaces import IQRandomizedPart
 
@@ -456,6 +457,8 @@ class StudentParticipationReportPdf(_AbstractReportView):
 											  IUsersCourseAssignmentHistory)
 
 		asg_data = list()
+		date_context = IQAssignmentDateContext( self.course )
+
 		for assignment in assignment_catalog:
 			history_item = histories.get(assignment.ntiid)
 			if history_item:
@@ -473,7 +476,7 @@ class StudentParticipationReportPdf(_AbstractReportView):
 			else:
 				grade_value = ''
 				submitted = ''
-			due_date = assignment.available_for_submission_ending
+			due_date = date_context.of( assignment ).available_for_submission_ending
 			submitted_late = submitted > due_date if due_date and submitted else False
 
 			asg_data.append(_AssignmentInfo(assignment.title, submitted,
