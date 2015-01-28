@@ -149,8 +149,6 @@
 		<!-- Our section -->
 		<tal:block tal:repeat="section_item options/section_scoped_comments/items">
 
-			<keepTogether>
-
 			<!-- Section header, if we have more than one -->
 			<tal:block tal:define="section_name python: section_item[0] + ' Comments'">
 
@@ -171,8 +169,6 @@
 				<!-- Loop through each section/scope/user's comments -->
 				<tal:block tal:repeat="all_user_comments python: scoped_item[1].items()">
 
-					<keepTogether>
-
 					<!-- Username header for comments: credit/non-credit -->
 					<tal:block tal:define="student_info python: all_user_comments[0]" >
 						<h3 style="h3" textColor="#3fb3f6"
@@ -187,7 +183,6 @@
 
 					<!-- HTML Cannot use 'structure', as embedded links will break the template -->
 					<!-- Can we avoid overflow errors, using pseudo tables? -->
-					<!-- TODO Verify this is the correct users/forums for sub-sections -->
 					<blockTable style="table_user_1"
 							alignment="left" colWidths="15% 15% 15% 55%"
 							repeatRows="1">
@@ -231,8 +226,6 @@
 						</tal:block>
 					</blockTable>
 
-					</keepTogether>
-
 				</tal:block> <!-- user-comments -->
 				</tal:block> <!-- tal define scope_name -->
 
@@ -241,8 +234,6 @@
 			</tal:block> <!-- scope block -->
 
 			</tal:block>
-
-			</keepTogether>
 
 		</tal:block> <!-- section block -->
 </metal:block>
