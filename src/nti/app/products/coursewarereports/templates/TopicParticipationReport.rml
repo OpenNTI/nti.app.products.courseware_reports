@@ -169,6 +169,8 @@
 				<!-- Loop through each section/scope/user's comments -->
 				<tal:block tal:repeat="all_user_comments python: scoped_item[1].items()">
 
+					<condPageBreak height="4in" />
+
 					<!-- Username header for comments: credit/non-credit -->
 					<tal:block tal:define="student_info python: all_user_comments[0]" >
 						<h3 style="h3" textColor="#3fb3f6"
