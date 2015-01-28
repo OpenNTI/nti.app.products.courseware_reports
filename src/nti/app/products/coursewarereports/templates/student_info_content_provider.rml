@@ -15,5 +15,7 @@
 </tr>
 <tr>
 	<td>Course:</td>
-	<td>${context/_private_course_instance/__name__} - ${view/__parent__/generate_semester}</td>
+	<td>${view/__parent__/course_name} - ${view/__parent__/generate_semester}</td>
 </tr>
+
+

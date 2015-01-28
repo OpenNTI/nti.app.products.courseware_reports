@@ -1,7 +1,7 @@
 
-<metal:block 
+<metal:block
 	tal:define="map view/__parent__/options" >
-	
+
 	<tr tal:condition="python: 'topic_info' in map">
 		<td>Discussion:</td>
 		<td tal:define="topic_info map/topic_info">${topic_info/forum_name}/${topic_info/topic_name}</td>
@@ -12,7 +12,7 @@
 	</tr>
 	<tr>
 		<td>Course:</td>
-		<td>${view/__parent__/course/__name__} - ${view/__parent__/generate_semester}</td>
+		<td>${view/__parent__/course_name} - ${view/__parent__/generate_semester}</td>
 	</tr>
 
 </metal:block>

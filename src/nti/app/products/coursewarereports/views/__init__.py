@@ -313,11 +313,16 @@ class _AbstractReportView(AbstractAuthenticatedView,
 		return [ x for x in objects
 				if not IDeletedObjectPlaceholder.providedBy( x ) ]
 
+	def course_name(self):
+		catalog_entry = ICourseCatalogEntry( self.course, None )
+		result = catalog_entry.ProviderUniqueID if catalog_entry else self.course.__name__
+		return result
+
 	def generate_footer( self ):
 		date = _adjust_date( datetime.utcnow() )
 		date = date.strftime( '%b %d, %Y %I:%M %p' )
 		title = self.report_title
-		course = self.course.__name__
+		course = self.course_name()
 		student = getattr( self, 'student_user', '' )
 		return "%s %s %s %s" % ( title, course, student, date )
 

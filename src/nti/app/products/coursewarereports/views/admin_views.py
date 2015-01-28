@@ -253,6 +253,7 @@ class InstructorParticipationReport( StudentParticipationReportPdf ):
 	"""
 
 	def __call__(self):
+		# TODO Feedback, notes, reply-tos
 		options = self.options
 		self._build_user_info(options)
 
@@ -285,8 +286,10 @@ class InstructorParticipationView( AbstractAuthenticatedView ):
 
 		stream = BytesIO()
 		writer = csv.writer(stream)
-		# TODO Feedback, notes, reply-tos
-		# TODO Handle parent/subinstance counts
+
+		# We do not bother with super-course instance collecting
+		# at the subinstance level. We should have the public instance
+		# in our iteration and we do not want to double-count.
 		header = ['Display Name', 'Username', 'Course', 'Topics created', 'Comments Created']
 		writer.writerow(header)
 
