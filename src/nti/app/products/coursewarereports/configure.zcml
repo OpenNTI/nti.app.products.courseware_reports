@@ -273,6 +273,13 @@
 		view="zope.interface.Interface"
 		layer="pyramid.interfaces.IRequest" />
 
+	<z3c:macro
+		template="templates/std_report_macros.pt"
+		name="section_page_templates"
+		for="zope.interface.Interface"
+		view="zope.interface.Interface"
+		layer="pyramid.interfaces.IRequest" />
+
 	<!-- A default header_table that does nothing -->
 	<adapter name="header_table"
 			 for="zope.interface.Interface

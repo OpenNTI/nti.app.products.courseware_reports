@@ -79,6 +79,11 @@
    			</pageGraphics>
 		</pageTemplate>
 
+		<!--
+		A header to show each section we are in when displaying comments; uses defined 'section_name'
+		-->
+		<metal:block metal:use-macro="macro:section_page_templates" />
+
 	</template>
 
 	<stylesheet metal:use-macro="macro:stylesheet">

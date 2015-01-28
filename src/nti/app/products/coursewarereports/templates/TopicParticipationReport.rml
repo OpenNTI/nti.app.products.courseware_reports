@@ -150,11 +150,13 @@
 		<tal:block tal:repeat="section_item options/section_scoped_comments/items">
 
 			<!-- Section header, if we have more than one -->
-			<tal:block tal:define="section_name python: section_item[0] + ' Comments'">
+			<tal:block tal:define="section_name python: section_item[0]">
 
 			<h2 style="h2" tal:condition="python: len( options['section_scoped_comments'] ) > 1">
-				${section_name}
+				${section_name} Comments
 			</h2>
+
+			<setNextTemplate name="" tal:attributes="name section_name" />
 
 			<!-- Scopes in section -->
 			<tal:block tal:repeat="scoped_item python: section_item[1].items()">
@@ -231,6 +233,8 @@
 				</tal:block> <!-- user-comments -->
 				</tal:block> <!-- tal define scope_name -->
 
+				<!-- Reset our page template for the next section -->
+				<setNextTemplate name="main" />
 				<nextPage />
 
 			</tal:block> <!-- scope block -->

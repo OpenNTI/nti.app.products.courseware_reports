@@ -29,6 +29,39 @@
 
 	</template>
 
+	<!--
+		Create page templates for every section_name in a specified template.
+		This is necessary to get the section_name header to change dynamically.
+		Used in topic reports.
+	-->
+	<metal:block metal:define-macro="section_page_templates">
+		<tal:block tal:repeat="section_template_name options/section_scoped_comments/keys"
+					tal:condition="options/section_scoped_comments | nothing">
+			<pageTemplate id="" tal:attributes="id section_template_name">
+				<frame id="first" x1="0.5in" y1=".5in" width="10in" height="7in" showBoundary="0"/>
+				<pageGraphics>
+					<place x="10in" y="7.8in" width="4in" height=".3in">
+		            	<para 	style="footer"
+		            			fontSize="12"
+		            			tal:content="section_template_name">
+		            			For Credit
+		            	</para>
+					</place>
+					<place x=".5in" y="0.1in" width="7in" height=".3in">
+		            	<para 	style="footer"
+		            			tal:attributes="fontSize python: '8' if len( view.generate_footer() ) > 100 else '10'"
+		            			tal:content="view/generate_footer">
+		            			Student Participation Report - jzuech - CHEM4970 - Apr 11, 2014 01:06 PM
+		            	</para>
+					</place>
+					<drawCentredString x="10.8in" y="0.3in">
+						<pageNumber/>
+					</drawCentredString>
+				</pageGraphics>
+			</pageTemplate>
+		</tal:block>
+	</metal:block>
+
 	<stylesheet metal:define-macro="stylesheet">
 		<paraStyle 	name="report_title"
 					fontSize="20"
