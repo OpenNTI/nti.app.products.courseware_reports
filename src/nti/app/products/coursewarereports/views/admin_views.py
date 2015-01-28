@@ -4,7 +4,6 @@
 .. $Id$
 """
 from __future__ import print_function, unicode_literals, absolute_import, division
-from nti.app.base.abstract_views import AbstractAuthenticatedView
 __docformat__ = "restructuredtext en"
 
 logger = __import__('logging').getLogger(__name__)
@@ -13,9 +12,6 @@ import csv
 import time
 import urllib
 
-from nti.appserver.account_recovery_views import find_users_with_email
-from nti.app.products.gradebook.interfaces import NO_SUBMIT_PART_NAME
-
 from . import StudentParticipationReportPdf
 
 from .utils import parse_datetime
@@ -23,19 +19,26 @@ from .utils import parse_datetime
 from ..reports import _get_self_assessments_for_course
 from ..reports import _do_get_containers_in_course
 
-from zope import component
-
 from io import BytesIO
 
 from pyramid.view import view_config
+
+from zope import component
 
 from zope.catalog.interfaces import ICatalog
 from zope.catalog.catalog import ResultSet
 
 from zope.intid.interfaces import IIntIds
 
+from nti.app.base.abstract_views import AbstractAuthenticatedView
+
+from nti.appserver.account_recovery_views import find_users_with_email
+from nti.app.products.gradebook.interfaces import NO_SUBMIT_PART_NAME
+
 from nti.app.assessment.interfaces import ICourseAssignmentCatalog
 from nti.app.assessment.interfaces import IUsersCourseAssignmentHistory
+from nti.app.assessment.interfaces import IUsersCourseAssignmentHistoryItem
+from nti.app.assessment.common import get_course_assignments
 
 from nti.contenttypes.courses.interfaces import ICourseInstance
 from nti.contenttypes.courses.interfaces import ICourseCatalog
@@ -53,6 +56,8 @@ from nti.dataserver.metadata_index import CATALOG_NAME
 
 from nti.dataserver.authorization import ACT_MODERATE
 from nti.dataserver.authorization import ACT_NTI_ADMIN
+
+from nti.utils.property import CachedProperty
 
 @view_config(route_name='objects.generic.traversal',
 			 name='shared_notes',
@@ -252,12 +257,56 @@ class InstructorParticipationReport( StudentParticipationReportPdf ):
 	participation in a course.
 	"""
 
+	@CachedProperty
+	def _containers_in_course(self):
+		containers_in_course = _do_get_containers_in_course( self.course )
+		return self.md_catalog['containerId'].apply({'any_of': containers_in_course})
+
+	def _get_feedback_count(self):
+		# Really expensive
+		gradebook = IGradeBook( self.course )
+		assignment_catalog = get_course_assignments( self.course )
+		feedback_count = 0
+
+		for asg in assignment_catalog:
+			column = gradebook.getColumnForAssignmentId(asg.ntiid)
+
+			for grade in column.values():
+				try:
+					history = IUsersCourseAssignmentHistoryItem( grade )
+				except TypeError: # Deleted user
+					continue
+
+				for feedback in history.Feedback.values():
+					if feedback.creator == self.student_user:
+						feedback_count += 1
+
+		return feedback_count
+
+	def _get_note_count(self):
+		md_catalog = self.md_catalog
+		intersection = md_catalog.family.IF.intersection
+
+		intids_of_notes = md_catalog['mimeType'].apply(
+										{'any_of': ('application/vnd.nextthought.note',)})
+		intids_of_objects_in_course_containers = self._containers_in_course
+
+		intids_of_notes = intersection( intids_of_notes,
+										intids_of_objects_in_course_containers )
+
+		intids_of_instructor = self.intids_created_by_student
+		intids_of_notes = intersection( intids_of_notes,
+											intids_of_instructor )
+		return len( intids_of_notes )
+
 	def __call__(self):
-		# TODO Feedback, notes, reply-tos
+		# TODO Reply-tos
 		options = self.options
 		self._build_user_info(options)
 
 		self._build_forum_data(options)
+		options['AssignmentFeedbackCount'] = self._get_feedback_count()
+		options['NoteCount'] = self._get_note_count()
 		return options
 
 @view_config(route_name='objects.generic.traversal',
@@ -290,7 +339,8 @@ class InstructorParticipationView( AbstractAuthenticatedView ):
 		# We do not bother with super-course instance collecting
 		# at the subinstance level. We should have the public instance
 		# in our iteration and we do not want to double-count.
-		header = ['Display Name', 'Username', 'Course', 'Topics created', 'Comments Created']
+		header = ['Display Name', 'Username', 'Course', 'Topics Created',
+				'Comments Created', 'Notes Created', 'Assignment Feedback Created']
 		writer.writerow(header)
 
 		for catalog_entry in catalog.iterCatalogEntries():
@@ -322,9 +372,12 @@ class InstructorParticipationView( AbstractAuthenticatedView ):
 				user_info = options['user']
 				comments_created = options['total_forum_objects_created']
 				topics_created = len( options['topics_created'] )
+				note_count = options['NoteCount']
+				feedback_count = options['AssignmentFeedbackCount']
 				writer.writerow( (user_info.display, user_info.username,
 								catalog_entry.ProviderUniqueID,
-									topics_created, comments_created ) )
+								topics_created, comments_created,
+								note_count, feedback_count ) )
 		stream.flush()
 		stream.seek(0)
 		response.body_file = stream
