@@ -4,59 +4,58 @@
 	tal:define="options view/options">
 
 		<para style="normal" fontSize="12" spaceAfter=".1in">
-			This report is an overview of ${context/__name__}.  The report 
+			This report is an overview of ${context/__name__}.  The report
 			includes information about enrollment, self-assessments, assignments,
 			student activity, and discussions.
 		</para>
 		<hr width="100%" />
 
-		<h1 style="h1" fontSize="25" spaceAfter=".3in" spaceBefore=".1in">
-			Enrollment Summary
-		</h1>
-		
-		<para style="subdesc" >
-			This chart shows a breakdown of for-credit and non-credit students taking ${context/__name__}. There 
-			 ${python:request.localizer.pluralize('is', 'are', options['count_total'])}
-			 ${options/count_total} 
-			 ${python:request.localizer.pluralize('student', 'students', options['count_total'])} taking this
-			course.
-		</para>
-		<para 	style="subdesc"
-				tal:condition="not:options/count_open">
-			This course does not have any users.
-		</para>		
+		<tal:block tal:condition="python: options['count_for_credit'] and options['count_open']">
 
-		<illustration width="4in" height="4in">
-		<pieChart dx="1in" dy="0in" 
-				  dwidth="6in" dheight="4in" 
-				  x="1in" y="0" 
-				  width="6in" height="4in"
-				  checkLabelOverlap='true'
-				  tal:condition="options/count_open" 
-				  pointerLabelMode="LeftAndRight"
-				  sameRadii="true"
-				  xRadius="3in"
-				  startAngle="180">
-			<slices>
-				<slice strokeColor="#40b450" fillColor="#40b450" fontName="OpenSans" >
-					<label fillColor="#757474">Non-Credit (${options/count_open})</label>
-					<pointer strokeColor="#757474" piePad=".3in" />
-				</slice>
-				<slice strokeColor="#3fb3f6" fillColor="#3fb3f6" popout="10" fontName="OpenSans">
-					<label fillColor="#757474">For-Credit (${options/count_for_credit})</label>
-					<pointer strokeColor="#757474" piePad=".3in" />
-				</slice>
-			</slices>
-			<data>
-				<series>
-					${options/count_open}
-					${options/count_for_credit}
-				</series>
-			</data>
-		</pieChart>
-		</illustration>
+			<h1 style="h1" fontSize="25" spaceAfter=".3in" spaceBefore=".1in">
+				Enrollment Summary
+			</h1>
 
-		<nextPage />
+			<para style="subdesc" >
+				This chart shows a breakdown of for-credit and non-credit students taking ${context/__name__}. There
+				 ${python:request.localizer.pluralize('is', 'are', options['count_total'])}
+				 ${options/count_total}
+				 ${python:request.localizer.pluralize('student', 'students', options['count_total'])} taking this
+				course.
+			</para>
+
+			<illustration width="4in" height="4in">
+			<pieChart dx="1in" dy="0in"
+					  dwidth="6in" dheight="4in"
+					  x="1in" y="0"
+					  width="6in" height="4in"
+					  checkLabelOverlap='true'
+					  tal:condition="options/count_open"
+					  pointerLabelMode="LeftAndRight"
+					  sameRadii="true"
+					  xRadius="3in"
+					  startAngle="180">
+				<slices>
+					<slice strokeColor="#40b450" fillColor="#40b450" fontName="OpenSans" >
+						<label fillColor="#757474">Non-Credit (${options/count_open})</label>
+						<pointer strokeColor="#757474" piePad=".3in" />
+					</slice>
+					<slice strokeColor="#3fb3f6" fillColor="#3fb3f6" popout="10" fontName="OpenSans">
+						<label fillColor="#757474">For-Credit (${options/count_for_credit})</label>
+						<pointer strokeColor="#757474" piePad=".3in" />
+					</slice>
+				</slices>
+				<data>
+					<series>
+						${options/count_open}
+						${options/count_for_credit}
+					</series>
+				</data>
+			</pieChart>
+			</illustration>
+
+			<nextPage />
+		</tal:block>
 
 		<h1 style="h1" spaceBefore="1in" spaceAfter=".4in">
 			Assignments and Assessments
@@ -92,7 +91,7 @@
 					<td tal:content="item/non_credit_percent_contributed_str">Percent Attempted</td>
 				</tr>
 			</blockTable>
-		
+
 		<para 	style="subdesc"
 				tal:condition="not:options/self_assessment_data">
 			This course contains no self-assessments.
@@ -122,11 +121,11 @@
 					<td tal:content="item/non_credit_attempted_perc">Percent attempted</td>
 				</tr>
 			</blockTable>
-		
+
 		<para 	style="subdesc"
 				tal:condition="not:options/assignment_data">
 			This course contains no assignments.
-		</para>	
+		</para>
 
 		<condPageBreak height="4in" />
 
@@ -152,52 +151,52 @@
 					<td tal:content="item/std_dev_grade">Standard Deviation</td>
 				</tr>
 			</blockTable>
-		
+
 		<para 	style="subdesc"
 				tal:condition="not:options/assignment_data">
 			This course contains no assignments.
 		</para>
 
 		<setNextTemplate name="table_pie" />
-		
+
 		<nextPage />
-		
+
 		<h1 style="h1" fontSize="25" spaceBefore=".5in" spaceAfter=".3in">
 			Student Activity
 		</h1>
-		
+
 		<para style="subdesc" spaceAfter=".1in">
 			The following items show activity taking place in ${context/__name__}. This information
 			includes the number of notes, highlights, discussions, and comments created by all the students
-			in the course, where applicable. 
+			in the course, where applicable.
 		</para>
 		<hr width="100%" />
-		
+
 		<h2 style="h2">
 			Activity: For-Credit Students
 		</h2>
-		
+
 		<para 	style="subdesc"
 				tal:condition="not:options/engagement_data/for_credit">
 			This course does not have any for-credit student activity.
 		</para>
-		
+
 		<nextFrame name="table_frame" />
-		
+
 		<metal:macro 	tal:define="engagement_stat options/engagement_data/for_credit"
 						metal:use-macro="macro:engagement_stats_table"
 						tal:condition="options/engagement_data/for_credit" />
-		
+
 		<nextFrame name="pie_frame" />
-		
+
 		<illustration width="4in" height="5in"
 			  	  tal:define="engagement_stat options/engagement_data/for_credit"
 				  metal:use-macro="macro:engagement_stats_pie"
 				  tal:condition="options/engagement_data/for_credit" >
 		</illustration>
-		
+
 		<nextFrame name="table_frame" />
-		
+
 		<h2 style="h2">
 			Activity: Non-Credit Students
 		</h2>
@@ -205,13 +204,13 @@
 				tal:condition="not:options/engagement_data/non_credit">
 			This course does not have any non-credit student activity.
 		</para>
-		
+
 		<metal:macro 	tal:define="engagement_stat options/engagement_data/non_credit"
 						metal:use-macro="macro:engagement_stats_table"
 						tal:condition="options/engagement_data/non_credit"  />
-		
+
 		<nextFrame name="pie_frame" />
-		
+
 		<illustration width="4in" height="5in"
 			  	  tal:define="engagement_stat options/engagement_data/non_credit"
 				  metal:use-macro="macro:engagement_stats_pie"
@@ -221,7 +220,7 @@
 <!-- Aggregate activity view and note sharing stats
 		<nextPage />
 		<nextFrame name="table_frame" />
-		
+
 		<h2 style="h2">
 			Activity: Aggregate
 		</h2>
@@ -229,15 +228,15 @@
 				tal:condition="not:options/engagement_data/aggregate">
 			This course does not have any non-credit student activity.
 		</para>
-		
+
 		<metal:macro 	tal:define="engagement_stat options/engagement_data/aggregate"
 						metal:use-macro="macro:engagement_stats_table"
 						tal:condition="options/engagement_data/aggregate"  />
-				
+
 		<h2 style="h2">
 			Note Sharing
 		</h2>
-						
+
 		<blockTable style='default'
 					colWidths="35% 15%"
 					tal:condition="options/note_stat"
@@ -259,17 +258,17 @@
 				<td>Other (Private)</td>
 				<td tal:content="options/note_stat/shared_other">25</td>
 			</tr>
-		</blockTable>				
-						
+		</blockTable>
+
 		<nextFrame name="pie_frame" />
-		
+
 		<illustration width="4in" height="5in"
 			  	  tal:define="engagement_stat options/engagement_data/aggregate"
 				  metal:use-macro="macro:engagement_stats_pie"
 				  tal:condition="options/engagement_data/aggregate" >
-		</illustration>				
+		</illustration>
 -->
-	
+
 		<setNextTemplate name="main"/>
 
 		<nextPage />
@@ -308,12 +307,12 @@ Removing activity by place for now
 		<h1 style="h1" spaceBefore=".5in" spaceAfter=".5in">
 			Discussions
 		</h1>
-		
+
 		<para 	style="subdesc"
 				tal:condition="not:options/aggregate_forum_stats/forum_objects_by_week_number">
 			This course does not have any comments in this course's forums.
 		</para>
-		
+
 		<para style="subdesc" spaceAfter=".2in"
 				tal:condition="options/aggregate_forum_stats/forum_objects_by_week_number" >
 			The following information presents an overview of the discussion activity for ${context/__name__}.
@@ -323,7 +322,7 @@ Removing activity by place for now
 		<tal:block tal:condition="options/aggregate_forum_stats/forum_objects_by_week_number">
 			<tal:block tal:define="forum_stat options/aggregate_forum_stats;
 					  			   value_axis_name string:Comments">
-				
+
 				<h2 style="h2" spaceAfter=".5in" >
 					Weekly Activity for All Forums
 				</h2>
@@ -333,11 +332,11 @@ Removing activity by place for now
 				</illustration>
 
 				<nextPage />
-				
+
 				<h2 style="h2">
 					Forum Breakdown
 				</h2>
-				
+
 					<blockTable colWidths="30% 20% 20% 30%" style='default'
 								repeatRows="1">
 						<tr>
@@ -355,54 +354,54 @@ Removing activity by place for now
 					</blockTable>
 
 				<setNextTemplate name="table_pie" />
-		
+
 				<nextPage />
-		
+
 				<h1 style="h1" fontSize="20" spaceAfter="1in">
 					Top Commenters in All Forums
 				</h1>
-		
+
 				<nextFrame name="table_frame" />
-		
-				<metal:macro 
+
+				<metal:macro
 							tal:define="top_commenters options/aggregate_creators"
 							metal:use-macro="macro:comment_table" />
-		
+
 				<nextFrame name="pie_frame" />
-		
+
 				<illustration width="6in" height="6in"
 					  	  tal:define="top_commenters options/aggregate_creators;
 										  top_commenters_colors options/top_commenters_colors"
 						  metal:use-macro="macro:forum_top_commenters">
 				</illustration>
-		
-		
+
+
 				<setNextTemplate name="main"/>
 				<nextPage />
 
 			</tal:block>
 		</tal:block>
-		
+
 		<h1 style="h1" spaceBefore=".5in" spaceAfter=".5in"
 			tal:condition="options/engagement_to_performance">
 			Engagement to Performance
 		</h1>
-		
+
 		<para style="subdesc" spaceAfter=".2in"
 				tal:condition="options/engagement_to_performance" >
 			The following information correlates engagement with performance.
 		</para>
-		<hr width="100%" 
+		<hr width="100%"
 			tal:condition="options/engagement_to_performance"/>
-		
+
 		<h2 style="h2"
 			tal:condition="options/engagement_to_performance">
 			Quartile Stats
 		</h2>
-		
-		<blockTable style='default' 
+
+		<blockTable style='default'
 				alignment="left"
-				colWidths="20% 10% 10%" 
+				colWidths="20% 10% 10%"
 				tal:define="perf options/engagement_to_performance"
 				tal:condition="options/engagement_to_performance"
 				repeatRows="1">
@@ -432,14 +431,14 @@ Removing activity by place for now
 				<td tal:content="perf/fourth/value">Value</td>
 			</tr>
 		</blockTable>
-		
+
 		<h2 style="h2"
 			tal:condition="options/engagement_to_performance">
 			Quartile Performance
 		</h2>
-		
-		<blockTable style='default' 
-				colWidths="36% 8% 8% 8% 8% 8% 8% 8% 8%" 
+
+		<blockTable style='default'
+				colWidths="36% 8% 8% 8% 8% 8% 8% 8% 8%"
 				tal:define="perf options/engagement_to_performance"
 				tal:condition="options/engagement_to_performance"
 				repeatRows="1">
