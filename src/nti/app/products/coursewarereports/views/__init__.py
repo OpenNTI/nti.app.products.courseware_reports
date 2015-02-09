@@ -92,8 +92,8 @@ from nti.app.products.gradebook.interfaces import IGradeBook
 from nti.app.products.gradebook.interfaces import IGradeBookEntry
 from nti.app.products.gradebook.assignments import get_course_assignments
 
-from nti.contenttypes.courses.interfaces import ICourseCatalogEntry,\
-	ICourseSubInstance
+from nti.contenttypes.courses.interfaces import ICourseCatalogEntry
+from nti.contenttypes.courses.interfaces import	ICourseSubInstance
 from nti.contenttypes.courses.interfaces import ICourseInstance
 
 from nti.dataserver.interfaces import IUser
@@ -376,7 +376,11 @@ class StudentParticipationReportPdf(_AbstractReportView):
 		course = self.course
 		md_catalog = self.md_catalog
 		uidutil = self.uidutil
-		course_board = course.Discussions
+
+		if ICourseSubInstance.providedBy( course ):
+			course_boards = ( course.Discussions, course.__parent__.__parent__.Discussions )
+		else:
+			course_boards = (course.Discussions,)
 		# Graph of forum participation over time (time-series of forum-related
 		# objects created bucketed by something--day/week?) probably a linePlot?
 		# We find these objects using the catalog rather than traversing through
@@ -394,7 +398,7 @@ class StudentParticipationReportPdf(_AbstractReportView):
 
 		#Grab by course, ignore deleted comments and those before course start
 		live_objects = self.filter_objects( (	x for x in forum_objects_created_by_student
-											if 	find_interface(x, ICommunityBoard) == course_board) )
+												if find_interface(x, ICommunityBoard) in course_boards) )
 
 		# Group the forum objects by day and week
 		time_buckets = _common_buckets(	live_objects,
