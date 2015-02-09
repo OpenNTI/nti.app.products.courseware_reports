@@ -17,43 +17,75 @@
 		<h2 style="h2" spaceAfter=".3in">
 			Assignment Submission
 		</h2>
-		
+
 		<blockTable style='default' >
 			<tr>
 				<td><para style="header">Assignment Title</para></td>
-				<td><para style="header_r">For-Credit Students</para></td>
-				<td><para style="header_r">Non-Credit Students</para></td>
-				<td><para style="header_r">Total Students</para></td>
-				<td><para style="header_r">For-Credit <br/> Attempted (%)</para></td>
-				<td><para style="header_r">Non-Credit <br/> Attempted (%)</para></td>
+				<td tal:condition="options/count_for_credit">
+					<para style="header_r">For-Credit Students</para>
+				</td>
+				<td tal:condition="options/count_open">
+					<para style="header_r">Non-Credit Students</para>
+				</td>
+				<td tal:condition="python: options['count_for_credit'] and options['count_open']">
+					<para style="header_r">Total Students</para>
+				</td>
+				<td tal:condition="options/count_for_credit">
+					<para style="header_r">For-Credit <br/> Attempted (%)</para>
+				</td>
+				<td tal:condition="options/count_open">
+					<para style="header_r">Non-Credit <br/> Attempted (%)</para>
+				</td>
 			</tr>
 			<tr tal:repeat="item options/assignment_data">
 				<td><para tal:content="item/title" style="data" >The Assessment Title</para></td>
-				<td tal:content="item/for_credit_total">For-Credit Attempts</td>
-				<td tal:content="item/non_credit_total">Non-Credit Attempts</td>
-				<td tal:content="item/total">Total Attempts</td>
-				<td tal:content="item/for_credit_attempted_perc">Percent attempted</td>
-				<td tal:content="item/non_credit_attempted_perc">Percent attempted</td>
+				<td tal:condition="options/count_for_credit"
+					tal:content="item/for_credit_total">For-Credit Attempts
+				</td>
+				<td tal:condition="options/count_open"
+					tal:content="item/non_credit_total">Non-Credit Attempts
+				</td>
+				<td tal:condition="python: options['count_for_credit'] and options['count_open']"
+					tal:content="item/total">Total Attempts
+				</td>
+				<td tal:condition="options/count_for_credit"
+					tal:content="item/for_credit_attempted_perc">Percent attempted
+				</td>
+				<td tal:condition="options/count_open"
+					tal:content="item/non_credit_attempted_perc">Percent attempted
+				</td>
 			</tr>
 		</blockTable>
-		
+
 		<h2 style="h2" spaceBefore=".7in" spaceAfter=".3in">
 			Assignment Results
 		</h2>
 		<blockTable style='default'>
 			<tr>
 				<td><para style="header">Assignment Title</para></td>
-				<td><para style="header_r">Average: For-Credit</para></td>
-				<td><para style="header_r">Average: Non-Credit</para></td>
-				<td><para style="header_r">Average: All</para></td>
+				<td tal:condition="options/count_for_credit">
+					<para style="header_r">Average: For-Credit</para>
+				</td>
+				<td tal:condition="options/count_open">
+					<para style="header_r">Average: Non-Credit</para>
+				</td>
+				<td tal:condition="python: options['count_for_credit'] and options['count_open']">
+					<para style="header_r">Average: All</para>
+				</td>
 				<td><para style="header_r">Median: All</para></td>
 				<td><para style="header_r">Standard Deviation: All</para></td>
 			</tr>
 			<tr tal:repeat="item options/assignment_data">
 				<td><para tal:content="item/title" style="data">The Assessment Title</para></td>
-				<td tal:content="item/for_credit_avg_grade">For-Credit Average</td>
-				<td tal:content="item/non_credit_avg_grade">Non-Credit Average</td>
-				<td tal:content="item/avg_grade">Average</td>
+				<td tal:condition="options/count_for_credit"
+					tal:content="item/for_credit_avg_grade">For-Credit Average
+				</td>
+				<td tal:condition="options/count_open"
+					tal:content="item/non_credit_avg_grade">Non-Credit Average
+				</td>
+				<td tal:condition="python: options['count_for_credit'] and options['count_open']"
+					tal:content="item/avg_grade">Average
+				</td>
 				<td tal:content="item/median_grade">Median</td>
 				<td tal:content="item/std_dev_grade">Standard Deviation</td>
 			</tr>
@@ -64,34 +96,34 @@
 		<h1 style="h1" fontSize="22" spaceAfter=".2in" spaceBefore=".1in" >
 			Question Breakdown
 		</h1>
-		
+
 		<para style="normal" fontSize="10" spaceBefore=".1in" spaceAfter=".1in">
 			Answers are ordered according to the number of students who chose them.
 		</para>
-		
+
 		<hr width="100%" />
-		
+
 		<para 	style="subdesc"
 				tal:condition="not:options/question_stats">
 			This assignment does not have any questions.
 		</para>
-		
-		<tal:block  tal:repeat="question options/question_stats" 
+
+		<tal:block  tal:repeat="question options/question_stats"
 					tal:condition="options/question_stats">
-					
+
 			<keepTogether>
 			<h2 style="h2" fontSize="10" spaceBefore=".3in" spaceAfter=".2"
 				tal:content="string:${question/title}: Average Score ${question/avg_score}">
 				Question Number
 			</h2>
-			<para 	style="question" 
-					tal:content="question/content" 
+			<para 	style="question"
+					tal:content="question/content"
 					spaceAfter=".1in" >
 				The content of the question.
 			</para>
 
 			<metal:block tal:repeat="question_part question/question_part_stats" >
-			
+
 				<nextPage tal:condition="python: repeat.question_part.number > 1" />
 
 				<h3 style="h3"
@@ -102,31 +134,31 @@
 					Part I
 				</h3>
 
-	
+
 				<!-- Single column answers -->
 				<blockTable alignment="left"
 							colWidths="6% 50% 7% 8%"
 							repeatRows="1"
 							tal:condition="python: question_part.answer_stats and not isinstance( question_part.answer_stats[0].answer, tuple )">
 					<blockTableStyle id="new" >
-						<lineStyle 	thickness="2" 
-									start="0,0" stop="-1,-1" 
-									kind="linebelow" colorName="white" />	
+						<lineStyle 	thickness="2"
+									start="0,0" stop="-1,-1"
+									kind="linebelow" colorName="white" />
 						<blockTextColor start="0,0" stop="-1,0" colorName="#b8b8b8" />
-						<blockFont start="0,0" stop="-1,0" name="OpenSansSemiBold" size="10" />	
-					</blockTableStyle>		
-						
+						<blockFont start="0,0" stop="-1,0" name="OpenSansSemiBold" size="10" />
+					</blockTableStyle>
+
 					<tr>
 						<td />
 						<td />
 						<td align="right">Count</td>
 						<td align="right">Percent</td>
 					</tr>
-						
+
 					<tr tal:repeat="answer_stat question_part/answer_stats">
 						<td tal:content="string:${answer_stat/letter_prefix}."
 							tal:attributes="background python: '#cbf2db' if answer_stat.is_correct else '#f5f5f5'"
-							align="right" 
+							align="right"
 							vAlign="middle"
 							leftPadding="20"
 							topPadding="20"
@@ -137,7 +169,7 @@
 						<td tal:attributes="background python: '#cbf2db' if answer_stat.is_correct else '#f5f5f5'"
 							vAlign="middle"
 							fontColor="#494949">
-								<para 	style="answer" 
+								<para 	style="answer"
 										tal:content="answer_stat/answer">
 									answer
 								</para>
@@ -162,35 +194,35 @@
 						</td>
 					</tr>
 				</blockTable>
-				
+
 				<!-- Handle multi-column answers -->
 				<blockTable alignment="left"
 							colWidths="6% 25% 25% 7% 8%"
 							repeatRows="1"
 							tal:condition="python: question_part.answer_stats and isinstance( question_part.answer_stats[0].answer, tuple )">
 					<blockTableStyle id="new" >
-						<lineStyle 	thickness="2" 
-									start="0,0" stop="-1,-1" 
+						<lineStyle 	thickness="2"
+									start="0,0" stop="-1,-1"
 									kind="linebelow" colorName="white" />
-						<lineStyle 	thickness="2" 
-									start="1,0" stop="1,-1" 
-									kind="lineafter" colorName="white" />	
+						<lineStyle 	thickness="2"
+									start="1,0" stop="1,-1"
+									kind="lineafter" colorName="white" />
 						<blockTextColor start="0,0" stop="-1,0" colorName="#b8b8b8" />
-						<blockFont start="0,0" stop="-1,0" name="OpenSansSemiBold" size="10" />							
-					</blockTableStyle>		
-						
+						<blockFont start="0,0" stop="-1,0" name="OpenSansSemiBold" size="10" />
+					</blockTableStyle>
+
 					<tr>
 						<td />
 						<td />
 						<td />
 						<td align="right">Count</td>
 						<td align="right">Percent</td>
-					</tr>	
-						
+					</tr>
+
 					<tr tal:repeat="answer_stat question_part/answer_stats">
 						<td tal:content="string:${answer_stat/letter_prefix}."
 							tal:attributes="background python: '#cbf2db' if answer_stat.is_correct else '#f5f5f5'"
-							align="right" 
+							align="right"
 							vAlign="middle"
 							leftPadding="20"
 							topPadding="20"

@@ -139,9 +139,8 @@ class _StudentInfo( namedtuple( '_StudentInfo',
 
 ALL_USERS = 'ALL_USERS'
 
-def _get_enrollment_scope_dict( course ):
+def _get_enrollment_scope_dict( course, instructors=set() ):
 	"Build a dict of scope_name to usernames."
-	# This includes instructors.
 	# XXX We are not exposing these multiple scopes in many places,
 	# including many reports and in TopCreators.
 	# XXX This is confusing if we are nesting scopes.  Perhaps
@@ -149,7 +148,6 @@ def _get_enrollment_scope_dict( course ):
 	# Seems like it would make sense to have an Everyone scope...
 	# { Everyone: { Public : ( Open, Purchased ), ForCredit : ( FCD, FCND ) }}
 	results = {}
-
 	# Lumping purchased in with public.
 	public_scope = course.SharingScopes.get( 'Public', None )
 	purchased_scope = course.SharingScopes.get( 'Purchased', None )
@@ -163,11 +161,12 @@ def _get_enrollment_scope_dict( course ):
 			# If our scope is not 'public'-ish, store it separately.
 			# All credit-type users should end up in ForCredit.
 			scope_users = {x.lower() for x in IEnumerableEntityContainer(scope).iter_usernames()}
+			scope_users = scope_users - instructors
 			results[scope_name] = scope_users
 			non_public_users = non_public_users.union( scope_users )
 
 	all_users = {x.lower() for x in IEnumerableEntityContainer(public_scope).iter_usernames()}
-	results['Public'] = all_users - non_public_users
+	results['Public'] = all_users - non_public_users - instructors
 	results[ALL_USERS] = all_users
 	return results
 
@@ -237,7 +236,7 @@ class _AbstractReportView(AbstractAuthenticatedView,
 		# including many reports and in TopCreators.
 		# XXX This is confusing if we are nesting scopes.  Perhaps
 		# it makes more sense to keep things in the Credit/NonCredit camps.
-		return _get_enrollment_scope_dict( self.course )
+		return _get_enrollment_scope_dict( self.course, self.instructor_usernames )
 
 	def _get_users_for_scope(self, scope_name):
 		"Returns a set of users for the given scope_name, or None if that scope does not exist."
@@ -992,7 +991,7 @@ class CourseSummaryReportPdf(_AbstractReportView):
 		intids_of_hls = intersection( intids_of_hls,
 									  intids_of_objects_in_course_containers )
 
-		#We could filter notes and highlights (exclude deleted)
+		# We could filter notes and highlights (exclude deleted)
 		notes = ResultSet( intids_of_notes, self.uidutil )
 		note_creators = _TopCreators( self )
 		note_creators.aggregate_creators = self.note_aggregator
@@ -1013,7 +1012,7 @@ class CourseSummaryReportPdf(_AbstractReportView):
 		total_unique_note = note_creators.unique_contributors
 		total_perc_s_note = note_creators.percent_contributed_str()
 
-		#Highlights
+		# Highlights
 		highlights = ResultSet(intids_of_hls, self.uidutil)
 		hl_creators = _TopCreators( self )
 		hl_creators.aggregate_creators = self.highlight_aggregator
@@ -1033,7 +1032,7 @@ class CourseSummaryReportPdf(_AbstractReportView):
 		total_unique_hl = hl_creators.unique_contributors
 		total_perc_s_hl = hl_creators.percent_contributed_str()
 
-		#Discussions/comments
+		# Discussions/comments
 		discussion_creators = _TopCreators( self )
 		comment_creators = _TopCreators( self )
 
@@ -1044,7 +1043,7 @@ class CourseSummaryReportPdf(_AbstractReportView):
 					if not IDeletedObjectPlaceholder.providedBy( comment ):
 						comment_creators.incr_username( comment.creator.username )
 
-		#Discussions
+		# Discussions
 		for_credit_discussion_count = discussion_creators.for_credit_total
 		non_credit_discussion_count = discussion_creators.non_credit_total
 		total_discussion_count = discussion_creators.total
@@ -1058,7 +1057,7 @@ class CourseSummaryReportPdf(_AbstractReportView):
 		total_unique_discussion = discussion_creators.unique_contributors
 		total_perc_s_discussion = discussion_creators.percent_contributed_str()
 
-		#Comments
+		# Comments
 		for_credit_comment_count = comment_creators.for_credit_total
 		non_credit_comment_count = comment_creators.non_credit_total
 		total_comment_count = comment_creators.total
@@ -1341,6 +1340,12 @@ class AssignmentSummaryReportPdf(_AbstractReportView):
 
 	report_title = _('Assignment Summary Report')
 
+	def _build_enrollment_info(self, options):
+
+		options['count_for_credit'] = len(self.for_credit_student_usernames)
+		options['count_open'] = len(self.open_student_usernames)
+		options['count_total'] = options['count_for_credit'] + options['count_open']
+
 	def _build_assignment_data(self, options):
 		stats = [_assignment_stat_for_column(self, self.context)]
 		options['assignment_data'] = stats
@@ -1529,6 +1534,7 @@ class AssignmentSummaryReportPdf(_AbstractReportView):
 	def __call__(self):
 		self._check_access()
 		options = self.options
+		self._build_enrollment_info( options )
 		self._build_assignment_data(options)
 		self._build_question_data(options)
 		return options
