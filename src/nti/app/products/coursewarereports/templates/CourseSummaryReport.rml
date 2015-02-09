@@ -72,25 +72,47 @@
 						repeatRows="1">
 				<tr>
 					<td><para style="header">Assessment Title</para></td>
-					<td><para style="header_r">By For-Credit Students</para></td>
-					<td><para style="header_r">For-Credit Student Attempts</para></td>
-					<td><para style="header_r">By Non-Credit Students</para></td>
-					<td><para style="header_r">Non-Credit Student Attempts</para></td>
-					<td><para style="header_r">Total Attempts</para></td>
+					<td tal:condition="options/count_for_credit">
+						<para style="header_r">By For-Credit Students</para>
+					</td>
+					<td tal:condition="options/count_for_credit">
+						<para style="header_r">For-Credit Student Attempts</para>
+					</td>
+					<td tal:condition="options/count_open">
+						<para style="header_r">By Non-Credit Students</para>
+					</td>
+					<td tal:condition="options/count_open">
+						<para style="header_r">Non-Credit Student Attempts</para>
+					</td>
+					<td tal:condition="python: options['count_for_credit'] and options['count_open']">
+						<para style="header_r">Total Attempts</para>
+					</td>
 					<td><para style="header_r">Average Attempts Per Student</para></td>
-					<td><para style="header_r">For-Credit Students (%)</para></td>
-					<td><para style="header_r">Non-Credit Students (%)</para></td>
+					<td tal:condition="options/count_for_credit">
+						<para style="header_r">For-Credit Students (%)</para>
+					</td>
+					<td tal:condition="options/count_open">
+						<para style="header_r">Non-Credit Students (%)</para>
+					</td>
 				</tr>
 				<tr tal:repeat="item options/self_assessment_data">
 					<td><para tal:content="item/title" style="data">The Assessment Title</para></td>
-					<td tal:content="item/unique_contributors_for_credit">For-Credit Students</td>
-					<td tal:content="item/for_credit_total">For-Credit Attempts</td>
-					<td tal:content="item/unique_contributors_non_credit">Non-Credit Students</td>
-					<td tal:content="item/non_credit_total">Non-Credit Attempts</td>
-					<td tal:content="item/total">Total Attempts</td>
+					<td tal:condition="options/count_for_credit"
+						tal:content="item/unique_contributors_for_credit">For-Credit Students</td>
+					<td tal:condition="options/count_for_credit"
+						tal:content="item/for_credit_total">For-Credit Attempts</td>
+					<td tal:condition="options/count_open"
+						tal:content="item/unique_contributors_non_credit">Non-Credit Students</td>
+					<td tal:condition="options/count_open"
+						tal:content="item/non_credit_total">Non-Credit Attempts</td>
+					<td tal:condition="python: options['count_for_credit'] and options['count_open']"
+						tal:content="item/total">Total Attempts
+					</td>
 					<td tal:content="item/average_count_str">Average Taken</td>
-					<td tal:content="item/for_credit_percent_contributed_str">Percent Attempted</td>
-					<td tal:content="item/non_credit_percent_contributed_str">Percent Attempted</td>
+					<td tal:condition="options/count_for_credit"
+						tal:content="item/for_credit_percent_contributed_str">Percent Attempted</td>
+					<td tal:condition="options/count_open"
+						tal:content="item/non_credit_percent_contributed_str">Percent Attempted</td>
 				</tr>
 			</blockTable>
 
@@ -108,19 +130,35 @@
 						repeatRows="1">
 				<tr>
 					<td><para style="header">Assignment Title</para></td>
-					<td><para style="header_r">For-Credit Students</para></td>
-					<td><para style="header_r">Non-Credit Students</para></td>
+					<td tal:condition="options/count_for_credit">
+						<para style="header_r">For-Credit Students</para>
+					</td>
+					<td tal:condition="options/count_open">
+						<para style="header_r">Non-Credit Students</para>
+					</td>
 					<td><para style="header_r">Total Students</para></td>
-					<td><para style="header_r">For-Credit <br/> Students (%)</para></td>
-					<td><para style="header_r">Non-Credit <br/> Students (%)</para></td>
+					<td tal:condition="options/count_for_credit">
+						<para style="header_r">For-Credit <br/> Students (%)</para>
+					</td>
+					<td tal:condition="options/count_open">
+						<para style="header_r">Non-Credit <br/> Students (%)</para>
+					</td>
 				</tr>
 				<tr tal:repeat="item options/assignment_data">
 					<td><para tal:content="item/title" style="data">The Assessment Title</para></td>
-					<td tal:content="item/for_credit_total">For-Credit Attempts</td>
-					<td tal:content="item/non_credit_total">Non-Credit Attempts</td>
+					<td tal:condition="options/count_for_credit"
+						tal:content="item/for_credit_total">For-Credit Attempts
+					</td>
+					<td tal:condition="options/count_open"
+						tal:content="item/non_credit_total">Non-Credit Attempts
+					</td>
 					<td tal:content="item/total">Total Attempts</td>
-					<td tal:content="item/for_credit_attempted_perc">Percent attempted</td>
-					<td tal:content="item/non_credit_attempted_perc">Percent attempted</td>
+					<td tal:condition="options/count_for_credit"
+						tal:content="item/for_credit_attempted_perc">Percent attempted
+					</td>
+					<td tal:condition="options/count_open"
+						tal:content="item/non_credit_attempted_perc">Percent attempted
+					</td>
 				</tr>
 			</blockTable>
 
@@ -138,17 +176,29 @@
 						repeatRows="1">
 				<tr>
 					<td><para style="header">Assignment Title</para></td>
-					<td><para style="header_r">Average: For-Credit</para></td>
-					<td><para style="header_r">Average: Non-Credit</para></td>
-					<td><para style="header_r">Average: All</para></td>
+					<td tal:condition="options/count_for_credit">
+						<para style="header_r">Average: For-Credit</para>
+					</td>
+					<td tal:condition="options/count_open">
+						<para style="header_r">Average: Non-Credit</para>
+					</td>
+					<td tal:condition="python: options['count_for_credit'] and options['count_open']">
+						<para style="header_r">Average: All</para>
+					</td>
 					<td><para style="header_r">Median: All</para></td>
 					<td><para style="header_r">Standard Deviation: All</para></td>
 				</tr>
 				<tr tal:repeat="item options/assignment_data">
 					<td><para tal:content="item/title" style="data">The Assessment Title</para></td>
-					<td tal:content="item/for_credit_avg_grade">For-Credit Average</td>
-					<td tal:content="item/non_credit_avg_grade">Non-Credit Average</td>
-					<td tal:content="item/avg_grade">Average</td>
+					<td tal:condition="options/count_for_credit"
+						tal:content="item/for_credit_avg_grade">For-Credit Average
+					</td>
+					<td tal:condition="options/count_open"
+						tal:content="item/non_credit_avg_grade">Non-Credit Average
+					</td>
+					<td tal:condition="python: options['count_for_credit'] and options['count_open']"
+						tal:content="item/avg_grade">Average
+					</td>
 					<td tal:content="item/median_grade">Median</td>
 					<td tal:content="item/std_dev_grade">Standard Deviation</td>
 				</tr>
