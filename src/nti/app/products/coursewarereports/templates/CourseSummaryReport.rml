@@ -4,9 +4,11 @@
 	tal:define="options view/options">
 
 		<para style="normal" fontSize="12" spaceAfter=".1in">
-			This report is an overview of ${context/__name__}.  The report
+			This report is an overview of ${view/course_name}.  The report
 			includes information about enrollment, self-assessments, assignments,
-			student activity, and discussions.
+			student activity, and discussions
+			<span tal:condition="not:python: options['count_for_credit'] and options['count_open']"
+				tal:content="python: ' for ' + str( options['count_for_credit'] or options['count_open'] ) + ' students'" />.
 		</para>
 		<hr width="100%" />
 
