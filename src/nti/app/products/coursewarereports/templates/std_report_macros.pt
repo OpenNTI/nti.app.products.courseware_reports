@@ -314,16 +314,12 @@
 				  tal:attributes="width top_commenters_ill_width|default;
 								  height top_commenters_ill_height|default">
 
-		<!-- 	We will use a pie-chart, unless there is a remainder (e.g. 'aggregate_remainder').
-				If so, we will fall back to a bar chart.  -->
-
 		<barChart dx="0in" dy="0in"
 				  dwidth="4in" dheight="4in"
 				  x="1.3in" y="0"
 				  width="3.5in"
 				  height="4in" direction="horizontal"
-				  barLabelFormat="%2d" barWidth="5"
-				  tal:condition="top_commenters/aggregate_remainder" >
+				  barLabelFormat="%2d" barWidth="5" >
 			<barLabels fillColor="#757474" fontSize="12" boxAnchor="w" dx="3" />
 			<bars>
 				<bar fillColor="#ffbe4d" strokeColor="#ffbe4d" />
@@ -364,41 +360,6 @@
 			</data>
 		</barChart>
 
-		<pieChart dx="0in" dy="0in"
-				  dwidth="5.5in" dheight="5in"
-				  x="0in" y="0"
-				  width="5.5in" height="5in"
-				  checkLabelOverlap='true'
-				  strokeWidth="0"
-				  sameRadii="true"
-				  xRadius="5in"
-				  pointerLabelMode="LeftAndRight"
-				  tal:condition="not: top_commenters/aggregate_remainder|options/top_commenters/aggregate_remainder"
-				  tal:attributes="dwidth top_commenters_ill_width|default;
-								  dheight top_commenters_ill_height|default;
-								  width top_commenters_chart_width|default;
-								  height top_commenters_chart_height|default">
-			<slices>
-				<slice  fontSize="9"
-						fontName="OpenSans"
-						tal:repeat="item top_commenters|options/top_commenters"
-					   	tal:attributes="fillColor python:top_commenters_colors[repeat.item.number];
-					   					strokeColor python:top_commenters_colors[repeat.item.number]">
-					 	<label 	fillColor="#757474"
-					   			tal:content="python: item.display + ' (%0.1f%%)' % item.perc">
-					   		User1
-					   </label>
-					   <pointer strokeColor="#757474" piePad=".2in" />
-				</slice>
-			</slices>
-			<data>
-				<series tal:content="top_commenters/series|options/top_commenters/series">
-					100
-					75
-					25
-				</series>
-			</data>
-		</pieChart>
 	</illustration>
 
 	<metal:macro metal:define-macro="engagement_stats_table" >
