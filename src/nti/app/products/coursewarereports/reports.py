@@ -23,10 +23,10 @@ from numpy import asarray
 from numpy import average
 from numbers import Number
 
-from nti.utils.property import Lazy
+from nti.common.property import Lazy
 
-from nti.app.assessment.interfaces import ICourseAssessmentItemCatalog
 from nti.app.assessment.interfaces import ICourseAssignmentCatalog
+from nti.app.assessment.interfaces import ICourseAssessmentItemCatalog
 
 from nti.assessment.interfaces import IQAssignment
 from nti.assessment.interfaces import IQuestionSet

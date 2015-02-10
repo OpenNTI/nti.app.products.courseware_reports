@@ -25,8 +25,8 @@
 
 	<!-- z3c:template/layout -->
 	<include package="z3c.template" file="meta.zcml" />
+	
 	<!-- It has no standard configure.zcml -->
-
 	<include package="z3c.pagelet" /> <!-- pagelet contentprovider -->
 
 	<include package="zope.viewlet" file="meta.zcml" /> <!-- zope:viewlet/Manager -->
@@ -287,4 +287,5 @@
 				  zope.interface.Interface"
 			 provides="zope.contentprovider.interfaces.IContentProvider"
 			 factory=".contentproviders.DummyContentProvider" />
+
 </configure>

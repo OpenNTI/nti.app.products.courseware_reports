@@ -73,7 +73,7 @@ from zope.location.interfaces import IContained
 from zope.container import contained as zcontained
 from zope.security.management import checkPermission
 
-from nti.utils.property import Lazy
+from nti.common.property import Lazy
 
 from nti.app.base.abstract_views import AbstractAuthenticatedView
 

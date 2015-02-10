@@ -1,52 +1,54 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-$Id$
+.. $Id$
 """
+
 from __future__ import print_function, unicode_literals, absolute_import, division
 __docformat__ = "restructuredtext en"
 
 logger = __import__('logging').getLogger(__name__)
 
+from . import MessageFactory as _
+
 from zope import interface
 from zope import component
 
+from zope.security.management import checkPermission
+
 from pyramid.interfaces import IRequest
 
-from nti.externalization import interfaces as ext_interfaces
+from nti.app.renderers.decorators import AbstractAuthenticatedRequestAwareDecorator
+
 from nti.app.products.courseware.interfaces import ICourseInstanceEnrollment
 
-from nti.dataserver.contenttypes.forums.interfaces import ICommunityForum
-from nti.dataserver.contenttypes.forums.interfaces import ICommunityHeadlineTopic
-
-from nti.dataserver.traversal import find_interface
+from nti.app.products.gradebook.interfaces import IGradeBookEntry
 
 from nti.contenttypes.courses.interfaces import ICourseInstance
 from nti.contenttypes.courses.interfaces import ICourseAdministrativeLevel
 
-from nti.app.products.gradebook.interfaces import IGradeBookEntry
+from nti.dataserver.links import Link
+from nti.dataserver.traversal import find_interface
+from nti.dataserver.contenttypes.forums.interfaces import ICommunityForum
+from nti.dataserver.contenttypes.forums.interfaces import ICommunityHeadlineTopic
 
-from nti.app.renderers.decorators import AbstractAuthenticatedRequestAwareDecorator
-
-from . import MessageFactory as _
-from . import VIEW_STUDENT_PARTICIPATION
-from . import VIEW_FORUM_PARTICIPATION
-from . import VIEW_TOPIC_PARTICIPATION
-from . import VIEW_COURSE_SUMMARY
-from . import VIEW_ASSIGNMENT_SUMMARY
+from nti.externalization.interfaces import StandardExternalFields
+from nti.externalization.interfaces import IExternalMappingDecorator
 
 from .interfaces import ACT_VIEW_REPORTS
-from zope.security.management import checkPermission
 
+from . import VIEW_COURSE_SUMMARY
+from . import VIEW_ASSIGNMENT_SUMMARY
+from . import VIEW_FORUM_PARTICIPATION
+from . import VIEW_TOPIC_PARTICIPATION
+from . import VIEW_STUDENT_PARTICIPATION
 
-LINKS = ext_interfaces.StandardExternalFields.LINKS
-from nti.dataserver.links import Link
-
+LINKS = StandardExternalFields.LINKS
 
 class _AbstractInstructedByDecorator(AbstractAuthenticatedRequestAwareDecorator):
 	# TODO: This needs to go away in favor of the specific permission
 	# when that role is hooked up
-
+	
 	def _course_from_context(self, context):
 		return context
 
@@ -75,7 +77,7 @@ def course_from_forum(forum):
 		assert course.Discussions == board
 		return course
 
-@interface.implementer(ext_interfaces.IExternalMappingDecorator)
+@interface.implementer(IExternalMappingDecorator)
 @component.adapter(ICourseInstanceEnrollment, IRequest)
 class _StudentParticipationReport(_AbstractInstructedByDecorator):
 	"""
@@ -93,7 +95,7 @@ class _StudentParticipationReport(_AbstractInstructedByDecorator):
 							elements=(VIEW_STUDENT_PARTICIPATION,),
 							title=_('Student Participation Report')) )
 
-@interface.implementer(ext_interfaces.IExternalMappingDecorator)
+@interface.implementer(IExternalMappingDecorator)
 @component.adapter(ICommunityForum, IRequest)
 class _ForumParticipationReport(_AbstractInstructedByDecorator):
 	"""
@@ -110,7 +112,7 @@ class _ForumParticipationReport(_AbstractInstructedByDecorator):
 							elements=(VIEW_FORUM_PARTICIPATION,),
 							title=_('Forum Participation Report')) )
 
-@interface.implementer(ext_interfaces.IExternalMappingDecorator)
+@interface.implementer(IExternalMappingDecorator)
 @component.adapter(ICommunityHeadlineTopic, IRequest)
 class _TopicParticipationReport(_AbstractInstructedByDecorator):
 	"""
@@ -127,7 +129,7 @@ class _TopicParticipationReport(_AbstractInstructedByDecorator):
 							elements=(VIEW_TOPIC_PARTICIPATION,),
 							title=_('Topic Participation Report')) )
 
-@interface.implementer(ext_interfaces.IExternalMappingDecorator)
+@interface.implementer(IExternalMappingDecorator)
 @component.adapter(ICourseInstance, IRequest)
 class _CourseSummaryReport(_AbstractInstructedByDecorator):
 	"""
@@ -140,7 +142,7 @@ class _CourseSummaryReport(_AbstractInstructedByDecorator):
 							elements=(VIEW_COURSE_SUMMARY,),
 							title=_('Course Summary Report')) )
 
-@interface.implementer(ext_interfaces.IExternalMappingDecorator)
+@interface.implementer(IExternalMappingDecorator)
 @component.adapter(IGradeBookEntry, IRequest)
 class _AssignmentSummaryReport(_AbstractInstructedByDecorator):
 	"""

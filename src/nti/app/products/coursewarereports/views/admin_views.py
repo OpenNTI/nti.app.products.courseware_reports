@@ -57,7 +57,7 @@ from nti.dataserver.metadata_index import CATALOG_NAME
 from nti.dataserver.authorization import ACT_MODERATE
 from nti.dataserver.authorization import ACT_NTI_ADMIN
 
-from nti.utils.property import CachedProperty
+from nti.common.property import CachedProperty
 
 @view_config(route_name='objects.generic.traversal',
 			 name='shared_notes',
