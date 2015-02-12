@@ -3,6 +3,7 @@
 """
 .. $Id$
 """
+
 from __future__ import print_function, unicode_literals, absolute_import, division
 __docformat__ = "restructuredtext en"
 
@@ -48,6 +49,7 @@ from nti.app.products.courseware.interfaces import ICourseInstanceEnrollment
 from nti.app.products.courseware.workspaces import CourseInstanceEnrollment
 
 from nti.dataserver.interfaces import IUser
+from nti.dataserver.interfaces import IDataserverFolder
 from nti.dataserver.interfaces import IEnumerableEntityContainer
 
 from nti.dataserver.users.users import User
@@ -63,6 +65,7 @@ from nti.common.property import CachedProperty
 			 name='shared_notes',
 			 renderer='rest',
 			 request_method='GET',
+			 context=IDataserverFolder,
 			 permission=ACT_MODERATE)
 def shared_notes(request):
 	"""	Return the shared_note count by course.  The shared notes are broken down
@@ -125,7 +128,9 @@ def shared_notes(request):
 	response.body_file = stream
 	return response
 
-def _get_self_assessments_for_user( username, intids_of_submitted_qsets, self_assessment_qsids, self_assessments, md_catalog, intersection, uidutil ):
+def _get_self_assessments_for_user( username, intids_of_submitted_qsets, 
+									self_assessment_qsids, self_assessments,
+									md_catalog, intersection, uidutil ):
 	# XXX this logic duplicated in .views
 	intids_by_student = md_catalog['creator'].apply({'any_of': (username,)})
 	intids_of_submitted_qsets_by_student = intersection( 	intids_of_submitted_qsets,
@@ -175,6 +180,7 @@ def _get_course(course_name,course_catalog):
 			 name='whitelist_participation',
 			 renderer='rest',
 			 request_method='POST',
+			 context=IDataserverFolder,
 			 permission=ACT_MODERATE)
 def whitelist_participation(request):
 	"""	Return the participation of students found in a whitelist."""
@@ -230,7 +236,12 @@ def whitelist_participation(request):
 		username = user.username.lower()
 
 		#Self-Assessments
-		title_to_count = _get_self_assessments_for_user(username,intids_of_submitted_qsets,self_assessment_qsids,self_assessments,md_catalog,intersection, uidutil)
+		title_to_count = _get_self_assessments_for_user(username,
+														intids_of_submitted_qsets,
+														self_assessment_qsids,
+														self_assessments,md_catalog,intersection, 
+														uidutil)
+		
 		unique_self_assessment_count = sum( [1 for x in title_to_count.values() if x] )
 
 		#Assignments
@@ -244,7 +255,8 @@ def whitelist_participation(request):
 			has_final_grade = 'No'
 			final_grade_val = '-'
 
-		writer.writerow( [email, unique_self_assessment_count, unique_assignment_count, has_final_grade, final_grade_val] )
+		writer.writerow( [email, unique_self_assessment_count,
+						  unique_assignment_count, has_final_grade, final_grade_val] )
 
 	stream.flush()
 	stream.seek(0)
@@ -313,6 +325,7 @@ class InstructorParticipationReport( StudentParticipationReportPdf ):
 			 name='InstructorParticipation',
 			 renderer='rest',
 			 request_method='GET',
+			 context=IDataserverFolder,
 			 permission=ACT_NTI_ADMIN)
 class InstructorParticipationView( AbstractAuthenticatedView ):
 	"""
@@ -340,7 +353,7 @@ class InstructorParticipationView( AbstractAuthenticatedView ):
 		# at the subinstance level. We should have the public instance
 		# in our iteration and we do not want to double-count.
 		header = ['Display Name', 'Username', 'Course', 'Topics Created',
-				'Comments Created', 'Notes Created', 'Assignment Feedback Created']
+				  'Comments Created', 'Notes Created', 'Assignment Feedback Created']
 		writer.writerow(header)
 
 		for catalog_entry in catalog.iterCatalogEntries():
@@ -382,4 +395,3 @@ class InstructorParticipationView( AbstractAuthenticatedView ):
 		stream.seek(0)
 		response.body_file = stream
 		return response
-
