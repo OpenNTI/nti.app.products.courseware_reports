@@ -150,18 +150,17 @@ class TestAssignmentSummaryReport(RegisterAssignmentLayerMixin,
 	# This only works in the OU environment because that's where the purchasables are
 	default_origin = b'http://janux.ou.edu'
 
-
-	gradebook_path = '/dataserver2/%2B%2Betc%2B%2Bhostsites/platform.ou.edu/%2B%2Betc%2B%2Bsite/Courses/Fall2013/CLC3403_LawAndJustice/GradeBook/default'
+	assignments_path = '/dataserver2/%2B%2Betc%2B%2Bhostsites/platform.ou.edu/%2B%2Betc%2B%2Bsite/Courses/Fall2013/CLC3403_LawAndJustice/AssignmentsByOutlineNode'
 
 	@WithSharedApplicationMockDS(users=True,testapp=True,default_authenticate=True)
 	def test_application_view_empty_report(self):
 		# Trivial test to make sure we can fetch the report even with
 		# no data.
 		instructor_environ = self._make_extra_environ(username='harp4162')
-		res = self.testapp.get( self.gradebook_path,
+		res = self.testapp.get( self.assignments_path,
 								extra_environ=instructor_environ)
 
-		assignment = res.json_body['Items']['Assignment 1']
+		assignment = res.json_body['tag:nextthought.com,2011-10:OU-HTML-CLC3403_LawAndJustice.sec:QUIZ_01.01'][0]
 		report_href = self.require_link_href_with_rel( assignment, 'report-' + VIEW_ASSIGNMENT_SUMMARY )
 		assert_that( report_href, contains_string( 'default/Assignment%201' ) )
 
@@ -172,10 +171,10 @@ class TestAssignmentSummaryReport(RegisterAssignmentLayerMixin,
 	@WithSharedApplicationMockDS(users=True,testapp=True,default_authenticate=True)
 	def test_application_view_report(self):
 		instructor_environ = self._make_extra_environ(username='harp4162')
-		res = self.testapp.get( self.gradebook_path,
+		res = self.testapp.get( self.assignments_path,
 								extra_environ=instructor_environ)
 
-		assignment = res.json_body['Items']['Assignment 1']
+		assignment = res.json_body['tag:nextthought.com,2011-10:OU-HTML-CLC3403_LawAndJustice.sec:QUIZ_01.01'][0]
 		report_href = self.require_link_href_with_rel( assignment, 'report-' + VIEW_ASSIGNMENT_SUMMARY )
 		assert_that( report_href, contains_string( 'default/Assignment%201' ) )
 

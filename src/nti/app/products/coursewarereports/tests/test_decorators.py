@@ -7,6 +7,7 @@ __docformat__ = "restructuredtext en"
 # disable: accessing protected members, too many methods
 # pylint: disable=W0212,R0904
 
+import fudge
 import unittest
 
 from hamcrest import is_
@@ -74,7 +75,9 @@ class TestDecorators(unittest.TestCase):
 		assert_that(result, has_entry('Links',
 								contains(has_property('rel', 'report-%s' % VIEW_COURSE_SUMMARY))))
 
-	def test_assignment_history_decorator(self):
+	@fudge.patch( 'nti.app.products.coursewarereports.decorators._AssignmentSummaryReport._gradebook_entry' )
+	def test_assignment_history_decorator(self, mock_gradebook_entry):
+		mock_gradebook_entry.is_callable().returns( object() )
 		spr = _AssignmentSummaryReport(object(), None)
 		result = {}
 		spr._do_decorate_external(object(), result)
