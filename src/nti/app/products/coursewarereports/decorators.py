@@ -31,13 +31,15 @@ from nti.contenttypes.courses.interfaces import ICourseInstance
 from nti.contenttypes.courses.interfaces import ICourseCatalogEntry
 from nti.contenttypes.courses.interfaces import ICourseAdministrativeLevel
 
-from nti.dataserver.links import Link
-from nti.dataserver.traversal import find_interface
 from nti.dataserver.contenttypes.forums.interfaces import ICommunityForum
 from nti.dataserver.contenttypes.forums.interfaces import ICommunityHeadlineTopic
 
 from nti.externalization.interfaces import StandardExternalFields
 from nti.externalization.interfaces import IExternalMappingDecorator
+
+from nti.links.links import Link
+
+from nti.traversal.traversal import find_interface
 
 from .interfaces import ACT_VIEW_REPORTS
 
