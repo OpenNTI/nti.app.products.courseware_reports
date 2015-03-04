@@ -80,9 +80,11 @@ from nti.app.base.abstract_views import AbstractAuthenticatedView
 from nti.app.assessment.interfaces import ICourseAssessmentItemCatalog
 from nti.app.assessment.interfaces import IUsersCourseAssignmentHistory
 
+from nti.assessment.common import grader_for_response
+
 from nti.assessment.interfaces import IQAssignment
 from nti.assessment.interfaces import IQAssignmentDateContext
-from nti.assessment.__init__ import grader_for_response
+
 from nti.assessment.randomized.interfaces import IQRandomizedPart
 
 from nti.app.products.courseware.interfaces import ICourseInstanceEnrollment
