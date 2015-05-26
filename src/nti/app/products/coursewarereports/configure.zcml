@@ -25,7 +25,7 @@
 
 	<!-- z3c:template/layout -->
 	<include package="z3c.template" file="meta.zcml" />
-	
+
 	<!-- It has no standard configure.zcml -->
 	<include package="z3c.pagelet" /> <!-- pagelet contentprovider -->
 

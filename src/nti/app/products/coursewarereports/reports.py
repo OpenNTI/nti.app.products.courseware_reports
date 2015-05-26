@@ -124,12 +124,14 @@ class _TopCreators(object):
 
 	def __init__(self, report):
 		self._data = self.family.OI.BTree()
+		self._instructor_reply_data = self.family.OI.BTree()
 		self._get_student_info = report.get_student_info
 		self.max_contributors = report.count_all_students
 		self._non_credit_students = report.open_student_usernames
 		self.max_contributors_for_credit = report.count_credit_students
 		self.max_contributors_non_credit = report.count_non_credit_students
 		self._for_credit_students = report.for_credit_student_usernames
+		self._instructor_usernames = report.instructor_usernames
 
 	@property
 	def _for_credit_data(self):
@@ -147,7 +149,7 @@ class _TopCreators(object):
 	def _get_for_credit_largest(self):
 		return self._do_get_largest(self._for_credit_data, self.for_credit_total)
 
-	def _build_student_info(self,stat):
+	def _build_student_info(self, stat):
 		student_info = self._get_student_info( stat[0] )
 		count = stat[1]
 		perc = ( count / self.total * 100 ) if self.total else 0.0
@@ -155,7 +157,7 @@ class _TopCreators(object):
 								student_info.username,
 								count, perc )
 
-	def _do_get_largest(self,data,total_to_change):
+	def _do_get_largest(self, data, total_to_change):
 		# Returns the top commenter names, up to (arbitrarily) 10
 		# of them, with the next being 'everyone else'
 		largest = heapq.nlargest(10, data.items(), key=lambda x: x[1])
@@ -207,7 +209,19 @@ class _TopCreators(object):
 			return sum(data.values())
 		return 0
 
-	def incr_username(self, username):
+	def _incr_reply_to(self, username, obj):
+		in_reply_to = getattr( obj, 'inReplyTo', None )
+		# Must have replyTo and be from instructor
+		if 		in_reply_to is not None \
+			and username.lower() in self._instructor_usernames:
+
+			username = in_reply_to.creator.username
+			if username in self._instructor_reply_data:
+				self._instructor_reply_data[username] += 1
+			else:
+				self._instructor_reply_data[username] = 1
+
+	def incr_username(self, username, obj=None):
 		user = User.get_user( username )
 		if user is None:
 			# Use 'system' if we do not have a user here.
@@ -222,6 +236,9 @@ class _TopCreators(object):
 		if self.aggregate_creators is not None:
 			self.aggregate_creators.incr_username( username )
 
+		if obj is not None:
+			self._incr_reply_to( username, obj )
+
 	def keys(self):
 		return self._data.keys()
 
@@ -233,6 +250,9 @@ class _TopCreators(object):
 
 	def get(self, key, default=None):
 		return self._data.get(key, default)
+
+	def get_instructor_reply_count(self, key, default=None):
+		return self._instructor_reply_data.get(key, default)
 
 	def average_count(self):
 		if self.total:
@@ -332,7 +352,7 @@ def _common_buckets( objects, report, object_create_date, agg_creators=None ):
 		group = list(g)
 		count = len(group)
 		for o in group:
-			top_creators.incr_username(o.creator.username)
+			top_creators.incr_username(o.creator.username, o)
 
 		week_num = date_accum.accum( k )
 

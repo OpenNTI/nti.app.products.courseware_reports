@@ -4,20 +4,20 @@
 	tal:define="options view/options">
 
 		<para style="normal" spaceAfter="0in" >
-			This report presents an overview of the <u>${context/title|context/__name__}</u> forum.  It 
-			includes information about weekly forum participation, top commenters, 
-			and comment activity per student. 
+			This report presents an overview of the <u>${context/title|context/__name__}</u> forum.  It
+			includes information about weekly forum participation, top commenters,
+			and comment activity per student.
 		</para>
-		
+
 		<hr width="100%" />
 
 		<h1 style="h1" fontSize="25" spaceBefore=".1in" spaceAfter=".4in">
 			Weekly Activity
 		</h1>
-		
-		<para style="subdesc" spaceAfter=".3in" 
+
+		<para style="subdesc" spaceAfter=".3in"
 			tal:condition="options/all_forum_participation/forum_objects_by_week_number">
-			This chart shows the number of comments made each week 
+			This chart shows the number of comments made each week
 			in <u>${context/title|context/__name__}</u> since it was posted.
 		</para>
 
@@ -33,18 +33,18 @@
 		</para>
 
 
-		<para	style="subdesc" spaceBefore=".8in" 
+		<para	style="subdesc" spaceBefore=".8in"
 				tal:condition="options/most_popular_topic">
 			The most popular discussion is <u>${options/most_popular_topic/title|options/most_popular_topic/__name__}</u>
-			with ${python:options['most_popular_topic'].comment_count} 
+			with ${python:options['most_popular_topic'].comment_count}
 			${python:request.localizer.pluralize('comment', 'comments', options['most_popular_topic'].comment_count)};
 			the least popular discussion is <u>${options/least_popular_topic/title|options/least_popular_topic/__name__}</u>.
-			There 
-			${python:request.localizer.pluralize('is', 'are', options['top_commenters'].total)} 
-			${options/top_commenters/total}  
-			${python:request.localizer.pluralize('comment', 'total comments', options['top_commenters'].total)} 
+			There
+			${python:request.localizer.pluralize('is', 'are', options['top_commenters'].total)}
+			${options/top_commenters/total}
+			${python:request.localizer.pluralize('comment', 'total comments', options['top_commenters'].total)}
 			in this forum, across
-			${python:len(context)} 
+			${python:len(context)}
 			 ${python:request.localizer.pluralize('discussion', 'discussions', len(context))},
 			 for an average comment count of ${python:options['top_commenters'].total // len(context)}
 			per discussion. ${options/percent_users_comment_more_than_once}% of all participants contributed
@@ -56,9 +56,9 @@
 		<h1 style="h1" spaceBefore=".5in" spaceAfter=".7in">
 			Comments
 		</h1>
-		
+
 			<blockTable style='table_user_2'
-						colWidths="40% 21% 15% 12% 12%" 
+						colWidths="40% 21% 15% 12% 12%"
 						tal:condition="options/comment_count_by_topic"
 						repeatRows="1" >
 				<tr>
@@ -76,42 +76,42 @@
 					<td tal:content="item/distinct_user_count">3</td>
 				</tr>
 			</blockTable>
-		
-		
+
+
 		<para 	style="subdesc"
 				tal:condition="not:options/comment_count_by_topic">
 			This forum does not have any comments.
 		</para>
 
 		<setNextTemplate name="table_pie" />
-		
+
 		<nextPage />
-		
+
 		<h1 style="h1" spaceAfter="1in">
 			Top Commenters
 		</h1>
-		
+
 		<nextFrame name="table_frame" />
-		
+
 		<metal:macro 	tal:define="top_commenters options/top_commenters"
 						tal:condition="options/top_commenters"
 						metal:use-macro="macro:comment_table" />
-						
+
 		<para 	style="subdesc"
 				tal:condition="not:options/top_commenters">
 			This forum does not have any comments.
-		</para>				
-		
+		</para>
+
 		<nextFrame name="pie_frame" />
-		
+
 		<illustration width="6in" height="6in"
 					  tal:define="top_commenters options/top_commenters;
 								  top_commenters_colors options/top_commenters_colors"
-					  tal:condition="options/top_commenters"	
+					  tal:condition="options/top_commenters"
 					  metal:use-macro="macro:forum_top_commenters">
 		</illustration>
-		
-		
+
+
 		<setNextTemplate name="table_pie"/>
 		<nextPage />
 
@@ -119,27 +119,27 @@
 		<h1 style="h1" spaceAfter="1in">
 			Top Discussion Creators
 		</h1>
-		
+
 		<nextFrame name="table_frame" />
-		
+
 		<metal:macro 	tal:define="top_commenters options/top_creators"
 						tal:condition="options/top_creators"
 						metal:use-macro="macro:comment_table" />
 		<para 	style="subdesc"
 				tal:condition="not:options/top_creators">
 			This forum did not have any discussions created.
-		</para>						
-		
+		</para>
+
 		<nextFrame name="pie_frame" />
-		
+
 		<illustration width="6in" height="6in"
 					  tal:define="top_commenters options/top_creators;
 								  top_commenters_colors options/top_commenters_colors"
 					  tal:condition="options/top_creators"
 					  metal:use-macro="macro:forum_top_commenters">
 		</illustration>
-		
-		
+
+
 		<setNextTemplate name="main"/>
 
 		<nextPage />
@@ -148,52 +148,54 @@
 		<h1 style="h1" spaceAfter=".5in" >
 			Comment Activity
 		</h1>
-		
+
 		<para 	style="subdesc" spaceAfter=".1in"
 				tal:condition="options/for_credit_user_stats|options/non_credit_user_stats" >
-				This table shows the number of comments participants have posted 
+				This table shows the number of comments participants have posted
 				to <u>${context/title|context/__name__}</u>. Those who have not contributed are excluded from the table.
 		</para>
 
 		<hr width="100%" />
-		
+
 		<h2 style="h2">
 			For-Credit Comment Activity
 		</h2>
 		<para 	style="subdesc"
 				tal:condition="not:options/for_credit_user_stats">
 			This forum does not have any comments by for-credit students.
-		</para>	
-		
+		</para>
+
 		<blockTable style="table_user_1"
 					tal:condition="options/for_credit_user_stats"
-					alignment="left" colWidths="30% 30% 12% 12%"
+					alignment="left" colWidths="30% 30% 12% 12% 12%"
 					repeatRows="1" >
 			<tr>
 				<td>Name</td>
 				<td align="left">Login</td>
 				<td><para style="header_r">Discussions Created</para></td>
 				<td>Comments</td>
+				<td><para style="header_r">Instructor Reply Count</para></td>
 			</tr>
 			<tr tal:repeat="item options/for_credit_user_stats">
 				<td tal:content="item/username/display">user1</td>
 				<td align="left" tal:content="item/username/username">user2</td>
 				<td tal:content="item/topics_created">1</td>
 				<td tal:content="item/total_comment_count">3</td>
+				<td tal:content="item/instructor_reply_count">3</td>
 			</tr>
 		</blockTable>
-		
+
 		<condPageBreak height="4in" />
-		
+
 		<h2 style="h2">
 			Non-Credit Comment Activity
 		</h2>
 		<para 	style="subdesc"
 				tal:condition="not:options/non_credit_user_stats">
 			This forum does not have any comments by non-credit students.
-		</para>	
-		
-		
+		</para>
+
+
 		<blockTable style="table_user_1_non_credit"
 					tal:condition="options/non_credit_user_stats"
 					alignment="left" colWidths="30% 12% 12%"
@@ -202,11 +204,13 @@
 				<td>Name</td>
 				<td><para style="header_r">Discussions Created</para></td>
 				<td>Comments</td>
+				<td><para style="header_r">Instructor Reply Count</para></td>
 			</tr>
 			<tr tal:repeat="item options/non_credit_user_stats">
 				<td tal:content="item/username/display">user1</td>
 				<td tal:content="item/topics_created">1</td>
 				<td tal:content="item/total_comment_count">3</td>
+				<td tal:content="item/instructor_reply_count">3</td>
 			</tr>
 		</blockTable>
 

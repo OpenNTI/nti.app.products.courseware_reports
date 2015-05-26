@@ -562,10 +562,12 @@ class ForumParticipationReportPdf(_AbstractReportView):
 	agg_creators = None
 
 	TopicStats = namedtuple('TopicStats',
-							('title', 'creator', 'created', 'comment_count', 'distinct_user_count'))
+							('title', 'creator', 'created',
+							'comment_count', 'distinct_user_count'))
 
 	UserStats = namedtuple('UserStats',
-						   ('username', 'topics_created', 'total_comment_count'))
+						   ('username', 'topics_created',
+						'total_comment_count', 'instructor_reply_count'))
 
 	def _course_from_forum(self, forum):
 		return course_from_forum(forum)
@@ -578,10 +580,8 @@ class ForumParticipationReportPdf(_AbstractReportView):
 
 		def _all_comments():
 			for topic in self.context.values():
-				#TODO this yields, right?
-				#self.filter_objects( (x for x in topic.values) )
+				# Should we use filter objects?
 				for comment in topic.values():
-					#TODO can we use filter_objects?
 					if not IDeletedObjectPlaceholder.providedBy( comment ):
 						yield comment
 		buckets = _common_buckets(	_all_comments(),
@@ -606,7 +606,8 @@ class ForumParticipationReportPdf(_AbstractReportView):
 			user_count = len( {c.creator for c in comments} )
 			creator = self.get_student_info( topic.creator )
 			created = topic.created
-			comment_count_by_topic.append( self.TopicStats( topic.title, creator, created, count, user_count ))
+			comment_count_by_topic.append( self.TopicStats( topic.title, creator,
+														created, count, user_count ))
 
 			top_creators.incr_username( topic.creator.username )
 
@@ -637,11 +638,12 @@ class ForumParticipationReportPdf(_AbstractReportView):
 
 		#Could probably break this into three parts if we want
 		if unique_count:
-			options['percent_users_comment_more_than_once'] = "%0.1f" % ((unique_count - only_one) / unique_count * 100.0)
+			options['percent_users_comment_more_than_once'] = \
+					"%0.1f" % ((unique_count - only_one) / unique_count * 100.0)
 		else:
 			options['percent_users_comment_more_than_once'] = '0.0'
 
-	def _build_user_stats_with_keys(self,users,commenters,creators):
+	def _build_user_stats_with_keys(self, users, commenters, creators):
 		"""Returns sorted user stats for the given set of users"""
 		user_stats = list()
 		only_one = 0
@@ -650,7 +652,8 @@ class ForumParticipationReportPdf(_AbstractReportView):
 			student_info = self.get_student_info( uname )
 			stat = self.UserStats(	student_info,
 									creators.get(uname, 0),
-									commenters.get(uname, 0) )
+									commenters.get(uname, 0),
+									commenters.get_instructor_reply_count(uname, 0) )
 			user_stats.append(stat)
 			if stat.total_comment_count == 1:
 				only_one += 1
@@ -726,17 +729,6 @@ class TopicParticipationReportPdf(ForumParticipationReportPdf):
 				subinstance_instr = {x.id.lower() for x in subinstance.instructors}
 				result.update( subinstance_instr )
 		return result
-
-	def filter_objects(self, comments):
-		"We only want comments for students in this section."
-		# TODO Make sure other reports do this.
-		results = []
-		filtered_objects = super(TopicParticipationReportPdf, self).filter_objects( comments )
-		for comment in filtered_objects:
-			comment_creator = comment.creator.username.lower()
-			if comment_creator in self.all_student_usernames:
-				results.append( comment )
-		return results
 
 	def _get_comment_body(self, body):
 		# Need to handle canvas, escape html, etc.

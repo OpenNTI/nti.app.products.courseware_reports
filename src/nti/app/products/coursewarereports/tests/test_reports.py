@@ -437,7 +437,7 @@ class TestBuckets( unittest.TestCase ):
 
 # ==================
 
-def _mock_student_info( self_placeholder, username ):
+def _mock_student_info( _, username ):
 	return _StudentInfo( username + "_alias", username )
 
 class _MockReport(object):
@@ -448,10 +448,13 @@ class _MockReport(object):
 	count_all_students = 0
 	count_credit_students = 0
 	count_non_credit_students = 0
+	instructor_usernames = []
 
-	def __init__( self, for_credit_students=[], non_credit_students=[] ):
-		self.for_credit_student_usernames = for_credit_students
-		self.open_student_usernames = non_credit_students
+	def __init__( self, for_credit_students=None,
+				non_credit_students=None, instructor_usernames=None ):
+		self.for_credit_student_usernames = for_credit_students if for_credit_students else []
+		self.open_student_usernames = non_credit_students if non_credit_students else []
+		self.instructor_usernames = instructor_usernames if instructor_usernames else []
 
 class TestTopCreators( unittest.TestCase ):
 

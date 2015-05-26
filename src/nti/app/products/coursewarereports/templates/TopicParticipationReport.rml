@@ -94,17 +94,19 @@
 
 		<blockTable style="table_user_1"
 					tal:condition="options/for_credit_user_stats"
-					alignment="left" colWidths="30% 30% 12%"
+					alignment="left" colWidths="30% 30% 12% 12%"
 					repeatRows="1">
 			<tr>
 				<td>Name</td>
 				<td align="left" >Login</td>
 				<td>Comments</td>
+				<td><para style="header_r">Instructor Reply Count</para></td>
 			</tr>
 			<tr tal:repeat="item options/for_credit_user_stats">
 				<td tal:content="item/username/display">user1</td>
 				<td align="left" tal:content="item/username/username">user2</td>
 				<td tal:content="item/total_comment_count">3</td>
+				<td tal:content="item/instructor_reply_count">3</td>
 			</tr>
 		</blockTable>
 
@@ -121,15 +123,17 @@
 
 		<blockTable style="table_user_1_non_credit"
 					tal:condition="options/non_credit_user_stats"
-					alignment="left" colWidths="30% 12%"
+					alignment="left" colWidths="30% 12% 12%"
 					repeatRows="1">
 			<tr>
 				<td>Name</td>
 				<td>Comments</td>
+				<td><para style="header_r">Instructor Reply Count</para></td>
 			</tr>
 			<tr tal:repeat="item options/non_credit_user_stats">
 				<td tal:content="item/username/display">user1</td>
 				<td tal:content="item/total_comment_count">3</td>
+				<td tal:content="item/instructor_reply_count">3</td>
 			</tr>
 		</blockTable>
 
