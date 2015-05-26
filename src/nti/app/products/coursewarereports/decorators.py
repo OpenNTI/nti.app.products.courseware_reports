@@ -93,7 +93,6 @@ class _StudentParticipationReport(_AbstractInstructedByDecorator):
 	def _course_from_context(self, context):
 		return ICourseInstance(context)
 
-
 	def _do_decorate_external( self, context, result_map ):
 		links = result_map.setdefault( LINKS, [] )
 		links.append( Link( context,

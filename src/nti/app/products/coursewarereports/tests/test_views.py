@@ -38,14 +38,19 @@ class TestStudentParticipationReport(ApplicationLayerTest):
 	def test_application_view_empty_report(self):
 		# Trivial test to make sure we can fetch the report even with
 		# no data.
+		self.testapp.post_json( '/dataserver2/users/sjohnson@nextthought.com/Courses/EnrolledCourses',
+								'CLC 3403',
+								status=201 )
 
 		instructor_environ = self._make_extra_environ(username='harp4162')
-		enrollment_res = self.testapp.post_json( '/dataserver2/users/harp4162/Courses/EnrolledCourses',
-												 'CLC 3403',
-												 status=201,
-												 extra_environ=instructor_environ)
+		admin_courses = self.testapp.get( '/dataserver2/users/harp4162/Courses/AdministeredCourses/',
+										extra_environ=instructor_environ)
 
-		view_href = self.require_link_href_with_rel( enrollment_res.json_body, 'report-%s' % VIEW_STUDENT_PARTICIPATION )
+		course_instance = admin_courses.json_body.get( 'Items' )[0].get( 'CourseInstance' )
+		roster_link = self.require_link_href_with_rel( course_instance, 'CourseEnrollmentRoster')
+		sj_enrollment = self.testapp.get( roster_link + '/sjohnson@nextthought.com',
+										extra_environ=instructor_environ)
+		view_href = self.require_link_href_with_rel( sj_enrollment.json_body, 'report-%s' % VIEW_STUDENT_PARTICIPATION )
 
 
 		res = self.testapp.get(view_href, extra_environ=instructor_environ)
@@ -99,10 +104,7 @@ class TestTopicParticipationReport(ApplicationLayerTest):
 		board_href = enrollment_res.json_body['CourseInstance']['Discussions']['href']
 		forum_href = board_href + '/Forum'
 		instructor_environ = self._make_extra_environ(username='harp4162')
-		self.testapp.post_json( '/dataserver2/users/harp4162/Courses/EnrolledCourses',
-								'CLC 3403',
-								status=201,
-								extra_environ=instructor_environ)
+
 		# Create a topic
 		res = self.testapp.post_json( forum_href,
 									  {'Class': 'Post', 'body': ['My body'], 'title': 'my title'},
@@ -124,14 +126,11 @@ class TestCourseSummaryReport(ApplicationLayerTest):
 	def test_application_view_empty_report(self):
 		# Trivial test to make sure we can fetch the report even with
 		# no data.
-
 		instructor_environ = self._make_extra_environ(username='harp4162')
-		enrollment_res = self.testapp.post_json( '/dataserver2/users/harp4162/Courses/EnrolledCourses',
-												 'CLC 3403',
-												 status=201,
-												 extra_environ=instructor_environ)
+		admin_courses = self.testapp.get( '/dataserver2/users/harp4162/Courses/AdministeredCourses/',
+										extra_environ=instructor_environ)
 
-		course = enrollment_res.json_body['CourseInstance']
+		course = admin_courses.json_body.get( 'Items' )[0].get( 'CourseInstance' )
 		report_href = self.require_link_href_with_rel( course, 'report-' + VIEW_COURSE_SUMMARY )
 		assert_that( report_href, contains_string( 'CLC3403' ) )
 
