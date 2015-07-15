@@ -33,6 +33,8 @@ from nti.assessment.interfaces import IQuestionSet
 
 from nti.contentfragments.interfaces import IPlainTextContentFragment
 
+from nti.contentlibrary.indexed_data import get_catalog
+
 from nti.dataserver.users.users import User
 from nti.dataserver.interfaces import SYSTEM_USER_NAME
 
@@ -642,6 +644,15 @@ def _do_get_containers_in_course( course ):
 	containers_in_course = set()
 	for package in packages:
 		_recur(package, containers_in_course )
+
+	# Now fetch from our index
+	catalog = get_catalog()
+	if catalog is not None:
+		package_ntiids = (x.ntiid for x in packages)
+		contained_objs = catalog.search_objects( container_ntiids=package_ntiids )
+		# Do we need target_ntiid here?
+		contained_ntiids = {x.ntiid for x in contained_objs}
+		containers_in_course.update( contained_ntiids )
 
 	# Add in our self-assessments
 	# We filter out questions in assignments here for some reason
