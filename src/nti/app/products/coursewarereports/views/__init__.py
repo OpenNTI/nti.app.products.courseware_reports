@@ -15,6 +15,7 @@ from .. import VIEW_ASSIGNMENT_SUMMARY
 from .. import VIEW_TOPIC_PARTICIPATION
 from .. import VIEW_FORUM_PARTICIPATION
 from .. import VIEW_STUDENT_PARTICIPATION
+from .. import VIEW_VIDEO_REPORT
 
 from ..interfaces import IPDFReportView
 from ..interfaces import ACT_VIEW_REPORTS
@@ -1319,6 +1320,21 @@ class CourseSummaryReportPdf(_AbstractReportView):
 		#self._build_engagement_perf(options)
 		options['engagement_to_performance'] = ()
 
+		return options
+
+from nti.app.analytics.adapters import _video_usage_stats
+
+@view_config(context=ICourseInstance,
+			 name=VIEW_VIDEO_REPORT)
+class VideoUsageReportPdf(_AbstractReportView):
+
+	report_title = _('Video Usage Report')
+	
+	def __call__(self):
+
+		self._check_access()
+		options = _video_usage_stats(self.context)
+		self.options = options
 		return options
 
 from nti.app.assessment.interfaces import IUsersCourseAssignmentHistoryItem

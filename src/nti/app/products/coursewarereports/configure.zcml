@@ -101,6 +101,10 @@
 	<!-- A subscriber for getting the assignment summary report from the gradebook -->
 	<subscriber factory=".decorators._AssignmentSummaryReport"
 				provides="nti.externalization.interfaces.IExternalMappingDecorator" />
+				
+	<!-- A subscriber for getting the video views summary report from analytics records -->
+	<!-- <subscriber factory=".decorators._VideoViewsReport"
+				provides="nti.externalization.interfaces.IExternalMappingDecorator" /> -->
 
 	<!-- Default layout for reports -->
 	<!--
@@ -195,6 +199,20 @@
 		name="assignment_info_content_provider"
 		template="templates/assignment_info_content_provider.rml"
 		view=".views.AssignmentSummaryReportPdf"
+		layer="pyramid.interfaces.IRequest"
+		permission="zope.Public"
+		manager=".interfaces.IPDFReportHeaderManager" />
+		
+	<!-- Video views report -->
+	<z3c:template
+		template="templates/VideoUsageReport.rml"
+		for=".views.VideoUsageReportPdf"
+		layer="pyramid.interfaces.IRequest" />
+	
+	<browser:viewlet
+		name="course_info_content_provider"
+		template="templates/course_info_content_provider.rml"
+		view=".views.VideoUsageReportPdf"
 		layer="pyramid.interfaces.IRequest"
 		permission="zope.Public"
 		manager=".interfaces.IPDFReportHeaderManager" />
