@@ -88,6 +88,7 @@ from nti.assessment.interfaces import IQAssignmentDateContext
 
 from nti.assessment.randomized.interfaces import IQRandomizedPart
 
+from nti.app.products.courseware.interfaces import IVideoUsageStats
 from nti.app.products.courseware.interfaces import ICourseInstanceEnrollment
 
 from nti.app.products.gradebook.interfaces import IGrade
@@ -1322,8 +1323,6 @@ class CourseSummaryReportPdf(_AbstractReportView):
 
 		return options
 
-from nti.app.analytics.adapters import _video_usage_stats
-
 @view_config(context=ICourseInstance,
 			 name=VIEW_VIDEO_REPORT)
 class VideoUsageReportPdf(_AbstractReportView):
@@ -1333,7 +1332,7 @@ class VideoUsageReportPdf(_AbstractReportView):
 	def __call__(self):
 
 		self._check_access()
-		options = _video_usage_stats(self.context)
+		options = IVideoUsageStats(self.context)
 		self.options = options
 		return options
 
