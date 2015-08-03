@@ -44,14 +44,12 @@
 					<td tal:content="item/watch_times/average_session_watch_time" style="data">Average Session Length</td>
 					<td tal:content="item/watch_times/average_total_watch_time" style="data">Average Time Spent on Video</td>
 					<td tal:content="item/percentage_watched_completely" style="data">Percentage users who watched 90%</td>
-					<td tal:content="item/falloff_rate/drop25" style="data">0-25%</td>
-					<td tal:content="item/falloff_rate/drop50" style="data">26-50%</td>
-					<td tal:content="item/falloff_rate/drop75" style="data">51-75%</td>
-					<td tal:content="item/falloff_rate/drop100" style="data">76-100%</td>
+					<td tal:content="string: ${item/falloff_rate/drop25count} (${item/falloff_rate/drop25percentage}%)" style="data">0-25%</td>
+					<td tal:content="string: ${item/falloff_rate/drop50count} (${item/falloff_rate/drop50percentage}%)" style="data">26-50%</td>
+					<td tal:content="string: ${item/falloff_rate/drop75count} (${item/falloff_rate/drop75percentage}%)" style="data">51-75%</td>
+					<td tal:content="string: ${item/falloff_rate/drop100count} (${item/falloff_rate/drop100percentage}%)" style="data">76-100%</td>
 				</tr>
 			</blockTable>
-
-
 
 		<condPageBreak height="4in" />
 
@@ -104,10 +102,10 @@
 					<td tal:content="item/watch_times/average_session_watch_time" style="data">Average Session Length</td>
 					<td tal:content="item/watch_times/average_total_watch_time" style="data">Average Time Spent on Video</td>
 					<td tal:content="item/percentage_watched_completely" style="data">Percentage users who watched 90%</td>
-					<td tal:content="item/falloff_rate/drop25" style="data">0-25%</td>
-					<td tal:content="item/falloff_rate/drop50" style="data">26-50%</td>
-					<td tal:content="item/falloff_rate/drop75" style="data">51-75%</td>
-					<td tal:content="item/falloff_rate/drop100" style="data">76-100%</td>
+					<td tal:content="string: ${item/falloff_rate/drop25count} (${item/falloff_rate/drop25percentage}%)" style="data">0-25%</td>
+					<td tal:content="string: ${item/falloff_rate/drop50count} (${item/falloff_rate/drop50percentage}%)" style="data">26-50%</td>
+					<td tal:content="string: ${item/falloff_rate/drop75count} (${item/falloff_rate/drop75percentage}%)" style="data">51-75%</td>
+					<td tal:content="string: ${item/falloff_rate/drop100count} (${item/falloff_rate/drop100percentage}%)" style="data">76-100%</td>
 
 				</tr>
 			</blockTable>
