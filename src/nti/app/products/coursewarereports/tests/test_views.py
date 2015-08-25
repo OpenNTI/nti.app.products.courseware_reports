@@ -33,7 +33,6 @@ class TestStudentParticipationReport(ApplicationLayerTest):
 	# This only works in the OU environment because that's where the purchasables are
 	default_origin = b'http://janux.ou.edu'
 
-
 	@WithSharedApplicationMockDS(users=True,testapp=True,default_authenticate=True)
 	def test_application_view_empty_report(self):
 		# Trivial test to make sure we can fetch the report even with
@@ -46,11 +45,15 @@ class TestStudentParticipationReport(ApplicationLayerTest):
 		admin_courses = self.testapp.get( '/dataserver2/users/harp4162/Courses/AdministeredCourses/',
 										extra_environ=instructor_environ)
 
+		# Get our student from the roster
 		course_instance = admin_courses.json_body.get( 'Items' )[0].get( 'CourseInstance' )
 		roster_link = self.require_link_href_with_rel( course_instance, 'CourseEnrollmentRoster')
-		sj_enrollment = self.testapp.get( roster_link + '/sjohnson@nextthought.com',
+		sj_enrollment = self.testapp.get( roster_link,
 										extra_environ=instructor_environ)
-		view_href = self.require_link_href_with_rel( sj_enrollment.json_body, 'report-%s' % VIEW_STUDENT_PARTICIPATION )
+		sj_enrollment = sj_enrollment.json_body.get( 'Items' )[0]
+
+		view_href = self.require_link_href_with_rel( sj_enrollment,
+													'report-%s' % VIEW_STUDENT_PARTICIPATION )
 
 
 		res = self.testapp.get(view_href, extra_environ=instructor_environ)

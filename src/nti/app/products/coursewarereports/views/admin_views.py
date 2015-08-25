@@ -128,7 +128,7 @@ def shared_notes(request):
 	response.body_file = stream
 	return response
 
-def _get_self_assessments_for_user( username, intids_of_submitted_qsets, 
+def _get_self_assessments_for_user( username, intids_of_submitted_qsets,
 									self_assessment_qsids, self_assessments,
 									md_catalog, intersection, uidutil ):
 	# XXX this logic duplicated in .views
@@ -239,9 +239,9 @@ def whitelist_participation(request):
 		title_to_count = _get_self_assessments_for_user(username,
 														intids_of_submitted_qsets,
 														self_assessment_qsids,
-														self_assessments,md_catalog,intersection, 
+														self_assessments,md_catalog,intersection,
 														uidutil)
-		
+
 		unique_self_assessment_count = sum( [1 for x in title_to_count.values() if x] )
 
 		#Assignments
