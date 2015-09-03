@@ -78,7 +78,6 @@ from nti.common.property import Lazy
 
 from nti.app.base.abstract_views import AbstractAuthenticatedView
 
-from nti.app.assessment.interfaces import ICourseAssessmentItemCatalog
 from nti.app.assessment.interfaces import IUsersCourseAssignmentHistory
 
 from nti.assessment.common import grader_for_response
@@ -99,6 +98,7 @@ from nti.app.products.gradebook.assignments import get_course_assignments
 from nti.contenttypes.courses.interfaces import ICourseCatalogEntry
 from nti.contenttypes.courses.interfaces import	ICourseSubInstance
 from nti.contenttypes.courses.interfaces import ICourseInstance
+from nti.contenttypes.courses.interfaces import ICourseAssessmentItemCatalog
 
 from nti.dataserver.interfaces import IUser
 from nti.dataserver.interfaces import IDeletedObjectPlaceholder

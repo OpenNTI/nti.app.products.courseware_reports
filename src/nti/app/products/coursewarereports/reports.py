@@ -25,15 +25,15 @@ from numbers import Number
 
 from nti.common.property import Lazy
 
-from nti.app.assessment.interfaces import ICourseAssignmentCatalog
-from nti.app.assessment.interfaces import ICourseAssessmentItemCatalog
-
 from nti.assessment.interfaces import IQAssignment
 from nti.assessment.interfaces import IQuestionSet
 
 from nti.contentfragments.interfaces import IPlainTextContentFragment
 
 from nti.contentlibrary.indexed_data import get_library_catalog
+
+from nti.contenttypes.courses.interfaces import ICourseAssignmentCatalog
+from nti.contenttypes.courses.interfaces import ICourseAssessmentItemCatalog
 
 from nti.dataserver.users.users import User
 from nti.dataserver.interfaces import SYSTEM_USER_NAME

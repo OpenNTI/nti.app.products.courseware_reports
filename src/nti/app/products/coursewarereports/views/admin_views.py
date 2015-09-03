@@ -36,10 +36,9 @@ from nti.app.base.abstract_views import AbstractAuthenticatedView
 from nti.appserver.account_recovery_views import find_users_with_email
 from nti.app.products.gradebook.interfaces import NO_SUBMIT_PART_NAME
 
-from nti.app.assessment.interfaces import ICourseAssignmentCatalog
+from nti.app.assessment.common import get_course_assignments
 from nti.app.assessment.interfaces import IUsersCourseAssignmentHistory
 from nti.app.assessment.interfaces import IUsersCourseAssignmentHistoryItem
-from nti.app.assessment.common import get_course_assignments
 
 from nti.contenttypes.courses.interfaces import ICourseInstance
 from nti.contenttypes.courses.interfaces import ICourseCatalog
@@ -47,6 +46,8 @@ from nti.contenttypes.courses.interfaces import ICourseCatalog
 from nti.app.products.gradebook.interfaces import IGradeBook
 from nti.app.products.courseware.interfaces import ICourseInstanceEnrollment
 from nti.app.products.courseware.workspaces import CourseInstanceEnrollment
+
+from nti.contenttypes.courses.interfaces import ICourseAssignmentCatalog
 
 from nti.dataserver.interfaces import IUser
 from nti.dataserver.interfaces import IDataserverFolder
