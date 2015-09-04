@@ -35,7 +35,7 @@ def parse_datetime(t, safe=False):
 			except Exception:
 				result = isodate.parse_date(t)
 			result = time.mktime(result.timetuple())
-		elif isinstance(t, (date,datetime)):
+		elif isinstance(t, (date, datetime)):
 			result = time.mktime(t.timetuple())
 		return result
 	except Exception as e:
