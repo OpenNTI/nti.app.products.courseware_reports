@@ -135,13 +135,13 @@
 	<!-- Student participation report -->
 	<z3c:template
 		template="templates/student_participation_report.rml"
-		for=".views.StudentParticipationReportPdf"
+		for=".views.participation_views.StudentParticipationReportPdf"
 		layer="pyramid.interfaces.IRequest" />
 
 	<browser:viewlet
 		name="student_info_content_provider"
 		template="templates/student_info_content_provider.rml"
-		view=".views.StudentParticipationReportPdf"
+		view=".views.participation_views.StudentParticipationReportPdf"
 		layer="pyramid.interfaces.IRequest"
 		permission="zope.Public"
 		manager=".interfaces.IPDFReportHeaderManager" />
@@ -149,13 +149,13 @@
 	<!-- Forum participation report -->
 	<z3c:template
 		template="templates/ForumParticipationReport.rml"
-		for=".views.ForumParticipationReportPdf"
+		for=".views.participation_views.ForumParticipationReportPdf"
 		layer="pyramid.interfaces.IRequest" />
 
 	<browser:viewlet
 		name="forum_info_content_provider"
 		template="templates/forum_info_content_provider.rml"
-		view=".views.ForumParticipationReportPdf"
+		view=".views.participation_views.ForumParticipationReportPdf"
 		layer="pyramid.interfaces.IRequest"
 		permission="zope.Public"
 		manager=".interfaces.IPDFReportHeaderManager" />
@@ -163,13 +163,13 @@
 	<!-- Topic participation report -->
 	<z3c:template
 		template="templates/TopicParticipationReport.rml"
-		for=".views.TopicParticipationReportPdf"
+		for=".views.participation_views.TopicParticipationReportPdf"
 		layer="pyramid.interfaces.IRequest" />
 
 	<browser:viewlet
 		name="forum_info_content_provider"
 		template="templates/forum_info_content_provider.rml"
-		view=".views.TopicParticipationReportPdf"
+		view=".views.participation_views.TopicParticipationReportPdf"
 		layer="pyramid.interfaces.IRequest"
 		permission="zope.Public"
 		manager=".interfaces.IPDFReportHeaderManager" />
@@ -178,13 +178,13 @@
 
 	<z3c:template
 		template="templates/CourseSummaryReport.rml"
-		for=".views.CourseSummaryReportPdf"
+		for=".views.summary_views.CourseSummaryReportPdf"
 		layer="pyramid.interfaces.IRequest" />
 
 	<browser:viewlet
 		name="course_info_content_provider"
 		template="templates/course_info_content_provider.rml"
-		view=".views.CourseSummaryReportPdf"
+		view=".views.summary_views.CourseSummaryReportPdf"
 		layer="pyramid.interfaces.IRequest"
 		permission="zope.Public"
 		manager=".interfaces.IPDFReportHeaderManager" />
@@ -192,13 +192,13 @@
 	<!-- Assignment summary report -->
 	<z3c:template
 		template="templates/AssignmentSummaryReport.rml"
-		for=".views.AssignmentSummaryReportPdf"
+		for=".views.assignment_views.AssignmentSummaryReportPdf"
 		layer="pyramid.interfaces.IRequest" />
 
 	<browser:viewlet
 		name="assignment_info_content_provider"
 		template="templates/assignment_info_content_provider.rml"
-		view=".views.AssignmentSummaryReportPdf"
+		view=".views.assignment_views.AssignmentSummaryReportPdf"
 		layer="pyramid.interfaces.IRequest"
 		permission="zope.Public"
 		manager=".interfaces.IPDFReportHeaderManager" />
@@ -206,13 +206,13 @@
 	<!-- Video views report -->
 	<z3c:template
 		template="templates/VideoUsageReport.rml"
-		for=".views.VideoUsageReportPdf"
+		for=".views.usage_views.VideoUsageReportPdf"
 		layer="pyramid.interfaces.IRequest" />
 	
 	<browser:viewlet
 		name="course_info_content_provider"
 		template="templates/course_info_content_provider.rml"
-		view=".views.VideoUsageReportPdf"
+		view=".views.usage_views.VideoUsageReportPdf"
 		layer="pyramid.interfaces.IRequest"
 		permission="zope.Public"
 		manager=".interfaces.IPDFReportHeaderManager" />
