@@ -58,9 +58,9 @@ from nti.common.property import CachedProperty
 from ..reports import _do_get_containers_in_course
 from ..reports import _get_self_assessments_for_course
 
-from .utils import parse_datetime
+from .participation_views import StudentParticipationReportPdf
 
-from . import StudentParticipationReportPdf
+from .utils import parse_datetime
 
 @view_config(route_name='objects.generic.traversal',
 			 name='shared_notes',

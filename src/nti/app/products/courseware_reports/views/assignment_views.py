@@ -42,7 +42,7 @@ from ..reports import _QuestionPartStat
 from ..reports import _build_question_stats
 from ..reports import _assignment_stat_for_column
 
-from . import _AbstractReportView
+from .view_mixins import _AbstractReportView
 
 @view_config(context=IGradeBookEntry,
 			 name=VIEW_ASSIGNMENT_SUMMARY)

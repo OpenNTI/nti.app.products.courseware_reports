@@ -61,20 +61,11 @@ from .. import VIEW_TOPIC_PARTICIPATION
 from .. import VIEW_FORUM_PARTICIPATION
 from .. import VIEW_STUDENT_PARTICIPATION
 
+from .view_mixins import _AbstractReportView
+from .view_mixins import _get_enrollment_scope_dict
+
 from . import CHART_COLORS
 from . import FORUM_OBJECT_MIMETYPES
-
-from . import _AbstractReportView
-from . import _get_enrollment_scope_dict
-
-class _StudentInfo(namedtuple('_StudentInfo',
-							  ('display', 'username', 'count', 'perc'))):
-	"""
-	Holds general student info. 'count' and 'perc' are optional values
-	"""
-
-	def __new__(cls, display, username, count=None, perc=None):
-		return super(_StudentInfo, cls).__new__(cls, display, username, count, perc)
 
 class _AssignmentInfo(object):
 

@@ -19,7 +19,7 @@ from nti.contenttypes.courses.interfaces import ICourseInstance
 
 from .. import VIEW_VIDEO_REPORT
 
-from . import _AbstractReportView
+from .view_mixins import _AbstractReportView
 
 @view_config(context=ICourseInstance,
 			 name=VIEW_VIDEO_REPORT)
