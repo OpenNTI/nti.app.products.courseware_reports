@@ -348,19 +348,6 @@ class _AbstractReportView(AbstractAuthenticatedView,
 	def wrap_text( self, text, size ):
 		return textwrap.fill( text, size )
 
-@view_config(context=ICourseInstance,
-			 name=VIEW_VIDEO_REPORT)
-class VideoUsageReportPdf(_AbstractReportView):
-
-	report_title = _('Video Usage Report')
-	
-	def __call__(self):
-
-		self._check_access()
-		options = IVideoUsageStats(self.context)
-		self.options = options
-		return options
-
 @interface.implementer(IPathAdapter, IContained)
 class ReportAdapter(zcontained.Contained):
 
