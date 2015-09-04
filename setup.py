@@ -4,7 +4,7 @@ import codecs
 VERSION = '0.0.0'
 
 entry_points = {
-    "z3c.autoinclude.plugin": [
+	"z3c.autoinclude.plugin": [
 		'target = nti.app.products',
 	],
 }
@@ -37,14 +37,14 @@ setup(
 	namespace_packages=['nti', 'nti.app', 'nti.app.products'],
 	install_requires=[
 		'setuptools',
-        'z3c.rml',
+		'z3c.rml',
 		'z3c.macro',
 		'z3c.pagelet',
 		'z3c.template',
-        'zope.viewlet',
+		'zope.viewlet',
 		'zope.contentprovider',
-        'nti.app.pyramid_zope',
-        'nti.app.products.gradebook',
+		'nti.app.pyramid_zope',
+		'nti.app.products.gradebook',
 		'nti.app.products.courseware'
 	],
 	extras_require={
