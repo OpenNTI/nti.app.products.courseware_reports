@@ -17,11 +17,11 @@ from hamcrest import has_entry
 from hamcrest import assert_that
 from hamcrest import has_property
 
-from nti.app.products.coursewarereports.decorators import _CourseSummaryReport
-from nti.app.products.coursewarereports.decorators import _AssignmentSummaryReport
-from nti.app.products.coursewarereports.decorators import _ForumParticipationReport
-from nti.app.products.coursewarereports.decorators import _TopicParticipationReport
-from nti.app.products.coursewarereports.decorators import _StudentParticipationReport
+from nti.app.products.courseware_reports.decorators import _CourseSummaryReport
+from nti.app.products.courseware_reports.decorators import _AssignmentSummaryReport
+from nti.app.products.courseware_reports.decorators import _ForumParticipationReport
+from nti.app.products.courseware_reports.decorators import _TopicParticipationReport
+from nti.app.products.courseware_reports.decorators import _StudentParticipationReport
 
 from .. import VIEW_COURSE_SUMMARY
 from .. import VIEW_ASSIGNMENT_SUMMARY
