@@ -14,7 +14,7 @@ tests_require = [
 ]
 
 setup(
-	name='nti.app.products.coursewarereports',
+	name='nti.app.products.courseware_reports',
 	version=VERSION,
 	author='NextThought',
 	author_email='josh.zuech@nextthought.com',
