@@ -57,6 +57,15 @@ from ..reports import _adjust_date
 
 from . import ALL_USERS
 
+class _StudentInfo(namedtuple('_StudentInfo',
+							  ('display', 'username', 'count', 'perc'))):
+	"""
+	Holds general student info. 'count' and 'perc' are optional values
+	"""
+
+	def __new__(cls, display, username, count=None, perc=None):
+		return super(_StudentInfo, cls).__new__(cls, display, username, count, perc)
+
 def _get_enrollment_scope_dict(course, instructors=set()):
 	"""
 	Build a dict of scope_name to usernames.
@@ -74,10 +83,7 @@ def _get_enrollment_scope_dict(course, instructors=set()):
 	non_public_users = set()
 	for scope_name in course.SharingScopes:
 		scope = course.SharingScopes.get(scope_name, None)
-
-		if 		scope is not None \
-			and scope not in (public_scope, purchased_scope):
-
+		if scope is not None and scope not in (public_scope, purchased_scope):
 			# If our scope is not 'public'-ish, store it separately.
 			# All credit-type users should end up in ForCredit.
 			scope_users = {x.lower() for x in IEnumerableEntityContainer(scope).iter_usernames()}
@@ -89,15 +95,6 @@ def _get_enrollment_scope_dict(course, instructors=set()):
 	results['Public'] = all_users - non_public_users - instructors
 	results[ALL_USERS] = all_users
 	return results
-
-class _StudentInfo(namedtuple('_StudentInfo',
-							  ('display', 'username', 'count', 'perc'))):
-	"""
-	Holds general student info. 'count' and 'perc' are optional values
-	"""
-
-	def __new__(cls, display, username, count=None, perc=None):
-		return super(_StudentInfo, cls).__new__(cls, display, username, count, perc)
 
 @view_defaults(route_name='objects.generic.traversal',
 			   renderer="../templates/std_report_layout.rml",
@@ -168,7 +165,9 @@ class _AbstractReportView(AbstractAuthenticatedView,
 		return _get_enrollment_scope_dict(self.course, self.instructor_usernames)
 
 	def _get_users_for_scope(self, scope_name):
-		"Returns a set of users for the given scope_name, or None if that scope does not exist."
+		"""
+		Returns a set of users for the given scope_name, or None if that scope does not exist.
+		"""
 		scope_dict = self._get_enrollment_scope_dict
 		return scope_dict[scope_name]
 
@@ -242,7 +241,9 @@ class _AbstractReportView(AbstractAuthenticatedView,
 		return _StudentInfo(display_name, username)
 
 	def filter_objects(self, objects):
-		"""Returns a set of filtered objects"""
+		"""
+		Returns a set of filtered objects
+		"""
 		return [ x for x in objects
 				if not IDeletedObjectPlaceholder.providedBy(x) ]
 

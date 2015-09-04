@@ -61,11 +61,11 @@ from .. import VIEW_TOPIC_PARTICIPATION
 from .. import VIEW_FORUM_PARTICIPATION
 from .. import VIEW_STUDENT_PARTICIPATION
 
-from .view_mixins import _AbstractReportView
-from .view_mixins import _get_enrollment_scope_dict
-
 from . import CHART_COLORS
 from . import FORUM_OBJECT_MIMETYPES
+
+from .view_mixins import _AbstractReportView
+from .view_mixins import _get_enrollment_scope_dict
 
 class _AssignmentInfo(object):
 

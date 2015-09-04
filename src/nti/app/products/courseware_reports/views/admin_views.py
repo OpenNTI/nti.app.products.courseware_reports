@@ -60,7 +60,7 @@ from ..reports import _get_self_assessments_for_course
 
 from .participation_views import StudentParticipationReportPdf
 
-from .utils import parse_datetime
+from . import parse_datetime
 
 @view_config(route_name='objects.generic.traversal',
 			 name='shared_notes',

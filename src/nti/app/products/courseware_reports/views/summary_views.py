@@ -39,11 +39,11 @@ from ..reports import _assignment_stat_for_column
 from ..reports import _do_get_containers_in_course
 from ..reports import _get_self_assessments_for_course
 
-from .view_mixins import _AbstractReportView
+from . import CHART_COLORS
 
 from .participation_views import ForumParticipationReportPdf
 
-from . import CHART_COLORS
+from .view_mixins import _AbstractReportView
 
 _EngagementPerfStat = \
 		namedtuple(	'_EngagementPerfStat',

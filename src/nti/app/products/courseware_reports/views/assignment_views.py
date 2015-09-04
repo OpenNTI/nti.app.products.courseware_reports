@@ -94,8 +94,8 @@ class AssignmentSummaryReportPdf(_AbstractReportView):
 					question = qids_to_q[question_submission.questionId]
 
 					question_stat = self._get_question_stat(question_stats,
-																question_submission.questionId,
-																question.parts)
+															question_submission.questionId,
+															question.parts)
 					question_stat.submission_count += 1
 					question_part_stats = question_stat.question_part_stats
 
@@ -204,14 +204,13 @@ class AssignmentSummaryReportPdf(_AbstractReportView):
 				# the solution mappings
 				check_correct = lambda: question_part.solutions[0].value[ key ] == val
 				self._add_displayable_to_answer_stat(answer_stat,
-														content,
-														check_correct)
+												  	 content,
+													 check_correct)
 		elif response is None:
 			# Unanswered questions get placed in our placeholder
 			self._add_displayable_to_answer_stat(answer_stat,
 													response,
 													lambda: False)
-
 
 	def _add_multiple_choice_to_answer_stats(self, answer_stat, response, question_part, check_correct):
 		"""

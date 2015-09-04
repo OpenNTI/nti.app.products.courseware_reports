@@ -28,7 +28,6 @@ class VideoUsageReportPdf(_AbstractReportView):
 	report_title = _('Video Usage Report')
 
 	def __call__(self):
-
 		self._check_access()
 		options = IVideoUsageStats(self.context)
 		self.options = options
