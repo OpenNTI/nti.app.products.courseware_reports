@@ -480,7 +480,9 @@ class TopicParticipationReportPdf(ForumParticipationReportPdf):
 		return result
 
 	def _get_comments_by_user(self, comments):
-		"Return a dict of username to ready-to-output comments."
+		"""
+		Return a dict of username to ready-to-output comments.
+		"""
 		results = {}
 		# Gather the comments per student username
 		for comment in comments:
@@ -516,7 +518,9 @@ class TopicParticipationReportPdf(ForumParticipationReportPdf):
 		return results
 
 	def _get_scope_user_dict_for_course(self, user_scope_dict, user_comment_dict):
-		"Returns a sorted dict of scopes to users to comments."
+		"""
+		Returns a sorted dict of scopes to users to comments.
+		"""
 		scope_results = {}
 		# Now populate those comments based on the enrollment scopes of those students.
 		# This ensures we only get those students in our section.
