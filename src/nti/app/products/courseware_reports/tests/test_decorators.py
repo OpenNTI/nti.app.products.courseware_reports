@@ -75,7 +75,7 @@ class TestDecorators(unittest.TestCase):
 		assert_that(result, has_entry('Links',
 								contains(has_property('rel', 'report-%s' % VIEW_COURSE_SUMMARY))))
 
-	@fudge.patch( 'nti.app.products.coursewarereports.decorators._AssignmentSummaryReport._gradebook_entry' )
+	@fudge.patch( 'nti.app.products.courseware_reports.decorators._AssignmentSummaryReport._gradebook_entry' )
 	def test_assignment_history_decorator(self, mock_gradebook_entry):
 		mock_gradebook_entry.is_callable().returns( object() )
 		spr = _AssignmentSummaryReport(object(), None)

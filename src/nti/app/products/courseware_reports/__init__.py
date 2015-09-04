@@ -17,4 +17,4 @@ VIEW_STUDENT_PARTICIPATION = "StudentParticipationReport.pdf"
 VIEW_VIDEO_REPORT = "VideoUsageReport.pdf"
 
 import zope.i18nmessageid
-MessageFactory = zope.i18nmessageid.MessageFactory('nti.app.products.coursewarereports')
+MessageFactory = zope.i18nmessageid.MessageFactory('nti.app.products.courseware_reports')

@@ -20,7 +20,7 @@ from nti.schema.field import TextLine
 # Until we have true pluggable auth-folders that we traverse through
 # we might add instructors to a role having this permission using
 # traversal events
-ACT_VIEW_REPORTS = Permission('nti.actions.coursewarereports.view_reports')
+ACT_VIEW_REPORTS = Permission('nti.actions.courseware_reports.view_reports')
 
 class IPDFReportView(interface.Interface):
 	"""

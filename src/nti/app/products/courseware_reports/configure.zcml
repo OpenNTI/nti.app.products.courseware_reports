@@ -36,7 +36,7 @@
 	<i18n:registerTranslations directory="locales" />
 
 	<permission
-		id="nti.actions.coursewarereports.view_reports"
+		id="nti.actions.courseware_reports.view_reports"
 		title="View reports" />
 
 	<!--
@@ -44,11 +44,11 @@
 		for the course) can view reports
 	-->
 	<grant
-		permission="nti.actions.coursewarereports.view_reports"
+		permission="nti.actions.courseware_reports.view_reports"
 		role="nti.roles.course_instructor" />
 
 	<grant
-		permission="nti.actions.coursewarereports.view_reports"
+		permission="nti.actions.courseware_reports.view_reports"
 		role="nti.roles.course_ta" />
 
 	<role
@@ -58,7 +58,7 @@
 		all might also be able to view reports." />
 
 	<grant
-		permission="nti.actions.coursewarereports.view_reports"
+		permission="nti.actions.courseware_reports.view_reports"
 		role="nti.roles.courseware.report_viewer" />
 
 	<!--

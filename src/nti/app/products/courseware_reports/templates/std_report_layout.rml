@@ -11,10 +11,10 @@
 		  tal:attributes="filename view/filename; title view/report_title">
 
 	<docinit>
-		<registerTTFont faceName="OpenSans" fileName="[nti.app.products.coursewarereports]/fonts/OpenSans-Regular.ttf" />
-		<registerTTFont faceName="OpenSansSemiBold" fileName="[nti.app.products.coursewarereports]/fonts/OpenSans-Semibold.ttf" />
-		<registerTTFont faceName="OpenSansBold" fileName="[nti.app.products.coursewarereports]/fonts/OpenSans-Bold.ttf" />
-		<registerTTFont faceName="OpenSansLight" fileName="[nti.app.products.coursewarereports]/fonts/OpenSans-Light.ttf" />
+		<registerTTFont faceName="OpenSans" fileName="[nti.app.products.courseware_reports]/fonts/OpenSans-Regular.ttf" />
+		<registerTTFont faceName="OpenSansSemiBold" fileName="[nti.app.products.courseware_reports]/fonts/OpenSans-Semibold.ttf" />
+		<registerTTFont faceName="OpenSansBold" fileName="[nti.app.products.courseware_reports]/fonts/OpenSans-Bold.ttf" />
+		<registerTTFont faceName="OpenSansLight" fileName="[nti.app.products.courseware_reports]/fonts/OpenSans-Light.ttf" />
 	</docinit>
 
 	<template pagesize="(842,595)" leftMargin="72" showBoundary="0">
