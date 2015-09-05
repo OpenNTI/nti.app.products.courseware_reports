@@ -12,6 +12,7 @@ logger = __import__('logging').getLogger(__name__)
 from .. import MessageFactory as _
 
 from six import string_types
+
 from docutils.utils import roman
 
 from zope import component

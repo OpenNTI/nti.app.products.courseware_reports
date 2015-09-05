@@ -18,8 +18,8 @@ from pyramid.view import view_config
 
 from zope import component
 
-from zope.catalog.interfaces import ICatalog
 from zope.catalog.catalog import ResultSet
+from zope.catalog.interfaces import ICatalog
 
 from zope.intid.interfaces import IIntIds
 

@@ -48,6 +48,10 @@ from nti.dataserver.contenttypes.forums.interfaces import ICommunityForum
 from nti.dataserver.contenttypes.forums.interfaces import IGeneralForumComment
 from nti.dataserver.contenttypes.forums.interfaces import ICommunityHeadlineTopic
 
+from .. import VIEW_TOPIC_PARTICIPATION
+from .. import VIEW_FORUM_PARTICIPATION
+from .. import VIEW_STUDENT_PARTICIPATION
+
 from ..decorators import course_from_forum
 
 from ..reports import _TopCreators
@@ -56,10 +60,6 @@ from ..reports import _common_buckets
 from ..reports import _format_datetime
 from ..reports import _build_buckets_options
 from ..reports import _get_self_assessments_for_course
-
-from .. import VIEW_TOPIC_PARTICIPATION
-from .. import VIEW_FORUM_PARTICIPATION
-from .. import VIEW_STUDENT_PARTICIPATION
 
 from . import CHART_COLORS
 from . import FORUM_OBJECT_MIMETYPES
