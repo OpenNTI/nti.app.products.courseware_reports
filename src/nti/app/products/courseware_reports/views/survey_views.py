@@ -23,6 +23,8 @@ from nti.assessment.interfaces import IQSurvey
 
 from nti.contentfragments.interfaces import IPlainTextContentFragment
 
+from nti.contenttypes.courses.interfaces import ICourseInstance
+
 from .. import VIEW_SURVEY_REPORT
 
 from .view_mixins import _AbstractReportView
@@ -42,7 +44,8 @@ class SurveyReportPdf(_AbstractReportView):
 		# TODO Need to handle randomized questions.
 		# - We might get this for free since we store our questions by ntiids.
 		# - Verify.
-		course = None
+		course = component.queryMultiAdapter((self.context, self.remoteUser),
+											  ICourseInstance)
 		aggregate_course_inquiry(survey, course)
 
 		# options['question_stats'] = _build_question_stats(ordered_questions, question_stats)
@@ -57,3 +60,4 @@ class SurveyReportPdf(_AbstractReportView):
 		options = self.options
 		self._build_question_data(options)
 		return options
+ICourseInstance
