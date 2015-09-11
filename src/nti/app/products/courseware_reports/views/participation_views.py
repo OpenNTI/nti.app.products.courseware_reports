@@ -106,7 +106,7 @@ class StudentParticipationReportPdf(_AbstractReportView):
 			course_boards = (course.Discussions, course.__parent__.__parent__.Discussions)
 		else:
 			course_boards = (course.Discussions,)
-		
+
 		# Graph of forum participation over time (time-series of forum-related
 		# objects created bucketed by something--day/week?) probably a linePlot?
 		# We find these objects using the catalog rather than traversing through
@@ -560,11 +560,12 @@ class TopicParticipationReportPdf(ForumParticipationReportPdf):
 													scope_dict, user_comment_dict)
 				# Store with a displayable key
 				results[ 'Section ' + subinstance_key ] = user_comment_dict_by_scope
-		else:
-			scope_dict = self._get_enrollment_scope_dict
-			user_comment_dict_by_scope = self._get_scope_user_dict_for_course(
+
+		# Now for parent course
+		scope_dict = self._get_enrollment_scope_dict
+		user_comment_dict_by_scope = self._get_scope_user_dict_for_course(
 													scope_dict, user_comment_dict)
-			results[ self.course.__name__ ] = user_comment_dict_by_scope
+		results[ self.course.__name__ ] = user_comment_dict_by_scope
 
 		results = OrderedDict(sorted(results.items()))
 		return results
