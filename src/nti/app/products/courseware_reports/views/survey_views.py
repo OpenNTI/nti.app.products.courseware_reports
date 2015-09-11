@@ -22,6 +22,7 @@ from nti.app.assessment.interfaces import ICourseAggregatedInquiries
 
 from nti.assessment.interfaces import IQPoll
 from nti.assessment.interfaces import IQSurvey
+from nti.assessment.interfaces import IQNonGradableMultipleChoicePart
 
 from nti.common.property import Lazy
 
@@ -57,8 +58,14 @@ class SurveyReportPdf(_AbstractReportView):
 			poll = component.queryUtility(IQPoll, name=agg_poll.inquiryId)
 			if poll is None: # pragma no cover
 				continue
-			for _, agg_part in enumerate(agg_poll):
-				_ = agg_part.Results
+			for idx, agg_part in enumerate(agg_poll):
+				part = poll[idx]
+				results = agg_part.Results
+				# check parts
+				if IQNonGradableMultipleChoicePart.providedBy(part):
+					for idx, count in sorted(results.items()):
+						print(part.choices[idx], count) 
+					
 
 		# options['question_stats'] = _build_question_stats(ordered_questions, question_stats)
 
