@@ -16,8 +16,10 @@ from six import string_types
 from zope import component
 
 from pyramid.view import view_config
+from pyramid import httpexceptions as hexc
 
 from nti.app.assessment.common import aggregate_course_inquiry
+from nti.app.assessment.interfaces import ICourseAggregatedInquiries
 
 from nti.assessment.interfaces import IQSurvey
 
@@ -36,18 +38,18 @@ class SurveyReportPdf(_AbstractReportView):
 	report_title = _('Survey Report')
 
 	def _build_question_data(self, options):
-		survey = component.queryUtility(IQSurvey, name=self.context.inquryId)
-		if survey is None:
-			options['question_stats'] = None
-			return
-
-		# TODO Need to handle randomized questions.
-		# - We might get this for free since we store our questions by ntiids.
-		# - Verify.
+		options['question_stats'] = None
 		course = component.queryMultiAdapter((self.context, self.remoteUser),
 											  ICourseInstance)
-		aggregate_course_inquiry(survey, course)
+		if course is None:
+			raise hexc.HTTPUnprocessableEntity(_("Cannot find course for survey."))
 
+		if self.context.closed:
+			container = ICourseAggregatedInquiries(course)
+			result = container[self.context.ntiid]
+		else:
+			result = aggregate_course_inquiry(self.context, course)
+		return result
 		# options['question_stats'] = _build_question_stats(ordered_questions, question_stats)
 
 	def _get_displayable(self, source):
@@ -60,4 +62,3 @@ class SurveyReportPdf(_AbstractReportView):
 		options = self.options
 		self._build_question_data(options)
 		return options
-ICourseInstance
