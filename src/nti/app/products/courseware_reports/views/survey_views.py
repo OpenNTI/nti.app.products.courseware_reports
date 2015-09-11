@@ -21,6 +21,7 @@ from pyramid import httpexceptions as hexc
 from nti.app.assessment.common import aggregate_course_inquiry
 from nti.app.assessment.interfaces import ICourseAggregatedInquiries
 
+from nti.assessment.interfaces import IQPoll
 from nti.assessment.interfaces import IQSurvey
 
 from nti.contentfragments.interfaces import IPlainTextContentFragment
@@ -46,10 +47,17 @@ class SurveyReportPdf(_AbstractReportView):
 
 		if self.context.closed:
 			container = ICourseAggregatedInquiries(course)
-			result = container[self.context.ntiid]
+			aggregated = container[self.context.ntiid]
 		else:
-			result = aggregate_course_inquiry(self.context, course)
-		return result
+			aggregated = aggregate_course_inquiry(self.context, course)
+			
+		for agg_poll in aggregated:
+			poll = component.queryUtility(IQPoll, name=agg_poll.inquiryId)
+			if poll is None: # pragma no cover
+				continue
+			for _, agg_part in enumerate(agg_poll):
+				_ = agg_part.Results
+
 		# options['question_stats'] = _build_question_stats(ordered_questions, question_stats)
 
 	def _get_displayable(self, source):
