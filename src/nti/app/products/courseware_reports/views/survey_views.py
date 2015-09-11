@@ -16,13 +16,14 @@ from six import string_types
 from zope import component
 
 from pyramid.view import view_config
-from pyramid import httpexceptions as hexc
 
 from nti.app.assessment.common import aggregate_course_inquiry
 from nti.app.assessment.interfaces import ICourseAggregatedInquiries
 
 from nti.assessment.interfaces import IQPoll
 from nti.assessment.interfaces import IQSurvey
+
+from nti.common.property import Lazy
 
 from nti.contentfragments.interfaces import IPlainTextContentFragment
 
@@ -38,18 +39,19 @@ class SurveyReportPdf(_AbstractReportView):
 
 	report_title = _('Survey Report')
 
+	@Lazy
+	def course(self):
+		course = component.getMultiAdapter((self.context, self.remoteUser),
+											ICourseInstance)
+		return course
+
 	def _build_question_data(self, options):
 		options['question_stats'] = None
-		course = component.queryMultiAdapter((self.context, self.remoteUser),
-											  ICourseInstance)
-		if course is None:
-			raise hexc.HTTPUnprocessableEntity(_("Cannot find course for survey."))
-
 		if self.context.closed:
-			container = ICourseAggregatedInquiries(course)
+			container = ICourseAggregatedInquiries(self.course)
 			aggregated = container[self.context.ntiid]
 		else:
-			aggregated = aggregate_course_inquiry(self.context, course)
+			aggregated = aggregate_course_inquiry(self.context, self.course)
 			
 		for agg_poll in aggregated:
 			poll = component.queryUtility(IQPoll, name=agg_poll.inquiryId)
