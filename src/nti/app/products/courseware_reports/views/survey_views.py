@@ -45,10 +45,10 @@ class PollPartStat(object):
 
 	kind = alias('type')
 	
-	def __init__(self, kind, content, reponses=None):
+	def __init__(self, kind, content, responses=None):
 		self.type = kind
 		self.content = content
-		self.reponses = reponses
+		self.responses = responses
 
 class PollStat(object):
 
@@ -72,7 +72,7 @@ class SurveyReportPdf(_AbstractReportView):
 		return course
 
 	def _build_question_data(self, options):
-		options['poll_stats'] = results = []
+		options['poll_stats'] = poll_stats = []
 
 		if self.context.closed:
 			container = ICourseAggregatedInquiries(self.course)
@@ -102,16 +102,17 @@ class SurveyReportPdf(_AbstractReportView):
 					kind = 1
 					responses = []
 					for idx, count in sorted(results.items()):
-						response = ResponseStat(part.choices[idx],
-												count,
-												count / total if total else 0)
+						response = ResponseStat(
+										IPlainTextContentFragment(part.choices[idx]),
+										count,
+										count / total if total else 0)
 						responses.append(response)
 
 				poll_stat.parts.append(
 							PollPartStat(kind=kind,
 										 content=IPlainTextContentFragment(part.content),
 										 responses=responses))
-			results.append(poll_stat)
+			poll_stats.append(poll_stat)
 
 	def _get_displayable(self, source):
 		if isinstance(source, string_types):
