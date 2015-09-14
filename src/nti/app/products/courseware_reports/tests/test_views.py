@@ -162,7 +162,7 @@ class TestAssignmentSummaryReport(RegisterAssignmentLayerMixin,
 		res = self.testapp.get( self.assignments_path,
 								extra_environ=instructor_environ)
 
-		assignment = res.json_body['tag:nextthought.com,2011-10:OU-HTML-CLC3403_LawAndJustice.sec:QUIZ_01.01'][0]
+		assignment = res.json_body.get( 'Items' )['tag:nextthought.com,2011-10:OU-HTML-CLC3403_LawAndJustice.sec:QUIZ_01.01'][0]
 		report_href = self.require_link_href_with_rel( assignment, 'report-' + VIEW_ASSIGNMENT_SUMMARY )
 		assert_that( report_href, contains_string( 'default/Assignment%201' ) )
 
@@ -176,7 +176,7 @@ class TestAssignmentSummaryReport(RegisterAssignmentLayerMixin,
 		res = self.testapp.get( self.assignments_path,
 								extra_environ=instructor_environ)
 
-		assignment = res.json_body['tag:nextthought.com,2011-10:OU-HTML-CLC3403_LawAndJustice.sec:QUIZ_01.01'][0]
+		assignment = res.json_body.get( 'Items' )['tag:nextthought.com,2011-10:OU-HTML-CLC3403_LawAndJustice.sec:QUIZ_01.01'][0]
 		report_href = self.require_link_href_with_rel( assignment, 'report-' + VIEW_ASSIGNMENT_SUMMARY )
 		assert_that( report_href, contains_string( 'default/Assignment%201' ) )
 
