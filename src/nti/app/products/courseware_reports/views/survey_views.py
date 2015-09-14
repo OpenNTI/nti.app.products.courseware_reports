@@ -24,7 +24,7 @@ from nti.assessment.interfaces import IQPoll
 from nti.assessment.interfaces import IQSurvey
 from nti.assessment.interfaces import IQNonGradableMultipleChoicePart
 
-from nti.common.property import Lazy
+from nti.common.property import alias, Lazy
 
 from nti.contentfragments.interfaces import IPlainTextContentFragment
 
@@ -33,6 +33,31 @@ from nti.contenttypes.courses.interfaces import ICourseInstance
 from .. import VIEW_SURVEY_REPORT
 
 from .view_mixins import _AbstractReportView
+
+class ResponseStat(object):
+
+	def __init__(self, answer, count, percentage):
+		self.count = count
+		self.answer = answer
+		self.percentage = percentage
+
+class PollPartStat(object):
+
+	kind = alias('type')
+	
+	def __init__(self, kind, content, reponses=None):
+		self.type = kind
+		self.content = content
+		self.reponses = reponses
+
+class PollStat(object):
+
+	parts = alias('poll_part_stats')
+
+	def __init__(self, title, content, parts):
+		self.title = title
+		self.content = content
+		self.poll_part_stats = parts if parts is not None else ()
 
 @view_config(context=IQSurvey,
 			 name=VIEW_SURVEY_REPORT)
@@ -47,27 +72,46 @@ class SurveyReportPdf(_AbstractReportView):
 		return course
 
 	def _build_question_data(self, options):
-		options['question_stats'] = None
+		options['poll_stats'] = results = []
+
 		if self.context.closed:
 			container = ICourseAggregatedInquiries(self.course)
 			aggregated = container[self.context.ntiid]
 		else:
 			aggregated = aggregate_course_inquiry(self.context, self.course)
-			
-		for agg_poll in aggregated:
-			poll = component.queryUtility(IQPoll, name=agg_poll.inquiryId)
-			if poll is None: # pragma no cover
-				continue
-			for idx, agg_part in enumerate(agg_poll):
-				part = poll[idx]
-				results = agg_part.Results
-				# check parts
-				if IQNonGradableMultipleChoicePart.providedBy(part):
-					for idx, count in sorted(results.items()):
-						print(part.choices[idx], count) 
-					
 
-		# options['question_stats'] = _build_question_stats(ordered_questions, question_stats)
+		for idx, agg_poll in enumerate(aggregated):
+			poll = component.queryUtility(IQPoll, name=agg_poll.inquiryId)
+			if poll is None:  # pragma no cover
+				continue
+
+			title = idx + 1
+			content = IPlainTextContentFragment(poll.content)
+			if not content:
+				content = IPlainTextContentFragment(poll.parts[0].content)
+
+			poll_stat = PollStat(title, content, [])
+			for idx, agg_part in enumerate(agg_poll):
+				kind = 0
+				part = poll[idx]
+				total = agg_part.Total
+				results = agg_part.Results
+				
+				# single answer parts
+				if IQNonGradableMultipleChoicePart.providedBy(part):
+					kind = 1
+					responses = []
+					for idx, count in sorted(results.items()):
+						response = ResponseStat(part.choices[idx],
+												count,
+												count / total if total else 0)
+						responses.append(response)
+
+				poll_stat.parts.append(
+							PollPartStat(kind=kind,
+										 content=IPlainTextContentFragment(part.content),
+										 responses=responses))
+			results.append(poll_stat)
 
 	def _get_displayable(self, source):
 		if isinstance(source, string_types):

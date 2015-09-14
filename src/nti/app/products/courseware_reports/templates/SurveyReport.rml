@@ -1,0 +1,104 @@
+<metal:block
+	xmlns:tal="http://xml.zope.org/namespaces/tal"
+	xmlns:metal="http://xml.zope.org/namespaces/metal"
+	tal:define="options view/options">
+
+		<para style="normal" fontSize="12" spaceAfter=".1in">
+			This report includes information about the survey results<u>${context/displayName}</u>.
+		</para>
+		<hr width="100%" />
+
+		<h2 style="h2" spaceBefore=".7in" spaceAfter=".3in">
+			Survey Results
+		</h2>
+
+		<h1 style="h1" fontSize="22" spaceAfter=".2in" spaceBefore=".1in" >
+			Question Breakdown
+		</h1>
+
+		<hr width="100%" />
+
+		<para 	style="subdesc"
+				tal:condition="not:options/poll_stats">
+			This survey does not have any questions.
+		</para>
+
+		<tal:block  tal:repeat="question options/poll_stats"
+					tal:condition="options/poll_stats">
+
+			<keepTogether>
+			<h2 style="h2" fontSize="10" spaceBefore=".3in" spaceAfter=".2"
+				tal:content="string:${question/title}">
+				Question Number
+			</h2>
+			<para 	style="question"
+					tal:content="question/content"
+					spaceAfter=".1in" >
+				The content of the question.
+			</para>
+
+			<metal:block tal:repeat="question_part question/parts" >
+
+				<nextPage tal:condition="python: repeat.question_part.number > 1" />
+
+				<h3 style="h3"
+					spaceBefore="0in" spaceAfter=".2"
+					fontSize="12"
+					tal:content="string:Part ${question_part/content}"
+					tal:condition="python: len(question.parts) > 1">
+					Part I
+				</h3>
+
+				<!-- Single column answers -->
+				<blockTable alignment="left"
+							colWidths="6% 50% 7% 8%"
+							repeatRows="1"
+							tal:condition="python: question_part.type == 1">
+					<blockTableStyle id="new" >
+						<lineStyle 	thickness="2"
+									start="0,0" stop="-1,-1"
+									kind="linebelow" colorName="white" />
+						<blockTextColor start="0,0" stop="-1,0" colorName="#b8b8b8" />
+						<blockFont start="0,0" stop="-1,0" name="OpenSansSemiBold" size="10" />
+					</blockTableStyle>
+
+					<tr>
+						<td />
+						<td />
+						<td align="right">Count</td>
+						<td align="right">Percent</td>
+					</tr>
+
+					<tr tal:repeat="answer_stat question_part/reponses">
+						<td tal:content="string:${answer_stat/answer}."
+							align="right"
+							vAlign="middle"
+							leftPadding="20"
+							topPadding="20"
+							bottomPadding="20"
+							fontSize="12" fontName="OpenSansSemiBold">
+							A
+						</td>
+						<td tal:content="answer_stat/count"
+							fontSize="14" fontName="OpenSansSemiBold"
+							topPadding="20"
+							bottomPadding="20"
+							align="right"
+							vAlign="middle" >
+							count
+						</td>
+						<td tal:content="answer_stat/percentage"
+							fontSize="14" fontName="OpenSansSemiBold"
+							topPadding="20"
+							bottomPadding="20"
+							align="right"
+							vAlign="middle" >
+							perc
+						</td>
+					</tr>
+				</blockTable>
+
+			</metal:block>
+			</keepTogether>
+		</tal:block>
+</metal:block>
