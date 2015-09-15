@@ -3,14 +3,7 @@
 	xmlns:metal="http://xml.zope.org/namespaces/metal"
 	tal:define="options view/options">
 
-		<para style="normal" fontSize="12" spaceAfter=".1in">
-			This report includes information about the survey results.
-		</para>
 		<hr width="100%" />
-
-		<h2 style="h2" spaceBefore=".7in" spaceAfter=".3in">
-			Survey Results
-		</h2>
 
 		<h1 style="h1" fontSize="22" spaceAfter=".2in" spaceBefore=".1in" >
 			Question Breakdown
@@ -70,7 +63,7 @@
 
 					<tr tal:repeat="answer_stat question_part/responses">
 						<td tal:content="string:${answer_stat/answer}."
-							align="right"
+							align="left"
 							vAlign="middle"
 							leftPadding="20"
 							topPadding="20"
