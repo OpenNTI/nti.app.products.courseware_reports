@@ -106,6 +106,10 @@
 	<!-- <subscriber factory=".decorators._VideoViewsReport"
 				provides="nti.externalization.interfaces.IExternalMappingDecorator" /> -->
 
+	<!-- A subscriber for getting the survey report from a survey -->
+	<subscriber factory=".decorators._SurveyReport"
+				provides="nti.externalization.interfaces.IExternalMappingDecorator" />
+				
 	<!-- Default layout for reports -->
 	<!--
 		NOTE: Not really necessary, each report view

@@ -11,19 +11,20 @@ logger = __import__('logging').getLogger(__name__)
 
 from . import MessageFactory as _
 
-from zope import interface
 from zope import component
+from zope import interface
 
 from zope.security.management import checkPermission
 
 from pyramid.interfaces import IRequest
 
-from nti.assessment.interfaces import IQAssignment
+from nti.app.products.courseware.interfaces import ICourseInstanceEnrollment
+from nti.app.products.gradebook.interfaces import IGradeBook
 
 from nti.app.renderers.decorators import AbstractAuthenticatedRequestAwareDecorator
 
-from nti.app.products.courseware.interfaces import ICourseInstanceEnrollment
-from nti.app.products.gradebook.interfaces import IGradeBook
+from nti.assessment.interfaces import IQSurvey
+from nti.assessment.interfaces import IQAssignment
 
 from nti.contentlibrary.interfaces import IContentPackage
 
@@ -43,6 +44,7 @@ from nti.traversal.traversal import find_interface
 
 from .interfaces import ACT_VIEW_REPORTS
 
+from . import VIEW_SURVEY_REPORT
 from . import VIEW_COURSE_SUMMARY
 from . import VIEW_ASSIGNMENT_SUMMARY
 from . import VIEW_FORUM_PARTICIPATION
@@ -93,12 +95,12 @@ class _StudentParticipationReport(_AbstractInstructedByDecorator):
 	def _course_from_context(self, context):
 		return ICourseInstance(context)
 
-	def _do_decorate_external( self, context, result_map ):
-		links = result_map.setdefault( LINKS, [] )
-		links.append( Link( context,
-							rel='report-%s' % VIEW_STUDENT_PARTICIPATION,
-							elements=(VIEW_STUDENT_PARTICIPATION,),
-							title=_('Student Participation Report')) )
+	def _do_decorate_external(self, context, result_map):
+		links = result_map.setdefault(LINKS, [])
+		links.append(Link(context,
+						  rel='report-%s' % VIEW_STUDENT_PARTICIPATION,
+						  elements=(VIEW_STUDENT_PARTICIPATION,),
+						  title=_('Student Participation Report')))
 
 @interface.implementer(IExternalMappingDecorator)
 @component.adapter(ICommunityForum, IRequest)
@@ -110,12 +112,12 @@ class _ForumParticipationReport(_AbstractInstructedByDecorator):
 	def _course_from_context(self, context):
 		return course_from_forum(context)
 
-	def _do_decorate_external( self, context, result_map ):
-		links = result_map.setdefault( LINKS, [] )
-		links.append( Link( context,
-							rel='report-%s' % VIEW_FORUM_PARTICIPATION,
-							elements=(VIEW_FORUM_PARTICIPATION,),
-							title=_('Forum Participation Report')) )
+	def _do_decorate_external(self, context, result_map):
+		links = result_map.setdefault(LINKS, [])
+		links.append(Link(context,
+						  rel='report-%s' % VIEW_FORUM_PARTICIPATION,
+						  elements=(VIEW_FORUM_PARTICIPATION,),
+						  title=_('Forum Participation Report')))
 
 @interface.implementer(IExternalMappingDecorator)
 @component.adapter(ICommunityHeadlineTopic, IRequest)
@@ -127,12 +129,12 @@ class _TopicParticipationReport(_AbstractInstructedByDecorator):
 	def _course_from_context(self, context):
 		return course_from_forum(context.__parent__)
 
-	def _do_decorate_external( self, context, result_map ):
-		links = result_map.setdefault( LINKS, [] )
-		links.append( Link( context,
-							rel='report-%s' % VIEW_TOPIC_PARTICIPATION,
-							elements=(VIEW_TOPIC_PARTICIPATION,),
-							title=_('Topic Participation Report')) )
+	def _do_decorate_external(self, context, result_map):
+		links = result_map.setdefault(LINKS, [])
+		links.append(Link(context,
+						  rel='report-%s' % VIEW_TOPIC_PARTICIPATION,
+						  elements=(VIEW_TOPIC_PARTICIPATION,),
+						  title=_('Topic Participation Report')))
 
 @interface.implementer(IExternalMappingDecorator)
 @component.adapter(ICourseInstance, IRequest)
@@ -140,12 +142,12 @@ class _CourseSummaryReport(_AbstractInstructedByDecorator):
 	"""
 	A link to return the course summary report.
 	"""
-	def _do_decorate_external( self, context, result_map ):
-		links = result_map.setdefault( LINKS, [] )
-		links.append( Link( context,
-							rel='report-%s' % VIEW_COURSE_SUMMARY,
-							elements=(VIEW_COURSE_SUMMARY,),
-							title=_('Course Summary Report')) )
+	def _do_decorate_external(self, context, result_map):
+		links = result_map.setdefault(LINKS, [])
+		links.append(Link(context,
+						  rel='report-%s' % VIEW_COURSE_SUMMARY,
+						  elements=(VIEW_COURSE_SUMMARY,),
+						  title=_('Course Summary Report')))
 
 def _find_course_for_user(data, user):
 	if user is None:
@@ -161,7 +163,7 @@ def _find_course_for_user(data, user):
 		# Try to find the course within the context of the user;
 		# this takes into account the user's enrollment status
 		# to find the best course (sub) instance
-		course = component.queryMultiAdapter( (data, user), ICourseInstance)
+		course = component.queryMultiAdapter((data, user), ICourseInstance)
 
 	if course is None:
 		# Ok, can we get there genericlly, as in the old-school
@@ -188,6 +190,7 @@ class _AssignmentSummaryReport(_AbstractInstructedByDecorator):
 	"""
 	A link to return the assignment summary report.
 	"""
+
 	def _course_from_context(self, context):
 		self.course = find_interface(self.request.context, ICourseInstance,
 									 strict=False)
@@ -195,19 +198,46 @@ class _AssignmentSummaryReport(_AbstractInstructedByDecorator):
 			self.course = _find_course_for_user(context, self.remoteUser)
 		return self.course
 
-	def _gradebook_entry( self, context ):
-		book = IGradeBook( self.course )
-		gradebook_entry = book.getColumnForAssignmentId( context.__name__ )
+	def _gradebook_entry(self, context):
+		book = IGradeBook(self.course)
+		gradebook_entry = book.getColumnForAssignmentId(context.__name__)
 		return gradebook_entry
 
-	def _do_decorate_external( self, context, result_map ):
-		gradebook_entry = self._gradebook_entry( context )
-		if gradebook_entry is None: # pragma: no cover
+	def _do_decorate_external(self, context, result_map):
+		gradebook_entry = self._gradebook_entry(context)
+		if gradebook_entry is None:  # pragma: no cover
 			# mostly tests
 			return
 
-		links = result_map.setdefault( LINKS, [] )
-		links.append( Link( gradebook_entry,
-							rel='report-%s' % VIEW_ASSIGNMENT_SUMMARY,
-							elements=(VIEW_ASSIGNMENT_SUMMARY,),
-							title=_('Assignment Summary Report')) )
+		links = result_map.setdefault(LINKS, [])
+		links.append(Link(gradebook_entry,
+						  rel='report-%s' % VIEW_ASSIGNMENT_SUMMARY,
+						  elements=(VIEW_ASSIGNMENT_SUMMARY,),
+						  title=_('Assignment Summary Report')))
+
+@interface.implementer(IExternalMappingDecorator)
+@component.adapter(IQSurvey, IRequest)
+class _SurveyReport(_AbstractInstructedByDecorator):
+	"""
+	A link to return the survey report.
+	"""
+
+	def _course_from_context(self, context):
+		self.course = find_interface(self.request.context, ICourseInstance,
+									 strict=False)
+		if self.course is None:
+			self.course = component.getMultiAdapter((self.request.context, self.remoteUser),
+													 ICourseInstance)
+		return self.course
+
+	def _gradebook_entry(self, context):
+		book = IGradeBook(self.course)
+		gradebook_entry = book.getColumnForAssignmentId(context.__name__)
+		return gradebook_entry
+
+	def _do_decorate_external(self, context, result_map):
+		links = result_map.setdefault(LINKS, [])
+		links.append(Link(context,
+						  rel='report-%s' % VIEW_SURVEY_REPORT,
+						  elements=(VIEW_SURVEY_REPORT,),
+						  title=_('Survey Report')))
