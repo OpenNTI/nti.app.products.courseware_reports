@@ -19,8 +19,5 @@ from zope.contentprovider.provider import ContentProviderBase
 @interface.implementer(IContentProvider)
 class DummyContentProvider(ContentProviderBase):
 
-	def update(self):
-		pass
-
 	def render(self, *args, **kwargs):
 		return "<tr><td/></tr>"
