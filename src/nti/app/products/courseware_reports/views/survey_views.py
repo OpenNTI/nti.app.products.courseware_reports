@@ -93,6 +93,7 @@ class SurveyReportPdf(_AbstractReportView):
 			poll_stat = PollStat(title, content, [])
 			for idx, agg_part in enumerate(agg_poll):
 				kind = 0
+				responses = None
 				part = poll[idx]
 				total = agg_part.Total
 				results = agg_part.Results
@@ -108,10 +109,11 @@ class SurveyReportPdf(_AbstractReportView):
 										(count / total)*100 if total else 0)
 						responses.append(response)
 
-				poll_stat.parts.append(
-							PollPartStat(kind=kind,
-										 content=IPlainTextContentFragment(part.content),
-										 responses=responses))
+				if responses:
+					poll_stat.parts.append(
+								PollPartStat(kind=kind,
+											 content=IPlainTextContentFragment(part.content),
+											 responses=responses))
 			poll_stats.append(poll_stat)
 
 	def _get_displayable(self, source):
