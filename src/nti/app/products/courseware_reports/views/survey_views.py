@@ -23,6 +23,7 @@ from nti.app.assessment.interfaces import ICourseAggregatedInquiries
 from nti.assessment.interfaces import IQPoll
 from nti.assessment.interfaces import IQSurvey
 from nti.assessment.interfaces import IQNonGradableMultipleChoicePart
+from nti.assessment.interfaces import IQNonGradableMultipleChoiceMultipleAnswerPart
 
 from nti.common.property import alias, Lazy
 
@@ -98,8 +99,9 @@ class SurveyReportPdf(_AbstractReportView):
 				total = agg_part.Total
 				results = agg_part.Results
 				
-				# single answer parts
-				if IQNonGradableMultipleChoicePart.providedBy(part):
+				if IQNonGradableMultipleChoiceMultipleAnswerPart.providedBy(part):
+					pass
+				elif IQNonGradableMultipleChoicePart.providedBy(part):
 					kind = 1
 					responses = []
 					for idx, count in sorted(results.items()):
