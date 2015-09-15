@@ -4,7 +4,7 @@
 	tal:define="options view/options">
 
 		<para style="normal" fontSize="12" spaceAfter=".1in">
-			This report includes information about the survey results<u>${context/displayName}</u>.
+			This report includes information about the survey results.
 		</para>
 		<hr width="100%" />
 
@@ -69,7 +69,7 @@
 						<td align="right">Percent</td>
 					</tr>
 
-					<tr tal:repeat="answer_stat question_part/reponses">
+					<tr tal:repeat="answer_stat question_part/responses">
 						<td tal:content="string:${answer_stat/answer}."
 							align="right"
 							vAlign="middle"

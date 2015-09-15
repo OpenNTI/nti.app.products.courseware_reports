@@ -1,4 +1,3 @@
 <tr>
 	<td>Survey:</td>
-	<td tal:content="context/displayName">Title</td>
 </tr>
