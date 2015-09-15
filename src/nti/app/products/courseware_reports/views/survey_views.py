@@ -105,7 +105,7 @@ class SurveyReportPdf(_AbstractReportView):
 						response = ResponseStat(
 										IPlainTextContentFragment(part.choices[idx]),
 										count,
-										count / total if total else 0)
+										(count / total)*100 if total else 0)
 						responses.append(response)
 
 				poll_stat.parts.append(
