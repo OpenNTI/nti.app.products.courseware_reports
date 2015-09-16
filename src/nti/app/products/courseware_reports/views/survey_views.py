@@ -100,7 +100,16 @@ class SurveyReportPdf(_AbstractReportView):
 				results = agg_part.Results
 				
 				if IQNonGradableMultipleChoiceMultipleAnswerPart.providedBy(part):
-					pass
+					kind = 2
+					responses = []
+					for idxs, count in sorted(results.items()):
+						idxs = eval(idxs) if isinstance(idxs, string_types) else idxs
+						answers = [IPlainTextContentFragment(part.choices[x]) for x in idxs]
+						response = ResponseStat(
+										answers,
+										count,
+										(count / total)*100 if total else 0)
+						responses.append(response)
 				elif IQNonGradableMultipleChoicePart.providedBy(part):
 					kind = 1
 					responses = []
