@@ -22,6 +22,7 @@ from nti.app.assessment.interfaces import ICourseAggregatedInquiries
 
 from nti.assessment.interfaces import IQPoll
 from nti.assessment.interfaces import IQSurvey
+from nti.assessment.interfaces import IQNonGradableConnectingPart
 from nti.assessment.interfaces import IQAggregatedFreeResponsePart
 from nti.assessment.interfaces import IQNonGradableMultipleChoicePart
 from nti.assessment.interfaces import IQNonGradableMultipleChoiceMultipleAnswerPart
@@ -46,7 +47,7 @@ class ResponseStat(object):
 class PollPartStat(object):
 
 	kind = alias('type')
-	
+
 	def __init__(self, kind, content, responses=None):
 		self.type = kind
 		self.content = content
@@ -60,6 +61,10 @@ class PollStat(object):
 		self.title = title
 		self.content = content
 		self.poll_part_stats = parts if parts is not None else ()
+
+def plain_text(s):
+	result = IPlainTextContentFragment(s) if s else u''
+	return result.strip()
 
 @view_config(context=IQSurvey,
 			 name=VIEW_SURVEY_REPORT)
@@ -88,9 +93,9 @@ class SurveyReportPdf(_AbstractReportView):
 				continue
 
 			title = idx + 1
-			content = IPlainTextContentFragment(poll.content)
+			content = plain_text(poll.content)
 			if not content:
-				content = IPlainTextContentFragment(poll.parts[0].content)
+				content = plain_text(poll.parts[0].content)
 
 			poll_stat = PollStat(title, content, [])
 			for idx, agg_part in enumerate(agg_poll):
@@ -99,47 +104,64 @@ class SurveyReportPdf(_AbstractReportView):
 				part = poll[idx]
 				total = agg_part.Total
 				results = agg_part.Results
-				
+
 				if IQNonGradableMultipleChoiceMultipleAnswerPart.providedBy(part):
 					kind = 2
 					responses = []
+					choices = part.choices
 					for idxs, count in sorted(results.items()):
 						idxs = eval(idxs) if isinstance(idxs, string_types) else idxs
-						answers = [IPlainTextContentFragment(part.choices[x]) for x in idxs]
+						answers = [plain_text(choices[int(x)]) for x in idxs]
 						response = ResponseStat(
 										answers,
 										count,
-										(count / total)*100 if total else 0)
+										(count / total) * 100 if total else 0)
+						responses.append(response)
+				elif IQNonGradableConnectingPart.providedBy(part):
+					kind = 3
+					responses = []
+					labels = part.labels
+					values = part.values
+					for tuples, count in sorted(results.items()):
+						tuples = eval(tuples) if isinstance(tuples, string_types) else tuples
+						answers = [  # tuples label vs value
+							(plain_text(labels[int(x)]), plain_text(values[int(y)]))
+							for x, y in tuples ]
+						response = ResponseStat(
+										answers,
+										count,
+										(count / total) * 100 if total else 0)
 						responses.append(response)
 				elif IQNonGradableMultipleChoicePart.providedBy(part):
 					kind = 1
 					responses = []
+					choices = part.choices
 					for idx, count in sorted(results.items()):
 						response = ResponseStat(
-										IPlainTextContentFragment(part.choices[idx]),
+										plain_text(choices[int(idx)]),
 										count,
-										(count / total)*100 if total else 0)
+										(count / total) * 100 if total else 0)
 						responses.append(response)
 				elif IQAggregatedFreeResponsePart.providedBy(part):
 					kind = 1
 					responses = []
 					for text, count in sorted(results.items()):
 						response = ResponseStat(
-										IPlainTextContentFragment(text),
+										plain_text(text),
 										count,
-										(count / total)*100 if total else 0)
+										(count / total) * 100 if total else 0)
 						responses.append(response)
-				
+
 				if responses:
 					poll_stat.parts.append(
 								PollPartStat(kind=kind,
-											 content=IPlainTextContentFragment(part.content),
+											 content=plain_text(part.content),
 											 responses=responses))
 			poll_stats.append(poll_stat)
 
 	def _get_displayable(self, source):
 		if isinstance(source, string_types):
-			source = IPlainTextContentFragment(source)
+			source = plain_text(source)
 		return source
 
 	def __call__(self):
