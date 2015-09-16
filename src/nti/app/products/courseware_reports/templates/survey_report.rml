@@ -19,11 +19,9 @@
 		<tal:block  tal:repeat="question options/poll_stats"
 					tal:condition="options/poll_stats">
 
+			<nextPage tal:condition="python: repeat.question.number > 1" />
+	
 			<keepTogether>
-			<h2 style="h2" fontSize="10" spaceBefore=".3in" spaceAfter=".2"
-				tal:content="string:${question/title}">
-				Question Number
-			</h2>
 			<para 	style="question"
 					tal:content="question/content"
 					spaceAfter=".1in" >
