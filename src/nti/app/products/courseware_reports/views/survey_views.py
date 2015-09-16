@@ -22,6 +22,7 @@ from nti.app.assessment.interfaces import ICourseAggregatedInquiries
 
 from nti.assessment.interfaces import IQPoll
 from nti.assessment.interfaces import IQSurvey
+from nti.assessment.interfaces import IQAggregatedFreeResponsePart
 from nti.assessment.interfaces import IQNonGradableMultipleChoicePart
 from nti.assessment.interfaces import IQNonGradableMultipleChoiceMultipleAnswerPart
 
@@ -119,7 +120,16 @@ class SurveyReportPdf(_AbstractReportView):
 										count,
 										(count / total)*100 if total else 0)
 						responses.append(response)
-
+				elif IQAggregatedFreeResponsePart.providedBy(part):
+					kind = 1
+					responses = []
+					for text, count in sorted(results.items()):
+						response = ResponseStat(
+										IPlainTextContentFragment(text),
+										count,
+										(count / total)*100 if total else 0)
+						responses.append(response)
+				
 				if responses:
 					poll_stat.parts.append(
 								PollPartStat(kind=kind,
