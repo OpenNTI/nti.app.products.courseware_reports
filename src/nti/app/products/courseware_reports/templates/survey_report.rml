@@ -70,7 +70,7 @@
 							A
 						</td>
 						<td tal:content="answer_stat/count"
-							fontSize="14" fontName="OpenSansSemiBold"
+							fontSize="12" fontName="OpenSansSemiBold"
 							topPadding="20"
 							bottomPadding="20"
 							align="right"
@@ -78,7 +78,7 @@
 							count
 						</td>
 						<td tal:content="answer_stat/percentage"
-							fontSize="14" fontName="OpenSansSemiBold"
+							fontSize="12" fontName="OpenSansSemiBold"
 							topPadding="20"
 							bottomPadding="20"
 							align="right"
