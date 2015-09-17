@@ -88,6 +88,55 @@
 					</tr>
 				</blockTable>
 
+				<!-- Multiple choice multiple Answers -->
+				<blockTable alignment="left"
+							colWidths="6% 50% 7% 8%"
+							repeatRows="1"
+							tal:condition="python: question_part.type == 2">
+					<blockTableStyle id="new" >
+						<lineStyle 	thickness="2"
+									start="0,0" stop="-1,-1"
+									kind="linebelow" colorName="white" />
+						<blockTextColor start="0,0" stop="-1,0" colorName="#b8b8b8" />
+						<blockFont start="0,0" stop="-1,0" name="OpenSansSemiBold" size="10" />
+					</blockTableStyle>
+
+					<tr>
+						<td />
+						<td align="right">Count</td>
+						<td align="right">Percent</td>
+					</tr>
+
+					<tr tal:repeat="answer_stat question_part/responses">
+						<td	align="left"
+							vAlign="middle"
+							leftPadding="20"
+							topPadding="20"
+							bottomPadding="20"
+							fontSize="12" fontName="OpenSansSemiBold"
+							tal:define="answers answer_stat/answers"
+							tal:content="python: '\n'.join(answers)">
+							A
+						</td>
+						<td tal:content="answer_stat/count"
+							fontSize="14" fontName="OpenSansSemiBold"
+							topPadding="20"
+							bottomPadding="20"
+							align="right"
+							vAlign="middle" >
+							count
+						</td>
+						<td tal:content="answer_stat/percentage"
+							fontSize="12" fontName="OpenSansSemiBold"
+							topPadding="20"
+							bottomPadding="20"
+							align="right"
+							vAlign="middle" >
+							perc
+						</td>
+					</tr>
+				</blockTable>
+				
 			</metal:block>
 			</keepTogether>
 		</tal:block>

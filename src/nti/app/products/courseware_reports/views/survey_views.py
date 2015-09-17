@@ -39,6 +39,8 @@ from .view_mixins import _AbstractReportView
 
 class ResponseStat(object):
 
+	answers = alias('answer')
+	
 	def __init__(self, answer, count, percentage):
 		self.count = count
 		self.answer = answer
