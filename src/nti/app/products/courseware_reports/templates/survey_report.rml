@@ -113,10 +113,14 @@
 							leftPadding="20"
 							topPadding="20"
 							bottomPadding="20"
-							fontSize="12" fontName="OpenSansSemiBold"
-							tal:define="answers answer_stat/answers"
-							tal:content="python: '\n'.join(answers)">
-							A
+							fontSize="12" fontName="OpenSansSemiBold">
+							<para>
+								<tal:series define="answers answer_stat/answers">
+									<tal:items repeat="answer answers">
+										<p tal:content="string:${answer}">answer</p>
+									</tal:items>
+								</tal:series>
+							</para>
 						</td>
 						<td tal:content="answer_stat/count"
 							fontSize="14" fontName="OpenSansSemiBold"
