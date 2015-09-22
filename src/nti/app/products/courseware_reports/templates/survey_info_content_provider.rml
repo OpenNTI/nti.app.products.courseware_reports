@@ -1,3 +1,4 @@
 <tr>
 	<td>Survey:</td>
+	<td tal:content="context/title">Title</td>
 </tr>

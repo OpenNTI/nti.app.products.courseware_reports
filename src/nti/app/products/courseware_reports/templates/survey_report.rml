@@ -3,9 +3,7 @@
 	xmlns:metal="http://xml.zope.org/namespaces/metal"
 	tal:define="options view/options">
 
-		<hr width="100%" />
-
-		<h1 style="h1" fontSize="18" spaceAfter=".2in" spaceBefore=".1in" >
+		<h1 style="h1" fontSize="18" spaceAfter=".2in" >
 			Question Breakdown
 		</h1>
 
@@ -20,7 +18,7 @@
 					tal:condition="options/poll_stats">
 
 			<nextPage tal:condition="python: repeat.question.number > 1" />
-	
+
 			<keepTogether>
 			<para 	style="question"
 					tal:content="question/content"
@@ -42,9 +40,9 @@
 
 				<!-- Single column answers -->
 				<blockTable alignment="left"
-							colWidths="6% 50% 7% 8%"
+							colWidths="50% 7% 8%"
 							repeatRows="1"
-							tal:condition="python: question_part.type == 1">
+							tal:condition="python: question_part.type in (1,2)">
 					<blockTableStyle id="new" >
 						<lineStyle 	thickness="2"
 									start="0,0" stop="-1,-1"
@@ -60,17 +58,18 @@
 					</tr>
 
 					<tr tal:repeat="answer_stat question_part/responses">
-						<td tal:content="string:${answer_stat/answer}."
+						<td tal:content="string:${answer_stat/answer}"
 							align="left"
 							vAlign="middle"
 							leftPadding="20"
 							topPadding="20"
 							bottomPadding="20"
-							fontSize="12" fontName="OpenSansSemiBold">
+							background="#f5f5f5"
+							fontColor="#494949">
 							A
 						</td>
 						<td tal:content="answer_stat/count"
-							fontSize="12" fontName="OpenSansSemiBold"
+							fontSize="14" fontName="OpenSansSemiBold"
 							topPadding="20"
 							bottomPadding="20"
 							align="right"
@@ -78,7 +77,7 @@
 							count
 						</td>
 						<td tal:content="answer_stat/percentage"
-							fontSize="12" fontName="OpenSansSemiBold"
+							fontSize="14" fontName="OpenSansSemiBold"
 							topPadding="20"
 							bottomPadding="20"
 							align="right"
@@ -90,18 +89,22 @@
 
 				<!-- Multiple choice multiple Answers -->
 				<blockTable alignment="left"
-							colWidths="6% 50% 7% 8%"
+							colWidths="25% 25% 7% 8%"
 							repeatRows="1"
-							tal:condition="python: question_part.type == 2">
+							tal:condition="python: question_part.type == 3">
 					<blockTableStyle id="new" >
 						<lineStyle 	thickness="2"
 									start="0,0" stop="-1,-1"
 									kind="linebelow" colorName="white" />
+						<lineStyle 	thickness="2"
+									start="0,0" stop="1,-1"
+									kind="lineafter" colorName="white" />
 						<blockTextColor start="0,0" stop="-1,0" colorName="#b8b8b8" />
 						<blockFont start="0,0" stop="-1,0" name="OpenSansSemiBold" size="10" />
 					</blockTableStyle>
 
 					<tr>
+						<td />
 						<td />
 						<td align="right">Count</td>
 						<td align="right">Percent</td>
@@ -113,14 +116,21 @@
 							leftPadding="20"
 							topPadding="20"
 							bottomPadding="20"
-							fontSize="12" fontName="OpenSansSemiBold">
-							<para>
-								<tal:series define="answers answer_stat/answers">
-									<tal:items repeat="answer answers">
-										<p tal:content="string:${answer}">answer</p>
-									</tal:items>
-								</tal:series>
-							</para>
+							background="#f5f5f5"
+							fontColor="#494949">
+								<para 	style="answer"
+										tal:content="python: answer_stat.answer[0]">
+									answer
+								</para>
+						</td>
+						<td background="#f5f5f5"
+							vAlign="middle"
+							leftPadding="20"
+							fontColor="#494949">
+								<para 	style="answer"
+										tal:content="python: answer_stat.answer[1]">
+									answer
+								</para>
 						</td>
 						<td tal:content="answer_stat/count"
 							fontSize="14" fontName="OpenSansSemiBold"
@@ -131,7 +141,7 @@
 							count
 						</td>
 						<td tal:content="answer_stat/percentage"
-							fontSize="12" fontName="OpenSansSemiBold"
+							fontSize="14" fontName="OpenSansSemiBold"
 							topPadding="20"
 							bottomPadding="20"
 							align="right"
@@ -140,7 +150,7 @@
 						</td>
 					</tr>
 				</blockTable>
-				
+
 			</metal:block>
 			</keepTogether>
 		</tal:block>

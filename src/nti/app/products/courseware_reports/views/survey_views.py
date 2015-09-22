@@ -9,6 +9,8 @@ __docformat__ = "restructuredtext en"
 
 logger = __import__('logging').getLogger(__name__)
 
+import heapq
+
 from .. import MessageFactory as _
 
 from six import string_types
@@ -25,6 +27,7 @@ from nti.assessment.interfaces import IQSurvey
 from nti.assessment.interfaces import IQNonGradableConnectingPart
 from nti.assessment.interfaces import IQAggregatedFreeResponsePart
 from nti.assessment.interfaces import IQNonGradableMultipleChoicePart
+from nti.assessment.interfaces import IQNonGradableModeledContentPart
 from nti.assessment.interfaces import IQNonGradableMultipleChoiceMultipleAnswerPart
 
 from nti.common.property import alias, Lazy
@@ -40,7 +43,7 @@ from .view_mixins import _AbstractReportView
 class ResponseStat(object):
 
 	answers = alias('answer')
-	
+
 	def __init__(self, answer, count, percentage):
 		self.count = count
 		self.answer = answer
@@ -80,6 +83,21 @@ class SurveyReportPdf(_AbstractReportView):
 											ICourseInstance)
 		return course
 
+	def _get_response_stats(self, vals, total):
+		# We expect a dict of answer to count
+		# Only get our top 8 responses
+		top_answer_stats = heapq.nlargest( 8, vals.items(), key=lambda x: x[1] )
+		responses = []
+
+		# Answer: (index,content) -> count
+		for answer, count in top_answer_stats:
+			response = ResponseStat(
+							answer,
+							count,
+							(count / total) * 100 if total else 0)
+			responses.append(response)
+		return responses
+
 	def _build_question_data(self, options):
 		options['poll_stats'] = poll_stats = []
 
@@ -111,29 +129,45 @@ class SurveyReportPdf(_AbstractReportView):
 					kind = 2
 					responses = []
 					choices = part.choices
+					vals = []
+
+					# Group and count each submitted answer
 					for idxs, count in sorted(results.items()):
 						idxs = eval(idxs) if isinstance(idxs, string_types) else idxs
-						answers = [plain_text(choices[int(x)]) for x in idxs]
-						response = ResponseStat(
-										answers,
-										count,
-										(count / total) * 100 if total else 0)
-						responses.append(response)
+
+						for idx in idxs:
+							answer = plain_text(choices[int(idx)])
+							if answer in vals:
+								vals[answer] += count
+							else:
+								vals[answer] = 1
+
+					responses.extend( self._get_response_stats(vals, total) )
 				elif IQNonGradableConnectingPart.providedBy(part):
 					kind = 3
 					responses = []
 					labels = part.labels
 					values = part.values
+					vals = {}
+
+					# Group and count each submitted answer
 					for tuples, count in sorted(results.items()):
 						tuples = eval(tuples) if isinstance(tuples, string_types) else tuples
-						answers = [  # tuples label vs value
-							(plain_text(labels[int(x)]), plain_text(values[int(y)]))
-							for x, y in tuples ]
-						response = ResponseStat(
-										answers,
-										count,
-										(count / total) * 100 if total else 0)
-						responses.append(response)
+
+						for answer in tuples:
+							answer  = (plain_text(labels[int(answer[0])]),
+									plain_text(values[answer[1]]))
+							if answer in vals:
+								vals[answer] += count
+							else:
+								vals[answer] = 1
+
+					# For ranking type responses, we probably don't want to
+					# order by most common ranking, we probably want to rank
+					# the top-ranked first (or only the top-ranked).  Or we
+					# could allocate points per answer (more points for top-ranked)
+					# and return that. Or we could return most common result sets.
+					responses.extend( self._get_response_stats(vals, total) )
 				elif IQNonGradableMultipleChoicePart.providedBy(part):
 					kind = 1
 					responses = []
@@ -150,6 +184,19 @@ class SurveyReportPdf(_AbstractReportView):
 					for text, count in sorted(results.items()):
 						response = ResponseStat(
 										plain_text(text),
+										count,
+										(count / total) * 100 if total else 0)
+						responses.append(response)
+				elif IQNonGradableModeledContentPart.providedBy( part ):
+					kind = 1
+					responses = []
+					for text in results:
+						if text:
+							text = ' '.join( text )
+						else:
+							continue
+						response = ResponseStat(
+										text,
 										count,
 										(count / total) * 100 if total else 0)
 						responses.append(response)
