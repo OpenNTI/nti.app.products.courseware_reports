@@ -129,7 +129,7 @@ class SurveyReportPdf(_AbstractReportView):
 					kind = 2
 					responses = []
 					choices = part.choices
-					vals = []
+					vals = {}
 
 					# Group and count each submitted answer
 					for idxs, count in sorted(results.items()):
