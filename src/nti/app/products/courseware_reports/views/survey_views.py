@@ -47,7 +47,7 @@ class ResponseStat(object):
 	def __init__(self, answer, count, percentage):
 		self.count = count
 		self.answer = answer
-		self.percentage = percentage
+		self.percentage = round(percentage,2) if percentage is not None else percentage
 
 class PollPartStat(object):
 
