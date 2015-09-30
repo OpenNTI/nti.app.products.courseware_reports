@@ -188,8 +188,9 @@ class SurveyReportPdf(_AbstractReportView):
 										(count / total) * 100 if total else 0)
 						responses.append(response)
 				elif IQNonGradableModeledContentPart.providedBy( part ):
-					kind = 1
+					kind = 4
 					responses = []
+					count = 0
 					for text in results:
 						if text:
 							text = ' '.join( text )
