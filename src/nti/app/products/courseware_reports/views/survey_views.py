@@ -105,7 +105,7 @@ class SurveyReportPdf(_AbstractReportView):
 			container = ICourseAggregatedInquiries(self.course)
 			aggregated = container[self.context.ntiid]
 		else:
-			aggregated = aggregate_course_inquiry(self.context, self.course)
+			aggregated = aggregate_course_inquiry(self.context, self.course) or ()
 
 		for idx, agg_poll in enumerate(aggregated):
 			poll = component.queryUtility(IQPoll, name=agg_poll.inquiryId)
