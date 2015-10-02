@@ -125,25 +125,7 @@ class SurveyReportPdf(_AbstractReportView):
 				total = agg_part.Total
 				results = agg_part.Results
 
-				if IQNonGradableMultipleChoiceMultipleAnswerPart.providedBy(part):
-					kind = 2
-					responses = []
-					choices = part.choices
-					vals = {}
-
-					# Group and count each submitted answer
-					for idxs, count in sorted(results.items()):
-						idxs = eval(idxs) if isinstance(idxs, string_types) else idxs
-
-						for idx in idxs:
-							answer = plain_text(choices[int(idx)])
-							if answer in vals:
-								vals[answer] += count
-							else:
-								vals[answer] = 1
-
-					responses.extend( self._get_response_stats(vals, total) )
-				elif IQNonGradableConnectingPart.providedBy(part):
+				if IQNonGradableConnectingPart.providedBy(part):
 					kind = 3
 					responses = []
 					labels = part.labels
@@ -168,7 +150,8 @@ class SurveyReportPdf(_AbstractReportView):
 					# could allocate points per answer (more points for top-ranked)
 					# and return that. Or we could return most common result sets.
 					responses.extend( self._get_response_stats(vals, total) )
-				elif IQNonGradableMultipleChoicePart.providedBy(part):
+				elif IQNonGradableMultipleChoicePart.providedBy(part) or \
+					 IQNonGradableMultipleChoiceMultipleAnswerPart.providedBy(part):
 					kind = 1
 					responses = []
 					choices = part.choices
