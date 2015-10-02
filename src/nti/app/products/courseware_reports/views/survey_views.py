@@ -131,7 +131,7 @@ class SurveyReportPdf(_AbstractReportView):
 					labels = part.labels
 					values = part.values
 
-					for k, m in sorted(results.keys()):
+					for k in sorted(results.keys()):
 						m = results.get(k)
 						label = plain_text(labels[int(k)])
 						for v, count in sorted(m.items(), key=lambda x: x[1]):
