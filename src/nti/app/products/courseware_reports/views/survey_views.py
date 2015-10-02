@@ -130,26 +130,17 @@ class SurveyReportPdf(_AbstractReportView):
 					responses = []
 					labels = part.labels
 					values = part.values
-					vals = {}
 
-					# Group and count each submitted answer
-					for tuples, count in sorted(results.items()):
-						tuples = eval(tuples) if isinstance(tuples, string_types) else tuples
-
-						for answer in tuples:
-							answer  = (plain_text(labels[int(answer[0])]),
-									plain_text(values[answer[1]]))
-							if answer in vals:
-								vals[answer] += count
-							else:
-								vals[answer] = 1
-
-					# For ranking type responses, we probably don't want to
-					# order by most common ranking, we probably want to rank
-					# the top-ranked first (or only the top-ranked).  Or we
-					# could allocate points per answer (more points for top-ranked)
-					# and return that. Or we could return most common result sets.
-					responses.extend( self._get_response_stats(vals, total) )
+					for k, m in sorted(results.keys()):
+						m = results.get(k)
+						label = plain_text(labels[int(k)])
+						for v, count in sorted(m.items(), key=lambda x: x[1]):
+							value = plain_text(values[int(v)])
+							response = ResponseStat(
+										(label, value),
+										count,
+										(count / total) * 100 if total else 0)
+							responses.append(response)
 				elif IQNonGradableMultipleChoicePart.providedBy(part) or \
 					 IQNonGradableMultipleChoiceMultipleAnswerPart.providedBy(part):
 					kind = 1
