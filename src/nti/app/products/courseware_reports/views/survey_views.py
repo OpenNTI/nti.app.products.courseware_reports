@@ -130,10 +130,9 @@ class SurveyReportPdf(_AbstractReportView):
 					responses = []
 					labels = part.labels
 					values = part.values
-
-					for k in sorted(results.keys()):
+					mapped = {plain_text(labels[int(k)]):k for k in results.keys()}
+					for label, k in sorted(mapped.items(), key=lambda x: x[0]):
 						m = results.get(k)
-						label = plain_text(labels[int(k)])
 						for v, count in sorted(m.items(), key=lambda x: x[1]):
 							value = plain_text(values[int(v)])
 							response = ResponseStat(
@@ -146,7 +145,7 @@ class SurveyReportPdf(_AbstractReportView):
 					kind = 1
 					responses = []
 					choices = part.choices
-					for idx, count in sorted(results.items()):
+					for idx, count in sorted(results.items(), key=lambda x: x[1]):
 						response = ResponseStat(
 										plain_text(choices[int(idx)]),
 										count,
@@ -155,7 +154,7 @@ class SurveyReportPdf(_AbstractReportView):
 				elif IQAggregatedFreeResponsePart.providedBy(part):
 					kind = 1
 					responses = []
-					for text, count in sorted(results.items()):
+					for text, count in sorted(results.items(), key=lambda x: x[1]):
 						response = ResponseStat(
 										plain_text(text),
 										count,
@@ -169,10 +168,7 @@ class SurveyReportPdf(_AbstractReportView):
 						if not text:
 							continue
 						text = ' '.join(text)
-						response = ResponseStat(
-										text,
-										count,
-										(count / total) * 100 if total else 0)
+						response = ResponseStat(text, count, 0)
 						responses.append(response)
 
 				if responses:
