@@ -108,8 +108,15 @@
 
 	<!-- A subscriber for getting the survey report from a survey -->
 	<subscriber factory=".decorators._SurveyReport"
-				provides="nti.externalization.interfaces.IExternalMappingDecorator" />
-				
+				provides="nti.externalization.interfaces.IExternalMappingDecorator" 
+				for="nti.assessment.interfaces.IQSurvey 
+					 pyramid.interfaces.IRequest" />
+		
+	<subscriber factory=".decorators._SurveyReport"
+				provides="nti.externalization.interfaces.IExternalMappingDecorator" 
+				for="nti.contenttypes.presentation.interfaces.INTISurveyRef
+					 pyramid.interfaces.IRequest" />
+		
 	<!-- Default layout for reports -->
 	<!--
 		NOTE: Not really necessary, each report view
