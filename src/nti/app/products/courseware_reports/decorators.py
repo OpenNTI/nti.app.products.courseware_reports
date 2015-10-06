@@ -32,6 +32,8 @@ from nti.contenttypes.courses.interfaces import ICourseInstance
 from nti.contenttypes.courses.interfaces import ICourseCatalogEntry
 from nti.contenttypes.courses.interfaces import ICourseAdministrativeLevel
 
+from nti.contenttypes.presentation.interfaces import INTISurveyRef
+
 from nti.dataserver.contenttypes.forums.interfaces import ICommunityForum
 from nti.dataserver.contenttypes.forums.interfaces import ICommunityHeadlineTopic
 
@@ -217,27 +219,24 @@ class _AssignmentSummaryReport(_AbstractInstructedByDecorator):
 
 @interface.implementer(IExternalMappingDecorator)
 @component.adapter(IQSurvey, IRequest)
+@component.adapter(INTISurveyRef, IRequest)
 class _SurveyReport(_AbstractInstructedByDecorator):
 	"""
 	A link to return the survey report.
 	"""
 
 	def _course_from_context(self, context):
-		self.course = find_interface(self.request.context, ICourseInstance,
-									 strict=False)
+		survey = IQSurvey(context, None)
+		self.course = find_interface(survey, ICourseInstance, strict=False)
 		if self.course is None:
-			self.course = component.getMultiAdapter((self.request.context, self.remoteUser),
-													 ICourseInstance)
+			self.course = _find_course_for_user(survey, self.remoteUser)
 		return self.course
 
-	def _gradebook_entry(self, context):
-		book = IGradeBook(self.course)
-		gradebook_entry = book.getColumnForAssignmentId(context.__name__)
-		return gradebook_entry
-
 	def _do_decorate_external(self, context, result_map):
-		links = result_map.setdefault(LINKS, [])
-		links.append(Link(context,
-						  rel='report-%s' % VIEW_SURVEY_REPORT,
-						  elements=(VIEW_SURVEY_REPORT,),
-						  title=_('Survey Report')))
+		survey = IQSurvey(context, None)
+		if survey is not None:
+			links = result_map.setdefault(LINKS, [])
+			links.append(Link(context,
+							  rel='report-%s' % VIEW_SURVEY_REPORT,
+							  elements=(VIEW_SURVEY_REPORT,),
+							  title=_('Survey Report')))
