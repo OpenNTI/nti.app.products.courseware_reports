@@ -19,6 +19,7 @@ from zope.security.management import checkPermission
 from pyramid.interfaces import IRequest
 
 from nti.app.products.courseware.interfaces import ICourseInstanceEnrollment
+
 from nti.app.products.gradebook.interfaces import IGradeBook
 
 from nti.app.renderers.decorators import AbstractAuthenticatedRequestAwareDecorator
@@ -26,11 +27,7 @@ from nti.app.renderers.decorators import AbstractAuthenticatedRequestAwareDecora
 from nti.assessment.interfaces import IQInquiry
 from nti.assessment.interfaces import IQAssignment
 
-from nti.contentlibrary.interfaces import IContentPackage
-
 from nti.contenttypes.courses.interfaces import ICourseInstance
-from nti.contenttypes.courses.interfaces import ICourseCatalogEntry
-from nti.contenttypes.courses.interfaces import ICourseAdministrativeLevel
 
 from nti.contenttypes.presentation.interfaces import INTIInquiryRef
 
@@ -45,6 +42,9 @@ from nti.links.links import Link
 from nti.traversal.traversal import find_interface
 
 from .interfaces import ACT_VIEW_REPORTS
+
+from .utils import course_from_forum
+from .utils import find_course_for_user
 
 from . import VIEW_COURSE_SUMMARY
 from . import VIEW_INQUIRY_REPORT
@@ -67,25 +67,6 @@ class _AbstractInstructedByDecorator(AbstractAuthenticatedRequestAwareDecorator)
 		# now that we're integrating the two
 		return self._is_authenticated and  checkPermission(ACT_VIEW_REPORTS.id,
 														   self._course_from_context(context))
-
-def course_from_forum(forum):
-	# If we are directly enclosed inside a course
-	# (as we should be for non-legacy,) that's what
-	# we want
-	course = find_interface(forum, ICourseInstance)
-	if course is not None:
-		return course
-
-	# otherwise, in the legacy case, we need to tweak
-	# the community to get where we want to go
-	board = forum.__parent__
-	community = board.__parent__
-	courses = ICourseAdministrativeLevel(community, None)
-	if courses:
-		# Assuming only one
-		course = list(courses.values())[0]
-		assert course.Discussions == board
-		return course
 
 @interface.implementer(IExternalMappingDecorator)
 @component.adapter(ICourseInstanceEnrollment, IRequest)
@@ -151,41 +132,6 @@ class _CourseSummaryReport(_AbstractInstructedByDecorator):
 						  elements=(VIEW_COURSE_SUMMARY,),
 						  title=_('Course Summary Report')))
 
-def _find_course_for_user(data, user):
-	if user is None:
-		return None
-
-	if ICourseCatalogEntry.providedBy(data):
-		data = ICourseInstance(data)
-
-	if ICourseInstance.providedBy(data):
-		# Yay, they gave us one directly!
-		course = data
-	else:
-		# Try to find the course within the context of the user;
-		# this takes into account the user's enrollment status
-		# to find the best course (sub) instance
-		course = component.queryMultiAdapter((data, user), ICourseInstance)
-
-	if course is None:
-		# Ok, can we get there genericlly, as in the old-school
-		# fashion?
-		course = ICourseInstance(data, None)
-		if course is None:
-			# Hmm, maybe we have an assignment-like object and we can
-			# try to find the content package it came from and from there
-			# go to the one-to-one mapping to courses we used to have
-			course = ICourseInstance(find_interface(data, IContentPackage, strict=False),
-									 None)
-		if course is not None:
-			# Snap. Well, we found a course (good!), but not by taking
-			# the user into account (bad!)
-			logger.debug("No enrollment for user %s in course %s found "
-						 "for data %s; assuming generic/global course instance",
-						 user, course, data)
-
-	return course
-
 @interface.implementer(IExternalMappingDecorator)
 @component.adapter(IQAssignment, IRequest)
 class _AssignmentSummaryReport(_AbstractInstructedByDecorator):
@@ -197,7 +143,7 @@ class _AssignmentSummaryReport(_AbstractInstructedByDecorator):
 		self.course = find_interface(self.request.context, ICourseInstance,
 									 strict=False)
 		if self.course is None:
-			self.course = _find_course_for_user(context, self.remoteUser)
+			self.course = find_course_for_user(context, self.remoteUser)
 		return self.course
 
 	def _gradebook_entry(self, context):
@@ -229,7 +175,7 @@ class _InquiryReport(_AbstractInstructedByDecorator):
 		inquiry = IQInquiry(context, None)
 		self.course = find_interface(inquiry, ICourseInstance, strict=False)
 		if self.course is None:
-			self.course = _find_course_for_user(inquiry, self.remoteUser)
+			self.course = find_course_for_user(inquiry, self.remoteUser)
 		return self.course
 
 	def _do_decorate_external(self, context, result_map):

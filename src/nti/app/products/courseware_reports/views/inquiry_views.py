@@ -9,8 +9,6 @@ __docformat__ = "restructuredtext en"
 
 logger = __import__('logging').getLogger(__name__)
 
-import heapq
-
 from .. import MessageFactory as _
 
 from six import string_types
@@ -35,6 +33,10 @@ from nti.common.property import alias, Lazy
 from nti.contentfragments.interfaces import IPlainTextContentFragment
 
 from nti.contenttypes.courses.interfaces import ICourseInstance
+
+from nti.traversal.traversal import find_interface
+
+from ..utils import find_course_for_user
 
 from .. import VIEW_INQUIRY_REPORT
 
@@ -84,24 +86,10 @@ class InquiryReportPDF(_AbstractReportView):
 
 	@Lazy
 	def course(self):
-		course = component.getMultiAdapter((self.context, self.remoteUser),
-											ICourseInstance)
+		course = find_interface(self.context, ICourseInstance, strict=False)
+		if course is None:
+			course = find_course_for_user(self.context, self.remoteUser)
 		return course
-
-	def _get_response_stats(self, vals, total):
-		# We expect a dict of answer to count
-		# Only get our top 8 responses
-		top_answer_stats = heapq.nlargest( 8, vals.items(), key=lambda x: x[1] )
-		responses = []
-
-		# Answer: (index,content) -> count
-		for answer, count in top_answer_stats:
-			response = ResponseStat(
-							answer,
-							count,
-							(count / total) * 100 if total else 0)
-			responses.append(response)
-		return responses
 
 	def _build_question_data(self, options):
 		options['poll_stats'] = poll_stats = []
@@ -111,6 +99,9 @@ class InquiryReportPDF(_AbstractReportView):
 			aggregated = container[self.context.ntiid]
 		else:
 			aggregated = aggregate_course_inquiry(self.context, self.course) or ()
+
+		if IQPoll.providedBy(self.context):
+			aggregated = (aggregated,)
 
 		for idx, agg_poll in enumerate(aggregated):
 			poll = component.queryUtility(IQPoll, name=agg_poll.inquiryId)
