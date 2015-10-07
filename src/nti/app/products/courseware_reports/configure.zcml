@@ -106,15 +106,15 @@
 	<!-- <subscriber factory=".decorators._VideoViewsReport"
 				provides="nti.externalization.interfaces.IExternalMappingDecorator" /> -->
 
-	<!-- A subscriber for getting the survey report from a survey -->
-	<subscriber factory=".decorators._SurveyReport"
+	<!-- A subscriber for getting the report from an inquiry -->
+	<subscriber factory=".decorators._InquiryReport"
 				provides="nti.externalization.interfaces.IExternalMappingDecorator" 
-				for="nti.assessment.interfaces.IQSurvey 
+				for="nti.assessment.interfaces.IQInquiry 
 					 pyramid.interfaces.IRequest" />
 		
-	<subscriber factory=".decorators._SurveyReport"
+	<subscriber factory=".decorators._InquiryReport"
 				provides="nti.externalization.interfaces.IExternalMappingDecorator" 
-				for="nti.contenttypes.presentation.interfaces.INTISurveyRef
+				for="nti.contenttypes.presentation.interfaces.INTIInquiryRef
 					 pyramid.interfaces.IRequest" />
 		
 	<!-- Default layout for reports -->
@@ -228,16 +228,16 @@
 		permission="zope.Public"
 		manager=".interfaces.IPDFReportHeaderManager" />
 
-	<!-- Survey report -->
+	<!-- Inquiry report -->
 	<z3c:template
-		template="templates/survey_report.rml"
-		for=".views.survey_views.SurveyReportPdf"
+		template="templates/inquiry_report.rml"
+		for=".views.inquiry_views.InquiryReportPDF"
 		layer="pyramid.interfaces.IRequest" />
 
 	<browser:viewlet
-		name="survey_info_content_provider"
-		template="templates/survey_info_content_provider.rml"
-		view=".views.survey_views.SurveyReportPdf"
+		name="inquiry_info_content_provider"
+		template="templates/inquiry_info_content_provider.rml"
+		view=".views.inquiry_views.InquiryReportPDF"
 		layer="pyramid.interfaces.IRequest"
 		permission="zope.Public"
 		manager=".interfaces.IPDFReportHeaderManager" />

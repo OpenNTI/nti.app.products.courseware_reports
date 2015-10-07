@@ -23,7 +23,7 @@ from nti.app.products.gradebook.interfaces import IGradeBook
 
 from nti.app.renderers.decorators import AbstractAuthenticatedRequestAwareDecorator
 
-from nti.assessment.interfaces import IQSurvey
+from nti.assessment.interfaces import IQInquiry
 from nti.assessment.interfaces import IQAssignment
 
 from nti.contentlibrary.interfaces import IContentPackage
@@ -32,7 +32,7 @@ from nti.contenttypes.courses.interfaces import ICourseInstance
 from nti.contenttypes.courses.interfaces import ICourseCatalogEntry
 from nti.contenttypes.courses.interfaces import ICourseAdministrativeLevel
 
-from nti.contenttypes.presentation.interfaces import INTISurveyRef
+from nti.contenttypes.presentation.interfaces import INTIInquiryRef
 
 from nti.dataserver.contenttypes.forums.interfaces import ICommunityForum
 from nti.dataserver.contenttypes.forums.interfaces import ICommunityHeadlineTopic
@@ -46,8 +46,8 @@ from nti.traversal.traversal import find_interface
 
 from .interfaces import ACT_VIEW_REPORTS
 
-from . import VIEW_SURVEY_REPORT
 from . import VIEW_COURSE_SUMMARY
+from . import VIEW_INQUIRY_REPORT
 from . import VIEW_ASSIGNMENT_SUMMARY
 from . import VIEW_FORUM_PARTICIPATION
 from . import VIEW_TOPIC_PARTICIPATION
@@ -218,25 +218,25 @@ class _AssignmentSummaryReport(_AbstractInstructedByDecorator):
 						  title=_('Assignment Summary Report')))
 
 @interface.implementer(IExternalMappingDecorator)
-@component.adapter(IQSurvey, IRequest)
-@component.adapter(INTISurveyRef, IRequest)
-class _SurveyReport(_AbstractInstructedByDecorator):
+@component.adapter(IQInquiry, IRequest)
+@component.adapter(INTIInquiryRef, IRequest)
+class _InquiryReport(_AbstractInstructedByDecorator):
 	"""
-	A link to return the survey report.
+	A link to return the inquiry report.
 	"""
 
 	def _course_from_context(self, context):
-		survey = IQSurvey(context, None)
-		self.course = find_interface(survey, ICourseInstance, strict=False)
+		inquiry = IQInquiry(context, None)
+		self.course = find_interface(inquiry, ICourseInstance, strict=False)
 		if self.course is None:
-			self.course = _find_course_for_user(survey, self.remoteUser)
+			self.course = _find_course_for_user(inquiry, self.remoteUser)
 		return self.course
 
 	def _do_decorate_external(self, context, result_map):
-		survey = IQSurvey(context, None)
-		if survey is not None:
+		inquiry = IQInquiry(context, None)
+		if inquiry is not None:
 			links = result_map.setdefault(LINKS, [])
 			links.append(Link(context,
-							  rel='report-%s' % VIEW_SURVEY_REPORT,
-							  elements=(VIEW_SURVEY_REPORT,),
-							  title=_('Survey Report')))
+							  rel='report-%s' % VIEW_INQUIRY_REPORT,
+							  elements=(VIEW_INQUIRY_REPORT,),
+							  title=_('Inquiry Report')))

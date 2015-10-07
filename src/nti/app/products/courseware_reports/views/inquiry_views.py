@@ -23,7 +23,7 @@ from nti.app.assessment.common import aggregate_course_inquiry
 from nti.app.assessment.interfaces import ICourseAggregatedInquiries
 
 from nti.assessment.interfaces import IQPoll
-from nti.assessment.interfaces import IQSurvey
+from nti.assessment.interfaces import IQInquiry
 from nti.assessment.interfaces import IQNonGradableConnectingPart
 from nti.assessment.interfaces import IQAggregatedFreeResponsePart
 from nti.assessment.interfaces import IQNonGradableMultipleChoicePart
@@ -36,7 +36,7 @@ from nti.contentfragments.interfaces import IPlainTextContentFragment
 
 from nti.contenttypes.courses.interfaces import ICourseInstance
 
-from .. import VIEW_SURVEY_REPORT
+from .. import VIEW_INQUIRY_REPORT
 
 from .view_mixins import _AbstractReportView
 
@@ -71,11 +71,16 @@ def plain_text(s):
 	result = IPlainTextContentFragment(s) if s else u''
 	return result.strip()
 
-@view_config(context=IQSurvey,
-			 name=VIEW_SURVEY_REPORT)
-class SurveyReportPdf(_AbstractReportView):
+@view_config(context=IQInquiry,
+			 name=VIEW_INQUIRY_REPORT)
+class InquiryReportPDF(_AbstractReportView):
 
-	report_title = _('Survey Report')
+	@Lazy
+	def report_title(self):
+		if IQPoll.providedBy(self.context):
+			return _('Poll Report')
+		else:
+			return _('Survey Report')
 
 	@Lazy
 	def course(self):

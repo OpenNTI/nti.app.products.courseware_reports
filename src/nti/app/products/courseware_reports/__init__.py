@@ -12,7 +12,7 @@ logger = __import__('logging').getLogger(__name__)
 import zope.i18nmessageid
 MessageFactory = zope.i18nmessageid.MessageFactory('nti.app.products.courseware_reports')
 
-VIEW_SURVEY_REPORT = 'SurveyReport.pdf'
+VIEW_INQUIRY_REPORT = 'InquiryReport.pdf'
 VIEW_VIDEO_REPORT = "VideoUsageReport.pdf"
 VIEW_COURSE_SUMMARY = "CourseSummaryReport.pdf"
 VIEW_ASSIGNMENT_SUMMARY = 'AssignmentSummaryReport.pdf'
