@@ -189,7 +189,8 @@ class PollReportPDF(InquiryReportPDF):
 		return _('Poll Report')
 		
 	def _aggregated_polls(self, aggregated):
-		yield aggregated
+		if aggregated:
+			yield aggregated
 	
 @view_config(context=IQSurvey,
 			 name=VIEW_INQUIRY_REPORT)
