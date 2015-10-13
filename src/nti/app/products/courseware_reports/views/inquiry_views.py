@@ -151,14 +151,14 @@ class InquiryReportPDF(_AbstractReportView):
 										count,
 										(count / total) * 100 if total else 0)
 						responses.append(response)
-				elif IQNonGradableModeledContentPart.providedBy( part ):
+				elif IQNonGradableModeledContentPart.providedBy(part):
 					kind = 4
 					count = 0
 					responses = []
 					for text in results:
 						if not text:
 							continue
-						text = ' '.join(text)
+						text = plain_text(' '.join(text))
 						response = ResponseStat(text, count, 0)
 						responses.append(response)
 
