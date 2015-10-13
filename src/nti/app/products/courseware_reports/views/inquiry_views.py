@@ -21,7 +21,7 @@ from nti.app.assessment.common import aggregate_course_inquiry
 from nti.app.assessment.interfaces import ICourseAggregatedInquiries
 
 from nti.assessment.interfaces import IQPoll
-from nti.assessment.interfaces import IQInquiry
+from nti.assessment.interfaces import IQSurvey
 from nti.assessment.interfaces import IQNonGradableConnectingPart
 from nti.assessment.interfaces import IQAggregatedFreeResponsePart
 from nti.assessment.interfaces import IQNonGradableMultipleChoicePart
@@ -72,18 +72,13 @@ class PollStat(object):
 def plain_text(s):
 	result = IPlainTextContentFragment(s) if s else u''
 	return result.strip()
-
-@view_config(context=IQInquiry,
-			 name=VIEW_INQUIRY_REPORT)
+		
 class InquiryReportPDF(_AbstractReportView):
 
 	@Lazy
 	def report_title(self):
-		if IQPoll.providedBy(self.context):
-			return _('Poll Report')
-		else:
-			return _('Survey Report')
-
+		return u''
+		
 	@Lazy
 	def course(self):
 		course = find_interface(self.context, ICourseInstance, strict=False)
@@ -91,7 +86,10 @@ class InquiryReportPDF(_AbstractReportView):
 			course = find_course_for_user(self.context, self.remoteUser)
 		return course
 
-	def _build_question_data(self, options):
+	def _aggregated_polls(self, aggregated):
+		raise NotImplementedError()
+			
+	def _build_question_data(self, options):		
 		options['poll_stats'] = poll_stats = []
 
 		if self.context.closed:
@@ -100,10 +98,7 @@ class InquiryReportPDF(_AbstractReportView):
 		else:
 			aggregated = aggregate_course_inquiry(self.context, self.course) or ()
 
-		if IQPoll.providedBy(self.context):
-			aggregated = (aggregated,)
-
-		for idx, agg_poll in enumerate(aggregated):
+		for idx, agg_poll in enumerate(self._aggregated_polls(aggregated)):
 			poll = component.queryUtility(IQPoll, name=agg_poll.inquiryId)
 			if poll is None:  # pragma no cover
 				continue
@@ -184,3 +179,27 @@ class InquiryReportPDF(_AbstractReportView):
 		options = self.options
 		self._build_question_data(options)
 		return options
+
+@view_config(context=IQPoll,
+			 name=VIEW_INQUIRY_REPORT)
+class PollReportPDF(InquiryReportPDF):
+	
+	@Lazy
+	def report_title(self):
+		return _('Poll Report')
+		
+	def _aggregated_polls(self, aggregated):
+		yield aggregated
+	
+@view_config(context=IQSurvey,
+			 name=VIEW_INQUIRY_REPORT)
+class SurveyReportPDF(InquiryReportPDF):
+	
+	@Lazy
+	def report_title(self):
+		return _('Survey Report')
+		
+	def _aggregated_polls(self, aggregated):
+		for agg_poll in aggregated:
+			yield agg_poll
+	

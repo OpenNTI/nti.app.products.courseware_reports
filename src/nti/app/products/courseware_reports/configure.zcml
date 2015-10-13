@@ -228,16 +228,29 @@
 		permission="zope.Public"
 		manager=".interfaces.IPDFReportHeaderManager" />
 
-	<!-- Inquiry report -->
+	<!-- Inquiry report(s) -->
 	<z3c:template
 		template="templates/inquiry_report.rml"
-		for=".views.inquiry_views.InquiryReportPDF"
+		for=".views.inquiry_views.SurveyReportPDF"
 		layer="pyramid.interfaces.IRequest" />
 
 	<browser:viewlet
-		name="inquiry_info_content_provider"
-		template="templates/inquiry_info_content_provider.rml"
-		view=".views.inquiry_views.InquiryReportPDF"
+		name="survey_info_content_provider"
+		template="templates/survey_info_content_provider.rml"
+		view=".views.inquiry_views.SurveyReportPDF"
+		layer="pyramid.interfaces.IRequest"
+		permission="zope.Public"
+		manager=".interfaces.IPDFReportHeaderManager" />
+
+	<z3c:template
+		template="templates/inquiry_report.rml"
+		for=".views.inquiry_views.PollReportPDF"
+		layer="pyramid.interfaces.IRequest" />
+
+	<browser:viewlet
+		name="poll_info_content_provider"
+		template="templates/poll_info_content_provider.rml"
+		view=".views.inquiry_views.PollReportPDF"
 		layer="pyramid.interfaces.IRequest"
 		permission="zope.Public"
 		manager=".interfaces.IPDFReportHeaderManager" />
