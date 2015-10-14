@@ -136,9 +136,10 @@ class InquiryReportPDF(_AbstractReportView):
 					kind = 1
 					responses = []
 					choices = part.choices
-					for idx, count in sorted(results.items(), key=lambda x: x[1]):
+					for idx, choice in enumerate(choices):
+						count = results.get(idx) or results.get(str(idx)) or 0
 						response = ResponseStat(
-										plain_text(choices[int(idx)]),
+										plain_text(choice),
 										count,
 										(count / total) * 100 if total else 0)
 						responses.append(response)
