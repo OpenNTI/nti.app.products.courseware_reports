@@ -273,61 +273,6 @@ class CourseSummaryReportPdf(_AbstractReportView):
 
 		options['engagement_data'] = _EngagementStats(for_credit_stats, non_credit_stats, aggregate_stats)
 
-# TODO Below we pull notes/highlights per course location
-
-# 		outline = self.course.Outline
-# 		def _recur(node, accum):
-# 			ntiid = getattr(node, 'ContentNTIID', None)
-# 			if ntiid:
-# 				accum.add(ntiid)
-# 			for n in node.values():
-# 				_recur(n, accum)
-
-# 		Exclude engagement_by_place data until we fully flesh out the details
-# 		data = list()
-#
-# 		stat = namedtuple('Stat',
-# 						  ('title', 'note_count', 'hl_count'))
-#
-# 		for unit in outline.values():
-# 			for lesson in unit.values():
-# 				ntiids = set()
-# 				_recur(lesson, ntiids)
-# 				for x in list(ntiids):
-# 					try:
-# 						kid = lib.pathToNTIID(x)[-1]
-# 						ntiids.update( kid.embeddedContainerNTIIDs )
-# 					except TypeError:
-# 						pass
-#
-# 					for kid in lib.childrenOfNTIID(x):
-# 						ntiids.add(kid.ntiid)
-# 						ntiids.update(kid.embeddedContainerNTIIDs)
-# 				ntiids.discard(None)
-# 				local_notes = md_catalog['containerId'].apply({'any_of': ntiids})
-# 				local_notes = intersection(local_notes, all_notes)
-# 				local_hls = md_catalog['containerId'].apply({'any_of': ntiids})
-# 				local_hls = intersection(local_hls, all_hls)
-#
-# 				data.append( stat( lesson.title, len(local_notes), len(local_hls)) )
-
-		data = list()
-
-# TODO Below we pull notes/highlights per NTIID in course
-
-#  		stat = namedtuple('Stat',
-#  						  ('title', 'note_count', 'hl_count'))
-#
-#  		for c in sorted( containers_in_course ):
-# 			local_notes = md_catalog['containerId'].apply({'any_of': {c}})
-# 			local_notes = intersection(local_notes, all_notes)
-# 			local_hls = md_catalog['containerId'].apply({'any_of': {c}})
-# 			local_hls = intersection(local_hls, all_hls)
-#
-# 			data.append( stat( c.title, len(local_notes), len(local_hls)) )
-
-		options['placed_engagement_data'] = data
-
 	def _build_assignment_data(self, options, predicate=None):
 		gradebook = IGradeBook(self.course)
 		assignment_catalog = get_course_assignments(self.course)
@@ -394,98 +339,9 @@ class CourseSummaryReportPdf(_AbstractReportView):
 		options['aggregate_creators'] = agg_creators
 		options['top_commenters_colors'] = CHART_COLORS
 
-	def _build_engagement_perf(self, options):
-		"""
-		Get engagement data:
-			- Self-assessments by user (2x)
-			- Comments/discussion creators (1x)
-			- (Notes/highlights)
-		Stuff into buckets by user
-			- Quartile might be too low?
-		For each assignment, see how each quartile performed
-		Return 'engagement_to_performance' (EngagementPerfStats)
-			-Each assignment (title,count)
-				-QuartileStat (first,second,third,fourth)
-					-Name
-					-Boundary
-					-ForCredit/NonCredit (assignmentstat)
-						-Average
-						-Median
-						-Max
-						-Min
-		TODO: toggle these numbers
-			-verify
-			-add stats by quartile (count, avg(assessment), avg(comment_count), quartile_val) Engagement_stat
-			-Reverse this logic, see how top performers participate
-		"""
-		assessment_weight = 10
-		comment_weight = 4
-		note_weight = 4
-		# highlight_weight = 1
-
-		agg_map = self.highlight_aggregator._data
-
-		for k, v in self.assessment_aggregator._data.items():
-			weighted_val = assessment_weight * v
-			if k in agg_map:
-				agg_map[k] += weighted_val
-			else:
-				agg_map[k] = weighted_val
-
-		for k, v in self.comment_aggregator._data.items():
-			weighted_val = comment_weight * v
-			if k in agg_map:
-				agg_map[k] += weighted_val
-			else:
-				agg_map[k] = weighted_val
-
-		for k, v in self.note_aggregator._data.items():
-			weighted_val = note_weight * v
-			if k in agg_map:
-				agg_map[k] += weighted_val
-			else:
-				agg_map[k] = weighted_val
-
-		quartiles = percentile([x[1] for x in agg_map.items()], [75, 50, 25])
-
-		first = list()
-		second = list()
-		third = list()
-		fourth = list()
-
-		for x, v in agg_map.items():
-			if v >= quartiles[0]:
-				first.append(x)
-			elif v >= quartiles[1]:
-				second.append(x)
-			elif v >= quartiles[2]:
-				third.append(x)
-			else:
-				fourth.append(x)
-
-		first_stats = self._build_assignment_data(options, first)
-		second_stats = self._build_assignment_data(options, second)
-		third_stats = self._build_assignment_data(options, third)
-		fourth_stats = self._build_assignment_data(options, fourth)
-
-		first_quart = _EngagementQuartileStat('First', len(first), quartiles[0], first_stats)
-		second_quart = _EngagementQuartileStat('Second', len(second), quartiles[1], second_stats)
-		third_quart = _EngagementQuartileStat('Third', len(third), quartiles[2], third_stats)
-		fourth_quart = _EngagementQuartileStat('Fourth', len(fourth), 0, fourth_stats)
-
-		options['engagement_to_performance'] = _EngagementPerfStat(first_quart,
-																   second_quart,
-																   third_quart,
-																   fourth_quart)
-
 	def __call__(self):
 		self._check_access()
 		options = self.options
-
-# 		self.assessment_aggregator = _TopCreators( self )
-# 		self.comment_aggregator = _TopCreators( self )
-# 		self.note_aggregator = _TopCreators( self )
-# 		self.highlight_aggregator = _TopCreators( self )
 
 		self._build_engagement_data(options)
 		self._build_enrollment_info(options)
@@ -493,7 +349,4 @@ class CourseSummaryReportPdf(_AbstractReportView):
 		options['assignment_data'] = self._build_assignment_data(options)
 		self._build_top_commenters(options)
 
-		# Must do this last
-		# self._build_engagement_perf(options)
-		options['engagement_to_performance'] = ()
 		return options
