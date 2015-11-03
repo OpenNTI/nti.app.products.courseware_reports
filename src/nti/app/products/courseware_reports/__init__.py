@@ -19,3 +19,4 @@ VIEW_ASSIGNMENT_SUMMARY = 'AssignmentSummaryReport.pdf'
 VIEW_FORUM_PARTICIPATION = "ForumParticipationReport.pdf"
 VIEW_TOPIC_PARTICIPATION = "TopicParticipationReport.pdf"
 VIEW_STUDENT_PARTICIPATION = "StudentParticipationReport.pdf"
+VIEW_SELF_ASSESSMENT_SUMMARY = 'SelfAssessmentSummaryReport.pdf'

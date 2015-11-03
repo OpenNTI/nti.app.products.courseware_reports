@@ -101,22 +101,22 @@
 	<!-- A subscriber for getting the assignment summary report from the gradebook -->
 	<subscriber factory=".decorators._AssignmentSummaryReport"
 				provides="nti.externalization.interfaces.IExternalMappingDecorator" />
-				
+
 	<!-- A subscriber for getting the video views summary report from analytics records -->
 	<!-- <subscriber factory=".decorators._VideoViewsReport"
 				provides="nti.externalization.interfaces.IExternalMappingDecorator" /> -->
 
 	<!-- A subscriber for getting the report from an inquiry -->
 	<subscriber factory=".decorators._InquiryReport"
-				provides="nti.externalization.interfaces.IExternalMappingDecorator" 
-				for="nti.assessment.interfaces.IQInquiry 
+				provides="nti.externalization.interfaces.IExternalMappingDecorator"
+				for="nti.assessment.interfaces.IQInquiry
 					 pyramid.interfaces.IRequest" />
-		
+
 	<subscriber factory=".decorators._InquiryReport"
-				provides="nti.externalization.interfaces.IExternalMappingDecorator" 
+				provides="nti.externalization.interfaces.IExternalMappingDecorator"
 				for="nti.contenttypes.presentation.interfaces.INTIInquiryRef
 					 pyramid.interfaces.IRequest" />
-		
+
 	<!-- Default layout for reports -->
 	<!--
 		NOTE: Not really necessary, each report view
@@ -200,6 +200,20 @@
 		permission="zope.Public"
 		manager=".interfaces.IPDFReportHeaderManager" />
 
+	<!-- SelfAssessment summary report -->
+	<z3c:template
+		template="templates/SelfAssessmentSummaryReport.rml"
+		for=".views.self_assessment_views.SelfAssessmentSummaryReportPdf"
+		layer="pyramid.interfaces.IRequest" />
+
+	<browser:viewlet
+		name="course_info_content_provider"
+		template="templates/course_info_content_provider.rml"
+		view=".views.self_assessment_views.SelfAssessmentSummaryReportPdf"
+		layer="pyramid.interfaces.IRequest"
+		permission="zope.Public"
+		manager=".interfaces.IPDFReportHeaderManager" />
+
 	<!-- Assignment summary report -->
 	<z3c:template
 		template="templates/AssignmentSummaryReport.rml"
@@ -213,13 +227,13 @@
 		layer="pyramid.interfaces.IRequest"
 		permission="zope.Public"
 		manager=".interfaces.IPDFReportHeaderManager" />
-		
+
 	<!-- Video views report -->
 	<z3c:template
 		template="templates/VideoUsageReport.rml"
 		for=".views.usage_views.VideoUsageReportPdf"
 		layer="pyramid.interfaces.IRequest" />
-	
+
 	<browser:viewlet
 		name="course_info_content_provider"
 		template="templates/course_info_content_provider.rml"

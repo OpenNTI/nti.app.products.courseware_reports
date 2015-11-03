@@ -1,0 +1,95 @@
+<metal:block
+	xmlns:tal="http://xml.zope.org/namespaces/tal"
+	xmlns:metal="http://xml.zope.org/namespaces/metal"
+	tal:define="options view/options">
+
+		<para style="normal" fontSize="12" spaceAfter=".1in">
+			This report is a self-assessment summary for ${view/course_name}.  The report
+			includes aggregate information per self-assessment, as well as self-assessment
+			statistics per student. There
+			${python:request.localizer.pluralize('is', 'are', options['count_total'])}
+			${options/count_total}
+			${python:request.localizer.pluralize('student', 'students', options['count_total'])} taking this
+			course.
+		</para>
+		<hr width="100%" />
+
+		<h2 style="h2">
+			Self-Assessments Summary
+		</h2>
+
+			<blockTable style='default' tal:condition="options/self_assessment_data"
+						repeatRows="1">
+				<tr>
+					<td>
+						<para style="header">Assessment Title</para>
+					</td>
+					<td>
+						<para style="header_r">Student Count</para>
+					</td>
+					<td>
+						<para style="header_r">Total Attempts</para>
+					</td>
+					<td>
+						<para style="header_r">Average Attempts Per Student</para>
+					</td>
+					<td>
+						<para style="header_r">Students (%)</para>
+					</td>
+				</tr>
+				<tr tal:repeat="item options/self_assessment_data">
+					<td>
+						<para tal:content="item/title" style="data">The Assessment Title</para>
+					</td>
+					<td tal:content="item/unique_contributors">
+						Students
+					</td>
+					<td tal:content="item/total">
+						Total Attempts
+					</td>
+					<td tal:content="item/average_count_str">
+						Average Taken
+					</td>
+					<td tal:content="item/percent_contributed_str">
+						Percent Attempted
+					</td>
+				</tr>
+			</blockTable>
+
+		<para 	style="subdesc"
+				tal:condition="not:options/self_assessment_data">
+			This course contains no self-assessments.
+		</para>
+
+		<condPageBreak height="4in" />
+
+		<h2 style="h2">
+			Self-Assessments By Student
+		</h2>
+			<blockTable style='default' tal:condition="options/self_assessment_by_student"
+						repeatRows="1">
+				<tr>
+					<td>
+						<para style="header">Name</para>
+					</td>
+					<td>
+						<para style="header">Login</para>
+					</td>
+					<td>
+						<para style="header_r">Total Attempts</para>
+					</td>
+				</tr>
+				<tr tal:repeat="item options/self_assessment_by_student">
+					<td tal:content="item/display">
+						user1
+					</td>
+					<td align="left" tal:content="item/username">
+						user2
+					</td>
+					<td tal:content="item/count">
+						Count
+					</td>
+				</tr>
+			</blockTable>
+
+</metal:block>

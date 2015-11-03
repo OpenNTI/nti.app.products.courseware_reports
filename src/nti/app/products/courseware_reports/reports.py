@@ -187,6 +187,11 @@ class _TopCreators(object):
 	def series(self):
 		return ' '.join( ('%d' % x.count for x in self._get_largest ) )
 
+	@Lazy
+	def all_stats(self):
+		result = [ self._build_student_info(x) for x in self._data.items() ]
+		return result
+
 	@property
 	def unique_contributors(self):
 		return len(self.keys())
