@@ -354,5 +354,84 @@
 
 			</tal:block>
 		</tal:block>
-
+		
+		<!-- Video Usage -->
+		<tal:block tal:condition="options/all_videos">
+			
+			<h1 style="h1" spaceBefore=".5in" spaceAfter=".5in">
+				Video Usage
+			</h1>
+	
+			<h2 style="h2"
+				tal:condition="options/top_videos">
+				Top Videos
+			</h2>
+	
+			<para style="subdesc" spaceAfter=".2in"
+				tal:condition="options/top_videos">
+					The following tables show video activity in ${context/__name__}. Top videos are sorted by view count, and the table of all videos is sorted by title. Average session length is the average amount of time a user spends on a particular video in one session, and average time spent on video refers to the total amount of time a user spends on a video across all their sessions (including users who do not watch the video at all). Student completion rate is the number of students who have watched at least 90% of the video and have at least one session ending in the last 10% of the video. The last four columns show falloff rates. The numbers in each column represents the number of sessions ending in that segment of the video, and the percentage of the total number of sessions for the video.
+				</para>
+	
+			<blockTable style='default' repeatRows="1">
+				<tr>
+					<td><para style="header">Video Title</para></td>
+					<td><para style="header_r">Video Duration</para></td>
+					<td><para style="header_r">Session Count</para></td>
+					<td><para style="header_r">Average Session Length</para></td>
+					<td><para style="header_r">Average Time Spent on Video</para></td>
+					<td><para style="header_r">Student Completion Rate</para></td>
+					<td><para style="header_r">0-25%</para></td>
+					<td><para style="header_r">26-50%</para></td>
+					<td><para style="header_r">51-75%</para></td>
+					<td><para style="header_r">76-100%</para></td>
+				</tr>
+	
+				<tr tal:repeat="item options/top_videos">
+					<td><para tal:content="item/title" style="data">Video Title</para></td>
+					<td tal:content="item/video_duration" style="data">Video Duration</td>
+					<td tal:content="item/session_count" style="data">Session Count</td>
+					<td tal:content="item/watch_times/average_session_watch_time" style="data">Average Session Length</td>
+					<td tal:content="item/watch_times/average_total_watch_time" style="data">Average Time Spent on Video</td>
+					<td tal:content="item/percentage_watched_completely" style="data">Percentage users who watched 90%</td>
+					<td tal:content="string: ${item/falloff_rate/drop25count} (${item/falloff_rate/drop25percentage}%)" style="data">0-25%</td>
+					<td tal:content="string: ${item/falloff_rate/drop50count} (${item/falloff_rate/drop50percentage}%)" style="data">26-50%</td>
+					<td tal:content="string: ${item/falloff_rate/drop75count} (${item/falloff_rate/drop75percentage}%)" style="data">51-75%</td>
+					<td tal:content="string: ${item/falloff_rate/drop100count} (${item/falloff_rate/drop100percentage}%)" style="data">76-100%</td>
+				</tr>
+			</blockTable>
+	
+			<condPageBreak height="4in" />
+	
+			<h2 style="h2">
+				All videos
+			</h2>
+	
+			<blockTable style='default' repeatRows="1">
+				<tr>
+					<td><para style="header">Video Title</para></td>
+					<td><para style="header_r">Video Duration</para></td>
+					<td><para style="header_r">Session Count</para></td>
+					<td><para style="header_r">Average Session Length</para></td>
+					<td><para style="header_r">Average Time Spent on Video</para></td>
+					<td><para style="header_r">Student Completion Rate</para></td>
+					<td><para style="header_r">0-25%</para></td>
+					<td><para style="header_r">26-50%</para></td>
+					<td><para style="header_r">51-75%</para></td>
+					<td><para style="header_r">76-100%</para></td>
+				</tr>
+	
+				<tr tal:repeat="item options/all_videos">
+					<td><para tal:content="item/title" style="data">Video Title</para></td>
+					<td tal:content="item/video_duration" style="data">Video Duration</td>
+					<td tal:content="item/session_count" style="data">Session Count</td>
+					<td tal:content="item/watch_times/average_session_watch_time" style="data">Average Session Length</td>
+					<td tal:content="item/watch_times/average_total_watch_time" style="data">Average Time Spent on Video</td>
+					<td tal:content="item/percentage_watched_completely" style="data">Percentage users who watched 90%</td>
+					<td tal:content="string: ${item/falloff_rate/drop25count} (${item/falloff_rate/drop25percentage}%)" style="data">0-25%</td>
+					<td tal:content="string: ${item/falloff_rate/drop50count} (${item/falloff_rate/drop50percentage}%)" style="data">26-50%</td>
+					<td tal:content="string: ${item/falloff_rate/drop75count} (${item/falloff_rate/drop75percentage}%)" style="data">51-75%</td>
+					<td tal:content="string: ${item/falloff_rate/drop100count} (${item/falloff_rate/drop100percentage}%)" style="data">76-100%</td>
+				</tr>
+			</blockTable>
+		</tal:block>
 </metal:block>

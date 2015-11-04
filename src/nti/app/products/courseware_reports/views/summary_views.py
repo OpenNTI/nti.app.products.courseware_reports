@@ -20,6 +20,8 @@ from pyramid.view import view_config
 
 from zope.catalog.catalog import ResultSet
 
+from nti.app.products.courseware.interfaces import IVideoUsageStats
+
 from nti.app.products.gradebook.interfaces import IGradeBook
 from nti.app.products.gradebook.assignments import get_course_assignments
 
@@ -348,5 +350,12 @@ class CourseSummaryReportPdf(_AbstractReportView):
 		self._build_self_assessment_data(options)
 		options['assignment_data'] = self._build_assignment_data(options)
 		self._build_top_commenters(options)
+		
+# 		video_options = IVideoUsageStats(self.context)
+# 		options['top_videos'] = video_options['top_videos']
+# 		options['all_videos'] = video_options['all_videos']
+		
+		options['top_videos'] = {}
+		options['all_videos'] = {}
 
 		return options
