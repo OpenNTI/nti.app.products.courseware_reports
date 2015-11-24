@@ -38,7 +38,7 @@ class TestStudentParticipationReport(ApplicationLayerTest):
 		# Trivial test to make sure we can fetch the report even with
 		# no data.
 		self.testapp.post_json( '/dataserver2/users/sjohnson@nextthought.com/Courses/EnrolledCourses',
-								'CLC 3403',
+								'tag:nextthought.com,2011-10:NTI-CourseInfo-Fall2013_CLC3403_LawAndJustice',
 								status=201 )
 
 		instructor_environ = self._make_extra_environ(username='harp4162')
@@ -73,7 +73,7 @@ class TestForumParticipationReport(ApplicationLayerTest):
 		# no data.
 
 		enrollment_res = self.testapp.post_json( '/dataserver2/users/sjohnson@nextthought.com/Courses/EnrolledCourses',
-								'CLC 3403',
+								'tag:nextthought.com,2011-10:NTI-CourseInfo-Fall2013_CLC3403_LawAndJustice',
 								status=201 )
 
 		board_href = enrollment_res.json_body['CourseInstance']['Discussions']['href']
@@ -101,7 +101,7 @@ class TestTopicParticipationReport(ApplicationLayerTest):
 		# Trivial test to make sure we can fetch the report even with
 		# no data.
 		enrollment_res = self.testapp.post_json( '/dataserver2/users/sjohnson@nextthought.com/Courses/EnrolledCourses',
-								'CLC 3403',
+								'tag:nextthought.com,2011-10:NTI-CourseInfo-Fall2013_CLC3403_LawAndJustice',
 								status=201 )
 
 		board_href = enrollment_res.json_body['CourseInstance']['Discussions']['href']
@@ -188,7 +188,7 @@ class TestAssignmentSummaryReport(RegisterAssignmentLayerMixin,
 
 		# enroll
 		self.testapp.post_json( '/dataserver2/users/sjohnson@nextthought.com/Courses/EnrolledCourses',
-								'CLC 3403',
+								'tag:nextthought.com,2011-10:NTI-CourseInfo-Fall2013_CLC3403_LawAndJustice',
 								status=201 )
 
 
