@@ -415,17 +415,19 @@ class ForumParticipationReportPdf(_AbstractReportView):
 		subinstances = self.course.SubInstances
 		if subinstances:
 			for subinstance_key, subinstance in subinstances.items():
-				scope_dict = _get_enrollment_scope_dict(subinstance)
+				scope_dict = _get_enrollment_scope_dict(subinstance, set( subinstance.instructors ))
 				user_comment_dict_by_scope = self._get_scope_user_dict_for_course(
 													scope_dict, user_comment_dict)
 				# Store with a displayable key
 				results[ 'Section ' + subinstance_key ] = user_comment_dict_by_scope
-
-		# Now for parent course
-		scope_dict = self._get_enrollment_scope_dict
-		user_comment_dict_by_scope = self._get_scope_user_dict_for_course(
+		else:
+			# XXX: We used to always include parent course (for LSTD) with the
+			# subinstances. Not sure why.
+			# Now for parent course
+			scope_dict = self._get_enrollment_scope_dict
+			user_comment_dict_by_scope = self._get_scope_user_dict_for_course(
 													scope_dict, user_comment_dict)
-		results[ self.course.__name__ ] = user_comment_dict_by_scope
+			results[ self.course.__name__ ] = user_comment_dict_by_scope
 
 		results = OrderedDict(sorted(results.items()))
 		return results

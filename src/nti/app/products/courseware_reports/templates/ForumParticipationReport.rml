@@ -300,9 +300,7 @@
 
 					</tal:block> <!-- tal define scope_name -->
 
-					<!-- Reset our page template for the next section -->
-					<setNextTemplate name="main" />
-					<nextPage />
+					<condPageBreak height="4in" />
 
 				</tal:block> <!-- scope block -->
 
