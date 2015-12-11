@@ -77,7 +77,6 @@
 				</tr>
 			</blockTable>
 
-
 		<para 	style="subdesc"
 				tal:condition="not:options/comment_count_by_topic">
 			This forum does not have any comments.
@@ -213,5 +212,104 @@
 				<td tal:content="item/instructor_reply_count">3</td>
 			</tr>
 		</blockTable>
+
+		<nextPage />
+
+		<h1 style="h1" spaceAfter=".5in" >
+			Detailed Discussion Comment Activity
+		</h1>
+
+		<para style="subdesc" spaceAfter=".1in" >
+			This section provides a detailed breakdown on user participation by
+			discussion. The users are separated by enrollment section and
+			enrollment type. Those who have not contributed are excluded from the table.
+		</para>
+
+		<hr width="100%" />
+		<!--
+			-page-break-
+			'Discussion Title'
+				'Section 500 Comments: Public Comments'
+					Display : Login : CommentCount
+					-page-break-
+				'Section 500 Comments: ForCredit Comments'
+				-page-break-
+		-->
+		<tal:block tal:repeat="discussion_item options/discussion_section_scope_comments/items">
+
+			<tal:block tal:define="discussion_title python: discussion_item[0]">
+
+			<h2 style="h2" fontSize="20">
+				${discussion_title} Comments
+			</h2>
+
+			<!-- Our section -->
+			<tal:block tal:repeat="section_item python: discussion_item[1].items()">
+
+				<!-- Section header, if we have more than one -->
+				<tal:block tal:define="section_name python: section_item[0]">
+
+				<!-- Scopes in section -->
+				<tal:block tal:repeat="scoped_item python: section_item[1].items()">
+
+					<tal:block tal:define="scope_name python: scoped_item[0]">
+
+					<!-- Scope header, if we have more than one -->
+					<h2 style="h2">
+						${section_name}: ${scope_name} Comments
+					</h2>
+
+					<!-- Loop through each section/scope/user's comments -->
+					<blockTable style="table_user_1"
+								alignment="left"
+								colWidths="25% 25% 20%"
+								tal:condition="python: scope_name == 'ForCredit'"
+								repeatRows="1">
+						<tr>
+							<td>Name</td>
+							<td>Login</td>
+							<td>Count</td>
+						</tr>
+						<tal:block tal:repeat="all_user_comments python: scoped_item[1].items()">
+							<tr>
+								<td tal:content="python: all_user_comments[0].display">Name</td>
+								<td tal:content="python: all_user_comments[0].username">Login</td>
+								<td tal:content="python: len( all_user_comments[1] )">Count</td>
+							</tr>
+						</tal:block>
+					</blockTable>
+
+					<blockTable style="table_user_1_non_credit"
+								alignment="left"
+								colWidths="25% 20%"
+								tal:condition="python: scope_name != 'ForCredit'"
+								repeatRows="1">
+						<tr>
+							<td>Name</td>
+							<td>Count</td>
+						</tr>
+						<tal:block tal:repeat="all_user_comments python: scoped_item[1].items()">
+							<tr>
+								<td tal:content="python: all_user_comments[0].display">Name</td>
+								<td tal:content="python: len( all_user_comments[1] )">Count</td>
+							</tr>
+						</tal:block>
+
+					</blockTable>
+
+
+					</tal:block> <!-- tal define scope_name -->
+
+					<!-- Reset our page template for the next section -->
+					<setNextTemplate name="main" />
+					<nextPage />
+
+				</tal:block> <!-- scope block -->
+
+				</tal:block>
+
+			</tal:block> <!-- section block -->
+			</tal:block> <!-- discussion title -->
+		</tal:block> <!-- discussion block -->
 
 </metal:block>

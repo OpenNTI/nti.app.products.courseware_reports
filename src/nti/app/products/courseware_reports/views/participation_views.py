@@ -304,146 +304,6 @@ class ForumParticipationReportPdf(_AbstractReportView):
 	def course(self):
 		return self._course_from_forum(self.context)
 
-	def _build_top_commenters(self, options):
-
-		def _all_comments():
-			for topic in self.context.values():
-				# Should we use filter objects?
-				for comment in topic.values():
-					if not IDeletedObjectPlaceholder.providedBy(comment):
-						yield comment
-		buckets = _common_buckets(_all_comments(),
-									self,
-									self.course_start_date,
-									self.agg_creators)
-		options['group_dates'] = buckets.group_dates
-		options['top_commenters'] = buckets.top_creators
-		options['top_commenters_colors'] = CHART_COLORS
-
-		all_forum_stat = _build_buckets_options(options, buckets)
-		options['all_forum_participation'] = all_forum_stat
-
-	def _build_comment_count_by_topic(self, options):
-		comment_count_by_topic = list()
-		top_creators = _TopCreators(self)
-
-		for topic in self.context.values():
-			comments = self.filter_objects(topic.values())
-
-			count = len(comments)
-			user_count = len({c.creator for c in comments})
-			creator = self.get_student_info(topic.creator)
-			created = topic.created
-			comment_count_by_topic.append(self.TopicStats(topic.title, creator,
-														created, count, user_count))
-
-			top_creators.incr_username(topic.creator.username)
-
-		comment_count_by_topic.sort(key=lambda x: (x.created, x.title))
-		options['comment_count_by_topic'] = comment_count_by_topic
-		if self.context:
-			options['most_popular_topic'] = max(comment_count_by_topic, key=lambda x: x.comment_count)
-			options['least_popular_topic'] = min(comment_count_by_topic, key=lambda x: x.comment_count)
-		else:
-			options['most_popular_topic'] = options['least_popular_topic'] = None
-		options['top_creators'] = top_creators
-
-	def _build_user_stats(self, options):
-		commenters = options['top_commenters']
-		creators = options['top_creators']
-
-		for_credit_users = set(commenters.for_credit_keys()) | set(creators.for_credit_keys())
-		non_credit_users = set(commenters.non_credit_keys()) | set(creators.non_credit_keys())
-
-		for_credit_stats = self._build_user_stats_with_keys(for_credit_users, commenters, creators)
-		non_credit_stats = self._build_user_stats_with_keys(non_credit_users, commenters, creators)
-
-		options['for_credit_user_stats'] = for_credit_stats[0]
-		options['non_credit_user_stats'] = non_credit_stats[0]
-		only_one = for_credit_stats[1] + non_credit_stats[1]
-		unique_count = for_credit_stats[2] + non_credit_stats[2]
-
-		# Could probably break this into three parts if we want
-		if unique_count:
-			options['percent_users_comment_more_than_once'] = \
-					"%0.1f" % ((unique_count - only_one) / unique_count * 100.0)
-		else:
-			options['percent_users_comment_more_than_once'] = '0.0'
-
-	def _build_user_stats_with_keys(self, users, commenters, creators):
-		"""Returns sorted user stats for the given set of users"""
-		user_stats = list()
-		only_one = 0
-		unique_count = 0
-		for uname in users:
-			student_info = self.get_student_info(uname)
-			stat = self.UserStats(student_info,
-									creators.get(uname, 0),
-									commenters.get(uname, 0),
-									commenters.get_instructor_reply_count(uname, 0))
-			user_stats.append(stat)
-			if stat.total_comment_count == 1:
-				only_one += 1
-			if stat.total_comment_count > 0:
-				unique_count += 1
-
-		user_stats.sort(key=lambda x: x.username.display.lower())
-		return (user_stats, only_one, unique_count)
-
-	def __call__(self):
-		"""
-		Return the `options` dictionary for formatting. The dictionary will
-		have the following keys:
-
-		top_commenters
-			A sequence of usernames, plus the `series` representing their
-			contribution to the forum.
-
-		top_commenters_colors
-			A sequence of colors to use in the pie chart for top commenters.
-
-		comment_count_by_topic
-			A sequence, sorted by created date and title, giving the `title`,
-			`creator`, `created` datetime, `comment_count` and `distinct_user_count`
-			participating in each topic.
-
-		top_creators
-			As with top_commenters, a sequence of usernames and the `series`
-			representing their contribution of new topics.
-
-		most/least_popular_topic
-			The topic objects with the most and least activity, or None.
-
-		user_stats
-			A sequence sorted by username, of objects with `username`,
-			`topics_created` and `total_comment_count`.
-		"""
-		self._check_access()
-		options = self.options
-		self._build_top_commenters(options)
-		self._build_comment_count_by_topic(options)
-		self._build_user_stats(options)
-
-		return options
-
-_TopicInfo = namedtuple('_TopicInfo',
-							('topic_name', 'forum_name'))
-
-_CommentInfo = namedtuple('_CommentInfo',
-						('username', 'display', 'created', 'modified', 'content', 'parent', 'scope_name'))
-
-COMMENT_MAX_LENGTH = 2000
-
-@view_config(context=ICommunityHeadlineTopic,
-			 name=VIEW_TOPIC_PARTICIPATION)
-class TopicParticipationReportPdf(ForumParticipationReportPdf):
-
-	report_title = _('Discussion Participation Report')
-
-	@property
-	def course(self):
-		return self._course_from_forum(self.context.__parent__)
-
 	@property
 	def instructor_usernames(self):
 		"All instructors from this instance and subinstances."
@@ -569,6 +429,159 @@ class TopicParticipationReportPdf(ForumParticipationReportPdf):
 
 		results = OrderedDict(sorted(results.items()))
 		return results
+
+	def _get_discussion_section_scoped_comments(self):
+		"""
+		Returns a sorted dict of discussion titles to section scoped comments.
+		"""
+		# Do we want zero counts?
+		discussion_section_scoped = {}
+		for topic in self.context.values():
+			comments = (x for x in topic.values() if not IDeletedObjectPlaceholder.providedBy(x))
+			section_scoped = self._get_section_scoped_comments( comments )
+			discussion_section_scoped[topic.title] = section_scoped
+		discussion_section_scoped = OrderedDict(sorted(discussion_section_scoped.items()))
+		return discussion_section_scoped
+
+	def _build_top_commenters(self, options):
+		def _all_comments():
+			for topic in self.context.values():
+				# Should we use filter objects?
+				for comment in topic.values():
+					if not IDeletedObjectPlaceholder.providedBy(comment):
+						yield comment
+		buckets = _common_buckets(_all_comments(),
+									self,
+									self.course_start_date,
+									self.agg_creators)
+		options['group_dates'] = buckets.group_dates
+		options['top_commenters'] = buckets.top_creators
+		options['top_commenters_colors'] = CHART_COLORS
+
+		all_forum_stat = _build_buckets_options(options, buckets)
+		options['all_forum_participation'] = all_forum_stat
+		options['discussion_section_scope_comments'] = self._get_discussion_section_scoped_comments()
+
+	def _build_comment_count_by_topic(self, options):
+		comment_count_by_topic = list()
+		top_creators = _TopCreators(self)
+
+		for topic in self.context.values():
+			comments = self.filter_objects(topic.values())
+
+			count = len(comments)
+			user_count = len({c.creator for c in comments})
+			creator = self.get_student_info(topic.creator)
+			created = topic.created
+			comment_count_by_topic.append(self.TopicStats(topic.title, creator,
+														created, count, user_count))
+
+			top_creators.incr_username(topic.creator.username)
+
+		comment_count_by_topic.sort(key=lambda x: (x.created, x.title))
+		options['comment_count_by_topic'] = comment_count_by_topic
+		if self.context:
+			options['most_popular_topic'] = max(comment_count_by_topic, key=lambda x: x.comment_count)
+			options['least_popular_topic'] = min(comment_count_by_topic, key=lambda x: x.comment_count)
+		else:
+			options['most_popular_topic'] = options['least_popular_topic'] = None
+		options['top_creators'] = top_creators
+
+	def _build_user_stats(self, options):
+		commenters = options['top_commenters']
+		creators = options['top_creators']
+
+		for_credit_users = set(commenters.for_credit_keys()) | set(creators.for_credit_keys())
+		non_credit_users = set(commenters.non_credit_keys()) | set(creators.non_credit_keys())
+
+		for_credit_stats = self._build_user_stats_with_keys(for_credit_users, commenters, creators)
+		non_credit_stats = self._build_user_stats_with_keys(non_credit_users, commenters, creators)
+
+		options['for_credit_user_stats'] = for_credit_stats[0]
+		options['non_credit_user_stats'] = non_credit_stats[0]
+		only_one = for_credit_stats[1] + non_credit_stats[1]
+		unique_count = for_credit_stats[2] + non_credit_stats[2]
+
+		# Could probably break this into three parts if we want
+		if unique_count:
+			options['percent_users_comment_more_than_once'] = \
+					"%0.1f" % ((unique_count - only_one) / unique_count * 100.0)
+		else:
+			options['percent_users_comment_more_than_once'] = '0.0'
+
+	def _build_user_stats_with_keys(self, users, commenters, creators):
+		"""Returns sorted user stats for the given set of users"""
+		user_stats = list()
+		only_one = 0
+		unique_count = 0
+		for uname in users:
+			student_info = self.get_student_info(uname)
+			stat = self.UserStats(student_info,
+									creators.get(uname, 0),
+									commenters.get(uname, 0),
+									commenters.get_instructor_reply_count(uname, 0))
+			user_stats.append(stat)
+			if stat.total_comment_count == 1:
+				only_one += 1
+			if stat.total_comment_count > 0:
+				unique_count += 1
+
+		user_stats.sort(key=lambda x: x.username.display.lower())
+		return (user_stats, only_one, unique_count)
+
+	def __call__(self):
+		"""
+		Return the `options` dictionary for formatting. The dictionary will
+		have the following keys:
+
+		top_commenters
+			A sequence of usernames, plus the `series` representing their
+			contribution to the forum.
+
+		top_commenters_colors
+			A sequence of colors to use in the pie chart for top commenters.
+
+		comment_count_by_topic
+			A sequence, sorted by created date and title, giving the `title`,
+			`creator`, `created` datetime, `comment_count` and `distinct_user_count`
+			participating in each topic.
+
+		top_creators
+			As with top_commenters, a sequence of usernames and the `series`
+			representing their contribution of new topics.
+
+		most/least_popular_topic
+			The topic objects with the most and least activity, or None.
+
+		user_stats
+			A sequence sorted by username, of objects with `username`,
+			`topics_created` and `total_comment_count`.
+		"""
+		self._check_access()
+		options = self.options
+		self._build_top_commenters(options)
+		self._build_comment_count_by_topic(options)
+		self._build_user_stats(options)
+
+		return options
+
+_TopicInfo = namedtuple('_TopicInfo',
+							('topic_name', 'forum_name'))
+
+_CommentInfo = namedtuple('_CommentInfo',
+						('username', 'display', 'created', 'modified', 'content', 'parent', 'scope_name'))
+
+COMMENT_MAX_LENGTH = 2000
+
+@view_config(context=ICommunityHeadlineTopic,
+			 name=VIEW_TOPIC_PARTICIPATION)
+class TopicParticipationReportPdf(ForumParticipationReportPdf):
+
+	report_title = _('Discussion Participation Report')
+
+	@property
+	def course(self):
+		return self._course_from_forum(self.context.__parent__)
 
 	def _build_top_commenters(self, options):
 		live_objects = self.filter_objects(self.context.values())

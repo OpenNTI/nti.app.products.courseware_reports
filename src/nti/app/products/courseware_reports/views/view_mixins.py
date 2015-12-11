@@ -116,7 +116,7 @@ class _AbstractReportView(AbstractAuthenticatedView,
 			self.filename = request.view_name
 
 	def _check_access(self):
-		if not checkPermission(ACT_VIEW_REPORTS.id, self.course):
+ 		if not checkPermission(ACT_VIEW_REPORTS.id, self.course):
 			raise HTTPForbidden()
 
 	@Lazy
