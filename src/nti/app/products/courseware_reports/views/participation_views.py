@@ -423,6 +423,9 @@ class ForumParticipationReportPdf(_AbstractReportView):
 		else:
 			# XXX: We used to always include parent course (for LSTD) with the
 			# subinstances. Not sure why.
+			# TODO: This isn't quite right. We want all section enrollees to only
+			# be in the section, excluding them from parent. Those public students
+			# only in the super course should still be visible. Not sure how to do that.
 			# Now for parent course
 			scope_dict = self._get_enrollment_scope_dict
 			user_comment_dict_by_scope = self._get_scope_user_dict_for_course(
