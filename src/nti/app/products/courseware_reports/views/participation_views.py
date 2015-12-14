@@ -37,6 +37,7 @@ from nti.assessment.interfaces import IQAssignmentDateContext
 
 from nti.common.property import Lazy
 
+from nti.contenttypes.courses.interfaces import ICourseEnrollments
 from nti.contenttypes.courses.interfaces import	ICourseSubInstance
 
 from nti.dataserver.interfaces import IUser
@@ -300,6 +301,11 @@ class ForumParticipationReportPdf(_AbstractReportView):
 	def _course_from_forum(self, forum):
 		return course_from_forum(forum)
 
+	@Lazy
+	def _only_course_enrollments( self ):
+		enrollments = ICourseEnrollments( self.course )
+		return {x.lower() for x in enrollments.iter_principals()}
+
 	@property
 	def course(self):
 		return self._course_from_forum(self.context)
@@ -408,6 +414,7 @@ class ForumParticipationReportPdf(_AbstractReportView):
 		"""
 		results = {}
 		user_comment_dict = self._get_comments_by_user(comments)
+		super_scope_dict = self._get_enrollment_scope_dict
 
 		# We want a map of course/section name to students enrolled in that section
 		# Any top-level course will break down the results by section.
@@ -415,22 +422,24 @@ class ForumParticipationReportPdf(_AbstractReportView):
 		subinstances = self.course.SubInstances
 		if subinstances:
 			for subinstance_key, subinstance in subinstances.items():
-				scope_dict = _get_enrollment_scope_dict(subinstance, set( subinstance.instructors ))
+				scope_dict = _get_enrollment_scope_dict(subinstance,
+														set( subinstance.instructors ))
 				user_comment_dict_by_scope = self._get_scope_user_dict_for_course(
 													scope_dict, user_comment_dict)
 				# Store with a displayable key
 				results[ 'Section ' + subinstance_key ] = user_comment_dict_by_scope
-		else:
-			# XXX: We used to always include parent course (for LSTD) with the
-			# subinstances. Not sure why.
-			# TODO: This isn't quite right. We want all section enrollees to only
-			# be in the section, excluding them from parent. Those public students
-			# only in the super course should still be visible. Not sure how to do that.
-			# Now for parent course
-			scope_dict = self._get_enrollment_scope_dict
-			user_comment_dict_by_scope = self._get_scope_user_dict_for_course(
-													scope_dict, user_comment_dict)
-			results[ self.course.__name__ ] = user_comment_dict_by_scope
+			# We want to get a copy of our course enrollment scope. Since we're
+			# grouping by subinstance, we want to explicitly exclude subinstance
+			# enrollments from rolling up into our super course here.
+			_new_dict = dict( super_scope_dict )
+			for scope, users in super_scope_dict.items():
+				_new_dict[scope] = users.intersection( self._only_course_enrollments )
+			super_scope_dict = _new_dict
+
+
+		user_comment_dict_by_scope = self._get_scope_user_dict_for_course(
+												super_scope_dict, user_comment_dict)
+		results[ self.course.__name__ ] = user_comment_dict_by_scope
 
 		results = OrderedDict(sorted(results.items()))
 		return results
