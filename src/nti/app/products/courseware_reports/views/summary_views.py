@@ -14,13 +14,27 @@ from .. import MessageFactory as _
 from itertools import chain
 from collections import namedtuple
 
-from numpy import percentile
-
 from pyramid.view import view_config
 
 from zope.catalog.catalog import ResultSet
 
-from nti.app.products.courseware.interfaces import IVideoUsageStats
+from nti.app.products.courseware_reports import VIEW_COURSE_SUMMARY
+
+from nti.app.products.courseware_reports.reports import _TopCreators
+from nti.app.products.courseware_reports.reports import _CommonBuckets
+from nti.app.products.courseware_reports.reports import _format_datetime
+from nti.app.products.courseware_reports.reports import _adjust_timestamp
+from nti.app.products.courseware_reports.reports import _DateCategoryAccum
+from nti.app.products.courseware_reports.reports import _build_buckets_options
+from nti.app.products.courseware_reports.reports import _assignment_stat_for_column
+from nti.app.products.courseware_reports.reports import _do_get_containers_in_course
+from nti.app.products.courseware_reports.reports import _get_self_assessments_for_course
+
+from nti.app.products.courseware_reports.views import CHART_COLORS
+
+from nti.app.products.courseware_reports.views.participation_views import ForumParticipationReportPdf
+
+from nti.app.products.courseware_reports.views.view_mixins import _AbstractReportView
 
 from nti.app.products.gradebook.interfaces import IGradeBook
 from nti.app.products.gradebook.assignments import get_course_assignments
@@ -29,41 +43,23 @@ from nti.contenttypes.courses.interfaces import ICourseInstance
 
 from nti.dataserver.interfaces import IDeletedObjectPlaceholder
 
-from .. import VIEW_COURSE_SUMMARY
-
-from ..reports import _TopCreators
-from ..reports import _CommonBuckets
-from ..reports import _format_datetime
-from ..reports import _adjust_timestamp
-from ..reports import _DateCategoryAccum
-from ..reports import _build_buckets_options
-from ..reports import _assignment_stat_for_column
-from ..reports import _do_get_containers_in_course
-from ..reports import _get_self_assessments_for_course
-
-from . import CHART_COLORS
-
-from .participation_views import ForumParticipationReportPdf
-
-from .view_mixins import _AbstractReportView
-
 _EngagementPerfStat = \
-		namedtuple(	'_EngagementPerfStat',
+		namedtuple('_EngagementPerfStat',
 				   	('first', 'second', 'third', 'fourth'))
 
 _EngagementQuartileStat = \
-		namedtuple(	'_EngagementQuartileStat',
+		namedtuple('_EngagementQuartileStat',
 					('name', 'count', 'value', 'assignment_stat'))
 
 _EngagementStats = \
-		namedtuple(	'_EngagmentStats',
+		namedtuple('_EngagmentStats',
 					('for_credit', 'non_credit', 'aggregate'))
 
 _EngagementStat = \
-		namedtuple(	'_EngagementStat',
+		namedtuple('_EngagementStat',
 					('name', 'count', 'unique_count', 'unique_perc_s', 'color'))
 
-_NoteStat = namedtuple(	'_NoteStat',
+_NoteStat = namedtuple('_NoteStat',
 						('shared_public', 'shared_course', 'shared_other'))
 
 
@@ -97,6 +93,7 @@ class CourseSummaryReportPdf(_AbstractReportView):
 		# has the advantage of not knowing anything about storage.
 		intids_of_submitted_qsets = md_catalog['mimeType'].apply(
 					{'any_of': ('application/vnd.nextthought.assessment.assessedquestionset',)})
+
 		intids_of_submitted_qsets_by_students = \
 					md_catalog.family.IF.intersection(intids_of_submitted_qsets,
 													  self.intids_created_by_students)
@@ -108,10 +105,11 @@ class CourseSummaryReportPdf(_AbstractReportView):
 		# some complexity, as we just need three aggregate numbers.
 		intids_of_objects_in_qs_containers = \
 					md_catalog['containerId'].apply({'any_of': self_assessment_containerids})
+
 		intids_in_containers = md_catalog.family.IF.intersection(intids_of_objects_in_qs_containers,
 																 intids_of_submitted_qsets_by_students)
 		# qsets_by_student_in_course = [x for x in ResultSet(intids_of_submitted_qsets_by_students, self.uidutil)
-		# 							    if x.questionSetId in self_assessment_qsids]
+		# 								if x.questionSetId in self_assessment_qsids]
 		qsets_by_student_in_course = ResultSet(intids_in_containers, self.uidutil)
 
 		title_to_count = dict()
@@ -350,11 +348,11 @@ class CourseSummaryReportPdf(_AbstractReportView):
 		self._build_self_assessment_data(options)
 		options['assignment_data'] = self._build_assignment_data(options)
 		self._build_top_commenters(options)
-		
+
 # 		video_options = IVideoUsageStats(self.context)
 # 		options['top_videos'] = video_options['top_videos']
 # 		options['all_videos'] = video_options['all_videos']
-		
+
 		options['top_videos'] = {}
 		options['all_videos'] = {}
 
