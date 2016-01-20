@@ -18,6 +18,9 @@ from pyramid.view import view_config
 
 from zope.catalog.catalog import ResultSet
 
+from nti.app.products.courseware.interfaces import IVideoUsageStats
+from nti.app.products.courseware.interfaces import IResourceUsageStats
+
 from nti.app.products.courseware_reports import VIEW_COURSE_SUMMARY
 
 from nti.app.products.courseware_reports.reports import _TopCreators
@@ -308,7 +311,7 @@ class CourseSummaryReportPdf(_AbstractReportView):
 			forum_stat['total_comments'] = sum([x.comment_count for x in forum_stat['comment_count_by_topic']])
 
 		# Need to accumulate these
-		# TODO rework this
+		# TODO: rework this
 		acc_week = self.family.II.BTree()
 
 		# Aggregate weekly numbers
@@ -349,11 +352,14 @@ class CourseSummaryReportPdf(_AbstractReportView):
 		options['assignment_data'] = self._build_assignment_data(options)
 		self._build_top_commenters(options)
 
-# 		video_options = IVideoUsageStats(self.context)
-# 		options['top_videos'] = video_options['top_videos']
-# 		options['all_videos'] = video_options['all_videos']
+		video_usage = IVideoUsageStats(self.context, None)
+		if video_usage is not None:
+			options['top_video_usage'] = video_usage.get_top_stats()
+			options['all_video_usage'] = video_usage.get_stats()
 
-		options['top_videos'] = {}
-		options['all_videos'] = {}
+		resource_usage = IResourceUsageStats(self.context, None)
+		if resource_usage is not None:
+			options['top_resource_usage'] = resource_usage.get_top_stats()
+			options['all_resource_usage'] = resource_usage.get_stats()
 
 		return options

@@ -29,6 +29,9 @@ class VideoUsageReportPdf(_AbstractReportView):
 
 	def __call__(self):
 		self._check_access()
-		options = IVideoUsageStats(self.context)
-		self.options = options
+		options = self.options
+		video_usage = IVideoUsageStats(self.context, None)
+		if video_usage is not None:
+			options['top_video_usage'] = video_usage.get_top_stats()
+			options['all_video_usage'] = video_usage.get_stats()
 		return options
