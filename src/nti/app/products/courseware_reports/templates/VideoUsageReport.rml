@@ -28,7 +28,7 @@
 					watch the video at all). 'Student Completion Rate' is the number of students who have watched at least 90%
 					of the video and have at least one session ending in the last 10% of the video. The last columns
 					show falloff rates. The numbers in each column represents the number of sessions ending in that segment
-					of the video, and the percentage of the total number of sessions for the video.
+					of the video, and the percentage of the total number of sessions for the video.  All times are in minutes.
 			</para>
 
 			<blockTable style='default' repeatRows="1">

@@ -376,7 +376,7 @@
 					watch the video at all). 'Student Completion Rate' is the number of students who have watched at least 90%
 					of the video and have at least one session ending in the last 10% of the video. The last columns
 					show falloff rates. The numbers in each column represents the number of sessions ending in that segment
-					of the video, and the percentage of the total number of sessions for the video.
+					of the video, and the percentage of the total number of sessions for the video.  All times are in minutes.
 			</para>
 
 			<blockTable style='default' repeatRows="1">
@@ -460,7 +460,7 @@
 					count, and the table of all resources is sorted by title. 'Average Session Length' is the average amount of
 					time a user spends on a particular resources in one session, and 'Average Time Spent on Resource' refers to the
 					total amount of time a user spends on a resource across all their sessions (including users who do not
-					view the resource at all).
+					view the resource at all). All times are in minutes.
 			</para>
 
 			<blockTable style='default' repeatRows="1">
