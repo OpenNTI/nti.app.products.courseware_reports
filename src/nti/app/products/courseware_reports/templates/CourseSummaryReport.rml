@@ -357,7 +357,6 @@
 
 		<!-- Video Usage -->
 		<tal:block tal:condition="options/all_video_usage | nothing">
-			<nextPage />
 			<h1 style="h1" spaceBefore=".5in" spaceAfter=".5in">
 				Video Usage
 			</h1>
