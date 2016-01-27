@@ -11,7 +11,7 @@
 
 		<para 	style="subdesc"
 				tal:condition="not:options/poll_stats">
-			This survey does not have any questions.
+			No one has taken this survey.
 		</para>
 
 		<tal:block  tal:repeat="question options/poll_stats"
