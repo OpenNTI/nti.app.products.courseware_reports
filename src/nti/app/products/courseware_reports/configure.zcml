@@ -61,22 +61,6 @@
 		permission="nti.actions.courseware_reports.view_reports"
 		role="nti.roles.courseware.report_viewer" />
 
-	<!--
-		Manually grant some accounts access to these roles for now,
-		pending better group integration.
-	-->
-	<!--
-		 The principal has to be defined first, even though this isn't
-		 the one we actually use.
-	-->
-	<sp:principal
-		id="grey.allman@nextthought.com"
-		login="grey.allman@nextthought.com"
-		title="Grey Allman" />
-
-	<sp:grant principal="grey.allman@nextthought.com"
-			  role="nti.roles.courseware.report_viewer" />
-
 	<adapter name="reports"
 			 for="nti.dataserver.interfaces.IDataserverFolder pyramid.interfaces.IRequest"
 			 factory=".views.ReportAdapter"
