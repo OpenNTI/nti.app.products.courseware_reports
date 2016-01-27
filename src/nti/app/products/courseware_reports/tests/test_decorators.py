@@ -17,19 +17,19 @@ from hamcrest import has_entry
 from hamcrest import assert_that
 from hamcrest import has_property
 
+from nti.app.products.courseware_reports import VIEW_COURSE_SUMMARY
+from nti.app.products.courseware_reports import VIEW_ASSIGNMENT_SUMMARY
+from nti.app.products.courseware_reports import VIEW_FORUM_PARTICIPATION
+from nti.app.products.courseware_reports import VIEW_TOPIC_PARTICIPATION
+from nti.app.products.courseware_reports import VIEW_STUDENT_PARTICIPATION
+
 from nti.app.products.courseware_reports.decorators import _CourseSummaryReport
 from nti.app.products.courseware_reports.decorators import _AssignmentSummaryReport
 from nti.app.products.courseware_reports.decorators import _ForumParticipationReport
 from nti.app.products.courseware_reports.decorators import _TopicParticipationReport
 from nti.app.products.courseware_reports.decorators import _StudentParticipationReport
 
-from .. import VIEW_COURSE_SUMMARY
-from .. import VIEW_ASSIGNMENT_SUMMARY
-from .. import VIEW_FORUM_PARTICIPATION
-from .. import VIEW_TOPIC_PARTICIPATION
-from .. import VIEW_STUDENT_PARTICIPATION
-
-class TestDecorators(unittest.TestCase):
+class TestDecorators( unittest.TestCase ):
 
 	def test_student_participation_decorator(self):
 		spr = _StudentParticipationReport(object(), None)

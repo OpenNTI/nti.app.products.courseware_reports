@@ -18,6 +18,8 @@ from zope.security.management import checkPermission
 
 from pyramid.interfaces import IRequest
 
+from nti.app.assessment.common import inquiry_submissions
+
 from nti.app.products.courseware.interfaces import ICourseInstanceEnrollment
 
 from nti.app.products.gradebook.interfaces import IGradeBook
@@ -41,23 +43,21 @@ from nti.links.links import Link
 
 from nti.traversal.traversal import find_interface
 
-from .interfaces import ACT_VIEW_REPORTS
+from nti.app.products.courseware_reports import VIEW_COURSE_SUMMARY
+from nti.app.products.courseware_reports import VIEW_INQUIRY_REPORT
+from nti.app.products.courseware_reports import VIEW_ASSIGNMENT_SUMMARY
+from nti.app.products.courseware_reports import VIEW_FORUM_PARTICIPATION
+from nti.app.products.courseware_reports import VIEW_TOPIC_PARTICIPATION
+from nti.app.products.courseware_reports import VIEW_STUDENT_PARTICIPATION
 
-from .utils import course_from_forum
-from .utils import find_course_for_user
+from nti.app.products.courseware_reports.interfaces import ACT_VIEW_REPORTS
 
-from . import VIEW_COURSE_SUMMARY
-from . import VIEW_INQUIRY_REPORT
-from . import VIEW_ASSIGNMENT_SUMMARY
-from . import VIEW_FORUM_PARTICIPATION
-from . import VIEW_TOPIC_PARTICIPATION
-from . import VIEW_STUDENT_PARTICIPATION
+from nti.app.products.courseware_reports.utils import course_from_forum
+from nti.app.products.courseware_reports.utils import find_course_for_user
 
 LINKS = StandardExternalFields.LINKS
 
 class _AbstractInstructedByDecorator(AbstractAuthenticatedRequestAwareDecorator):
-	# TODO: This needs to go away in favor of the specific permission
-	# when that role is hooked up
 
 	def _course_from_context(self, context):
 		return context
@@ -65,8 +65,11 @@ class _AbstractInstructedByDecorator(AbstractAuthenticatedRequestAwareDecorator)
 	def _predicate(self, context, result):
 		# TODO: This can probably go back to using the AuthorizationPolicy methods
 		# now that we're integrating the two
-		return self._is_authenticated and  checkPermission(ACT_VIEW_REPORTS.id,
-														   self._course_from_context(context))
+		# XXX: Surprisingly, our has_permission check fails because we turn the course
+		# into an ACLProvider when we check zope permissions (the fall-back).
+		return 	self._is_authenticated \
+			and checkPermission(ACT_VIEW_REPORTS.id,
+								self._course_from_context( context ))
 
 @interface.implementer(IExternalMappingDecorator)
 @component.adapter(ICourseInstanceEnrollment, IRequest)
@@ -92,6 +95,13 @@ class _ForumParticipationReport(_AbstractInstructedByDecorator):
 	A link to return the forum participation report.
 	"""
 
+	def _predicate(self, context, result):
+		result = super( _ForumParticipationReport, self )._predicate( context, result )
+		if result:
+			# Decorate if we have any comments in this forum's topics.
+			result = any( len(x.values()) for x in context.values() )
+		return result and len( context )
+
 	def _course_from_context(self, context):
 		return course_from_forum(context)
 
@@ -109,6 +119,10 @@ class _TopicParticipationReport(_AbstractInstructedByDecorator):
 	A link to return the topic participation report.
 	"""
 
+	def _predicate(self, context, result):
+		result = super( _TopicParticipationReport, self )._predicate( context, result )
+		return result and len( context.values() )
+
 	def _course_from_context(self, context):
 		return course_from_forum(context.__parent__)
 
@@ -125,6 +139,7 @@ class _CourseSummaryReport(_AbstractInstructedByDecorator):
 	"""
 	A link to return the course summary report.
 	"""
+
 	def _do_decorate_external(self, context, result_map):
 		links = result_map.setdefault(LINKS, [])
 		links.append(Link(context,
@@ -138,6 +153,14 @@ class _AssignmentSummaryReport(_AbstractInstructedByDecorator):
 	"""
 	A link to return the assignment summary report.
 	"""
+
+	def _predicate(self, context, result):
+		result = super( _AssignmentSummaryReport, self )._predicate( context, result )
+		if result:
+			gradebook_entry = self._gradebook_entry(context)
+			if gradebook_entry is not None:
+				result = len( gradebook_entry.items() )
+		return result
 
 	def _course_from_context(self, context):
 		self.course = find_interface(self.request.context, ICourseInstance,
@@ -170,6 +193,15 @@ class _InquiryReport(_AbstractInstructedByDecorator):
 	"""
 	A link to return the inquiry report.
 	"""
+
+	def _predicate(self, context, result):
+		result = super( _InquiryReport, self )._predicate( context, result )
+		if result:
+			course = self._course_from_context( context )
+			# XXX: Subinstances?
+			result = inquiry_submissions( context, course, subinstances=False )
+			result = len( result )
+		return result
 
 	def _course_from_context(self, context):
 		inquiry = IQInquiry(context, None)

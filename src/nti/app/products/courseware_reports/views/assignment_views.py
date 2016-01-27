@@ -70,7 +70,6 @@ class AssignmentSummaryReportPdf(_AbstractReportView):
 		# TODO Need to handle randomized questions.
 		# - We might get this for free since we store our questions by ntiids.
 		# - Verify.
-
 		ordered_questions = []
 		qids_to_q = {}
 		for apart in assignment.parts:
