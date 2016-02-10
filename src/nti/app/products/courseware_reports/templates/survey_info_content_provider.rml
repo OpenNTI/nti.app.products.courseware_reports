@@ -2,3 +2,7 @@
 	<td>Survey:</td>
 	<td tal:content="context/title">Title</td>
 </tr>
+<tr>
+	<td>Course:</td>
+	<td>${view/__parent__/course_name} - ${view/__parent__/generate_semester}</td>
+</tr>

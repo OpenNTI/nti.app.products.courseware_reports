@@ -18,6 +18,8 @@ from zope import component
 from pyramid.view import view_config
 
 from nti.app.assessment.common import aggregate_course_inquiry
+from nti.app.assessment.common import inquiry_submissions
+
 from nti.app.assessment.interfaces import ICourseAggregatedInquiries
 
 from nti.assessment.interfaces import IQPoll
@@ -36,11 +38,13 @@ from nti.contenttypes.courses.interfaces import ICourseInstance
 
 from nti.traversal.traversal import find_interface
 
-from ..utils import find_course_for_user
+from nti.app.products.courseware_reports import VIEW_INQUIRY_REPORT
 
-from .. import VIEW_INQUIRY_REPORT
+from nti.app.products.courseware_reports.reports import _TopCreators
 
-from .view_mixins import _AbstractReportView
+from nti.app.products.courseware_reports.utils import find_course_for_user
+
+from nti.app.products.courseware_reports.views.view_mixins import _AbstractReportView
 
 class ResponseStat(object):
 
@@ -72,13 +76,13 @@ class PollStat(object):
 def plain_text(s):
 	result = IPlainTextContentFragment(s) if s else u''
 	return result.strip()
-		
+
 class InquiryReportPDF(_AbstractReportView):
 
 	@Lazy
 	def report_title(self):
 		return u''
-		
+
 	@Lazy
 	def course(self):
 		course = find_interface(self.context, ICourseInstance, strict=False)
@@ -88,8 +92,8 @@ class InquiryReportPDF(_AbstractReportView):
 
 	def _aggregated_polls(self, aggregated):
 		raise NotImplementedError()
-			
-	def _build_question_data(self, options):		
+
+	def _build_question_data(self, options):
 		options['poll_stats'] = poll_stats = []
 
 		if self.context.closed:
@@ -98,6 +102,7 @@ class InquiryReportPDF(_AbstractReportView):
 		else:
 			aggregated = aggregate_course_inquiry(self.context, self.course) or ()
 
+		poll_stat_map = {}
 		for idx, agg_poll in enumerate(self._aggregated_polls(aggregated)):
 			poll = component.queryUtility(IQPoll, name=agg_poll.inquiryId)
 			if poll is None:  # pragma no cover
@@ -168,40 +173,61 @@ class InquiryReportPDF(_AbstractReportView):
 								PollPartStat(kind=kind,
 											 content=plain_text(part.content),
 											 responses=responses))
-			poll_stats.append(poll_stat)
+			poll_stat_map[poll.ntiid] = poll_stat
+
+		# Now in our order.
+		for poll in self.context.questions:
+			poll_stat = poll_stat_map.get( poll.ntiid )
+			poll_stats.append( poll_stat )
 
 	def _get_displayable(self, source):
 		if isinstance(source, string_types):
 			source = plain_text(source)
 		return source
 
+	def _build_summary(self, options):
+		submissions = inquiry_submissions( self.context, self.course )
+		creators = _TopCreators( self )
+		for submission in submissions or ():
+			creators.incr_username( submission.creator.username )
+
+		options['count_for_credit'] = self.count_credit_students
+		options['count_open'] = self.count_non_credit_students
+		options['count_total'] = self.count_all_students
+		options['submit_total'] = creators.total
+		options['for_credit_submit_total'] = creators.for_credit_total
+		options['non_credit_submit_total'] = creators.non_credit_total
+		options['for_credit_submit_perc'] = creators.for_credit_percent_contributed_str
+		options['non_credit_submit_perc'] = creators.non_credit_percent_contributed_str
+
 	def __call__(self):
 		self._check_access()
 		options = self.options
+		options['title'] = self.context.title
 		self._build_question_data(options)
+		self._build_summary(options)
 		return options
 
 @view_config(context=IQPoll,
 			 name=VIEW_INQUIRY_REPORT)
 class PollReportPDF(InquiryReportPDF):
-	
+
 	@Lazy
 	def report_title(self):
 		return _('Poll Report')
-		
+
 	def _aggregated_polls(self, aggregated):
 		if aggregated:
 			yield aggregated
-	
+
 @view_config(context=IQSurvey,
 			 name=VIEW_INQUIRY_REPORT)
 class SurveyReportPDF(InquiryReportPDF):
-	
+
 	@Lazy
 	def report_title(self):
 		return _('Survey Report')
-		
+
 	def _aggregated_polls(self, aggregated):
 		for agg_poll in aggregated:
 			yield agg_poll
-	
