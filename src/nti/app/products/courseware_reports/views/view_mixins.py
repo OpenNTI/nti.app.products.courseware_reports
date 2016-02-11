@@ -9,8 +9,6 @@ __docformat__ = "restructuredtext en"
 
 logger = __import__('logging').getLogger(__name__)
 
-from .. import MessageFactory as _
-
 import textwrap
 from datetime import datetime
 from collections import namedtuple
@@ -49,13 +47,15 @@ from nti.dataserver.users.interfaces import IFriendlyNamed
 
 from nti.dataserver.metadata_index import CATALOG_NAME
 
-from ..interfaces import IPDFReportView
+from nti.app.products.courseware_reports import MessageFactory as _
 
-from ..interfaces import ACT_VIEW_REPORTS
+from nti.app.products.courseware_reports.interfaces import IPDFReportView
 
-from ..reports import _adjust_date
+from nti.app.products.courseware_reports.interfaces import ACT_VIEW_REPORTS
 
-from . import ALL_USERS
+from nti.app.products.courseware_reports.reports import _adjust_date
+
+from nti.app.products.courseware_reports.views import ALL_USERS
 
 class _StudentInfo(namedtuple('_StudentInfo',
 							  ('display', 'username', 'count', 'perc'))):
@@ -70,12 +70,19 @@ def _get_enrollment_scope_dict(course, instructors=set()):
 	"""
 	Build a dict of scope_name to usernames.
 	"""
-	# XXX We are not exposing these multiple scopes in many places,
+	# XXX: We are not exposing these multiple scopes in many places,
 	# including many reports and in TopCreators.
-	# XXX This is confusing if we are nesting scopes.  Perhaps
+
+	# XXX: This is confusing if we are nesting scopes.  Perhaps
 	# it makes more sense to keep things in the Credit/NonCredit camps.
 	# Seems like it would make sense to have an Everyone scope...
 	# { Everyone: { Public : ( Open, Purchased ), ForCredit : ( FCD, FCND ) }}
+
+	# XXX: This automatically rolls up students in sub-sections into
+	# this report (if the sub-students are in the super's scopes). It's been
+	# like this for a while, but it seems confusing unless the instructor
+	# is aware they are looking at a super-course, which is not displayed
+	# in any way I can see.
 	results = {}
 	# Lumping purchased in with public.
 	public_scope = course.SharingScopes.get('Public', None)
