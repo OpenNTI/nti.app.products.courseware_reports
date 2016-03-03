@@ -658,6 +658,7 @@ def _do_get_containers_in_course( course ):
 		sites = get_component_hierarchy_names()
 		package_ntiids = (x.ntiid for x in packages)
 		contained_objs = catalog.search_objects(container_ntiids=package_ntiids,
+												container_all_of=False,
 												sites=sites)
 		# Do we need target_ntiid here?
 		contained_ntiids = {x.ntiid for x in contained_objs}
