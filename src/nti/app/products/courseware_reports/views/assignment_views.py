@@ -73,7 +73,7 @@ class AssignmentSummaryReportPdf(_AbstractReportView):
 		ordered_questions = []
 		qids_to_q = {}
 		for apart in assignment.parts:
-			for q in apart.question_set.questions:
+			for q in apart.question_set.Items:
 				ordered_questions.append(q)
 				qids_to_q[q.ntiid] = q
 
@@ -91,7 +91,9 @@ class AssignmentSummaryReportPdf(_AbstractReportView):
 			for set_submission in submission.parts:
 				for question_submission in set_submission.questions:
 
-					question = qids_to_q[question_submission.questionId]
+					question = qids_to_q.get[question_submission.questionId]
+					if question is None:
+						continue
 
 					question_stat = self._get_question_stat(question_stats,
 															question_submission.questionId,
