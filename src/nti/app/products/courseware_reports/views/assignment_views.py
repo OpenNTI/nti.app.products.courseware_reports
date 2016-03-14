@@ -9,8 +9,6 @@ __docformat__ = "restructuredtext en"
 
 logger = __import__('logging').getLogger(__name__)
 
-from .. import MessageFactory as _
-
 from six import string_types
 
 from docutils.utils import roman
@@ -20,6 +18,18 @@ from zope import component
 from pyramid.view import view_config
 
 from nti.app.assessment.interfaces import IUsersCourseAssignmentHistoryItem
+
+from nti.app.products.courseware_reports import MessageFactory as _
+
+from nti.app.products.courseware_reports import VIEW_ASSIGNMENT_SUMMARY
+
+from nti.app.products.courseware_reports.reports import _AnswerStat
+from nti.app.products.courseware_reports.reports import _QuestionStat
+from nti.app.products.courseware_reports.reports import _QuestionPartStat
+from nti.app.products.courseware_reports.reports import _build_question_stats
+from nti.app.products.courseware_reports.reports import _assignment_stat_for_column
+
+from nti.app.products.courseware_reports.views.view_mixins import _AbstractReportView
 
 from nti.app.products.gradebook.interfaces import IGradeBookEntry
 
@@ -34,16 +44,6 @@ from nti.assessment.interfaces import IQMultipleChoiceMultipleAnswerPart
 from nti.assessment.randomized.interfaces import IQRandomizedPart
 
 from nti.contentfragments.interfaces import IPlainTextContentFragment
-
-from .. import VIEW_ASSIGNMENT_SUMMARY
-
-from ..reports import _AnswerStat
-from ..reports import _QuestionStat
-from ..reports import _QuestionPartStat
-from ..reports import _build_question_stats
-from ..reports import _assignment_stat_for_column
-
-from .view_mixins import _AbstractReportView
 
 @view_config(context=IGradeBookEntry,
 			 name=VIEW_ASSIGNMENT_SUMMARY)
@@ -70,8 +70,8 @@ class AssignmentSummaryReportPdf(_AbstractReportView):
 		# TODO Need to handle randomized questions.
 		# - We might get this for free since we store our questions by ntiids.
 		# - Verify.
-		ordered_questions = []
 		qids_to_q = {}
+		ordered_questions = []
 		for apart in assignment.parts:
 			for q in apart.question_set.Items:
 				ordered_questions.append(q)
@@ -91,7 +91,7 @@ class AssignmentSummaryReportPdf(_AbstractReportView):
 			for set_submission in submission.parts:
 				for question_submission in set_submission.questions:
 
-					question = qids_to_q.get[question_submission.questionId]
+					question = qids_to_q.get(question_submission.questionId)
 					if question is None:
 						continue
 
