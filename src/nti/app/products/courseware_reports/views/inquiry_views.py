@@ -203,7 +203,7 @@ class InquiryReportPDF(_AbstractReportView):
 	def __call__(self):
 		self._check_access()
 		options = self.options
-		options['title'] = self.context.title
+		options['title'] = self.context_title
 		self._build_question_data(options)
 		self._build_summary(options)
 		return options
@@ -216,6 +216,11 @@ class PollReportPDF(InquiryReportPDF):
 	def report_title(self):
 		return _('Poll Report')
 
+	@property
+	def context_title(self):
+		# XXX: What to do here?
+		return 'Poll question'
+
 	def _aggregated_polls(self, aggregated):
 		if aggregated:
 			yield aggregated
@@ -227,6 +232,10 @@ class SurveyReportPDF(InquiryReportPDF):
 	@Lazy
 	def report_title(self):
 		return _('Survey Report')
+
+	@property
+	def context_title(self):
+		return self.context.title
 
 	def _aggregated_polls(self, aggregated):
 		for agg_poll in aggregated:
