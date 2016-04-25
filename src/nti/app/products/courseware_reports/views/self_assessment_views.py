@@ -96,7 +96,7 @@ class SelfAssessmentSummaryReportPdf(CourseSummaryReportPdf):
 		for asm in self._self_assessments:
 			title = asm.title or asm.__parent__.title
 			question_count = len( asm.questions )
-			qset_submission_data = qsid_to_user_submission_set.get( asm.ntiid )
+			qset_submission_data = qsid_to_user_submission_set.get( asm.ntiid, {} )
 			students = []
 			for username in self.all_student_usernames:
 				submitted_count = len( qset_submission_data.get( username, () ))
@@ -113,6 +113,7 @@ class SelfAssessmentSummaryReportPdf(CourseSummaryReportPdf):
 		self._check_access()
 		options = self.options
 		self.assessment_aggregator = _TopCreators(self)
+
 		self._build_self_assessment_data( options )
 		options['self_assessment_by_student'] = self._get_self_assessments_by_student()
 		options['self_assessment_completion'] = self._get_self_assessments_completion()

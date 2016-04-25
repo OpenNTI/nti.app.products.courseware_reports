@@ -25,15 +25,13 @@ from numbers import Number
 
 from nti.common.property import Lazy
 
-from nti.assessment.interfaces import IQAssignment
-from nti.assessment.interfaces import IQuestionSet
-
 from nti.contentfragments.interfaces import IPlainTextContentFragment
 
 from nti.contentlibrary.indexed_data import get_library_catalog
 
 from nti.contenttypes.courses.interfaces import ICourseAssignmentCatalog
 from nti.contenttypes.courses.interfaces import ICourseAssessmentItemCatalog
+from nti.contenttypes.courses.interfaces import ICourseSelfAssessmentItemCatalog
 
 from nti.dataserver.users.users import User
 from nti.dataserver.interfaces import SYSTEM_USER_NAME
@@ -74,33 +72,8 @@ def _get_self_assessments_for_course(course):
 	defined as top-level question sets that are not used within an assignment
 	in the course.
 	"""
-	catalog = ICourseAssessmentItemCatalog(course)
-
-	# Not only must we filter out assignments, we must filter out the
-	# question sets that they refer to; we assume such sets are only
-	# used by the assignment.
-	# XXX: FIXME not right (?).
-
-	result = list()
-
-	qsids_to_strip = set()
-
-	for item in catalog.iter_assessment_items():
-		if IQAssignment.providedBy(item):
-			qsids_to_strip.add(item.ntiid)
-			for assignment_part in item.parts:
-				question_set = assignment_part.question_set
-				qsids_to_strip.add(question_set.ntiid)
-				for question in question_set.questions:
-					qsids_to_strip.add(question.ntiid)
-		elif not IQuestionSet.providedBy(item):
-			qsids_to_strip.add(item.ntiid)
-		else:
-			result.append(item)
-
-	# Now remove the forbidden
-	result = [x for x in result if x.ntiid not in qsids_to_strip]
-	return result
+	catalog = ICourseSelfAssessmentItemCatalog(course)
+	return tuple( catalog.iter_assessment_items() )
 
 _CommonBuckets = namedtuple('_CommonBuckets',
 					  ('count_by_day', 'count_by_week_number', 'top_creators', 'group_dates'))

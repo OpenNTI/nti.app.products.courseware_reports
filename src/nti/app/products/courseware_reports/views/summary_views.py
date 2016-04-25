@@ -42,6 +42,8 @@ from nti.app.products.courseware_reports.views.view_mixins import _AbstractRepor
 from nti.app.products.gradebook.interfaces import IGradeBook
 from nti.app.products.gradebook.assignments import get_course_assignments
 
+from nti.common.property import Lazy
+
 from nti.contenttypes.courses.interfaces import ICourseInstance
 
 from nti.dataserver.interfaces import IDeletedObjectPlaceholder
@@ -82,12 +84,12 @@ class CourseSummaryReportPdf(_AbstractReportView):
 		options['count_open'] = len(self.open_student_usernames)
 		options['count_total'] = options['count_for_credit'] + options['count_open']
 
-	@property
+	@Lazy
 	def _self_assessments(self):
 		self_assessments = _get_self_assessments_for_course(self.course)
 		return self_assessments
 
-	@property
+	@Lazy
 	def _self_assessment_qsids(self):
 		"""
 		Map ntiid to question set.
@@ -95,7 +97,7 @@ class CourseSummaryReportPdf(_AbstractReportView):
 		self_assessment_qsids = {x.ntiid: x for x in self._self_assessments}
 		return self_assessment_qsids
 
-	@property
+	@Lazy
 	def _self_assessment_submissions(self):
 		"""
 		Return the self-assessments and submission for the course.
