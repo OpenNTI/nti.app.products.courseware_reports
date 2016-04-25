@@ -18,43 +18,43 @@
 			Self-Assessments Summary
 		</h2>
 
-			<blockTable style='default' tal:condition="options/self_assessment_data"
-						repeatRows="1">
-				<tr>
-					<td>
-						<para style="header">Assessment Title</para>
-					</td>
-					<td>
-						<para style="header_r">Student Count</para>
-					</td>
-					<td>
-						<para style="header_r">Total Attempts</para>
-					</td>
-					<td>
-						<para style="header_r">Average Attempts Per Student</para>
-					</td>
-					<td>
-						<para style="header_r">Students (%)</para>
-					</td>
-				</tr>
-				<tr tal:repeat="item options/self_assessment_data">
-					<td>
-						<para tal:content="item/title" style="data">The Assessment Title</para>
-					</td>
-					<td tal:content="item/unique_contributors">
-						Students
-					</td>
-					<td tal:content="item/total">
-						Total Attempts
-					</td>
-					<td tal:content="item/average_count_str">
-						Average Taken
-					</td>
-					<td tal:content="item/percent_contributed_str">
-						Percent Attempted
-					</td>
-				</tr>
-			</blockTable>
+		<blockTable style='default' tal:condition="options/self_assessment_data"
+					repeatRows="1">
+			<tr>
+				<td>
+					<para style="header">Assessment Title</para>
+				</td>
+				<td>
+					<para style="header_r">Student Count</para>
+				</td>
+				<td>
+					<para style="header_r">Total Attempts</para>
+				</td>
+				<td>
+					<para style="header_r">Average Attempts Per Student</para>
+				</td>
+				<td>
+					<para style="header_r">Students (%)</para>
+				</td>
+			</tr>
+			<tr tal:repeat="item options/self_assessment_data">
+				<td>
+					<para tal:content="item/title" style="data">The Assessment Title</para>
+				</td>
+				<td tal:content="item/unique_contributors">
+					Students
+				</td>
+				<td tal:content="item/total">
+					Total Attempts
+				</td>
+				<td tal:content="item/average_count_str">
+					Average Taken
+				</td>
+				<td tal:content="item/percent_contributed_str">
+					Percent Attempted
+				</td>
+			</tr>
+		</blockTable>
 
 		<para 	style="subdesc"
 				tal:condition="not:options/self_assessment_data">
@@ -66,8 +66,49 @@
 		<h2 style="h2">
 			Self-Assessments By Student
 		</h2>
-			<blockTable style='default' tal:condition="options/self_assessment_by_student"
-						repeatRows="1">
+
+		<blockTable style='default' tal:condition="options/self_assessment_by_student"
+					repeatRows="1">
+			<tr>
+				<td>
+					<para style="header">Name</para>
+				</td>
+				<td>
+					<para style="header">Login</para>
+				</td>
+				<td>
+					<para style="header_r">Total Attempts</para>
+				</td>
+			</tr>
+			<tr tal:repeat="item options/self_assessment_by_student">
+				<td tal:content="item/display">
+					user1
+				</td>
+				<td align="left" tal:content="item/username">
+					user2
+				</td>
+				<td tal:content="item/count">
+					Count
+				</td>
+			</tr>
+		</blockTable>
+
+		<nextPage />
+
+		<h2 style="h2">
+			Self-Assessment Completion
+		</h2>
+
+		<tal:block  tal:repeat="item options/self_assessment_completion"
+					tal:condition="options/self_assessment_completion" >
+
+			<condPageBreak height="4in" />
+
+			<h3 style="h3">
+					${item/title} (${item/question_count} Questions)
+			</h3>
+
+			<blockTable style='default' repeatRows="1">
 				<tr>
 					<td>
 						<para style="header">Name</para>
@@ -76,20 +117,27 @@
 						<para style="header">Login</para>
 					</td>
 					<td>
-						<para style="header_r">Total Attempts</para>
+						<para style="header_r">Questions Completed</para>
+					</td>
+					<td>
+						<para style="header_r">Percentage (%)</para>
 					</td>
 				</tr>
-				<tr tal:repeat="item options/self_assessment_by_student">
-					<td tal:content="item/display">
+				<tr tal:repeat="student item/students">
+					<td tal:content="student/display">
 						user1
 					</td>
-					<td align="left" tal:content="item/username">
+					<td align="left" tal:content="student/username">
 						user2
 					</td>
-					<td tal:content="item/count">
+					<td tal:content="student/count">
 						Count
+					</td>
+					<td tal:content="student/perc">
+						perc
 					</td>
 				</tr>
 			</blockTable>
+		</tal:block>
 
 </metal:block>

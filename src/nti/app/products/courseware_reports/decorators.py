@@ -49,6 +49,7 @@ from nti.app.products.courseware_reports import VIEW_ASSIGNMENT_SUMMARY
 from nti.app.products.courseware_reports import VIEW_FORUM_PARTICIPATION
 from nti.app.products.courseware_reports import VIEW_TOPIC_PARTICIPATION
 from nti.app.products.courseware_reports import VIEW_STUDENT_PARTICIPATION
+from nti.app.products.courseware_reports import VIEW_SELF_ASSESSMENT_SUMMARY
 
 from nti.app.products.courseware_reports.interfaces import ACT_VIEW_REPORTS
 
@@ -146,6 +147,20 @@ class _CourseSummaryReport(_AbstractInstructedByDecorator):
 						  rel='report-%s' % VIEW_COURSE_SUMMARY,
 						  elements=(VIEW_COURSE_SUMMARY,),
 						  title=_('Course Summary Report')))
+
+@interface.implementer(IExternalMappingDecorator)
+@component.adapter(ICourseInstance, IRequest)
+class _SelfAssessmentSummaryReport(_AbstractInstructedByDecorator):
+	"""
+	A link to return the self-assessment summary report.
+	"""
+
+	def _do_decorate_external(self, context, result_map):
+		links = result_map.setdefault(LINKS, [])
+		links.append(Link(context,
+						  rel='report-%s' % VIEW_SELF_ASSESSMENT_SUMMARY,
+						  elements=(VIEW_SELF_ASSESSMENT_SUMMARY,),
+						  title=_('SelfAssessment Summary Report')))
 
 @interface.implementer(IExternalMappingDecorator)
 @component.adapter(IQAssignment, IRequest)

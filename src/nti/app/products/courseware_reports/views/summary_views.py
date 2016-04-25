@@ -82,11 +82,26 @@ class CourseSummaryReportPdf(_AbstractReportView):
 		options['count_open'] = len(self.open_student_usernames)
 		options['count_total'] = options['count_for_credit'] + options['count_open']
 
-	def _build_self_assessment_data(self, options):
-		md_catalog = self.md_catalog
+	@property
+	def _self_assessments(self):
 		self_assessments = _get_self_assessments_for_course(self.course)
-		self_assessment_containerids = {x.__parent__.ntiid for x in self_assessments}
-		self_assessment_qsids = {x.ntiid: x for x in self_assessments}
+		return self_assessments
+
+	@property
+	def _self_assessment_qsids(self):
+		"""
+		Map ntiid to question set.
+		"""
+		self_assessment_qsids = {x.ntiid: x for x in self._self_assessments}
+		return self_assessment_qsids
+
+	@property
+	def _self_assessment_submissions(self):
+		"""
+		Return the self-assessments and submission for the course.
+		"""
+		md_catalog = self.md_catalog
+		self_assessment_containerids = {x.__parent__.ntiid for x in self._self_assessments}
 
 		# We can find the self-assessments the student submitted in a few ways
 		# one would be to look at the user's contained data for each containerID
@@ -114,25 +129,21 @@ class CourseSummaryReportPdf(_AbstractReportView):
 		# qsets_by_student_in_course = [x for x in ResultSet(intids_of_submitted_qsets_by_students, self.uidutil)
 		# 								if x.questionSetId in self_assessment_qsids]
 		qsets_by_student_in_course = ResultSet(intids_in_containers, self.uidutil)
+		return qsets_by_student_in_course
 
+	def _build_self_assessment_data(self, options):
 		title_to_count = dict()
 
-		def _title_of_qs(qs):
-			if qs.title:
-				return qs.title
-			return qs.__parent__.title
-
-		for asm in self_assessments:
-			title = _title_of_qs(asm)
+		for asm in self._self_assessments:
 			accum = _TopCreators(self)
 			accum.aggregate_creators = self.assessment_aggregator
-			accum.title = title
+			accum.title = asm.title or asm.__parent__.title
 			title_to_count[asm.ntiid] = accum
 
-		for submission in qsets_by_student_in_course:
+		for submission in self._self_assessment_submissions:
 			# Content may have changed such that we have an orphaned question set; move on.
-			if submission.questionSetId in self_assessment_qsids:
-				asm = self_assessment_qsids[submission.questionSetId]
+			if submission.questionSetId in self._self_assessment_qsids:
+				asm = self._self_assessment_qsids[submission.questionSetId]
 				title_to_count[asm.ntiid].incr_username(submission.creator.username)
 
 		options['self_assessment_data'] = sorted(title_to_count.values(),

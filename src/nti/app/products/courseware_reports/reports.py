@@ -74,15 +74,12 @@ def _get_self_assessments_for_course(course):
 	defined as top-level question sets that are not used within an assignment
 	in the course.
 	"""
-	# NOTE: This is pretty tightly coupled to the implementation
-	# and the use of one content package (?). See NonAssignmentsByOutlineNodeDecorator
-	# (TODO: Find a way to unify this)
 	catalog = ICourseAssessmentItemCatalog(course)
 
 	# Not only must we filter out assignments, we must filter out the
 	# question sets that they refer to; we assume such sets are only
 	# used by the assignment.
-	# XXX FIXME not right.
+	# XXX: FIXME not right (?).
 
 	result = list()
 
@@ -165,7 +162,7 @@ class _TopCreators(object):
 		# Returns the top commenter names, up to (arbitrarily) 10
 		# of them, with the next being 'everyone else'
 		largest = heapq.nlargest(10, data.items(), key=lambda x: x[1])
-		largest = [ self._build_student_info(x) for x in largest ]
+		largest = [self._build_student_info(x) for x in largest]
 
 		#Get aggregate remainder
 		if len(data) > len(largest):
@@ -189,7 +186,7 @@ class _TopCreators(object):
 
 	@Lazy
 	def all_stats(self):
-		result = [ self._build_student_info(x) for x in self._data.items() ]
+		result = [self._build_student_info(x) for x in self._data.items()]
 		return result
 
 	@property
