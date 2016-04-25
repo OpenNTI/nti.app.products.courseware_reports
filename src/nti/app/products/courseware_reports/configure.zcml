@@ -86,6 +86,10 @@
 	<subscriber factory=".decorators._AssignmentSummaryReport"
 				provides="nti.externalization.interfaces.IExternalMappingDecorator" />
 
+	<!-- A subscriber for getting the self summary report from the course info tab -->
+	<subscriber factory=".decorators._SelfAssessmentSummaryReport"
+				provides="nti.externalization.interfaces.IExternalMappingDecorator" />
+
 	<!-- A subscriber for getting the video views summary report from analytics records -->
 	<!-- <subscriber factory=".decorators._VideoViewsReport"
 				provides="nti.externalization.interfaces.IExternalMappingDecorator" /> -->
