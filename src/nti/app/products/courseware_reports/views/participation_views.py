@@ -306,14 +306,14 @@ class ForumParticipationReportPdf(_AbstractReportView):
 		enrollments = ICourseEnrollments( self.course )
 		return {x.lower() for x in enrollments.iter_principals()}
 
-	@property
+	@Lazy
 	def course(self):
 		return self._course_from_forum(self.context)
 
-	@property
+	@Lazy
 	def instructor_usernames(self):
 		"All instructors from this instance and subinstances."
-		# TODO We may want to do this in other reports.
+		# TODO: We may want to do this in other reports.
 		result = {x.id.lower() for x in self.course.instructors}
 
 		subinstances = self.course.SubInstances
@@ -593,7 +593,7 @@ class TopicParticipationReportPdf(ForumParticipationReportPdf):
 
 	report_title = _('Discussion Participation Report')
 
-	@property
+	@Lazy
 	def course(self):
 		return self._course_from_forum(self.context.__parent__)
 

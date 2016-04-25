@@ -216,7 +216,7 @@ class PollReportPDF(InquiryReportPDF):
 	def report_title(self):
 		return _('Poll Report')
 
-	@property
+	@Lazy
 	def context_title(self):
 		# XXX: What to do here?
 		return 'Poll question'
@@ -233,7 +233,7 @@ class SurveyReportPDF(InquiryReportPDF):
 	def report_title(self):
 		return _('Survey Report')
 
-	@property
+	@Lazy
 	def context_title(self):
 		return self.context.title
 
