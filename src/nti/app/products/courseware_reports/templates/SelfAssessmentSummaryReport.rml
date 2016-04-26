@@ -120,7 +120,7 @@
 						<para style="header_r">Questions Completed</para>
 					</td>
 					<td>
-						<para style="header_r">Percentage Complete(%)</para>
+						<para style="header_r">Percentage Complete (%)</para>
 					</td>
 				</tr>
 				<tr tal:repeat="student item/students">

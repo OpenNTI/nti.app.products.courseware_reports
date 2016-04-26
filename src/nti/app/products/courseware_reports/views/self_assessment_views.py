@@ -31,9 +31,9 @@ _SelfAssessmentCompletion = namedtuple( '_SelfAssessmentCompletion',
 			 name=VIEW_SELF_ASSESSMENT_SUMMARY)
 class SelfAssessmentSummaryReportPdf(CourseSummaryReportPdf):
 	"""
-	A basic SelfAssessment report for a course.  This is useful for
-	ad-hoc reports requested by instructors, but no link is yet
-	provided for client usage.
+	A basic SelfAssessment report for a course, including
+	summary data on overall self-assessment usage and per
+	self-assessment completion data.
 	"""
 
 	report_title = _('Self Assessment Report')
@@ -58,6 +58,10 @@ class SelfAssessmentSummaryReportPdf(CourseSummaryReportPdf):
 		return sorted( stats, key=lambda x:x.display.lower() )
 
 	def _build_qset_to_user_submission(self):
+		"""
+		For each submission, gather the questions completed
+		by each student.
+		"""
 		# qset.ntiid -> username -> submitted question ntiid set
 		qsid_to_user_submission_set = {}
 		completed_sets = {}
