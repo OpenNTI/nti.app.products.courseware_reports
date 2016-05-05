@@ -176,7 +176,7 @@ class InquiryReportPDF(_AbstractReportView):
 			poll_stat_map[poll.ntiid] = poll_stat
 
 		# Now in our order.
-		for poll in self.context.questions:
+		for poll in self.questions:
 			poll_stat = poll_stat_map.get( poll.ntiid )
 			poll_stats.append( poll_stat )
 
@@ -221,6 +221,10 @@ class PollReportPDF(InquiryReportPDF):
 		# XXX: What to do here?
 		return 'Poll question'
 
+	@property
+	def questions(self):
+		return (self.context,)
+
 	def _aggregated_polls(self, aggregated):
 		if aggregated:
 			yield aggregated
@@ -236,6 +240,10 @@ class SurveyReportPDF(InquiryReportPDF):
 	@Lazy
 	def context_title(self):
 		return self.context.title
+
+	@property
+	def questions(self):
+		return self.context.questions
 
 	def _aggregated_polls(self, aggregated):
 		for agg_poll in aggregated:
