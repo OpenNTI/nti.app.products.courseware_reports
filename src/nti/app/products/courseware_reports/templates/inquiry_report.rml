@@ -5,7 +5,7 @@
 
 		<para style="normal" fontSize="12" spaceAfter=".1in">
 			This report includes a summary of the survey results and a
-			breakdown of question results in <u>${context/title}</u>.
+			breakdown of question results in <u>${options/title}</u>.
 		</para>
 
 		<hr width="100%" />
