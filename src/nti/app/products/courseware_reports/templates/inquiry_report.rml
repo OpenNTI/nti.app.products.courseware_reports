@@ -53,17 +53,13 @@
 			</tr>
 		</blockTable>
 
-<!--
-		<nextPage />
-		<h1 style="h1" fontSize="18" spaceAfter=".2in" >
-			Question Breakdown
-		</h1>
--->
 
 		<para 	style="subdesc"
 				tal:condition="not:options/poll_stats">
 			No one has taken this survey.
 		</para>
+
+		<condPageBreak height="4in" />
 
 		<tal:block  tal:repeat="question options/poll_stats"
 					tal:condition="options/poll_stats">
