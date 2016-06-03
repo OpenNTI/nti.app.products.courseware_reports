@@ -296,7 +296,8 @@ class CourseSummaryReportPdf(_AbstractReportView):
 		stats = list()
 		for asg in assignment_catalog:
 			column = gradebook.getColumnForAssignmentId(asg.ntiid)
-			stats.append(_assignment_stat_for_column(self, column, predicate))
+			if column is not None:
+				stats.append(_assignment_stat_for_column(self, column, predicate))
 
 		stats.sort(key=lambda x: (x.due_date is None, x.due_date, x.title))
 		return stats
