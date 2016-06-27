@@ -9,8 +9,6 @@ __docformat__ = "restructuredtext en"
 
 logger = __import__('logging').getLogger(__name__)
 
-from . import MessageFactory as _
-
 from zope import component
 from zope import interface
 
@@ -21,6 +19,21 @@ from pyramid.interfaces import IRequest
 from nti.app.assessment.common import inquiry_submissions
 
 from nti.app.products.courseware.interfaces import ICourseInstanceEnrollment
+
+from nti.app.products.courseware_reports import MessageFactory as _
+
+from nti.app.products.courseware_reports import VIEW_COURSE_SUMMARY
+from nti.app.products.courseware_reports import VIEW_INQUIRY_REPORT
+from nti.app.products.courseware_reports import VIEW_ASSIGNMENT_SUMMARY
+from nti.app.products.courseware_reports import VIEW_FORUM_PARTICIPATION
+from nti.app.products.courseware_reports import VIEW_TOPIC_PARTICIPATION
+from nti.app.products.courseware_reports import VIEW_STUDENT_PARTICIPATION
+from nti.app.products.courseware_reports import VIEW_SELF_ASSESSMENT_SUMMARY
+
+from nti.app.products.courseware_reports.interfaces import ACT_VIEW_REPORTS
+
+from nti.app.products.courseware_reports.utils import course_from_forum
+from nti.app.products.courseware_reports.utils import find_course_for_user
 
 from nti.app.products.gradebook.interfaces import IGradeBook
 
@@ -43,19 +56,6 @@ from nti.links.links import Link
 
 from nti.traversal.traversal import find_interface
 
-from nti.app.products.courseware_reports import VIEW_COURSE_SUMMARY
-from nti.app.products.courseware_reports import VIEW_INQUIRY_REPORT
-from nti.app.products.courseware_reports import VIEW_ASSIGNMENT_SUMMARY
-from nti.app.products.courseware_reports import VIEW_FORUM_PARTICIPATION
-from nti.app.products.courseware_reports import VIEW_TOPIC_PARTICIPATION
-from nti.app.products.courseware_reports import VIEW_STUDENT_PARTICIPATION
-from nti.app.products.courseware_reports import VIEW_SELF_ASSESSMENT_SUMMARY
-
-from nti.app.products.courseware_reports.interfaces import ACT_VIEW_REPORTS
-
-from nti.app.products.courseware_reports.utils import course_from_forum
-from nti.app.products.courseware_reports.utils import find_course_for_user
-
 LINKS = StandardExternalFields.LINKS
 
 class _AbstractInstructedByDecorator(AbstractAuthenticatedRequestAwareDecorator):
@@ -70,7 +70,7 @@ class _AbstractInstructedByDecorator(AbstractAuthenticatedRequestAwareDecorator)
 		# into an ACLProvider when we check zope permissions (the fall-back).
 		return 	self._is_authenticated \
 			and checkPermission(ACT_VIEW_REPORTS.id,
-								self._course_from_context( context ))
+								self._course_from_context(context))
 
 @interface.implementer(IExternalMappingDecorator)
 @component.adapter(ICourseInstanceEnrollment, IRequest)
@@ -86,7 +86,7 @@ class _StudentParticipationReport(_AbstractInstructedByDecorator):
 		links = result_map.setdefault(LINKS, [])
 		links.append(Link(context,
 						  rel='report-%s' % VIEW_STUDENT_PARTICIPATION,
-						  elements=(VIEW_STUDENT_PARTICIPATION,),
+						  elements=('@@'+VIEW_STUDENT_PARTICIPATION,),
 						  title=_('Student Participation Report')))
 
 @interface.implementer(IExternalMappingDecorator)
@@ -97,11 +97,11 @@ class _ForumParticipationReport(_AbstractInstructedByDecorator):
 	"""
 
 	def _predicate(self, context, result):
-		result = super( _ForumParticipationReport, self )._predicate( context, result )
+		result = super(_ForumParticipationReport, self)._predicate(context, result)
 		if result:
 			# Decorate if we have any comments in this forum's topics.
-			result = any( len(x.values()) for x in context.values() )
-		return result and len( context )
+			result = any(len(x.values()) for x in context.values())
+		return result and len(context)
 
 	def _course_from_context(self, context):
 		return course_from_forum(context)
@@ -110,7 +110,7 @@ class _ForumParticipationReport(_AbstractInstructedByDecorator):
 		links = result_map.setdefault(LINKS, [])
 		links.append(Link(context,
 						  rel='report-%s' % VIEW_FORUM_PARTICIPATION,
-						  elements=(VIEW_FORUM_PARTICIPATION,),
+						  elements=('@@'+VIEW_FORUM_PARTICIPATION,),
 						  title=_('Forum Participation Report')))
 
 @interface.implementer(IExternalMappingDecorator)
@@ -121,8 +121,8 @@ class _TopicParticipationReport(_AbstractInstructedByDecorator):
 	"""
 
 	def _predicate(self, context, result):
-		result = super( _TopicParticipationReport, self )._predicate( context, result )
-		return result and len( context.values() )
+		result = super(_TopicParticipationReport, self)._predicate(context, result)
+		return result and len(context.values())
 
 	def _course_from_context(self, context):
 		return course_from_forum(context.__parent__)
@@ -131,7 +131,7 @@ class _TopicParticipationReport(_AbstractInstructedByDecorator):
 		links = result_map.setdefault(LINKS, [])
 		links.append(Link(context,
 						  rel='report-%s' % VIEW_TOPIC_PARTICIPATION,
-						  elements=(VIEW_TOPIC_PARTICIPATION,),
+						  elements=('@@'+VIEW_TOPIC_PARTICIPATION,),
 						  title=_('Topic Participation Report')))
 
 @interface.implementer(IExternalMappingDecorator)
@@ -145,7 +145,7 @@ class _CourseSummaryReport(_AbstractInstructedByDecorator):
 		links = result_map.setdefault(LINKS, [])
 		links.append(Link(context,
 						  rel='report-%s' % VIEW_COURSE_SUMMARY,
-						  elements=(VIEW_COURSE_SUMMARY,),
+						  elements=('@@'+VIEW_COURSE_SUMMARY,),
 						  title=_('Course Summary Report')))
 
 @interface.implementer(IExternalMappingDecorator)
@@ -159,7 +159,7 @@ class _SelfAssessmentSummaryReport(_AbstractInstructedByDecorator):
 		links = result_map.setdefault(LINKS, [])
 		links.append(Link(context,
 						  rel='report-%s' % VIEW_SELF_ASSESSMENT_SUMMARY,
-						  elements=(VIEW_SELF_ASSESSMENT_SUMMARY,),
+						  elements=('@@'+VIEW_SELF_ASSESSMENT_SUMMARY,),
 						  title=_('SelfAssessment Summary Report')))
 
 @interface.implementer(IExternalMappingDecorator)
@@ -170,11 +170,11 @@ class _AssignmentSummaryReport(_AbstractInstructedByDecorator):
 	"""
 
 	def _predicate(self, context, result):
-		result = super( _AssignmentSummaryReport, self )._predicate( context, result )
+		result = super(_AssignmentSummaryReport, self)._predicate(context, result)
 		if result:
 			gradebook_entry = self._gradebook_entry(context)
 			if gradebook_entry is not None:
-				result = len( gradebook_entry.items() )
+				result = len(gradebook_entry.items())
 		return result
 
 	def _course_from_context(self, context):
@@ -198,7 +198,7 @@ class _AssignmentSummaryReport(_AbstractInstructedByDecorator):
 		links = result_map.setdefault(LINKS, [])
 		links.append(Link(gradebook_entry,
 						  rel='report-%s' % VIEW_ASSIGNMENT_SUMMARY,
-						  elements=(VIEW_ASSIGNMENT_SUMMARY,),
+						  elements=('@@'+VIEW_ASSIGNMENT_SUMMARY,),
 						  title=_('Assignment Summary Report')))
 
 @interface.implementer(IExternalMappingDecorator)
@@ -210,12 +210,12 @@ class _InquiryReport(_AbstractInstructedByDecorator):
 	"""
 
 	def _predicate(self, context, result):
-		result = super( _InquiryReport, self )._predicate( context, result )
+		result = super(_InquiryReport, self)._predicate(context, result)
 		if result:
-			course = self._course_from_context( context )
+			course = self._course_from_context(context)
 			# XXX: Subinstances?
-			result = inquiry_submissions( context, course, subinstances=False )
-			result = len( result )
+			result = inquiry_submissions(context, course, subinstances=False)
+			result = len(result)
 		return result
 
 	def _course_from_context(self, context):
@@ -231,5 +231,5 @@ class _InquiryReport(_AbstractInstructedByDecorator):
 			links = result_map.setdefault(LINKS, [])
 			links.append(Link(context,
 							  rel='report-%s' % VIEW_INQUIRY_REPORT,
-							  elements=(VIEW_INQUIRY_REPORT,),
+							  elements=('@@'+VIEW_INQUIRY_REPORT,),
 							  title=_('Inquiry Report')))
