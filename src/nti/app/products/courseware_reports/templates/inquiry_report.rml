@@ -213,15 +213,14 @@
 					</tr>
 
 					<tr tal:repeat="answer_stat question_part/responses">
-						<td tal:content="string:${answer_stat/answer}"
-							align="left"
+						<td align="left"
 							vAlign="middle"
-							leftPadding="20"
-							topPadding="20"
-							bottomPadding="20"
 							background="#f5f5f5"
 							fontColor="#494949">
-							A
+								<para 	style="answer"
+										tal:content="answer_stat/answer">
+									answer
+								</para>
 						</td>
 					</tr>
 				</blockTable>
