@@ -9,8 +9,6 @@ __docformat__ = "restructuredtext en"
 
 logger = __import__('logging').getLogger(__name__)
 
-from .. import MessageFactory as _
-
 from itertools import chain
 from collections import namedtuple
 
@@ -20,6 +18,8 @@ from zope.catalog.catalog import ResultSet
 
 from nti.app.products.courseware.interfaces import IVideoUsageStats
 from nti.app.products.courseware.interfaces import IResourceUsageStats
+
+from nti.app.products.courseware_reports import MessageFactory as _
 
 from nti.app.products.courseware_reports import VIEW_COURSE_SUMMARY
 
@@ -103,7 +103,8 @@ class CourseSummaryReportPdf(_AbstractReportView):
 		Return the self-assessments and submission for the course.
 		"""
 		md_catalog = self.md_catalog
-		self_assessment_containerids = {x.__parent__.ntiid for x in self._self_assessments}
+		self_assessment_containerids = {x.__parent__.ntiid for x in self._self_assessments
+										if hasattr(x.__parent__, 'ntiid')}
 
 		# We can find the self-assessments the student submitted in a few ways
 		# one would be to look at the user's contained data for each containerID
@@ -164,7 +165,7 @@ class CourseSummaryReportPdf(_AbstractReportView):
 		intids_of_notes = intersection(intids_of_notes,
 										self.intids_created_by_everyone)
 		intids_of_hls = intersection(intids_of_hls,
-									  self.intids_created_by_everyone)
+									 self.intids_created_by_everyone)
 
 		# all_notes = intids_of_notes
 		# all_hls = intids_of_hls

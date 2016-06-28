@@ -16,8 +16,9 @@ from collections import namedtuple
 from zope import component
 from zope import interface
 
-from pyramid.view import view_defaults
 from pyramid.httpexceptions import HTTPForbidden
+
+from pyramid.view import view_defaults
 
 from z3c.pagelet.browser import BrowserPagelet
 
@@ -39,8 +40,8 @@ from nti.contenttypes.courses.interfaces import ICourseCatalogEntry
 from nti.dataserver.authorization import ACT_READ
 
 from nti.dataserver.interfaces import IDeletedObjectPlaceholder
-from nti.dataserver.interfaces import IUsernameSubstitutionPolicy
 from nti.dataserver.interfaces import IEnumerableEntityContainer
+from nti.dataserver.interfaces import IUsernameSubstitutionPolicy
 
 from nti.dataserver.users.users import User
 from nti.dataserver.users.interfaces import IFriendlyNamed
@@ -123,7 +124,7 @@ class _AbstractReportView(AbstractAuthenticatedView,
 			self.filename = request.view_name
 
 	def _check_access(self):
- 		if not checkPermission(ACT_VIEW_REPORTS.id, self.course):
+		if not checkPermission(ACT_VIEW_REPORTS.id, self.course):
 			raise HTTPForbidden()
 
 	@Lazy
