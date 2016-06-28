@@ -25,30 +25,31 @@ from hamcrest import only_contains
 from hamcrest import greater_than_or_equal_to
 
 import time
+
 from six import string_types
 from datetime import datetime
 from collections import namedtuple
 
 from nti.contentfragments.interfaces import PlainTextContentFragment
 
-from ..reports import _AnswerStat
+from nti.app.products.courseware_reports.reports import _AnswerStat
 
-from ..reports import _QuestionStat
-from ..reports import _AssignmentStat
-from ..reports import _QuestionPartStat
-from ..reports import _DateCategoryAccum
+from nti.app.products.courseware_reports.reports import _QuestionStat
+from nti.app.products.courseware_reports.reports import _AssignmentStat
+from nti.app.products.courseware_reports.reports import _QuestionPartStat
+from nti.app.products.courseware_reports.reports import _DateCategoryAccum
 
-from ..reports import _adjust_date
-from ..reports import _TopCreators
-from ..reports import _StudentInfo
-from ..reports import _common_buckets
-from ..reports import _get_top_answers
-from ..reports import _format_datetime
-from ..reports import _adjust_timestamp
-from ..reports import _build_question_stats
-from ..reports import _build_buckets_options
-from ..reports import _finalize_answer_stats
-from ..reports import _assignment_stat_for_column
+from nti.app.products.courseware_reports.reports import _adjust_date
+from nti.app.products.courseware_reports.reports import _TopCreators
+from nti.app.products.courseware_reports.reports import _StudentInfo
+from nti.app.products.courseware_reports.reports import _common_buckets
+from nti.app.products.courseware_reports.reports import _get_top_answers
+from nti.app.products.courseware_reports.reports import _format_datetime
+from nti.app.products.courseware_reports.reports import _adjust_timestamp
+from nti.app.products.courseware_reports.reports import _build_question_stats
+from nti.app.products.courseware_reports.reports import _build_buckets_options
+from nti.app.products.courseware_reports.reports import _finalize_answer_stats
+from nti.app.products.courseware_reports.reports import _assignment_stat_for_column
 
 class TestReports(unittest.TestCase):
 
@@ -339,9 +340,9 @@ class TestBuckets( unittest.TestCase ):
 	def setUp(self):
 		for_credit = 'for_credit1'
 		# Five different weeks with values over a five week window
-		#Week1
+		# Week1
 		d1 = _cd( datetime( year=2014, month=3, day=28, hour=0, minute=30 ), _cr( for_credit ) )
-		#Week2, seven total
+		# Week2, seven total
 		d2 = _cd( datetime( year=2014, month=4, day=1, hour=0, minute=30 ), _cr( for_credit ) )
 		d3 = _cd( datetime( year=2014, month=4, day=2, hour=0, minute=30 ), _cr( for_credit ) )
 		d4 = _cd( datetime( year=2014, month=4, day=3, hour=0, minute=30 ), _cr( for_credit ) )
@@ -349,10 +350,10 @@ class TestBuckets( unittest.TestCase ):
 		d6 = _cd( datetime( year=2014, month=4, day=5, hour=0, minute=30 ), _cr( for_credit ) )
 		d7 = _cd( datetime( year=2014, month=4, day=5, hour=0, minute=30 ), _cr( for_credit ) )
 		d8 = _cd( datetime( year=2014, month=4, day=5, hour=0, minute=30 ), _cr( for_credit ) )
-		#Week3
+		# Week3
 		d9 = _cd( datetime( year=2014, month=4, day=9, hour=0, minute=30 ), _cr( for_credit ) )
-		#Week4
-		#Week5
+		# Week4
+		# Week5
 		d10 = _cd( datetime( year=2014, month=4, day=27, hour=0, minute=30 ), _cr( for_credit ) )
 		self.objects = [d1,d2,d3,d4,d5,d6,d7,d8,d9,d10]
 
@@ -371,35 +372,49 @@ class TestBuckets( unittest.TestCase ):
 		start_date = datetime( year=2014, month=4, day=5, hour=0, minute=30 )
 		buckets = _common_buckets( self.objects, _MockReport( [] ), start_date )
 		assert_that( buckets, not_none() )
-		#We have a bucket for each week
+		# We have a bucket for each week
 		assert_that( buckets.count_by_week_number, has_length( 4 ) )
 		assert_that( buckets.top_creators, not_none() )
-		#Our display field 'group_dates' covers all five weeks
+		# Our display field 'group_dates' covers all five weeks
 		assert_that( buckets.group_dates, has_length( 5 ) )
 
-		#Verify bucket totals
+		# Verify bucket totals
 		assert_that( buckets.count_by_week_number[-1], equal_to( 1 ) )
 		assert_that( buckets.count_by_week_number[0], equal_to( 7 ) )
 		assert_that( buckets.count_by_week_number[1], equal_to( 1 ) )
 		assert_that( buckets.count_by_week_number[3], equal_to( 1 ) )
 
-		#Different start dates do not change counts
+		# Different start dates do not change counts
 		start_date = datetime( year=2014, month=12, day=5, hour=0, minute=30 )
 		buckets = _common_buckets( self.objects, _MockReport( [] ), start_date )
 
-		#We have a bucket for each week
+		# We have a bucket for each week
 		assert_that( buckets.count_by_week_number, has_length( 4 ) )
 		assert_that( buckets.top_creators, not_none() )
-		#Our display field 'group_dates' covers all five weeks
+		# Our display field 'group_dates' covers all five weeks
 		assert_that( buckets.group_dates, has_length( 5 ) )
 
 		start_date = datetime( year=2011, month=3, day=5, hour=0, minute=30 )
 		buckets = _common_buckets( self.objects, _MockReport( [] ), start_date )
-		#We have a bucket for each week
+		# We have a bucket for each week
 		assert_that( buckets.count_by_week_number, has_length( 4 ) )
 		assert_that( buckets.top_creators, not_none() )
-		#Our display field 'group_dates' covers all five weeks
+		# Our display field 'group_dates' covers all five weeks
 		assert_that( buckets.group_dates, has_length( 5 ) )
+
+		# We handle courses without start dates.
+		buckets = _common_buckets( self.objects, _MockReport( [] ), None )
+		# We have a bucket for each week
+		assert_that( buckets.count_by_week_number, has_length( 4 ) )
+		assert_that( buckets.top_creators, not_none() )
+		# Our display field 'group_dates' covers all five weeks
+		assert_that( buckets.group_dates, has_length( 5 ) )
+
+		# We handle no objects with no start date.
+		buckets = _common_buckets( [], _MockReport( [] ), None )
+		assert_that( buckets.count_by_week_number, has_length( 0 ) )
+		assert_that( buckets.top_creators, not_none() )
+		assert_that( buckets.group_dates, has_length( 0 ) )
 
 	def test_empty_options(self):
 		options = {}

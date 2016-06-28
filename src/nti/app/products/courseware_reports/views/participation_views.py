@@ -465,9 +465,9 @@ class ForumParticipationReportPdf(_AbstractReportView):
 					if not IDeletedObjectPlaceholder.providedBy(comment):
 						yield comment
 		buckets = _common_buckets(_all_comments(),
-									self,
-									self.course_start_date,
-									self.agg_creators)
+								  self,
+								  self.course_start_date,
+								  self.agg_creators)
 		options['group_dates'] = buckets.group_dates
 		options['top_commenters'] = buckets.top_creators
 		options['top_commenters_colors'] = CHART_COLORS

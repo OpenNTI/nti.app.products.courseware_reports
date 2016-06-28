@@ -256,14 +256,16 @@ class _TopCreators(object):
 		return "%0.1f" % self.percent_contributed( self.max_contributors_non_credit, self.unique_contributors_non_credit )
 
 class _DateCategoryAccum(object):
-	"""	Will accumulate 'date' objects based on inbound dates and return a week number.
-		The date inputs *must* be in sorted order. Otherwise, our behavior is undefined."""
+	"""
+	Will accumulate 'date' objects based on inbound dates and return a week number.
+	The date inputs *must* be in sorted order. Otherwise, our behavior is undefined.
+	"""
 
 	def __init__( self, start_date ):
 		self.dates = []
 		self.old_week_num = None
 
-		start_date = start_date.date()
+		start_date = start_date.date() if start_date else datetime.utcnow().date()
 		self.start_monday = start_date - timedelta( days=start_date.weekday() )
 
 	def accum_all( self, dates ):
@@ -320,6 +322,9 @@ def _common_buckets( objects, report, object_create_date, agg_creators=None ):
 	# are not likely to be worthwhile.
 	day_key = lambda x: x.created.date()
 	objects = sorted(objects, key=day_key)
+	if not object_create_date and objects:
+		# No course start date; default to oldest object.
+		object_create_date = objects[0].created
 	date_accum = _DateCategoryAccum( object_create_date )
 
 	forum_objects_by_day = []
@@ -641,8 +646,8 @@ def _do_get_containers_in_course( course ):
 	containers_in_course = containers_in_course.union( [x.ntiid for x in catalog.iter_assessment_items()] )
 
 	self_assessments = _get_self_assessments_for_course(course)
-	# check for parent ntiid in case of editable assessments 
-	self_assessment_containerids = {x.__parent__.ntiid for x in self_assessments 
+	# check for parent ntiid in case of editable assessments
+	self_assessment_containerids = {x.__parent__.ntiid for x in self_assessments
 									if hasattr(x.__parent__, 'ntiid')}
 	self_assessment_qsids = {x.ntiid: x for x in self_assessments}
 	containers_in_course = containers_in_course.union( self_assessment_containerids )
