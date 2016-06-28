@@ -9,17 +9,17 @@ __docformat__ = "restructuredtext en"
 
 logger = __import__('logging').getLogger(__name__)
 
-from .. import MessageFactory as _
-
 from pyramid.view import view_config
 
 from nti.app.products.courseware.interfaces import IVideoUsageStats
 
+from nti.app.products.courseware_reports import MessageFactory as _
+
+from nti.app.products.courseware_reports import VIEW_VIDEO_REPORT
+
+from nti.app.products.courseware_reports.views.view_mixins import _AbstractReportView
+
 from nti.contenttypes.courses.interfaces import ICourseInstance
-
-from .. import VIEW_VIDEO_REPORT
-
-from .view_mixins import _AbstractReportView
 
 @view_config(context=ICourseInstance,
 			 name=VIEW_VIDEO_REPORT)
