@@ -269,6 +269,9 @@ class _AbstractReportView(AbstractAuthenticatedView,
 		return "%s %s %s %s" % (title, course, student, date)
 
 	def generate_semester(self):
+		"""
+		Generate the semester suffix used in report metadata.
+		"""
 		start_date = self.course_start_date
 		start_month = start_date.month if start_date else None
 		if start_month < 5:
@@ -279,7 +282,7 @@ class _AbstractReportView(AbstractAuthenticatedView,
 			semester = _('Fall')
 
 		start_year = start_date.year if start_date else None
-		return '%s %s' % (semester, start_year) if start_date else ''
+		return '- %s %s' % (semester, start_year) if start_date else ''
 
 	def wrap_text(self, text, size):
 		return textwrap.fill(text, size)
