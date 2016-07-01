@@ -82,7 +82,7 @@
 				<h3 style="h3"
 					spaceBefore="0in" spaceAfter=".2"
 					fontSize="12"
-					tal:content="string:Part ${question_part/content}"
+					tal:content="string:${question_part/content}"
 					tal:condition="python: len(question.parts) > 1">
 					Part I
 				</h3>
