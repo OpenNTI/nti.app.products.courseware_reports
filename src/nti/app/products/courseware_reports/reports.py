@@ -33,8 +33,9 @@ from nti.contenttypes.courses.interfaces import ICourseAssignmentCatalog
 from nti.contenttypes.courses.interfaces import ICourseAssessmentItemCatalog
 from nti.contenttypes.courses.interfaces import ICourseSelfAssessmentItemCatalog
 
-from nti.dataserver.users.users import User
 from nti.dataserver.interfaces import SYSTEM_USER_NAME
+
+from nti.dataserver.users.users import User
 
 from nti.site.site import get_component_hierarchy_names
 
@@ -261,7 +262,7 @@ class _DateCategoryAccum(object):
 	The date inputs *must* be in sorted order. Otherwise, our behavior is undefined.
 	"""
 
-	def __init__( self, start_date ):
+	def __init__( self, start_date=None ):
 		self.dates = []
 		self.old_week_num = None
 
