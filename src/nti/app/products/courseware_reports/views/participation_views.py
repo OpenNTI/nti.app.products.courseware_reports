@@ -438,8 +438,10 @@ class ForumParticipationReportPdf(_AbstractReportView):
 
 
 		user_comment_dict_by_scope = self._get_scope_user_dict_for_course(
-												super_scope_dict, user_comment_dict)
-		results[ self.course.__name__ ] = user_comment_dict_by_scope
+											super_scope_dict, user_comment_dict)
+		# Store with displayble name; useful for not accidentally
+		# calling setNextTemplate with int-convertable index (e.g. '003' ).
+		results[ self.course_name() ] = user_comment_dict_by_scope
 
 		results = OrderedDict(sorted(results.items()))
 		return results

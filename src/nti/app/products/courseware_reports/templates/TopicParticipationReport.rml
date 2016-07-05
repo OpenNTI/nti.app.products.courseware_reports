@@ -67,7 +67,6 @@
 					  metal:use-macro="macro:forum_top_commenters">
 		</illustration>
 
-
 		<setNextTemplate name="main"/>
 		<nextPage />
 
@@ -160,6 +159,12 @@
 				${section_name} Comments
 			</h2>
 
+			<!--
+				We set next template here to display the contextual section
+				of comments. We have to be careful not to have an int castable
+				section here (e.g. '003') which will inadvertantly map to
+				something like template 'table_pie'.
+			-->
 			<setNextTemplate name="" tal:attributes="name section_name" />
 
 			<!-- Scopes in section -->
