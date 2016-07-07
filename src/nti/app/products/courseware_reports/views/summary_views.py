@@ -140,7 +140,7 @@ class CourseSummaryReportPdf(_AbstractReportView):
 		for asm in self._self_assessments:
 			accum = _TopCreators(self)
 			accum.aggregate_creators = self.assessment_aggregator
-			accum.title = asm.title or asm.__parent__.title
+			accum.title = asm.title or getattr(asm.__parent__, 'title', None) 
 			title_to_count[asm.ntiid] = accum
 
 		for submission in self._self_assessment_submissions:
