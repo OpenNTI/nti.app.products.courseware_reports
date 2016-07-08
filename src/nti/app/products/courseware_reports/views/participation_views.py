@@ -139,7 +139,9 @@ class StudentParticipationReportPdf(_AbstractReportView):
 		comment_count_by_topic = defaultdict(int)
 		for x in live_objects:
 			if ITopic.providedBy(x):
-				info = self.TopicCreated(x, x.title, x.__parent__.title, x.created)
+				info = self.TopicCreated(x, x.title, 
+										 getattr(x.__parent__, 'title', None),
+										 x.created)
 				topics_created.append(info)
 			elif IGeneralForumComment.providedBy(x):
 				comment_count_by_topic[x.__parent__] += 1
@@ -147,8 +149,9 @@ class StudentParticipationReportPdf(_AbstractReportView):
 		topics_created.sort(key=lambda x: (x.forum_name, x.topic_name))
 		options['topics_created'] = topics_created
 		options['total_forum_objects_created'] = len(live_objects)
-		options['comment_count_by_topic'] = sorted(comment_count_by_topic.items(),
-												   key=lambda x: (x[0].__parent__.title, x[0].title))
+		options['comment_count_by_topic'] = \
+						sorted(comment_count_by_topic.items(),
+							   key=lambda x: (getattr(x[0].__parent__, 'title', None), x[0].title))
 		stat = _build_buckets_options(options, time_buckets)
 		options['student_forum_participation'] = stat
 
@@ -165,7 +168,7 @@ class StudentParticipationReportPdf(_AbstractReportView):
 		# has the advantage of not knowing anything about storage.
 		intids_of_submitted_qsets = md_catalog['mimeType'].apply({'any_of': ('application/vnd.nextthought.assessment.assessedquestionset',)})
 		intids_of_submitted_qsets_by_student = md_catalog.family.IF.intersection(intids_of_submitted_qsets,
-																				  self.intids_created_by_student)
+																				 self.intids_created_by_student)
 
 		# We could further filter this by containerId, based on the
 		# assumption that The qs's __parent__ is always the 'home'
@@ -182,7 +185,7 @@ class StudentParticipationReportPdf(_AbstractReportView):
 		def _title_of_qs(qs):
 			if qs.title:
 				return qs.title
-			return qs.__parent__.title
+			return getattr(qs.__parent__, 'title', None)
 
 		for asm in self_assessments:
 			title_to_count[_title_of_qs(asm)] = 0
