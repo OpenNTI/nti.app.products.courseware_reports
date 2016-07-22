@@ -98,7 +98,7 @@ class SelfAssessmentSummaryReportPdf(CourseSummaryReportPdf):
 		result = list()
 		# Now build our completion data.
 		for asm in self._self_assessments:
-			title = asm.title or asm.__parent__.title
+			title = asm.title or getattr( asm.__parent__, 'title', None )
 			question_count = len( asm.questions )
 			qset_submission_data = qsid_to_user_submission_set.get( asm.ntiid, {} )
 			students = []
