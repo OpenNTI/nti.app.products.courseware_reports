@@ -13,6 +13,7 @@ from six import string_types
 
 from docutils.utils import roman
 
+from zope import interface
 from zope import component
 
 from pyramid.view import view_config
@@ -37,13 +38,17 @@ from nti.assessment.common import grader_for_response
 
 from nti.assessment.interfaces import IQAssignment
 from nti.assessment.interfaces import IQMatchingPart
+from nti.assessment.interfaces import IQOrderingPart
 from nti.assessment.interfaces import IQMultipleChoicePart
 from nti.assessment.interfaces import IQAssessedQuestionSet
 from nti.assessment.interfaces import IQMultipleChoiceMultipleAnswerPart
 
 from nti.assessment.randomized.interfaces import IQRandomizedPart
+from nti.assessment.randomized.interfaces import IRandomizedPartsContainer
 
 from nti.contentfragments.interfaces import IPlainTextContentFragment
+
+from nti.ntiids.ntiids import find_object_with_ntiid
 
 @view_config(context=IGradeBookEntry,
 			 name=VIEW_ASSIGNMENT_SUMMARY)
@@ -67,9 +72,8 @@ class AssignmentSummaryReportPdf(_AbstractReportView):
 			options['question_stats'] = None
 			return
 
-		# TODO Need to handle randomized questions.
+		# TODO: Need to handle randomized questions/question-banks?
 		# - We might get this for free since we store our questions by ntiids.
-		# - Verify.
 		qids_to_q = {}
 		ordered_questions = []
 		for apart in assignment.parts:
@@ -91,6 +95,7 @@ class AssignmentSummaryReportPdf(_AbstractReportView):
 			for set_submission in submission.parts:
 				for question_submission in set_submission.questions:
 
+					qset = find_object_with_ntiid( set_submission.questionSetId )
 					question = qids_to_q.get(question_submission.questionId)
 					if question is None:
 						continue
@@ -106,8 +111,15 @@ class AssignmentSummaryReportPdf(_AbstractReportView):
 						response = question_submission.parts[idx]
 						answer_stat = question_part_stats[idx].answer_stats
 
-						# Add to our responses.
-						self._accumulate_response(question_part, response, submission, answer_stat)
+						# Add to our responses; mark randomized if question
+						# set is a randomized parts container.
+						try:
+							if IRandomizedPartsContainer.providedBy( qset ):
+								interface.alsoProvides( question_part, IQRandomizedPart )
+							self._accumulate_response(question_part, response, submission, answer_stat)
+						finally:
+							if IRandomizedPartsContainer.providedBy( qset ):
+								interface.noLongerProvides(question_part, IQRandomizedPart)
 
 			pending = history.pendingAssessment
 
@@ -156,11 +168,12 @@ class AssignmentSummaryReportPdf(_AbstractReportView):
 			and response is not None:
 			# First de-randomize our question part, if necessary.
 			grader = grader_for_response(question_part, response)
-			response = grader.unshuffle(response,
-										user=submission.creator,
-										context=question_part)
+			if grader is not None:
+				response = grader.unshuffle(response,
+											user=submission.creator,
+											context=question_part)
 
-		if (IQMultipleChoicePart.providedBy(question_part)
+		if (	IQMultipleChoicePart.providedBy(question_part)
 			and not IQMultipleChoiceMultipleAnswerPart.providedBy(question_part)
 			and isinstance(response, int)):
 			# We have indexes into single multiple choice answers
@@ -169,7 +182,7 @@ class AssignmentSummaryReportPdf(_AbstractReportView):
 													  response,
 													  question_part,
 													  lambda: response == question_part.solutions[0].value)
-		elif (IQMultipleChoicePart.providedBy(question_part)
+		elif (	IQMultipleChoicePart.providedBy(question_part)
 			and IQMultipleChoiceMultipleAnswerPart.providedBy(question_part)
 			and response):
 			# We are losing empty responses
@@ -190,7 +203,8 @@ class AssignmentSummaryReportPdf(_AbstractReportView):
 											response,
 											lambda: response in solutions)
 
-		elif IQMatchingPart.providedBy(question_part) and response:
+		elif 	IQMatchingPart.providedBy(question_part)\
+			and response:
 			# This handles both matching and ordering questions
 			for key, val in response.items():
 				val = int(val)  # Somehow, we have string vals stored in some cases
@@ -213,6 +227,7 @@ class AssignmentSummaryReportPdf(_AbstractReportView):
 			self._add_displayable_to_answer_stat(answer_stat,
 													response,
 													lambda: False)
+		# TODO: ordering parts
 
 	def _add_multiple_choice_to_answer_stats(self, answer_stat, response, question_part, check_correct):
 		"""
