@@ -140,7 +140,7 @@ class CourseSummaryReportPdf(_AbstractReportView):
 		for asm in self._self_assessments:
 			accum = _TopCreators(self)
 			accum.aggregate_creators = self.assessment_aggregator
-			accum.title = asm.title or getattr(asm.__parent__, 'title', None) 
+			accum.title = asm.title or getattr(asm.__parent__, 'title', None)
 			title_to_count[asm.ntiid] = accum
 
 		for submission in self._self_assessment_submissions:
@@ -296,6 +296,10 @@ class CourseSummaryReportPdf(_AbstractReportView):
 
 		stats = list()
 		for asg in assignment_catalog:
+			# XXX: Seems like this should be assignment filter.
+			# If published with available dates, we'll expose them in the report.
+			if not asg.is_published():
+				continue
 			column = gradebook.getColumnForAssignmentId(asg.ntiid)
 			if column is not None:
 				stats.append(_assignment_stat_for_column(self, column, predicate))
