@@ -104,7 +104,7 @@ class SelfAssessmentSummaryReportPdf(CourseSummaryReportPdf):
 			students = []
 			for username in self.all_student_usernames:
 				submitted_count = len( qset_submission_data.get( username, () ))
-				perc = "%0.1f" % (submitted_count/question_count * 100.0)
+				perc = "%0.1f" % (submitted_count/question_count * 100.0) if question_count else 'NA'
 				student_info = self._build_student_info(username, submitted_count, perc)
 				students.append( student_info )
 			students = sorted( students, key=lambda x: x.display.lower() )
