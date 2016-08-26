@@ -22,6 +22,14 @@ from nti.app.assessment.common import inquiry_submissions
 
 from nti.app.assessment.interfaces import ICourseAggregatedInquiries
 
+from nti.app.products.courseware_reports import VIEW_INQUIRY_REPORT
+
+from nti.app.products.courseware_reports.reports import _TopCreators
+
+from nti.app.products.courseware_reports.utils import find_course_for_user
+
+from nti.app.products.courseware_reports.views.view_mixins import _AbstractReportView
+
 from nti.assessment.interfaces import IQPoll
 from nti.assessment.interfaces import IQSurvey
 from nti.assessment.interfaces import IQNonGradableConnectingPart
@@ -30,21 +38,14 @@ from nti.assessment.interfaces import IQNonGradableMultipleChoicePart
 from nti.assessment.interfaces import IQNonGradableModeledContentPart
 from nti.assessment.interfaces import IQNonGradableMultipleChoiceMultipleAnswerPart
 
-from nti.common.property import alias, Lazy
-
 from nti.contentfragments.interfaces import IPlainTextContentFragment
 
 from nti.contenttypes.courses.interfaces import ICourseInstance
 
+from nti.property.property import Lazy 
+from nti.property.property import alias
+
 from nti.traversal.traversal import find_interface
-
-from nti.app.products.courseware_reports import VIEW_INQUIRY_REPORT
-
-from nti.app.products.courseware_reports.reports import _TopCreators
-
-from nti.app.products.courseware_reports.utils import find_course_for_user
-
-from nti.app.products.courseware_reports.views.view_mixins import _AbstractReportView
 
 class ResponseStat(object):
 

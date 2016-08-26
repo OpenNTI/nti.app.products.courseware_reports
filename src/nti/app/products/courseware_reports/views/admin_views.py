@@ -32,6 +32,13 @@ from nti.app.assessment.interfaces import IUsersCourseAssignmentHistoryItem
 from nti.app.products.courseware.workspaces import CourseInstanceEnrollment
 from nti.app.products.courseware.interfaces import ICourseInstanceEnrollment
 
+from nti.app.products.courseware_reports.reports import _do_get_containers_in_course
+from nti.app.products.courseware_reports.reports import _get_self_assessments_for_course
+
+from nti.app.products.courseware_reports.views import parse_datetime
+
+from nti.app.products.courseware_reports.views.participation_views import StudentParticipationReportPdf
+
 from nti.app.products.gradebook.interfaces import NO_SUBMIT_PART_NAME
 from nti.app.products.gradebook.interfaces import IGradeBook
 
@@ -53,14 +60,7 @@ from nti.dataserver.metadata_index import CATALOG_NAME
 from nti.dataserver.authorization import ACT_MODERATE
 from nti.dataserver.authorization import ACT_NTI_ADMIN
 
-from nti.common.property import CachedProperty
-
-from ..reports import _do_get_containers_in_course
-from ..reports import _get_self_assessments_for_course
-
-from .participation_views import StudentParticipationReportPdf
-
-from . import parse_datetime
+from nti.property.property import CachedProperty
 
 @view_config(route_name='objects.generic.traversal',
 			 name='shared_notes',

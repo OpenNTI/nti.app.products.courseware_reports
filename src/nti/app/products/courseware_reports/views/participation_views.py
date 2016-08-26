@@ -35,8 +35,6 @@ from nti.app.products.gradebook.assignments import get_course_assignments
 
 from nti.assessment.interfaces import IQAssignmentDateContext
 
-from nti.common.property import Lazy
-
 from nti.contenttypes.courses.interfaces import ICourseEnrollments
 from nti.contenttypes.courses.interfaces import	ICourseSubInstance
 
@@ -48,6 +46,8 @@ from nti.dataserver.contenttypes.forums.interfaces import ICommunityBoard
 from nti.dataserver.contenttypes.forums.interfaces import ICommunityForum
 from nti.dataserver.contenttypes.forums.interfaces import IGeneralForumComment
 from nti.dataserver.contenttypes.forums.interfaces import ICommunityHeadlineTopic
+
+from nti.property.property import Lazy
 
 from .. import VIEW_TOPIC_PARTICIPATION
 from .. import VIEW_FORUM_PARTICIPATION

@@ -42,11 +42,11 @@ from nti.app.products.courseware_reports.views.view_mixins import _AbstractRepor
 from nti.app.products.gradebook.interfaces import IGradeBook
 from nti.app.products.gradebook.assignments import get_course_assignments
 
-from nti.common.property import Lazy
-
 from nti.contenttypes.courses.interfaces import ICourseInstance
 
 from nti.dataserver.interfaces import IDeletedObjectPlaceholder
+
+from nti.property.property import Lazy
 
 _EngagementPerfStat = \
 		namedtuple('_EngagementPerfStat',

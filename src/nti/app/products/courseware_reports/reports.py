@@ -23,8 +23,6 @@ from numpy import asarray
 from numpy import average
 from numbers import Number
 
-from nti.common.property import Lazy
-
 from nti.contentfragments.interfaces import IPlainTextContentFragment
 
 from nti.contentlibrary.indexed_data import get_library_catalog
@@ -36,6 +34,8 @@ from nti.contenttypes.courses.interfaces import ICourseSelfAssessmentItemCatalog
 from nti.dataserver.interfaces import SYSTEM_USER_NAME
 
 from nti.dataserver.users.users import User
+
+from nti.property.property import Lazy
 
 from nti.site.site import get_component_hierarchy_names
 

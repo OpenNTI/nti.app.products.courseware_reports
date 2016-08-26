@@ -30,8 +30,6 @@ from zope.security.management import checkPermission
 
 import BTrees
 
-from nti.common.property import Lazy
-
 from nti.app.base.abstract_views import AbstractAuthenticatedView
 
 from nti.contenttypes.courses.interfaces import ICourseInstance
@@ -47,6 +45,8 @@ from nti.dataserver.users.users import User
 from nti.dataserver.users.interfaces import IFriendlyNamed
 
 from nti.dataserver.metadata_index import CATALOG_NAME
+
+from nti.property.property import Lazy
 
 from nti.app.products.courseware_reports import MessageFactory as _
 
