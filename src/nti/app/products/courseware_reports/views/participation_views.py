@@ -139,7 +139,7 @@ class StudentParticipationReportPdf(_AbstractReportView):
 		comment_count_by_topic = defaultdict(int)
 		for x in live_objects:
 			if ITopic.providedBy(x):
-				info = self.TopicCreated(x, x.title, 
+				info = self.TopicCreated(x, x.title,
 										 getattr(x.__parent__, 'title', None),
 										 x.created)
 				topics_created.append(info)
@@ -238,7 +238,6 @@ class StudentParticipationReportPdf(_AbstractReportView):
 			if x.submitted:
 				x.submitted = _format_datetime(_adjust_date(x.submitted))
 		options['assignments'] = asg_data
-
 
 	def __call__(self):
 		"""

@@ -64,10 +64,11 @@
 		<condPageBreak height="4in" />
 
 		<h2 style="h2">
-			Self-Assessments By Student
+			Self-Assessments By For Credit Student
 		</h2>
 
-		<blockTable style='default' tal:condition="options/self_assessment_by_student"
+		<blockTable style='table_user_1'
+					tal:condition="options/self_assessment_for_credit"
 					repeatRows="1">
 			<tr>
 				<td>
@@ -80,7 +81,7 @@
 					<para style="header_r">Total Attempts</para>
 				</td>
 			</tr>
-			<tr tal:repeat="item options/self_assessment_by_student">
+			<tr tal:repeat="item options/self_assessment_for_credit">
 				<td tal:content="item/display">
 					user1
 				</td>
@@ -93,14 +94,41 @@
 			</tr>
 		</blockTable>
 
+		<condPageBreak height="4in" />
+
+		<h2 style="h2">
+			Self-Assessments By Non Credit Student
+		</h2>
+
+		<blockTable style='table_user_1_non_credit'
+					tal:condition="options/self_assessment_non_credit"
+					repeatRows="1">
+			<tr>
+				<td>
+					<para style="header">Name</para>
+				</td>
+				<td>
+					<para style="header_r">Total Attempts</para>
+				</td>
+			</tr>
+			<tr tal:repeat="item options/self_assessment_non_credit">
+				<td tal:content="item/display">
+					user1
+				</td>
+				<td tal:content="item/count">
+					Count
+				</td>
+			</tr>
+		</blockTable>
+
 		<nextPage />
 
 		<h2 style="h2">
-			Self-Assessment Completion
+			Self-Assessment Completion For Credit
 		</h2>
 
-		<tal:block  tal:repeat="item options/self_assessment_completion"
-					tal:condition="options/self_assessment_completion" >
+		<tal:block  tal:repeat="item options/self_assessment_credit_completion"
+					tal:condition="options/self_assessment_credit_completion" >
 
 			<condPageBreak height="4in" />
 
@@ -108,7 +136,7 @@
 					${item/title} (${item/question_count} Questions)
 			</h3>
 
-			<blockTable style='default' repeatRows="1">
+			<blockTable style='table_user_1' repeatRows="1">
 				<tr>
 					<td>
 						<para style="header">Name</para>
@@ -129,6 +157,47 @@
 					</td>
 					<td align="left" tal:content="student/username">
 						user2
+					</td>
+					<td tal:content="student/count">
+						Count
+					</td>
+					<td tal:content="student/perc">
+						perc
+					</td>
+				</tr>
+			</blockTable>
+		</tal:block>
+
+		<nextPage />
+
+		<h2 style="h2">
+			Self-Assessment Completion Non Credit
+		</h2>
+
+		<tal:block  tal:repeat="item options/self_assessment_open_completion"
+					tal:condition="options/self_assessment_open_completion" >
+
+			<condPageBreak height="4in" />
+
+			<h3 style="h3">
+					${item/title} (${item/question_count} Questions)
+			</h3>
+
+			<blockTable style='table_user_1_non_credit' repeatRows="1">
+				<tr>
+					<td>
+						<para style="header">Name</para>
+					</td>
+					<td>
+						<para style="header_r">Questions Completed</para>
+					</td>
+					<td>
+						<para style="header_r">Percentage Complete (%)</para>
+					</td>
+				</tr>
+				<tr tal:repeat="student item/students">
+					<td tal:content="student/display">
+						user1
 					</td>
 					<td tal:content="student/count">
 						Count

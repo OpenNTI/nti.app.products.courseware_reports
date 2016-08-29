@@ -290,7 +290,7 @@ class CourseSummaryReportPdf(_AbstractReportView):
 
 		options['engagement_data'] = _EngagementStats(for_credit_stats, non_credit_stats, aggregate_stats)
 
-	def _build_assignment_data(self, options, predicate=None):
+	def _build_assignment_data(self, predicate=None):
 		gradebook = IGradeBook(self.course)
 		assignment_catalog = get_course_assignments(self.course)
 
@@ -368,7 +368,7 @@ class CourseSummaryReportPdf(_AbstractReportView):
 		self._build_engagement_data(options)
 		self._build_enrollment_info(options)
 		self._build_self_assessment_data(options)
-		options['assignment_data'] = self._build_assignment_data(options)
+		options['assignment_data'] = self._build_assignment_data()
 		self._build_top_commenters(options)
 
 		video_usage = IVideoUsageStats(self.context, None)

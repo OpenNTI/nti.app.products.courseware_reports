@@ -57,7 +57,7 @@ def _adjust_timestamp( timestamp ):
 
 def _adjust_date( date ):
 	"""Takes a date and returns a timezoned datetime"""
-	#TODO Hard code everything to CST for now
+	# XXX: Hard code everything to CST for now
 	utc_date = pytz.utc.localize( date )
 	cst_tz = pytz.timezone('US/Central')
 	return utc_date.astimezone( cst_tz )
@@ -74,7 +74,9 @@ def _get_self_assessments_for_course(course):
 	in the course.
 	"""
 	catalog = ICourseSelfAssessmentItemCatalog(course)
-	return tuple( catalog.iter_assessment_items() )
+	assessments = catalog.iter_assessment_items( exclude_editable=False )
+	assessments = (x for x in assessments if x.is_published())
+	return tuple(assessments)
 
 _CommonBuckets = namedtuple('_CommonBuckets',
 					  ('count_by_day', 'count_by_week_number', 'top_creators', 'group_dates'))
@@ -161,6 +163,16 @@ class _TopCreators(object):
 	@Lazy
 	def all_stats(self):
 		result = [self._build_student_info(x) for x in self._data.items()]
+		return result
+
+	@Lazy
+	def credit_stats(self):
+		result = [self._build_student_info(x) for x in self._for_credit_data.items()]
+		return result
+
+	@Lazy
+	def open_stats(self):
+		result = [self._build_student_info(x) for x in self._non_credit_data.items()]
 		return result
 
 	@property
