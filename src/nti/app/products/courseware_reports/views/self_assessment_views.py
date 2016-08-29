@@ -45,12 +45,12 @@ class SelfAssessmentSummaryReportPdf(CourseSummaryReportPdf):
 								count,
 								perc )
 
-	def _get_by_student_stats(self, stats, student_names):
+	def _get_by_student_stats(self, stats, assessment_names, student_names):
 		"""
 		Get our sorted stats, including zero'd stats for users
 		without self assessment submissions.
 		"""
-		assessment_usernames = {x.username.lower() for x in stats}
+		assessment_usernames = {x.lower() for x in assessment_names}
 		missing_usernames = student_names - assessment_usernames
 		stats.extend( (self._build_student_info( username )
 					   for username in missing_usernames) )
@@ -62,8 +62,10 @@ class SelfAssessmentSummaryReportPdf(CourseSummaryReportPdf):
 		Get our by student stats for open and credit students.
 		"""
 		open_stats = self._get_by_student_stats( self.assessment_aggregator.open_stats,
+												 self.assessment_aggregator.non_credit_keys(),
 												 self.open_student_usernames )
 		credit_stats = self._get_by_student_stats( self.assessment_aggregator.credit_stats,
+												   self.assessment_aggregator.for_credit_keys(),
 												   self.for_credit_student_usernames )
 		return open_stats, credit_stats
 
