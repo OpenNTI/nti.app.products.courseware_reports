@@ -228,8 +228,14 @@ class _InquiryReport(_AbstractInstructedByDecorator):
 	def _do_decorate_external(self, context, result_map):
 		inquiry = IQInquiry(context, None)
 		if inquiry is not None:
+			report_el = '@@'+VIEW_INQUIRY_REPORT
+			elements = (report_el,)
+			if self.course is not None:
+				# Try to build a course context-sensitive link if possible.
+				elements = ('Assessments', context.ntiid, report_el)
+				context = self.course
 			links = result_map.setdefault(LINKS, [])
 			links.append(Link(context,
 							  rel='report-%s' % VIEW_INQUIRY_REPORT,
-							  elements=('@@'+VIEW_INQUIRY_REPORT,),
+							  elements=elements,
 							  title=_('Inquiry Report')))

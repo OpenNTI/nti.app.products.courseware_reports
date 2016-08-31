@@ -101,7 +101,7 @@ class SelfAssessmentSummaryReportPdf(CourseSummaryReportPdf):
 
 	def _get_completion_student_data( self, submission_data, student_names, question_count ):
 		"""
-		Build out student infos from the given student population.
+		Build out student infos from the given student population and submissions.
 		"""
 		results = []
 		for username in student_names:

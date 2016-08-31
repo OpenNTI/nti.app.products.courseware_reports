@@ -9,6 +9,8 @@ __docformat__ = "restructuredtext en"
 
 logger = __import__('logging').getLogger(__name__)
 
+from pyramid.threadlocal import get_current_request
+
 from zope import component
 
 from nti.contentlibrary.interfaces import IContentPackage
@@ -38,7 +40,17 @@ def course_from_forum(forum):
 		assert course.Discussions == board
 		return course
 
-def find_course_for_user(data, user):
+def get_course_from_request( request=None ):
+	request = get_current_request() if request is None else request
+	course = ICourseInstance( request, None )
+	return course
+
+def find_course_for_user(data, user, request=None):
+	# Prefer course from request if we have it.
+	course = get_course_from_request( request )
+	if course is not None:
+		return course
+
 	if user is None:
 		return None
 
