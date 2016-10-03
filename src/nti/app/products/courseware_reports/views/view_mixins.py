@@ -9,6 +9,7 @@ __docformat__ = "restructuredtext en"
 
 logger = __import__('logging').getLogger(__name__)
 
+import nameparser
 import textwrap
 from datetime import datetime
 from collections import namedtuple
@@ -59,13 +60,13 @@ from nti.app.products.courseware_reports.reports import _adjust_date
 from nti.app.products.courseware_reports.views import ALL_USERS
 
 class _StudentInfo(namedtuple('_StudentInfo',
-							  ('display', 'username', 'count', 'perc'))):
+							  ('display', 'username', 'sorting_key', 'count', 'perc'))):
 	"""
 	Holds general student info. 'count' and 'perc' are optional values
 	"""
 
-	def __new__(cls, display, username, count=None, perc=None):
-		return super(_StudentInfo, cls).__new__(cls, display, username, count, perc)
+	def __new__(cls, display, username, sorting_key=None, count=None, perc=None):
+		return super(_StudentInfo, cls).__new__(cls, display, username, sorting_key, count, perc)
 
 def _get_enrollment_scope_dict(course, instructors=set()):
 	"""
@@ -240,13 +241,24 @@ class _AbstractReportView(AbstractAuthenticatedView,
 		"""
 		named_user = IFriendlyNamed(user)
 		display_name = named_user.alias or named_user.realname or named_user.username
+		sorting_key = self.get_sortable_key(named_user)
 
 		username = ""
 		# Do not display username of open students
 		if user.username.lower() in self.for_credit_student_usernames:
 			username = self._replace_username(user.username)
 
-		return _StudentInfo(display_name, username)
+		return _StudentInfo(display_name, username, sorting_key)
+	
+	def get_sortable_key(self, named_user):
+		
+		if named_user.realname and '@' not in named_user.realname:
+			human_name = nameparser.HumanName(named_user.realname)
+			last_name = human_name.last or ''
+			first_name = human_name.first or ''
+			return last_name + ' ' + first_name
+		else:
+			return named_user.alias or named_user.username			
 
 	def filter_objects(self, objects):
 		"""

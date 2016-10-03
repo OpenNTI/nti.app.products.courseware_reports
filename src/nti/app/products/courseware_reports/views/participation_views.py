@@ -403,7 +403,7 @@ class ForumParticipationReportPdf(_AbstractReportView):
 			if scope_dict is not None:
 				scope_results[scope_name] = OrderedDict(
 								sorted(scope_dict.items(),
-										key=lambda(k, _): k.display.lower()))
+										key=lambda(k, _): k.sorting_key.lower()))
 
 		# Now build our sorted output
 		# { ScopeName : { StudentInfo : (Comments) } }
@@ -444,7 +444,7 @@ class ForumParticipationReportPdf(_AbstractReportView):
 		# Store with displayble name; useful for not accidentally
 		# calling setNextTemplate with int-convertable index (e.g. '003' ).
 		results[ self.course_name() ] = user_comment_dict_by_scope
-
+		
 		results = OrderedDict(sorted(results.items()))
 		return results
 
@@ -543,8 +543,8 @@ class ForumParticipationReportPdf(_AbstractReportView):
 				only_one += 1
 			if stat.total_comment_count > 0:
 				unique_count += 1
-
-		user_stats.sort(key=lambda x: x.username.display.lower())
+				
+		user_stats.sort(key=lambda x: x.username.sorting_key.lower())
 		return (user_stats, only_one, unique_count)
 
 	def __call__(self):
