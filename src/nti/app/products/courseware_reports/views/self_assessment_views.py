@@ -20,7 +20,7 @@ from nti.contenttypes.courses.interfaces import ICourseInstance
 from nti.app.products.courseware_reports import VIEW_SELF_ASSESSMENT_SUMMARY
 
 from nti.app.products.courseware_reports.reports import _TopCreators
-from nti.app.products.courseware_reports.reports import _StudentInfo
+from nti.app.products.courseware_reports.reports import StudentInfo
 
 from nti.app.products.courseware_reports.views.summary_views import CourseSummaryReportPdf
 
@@ -40,7 +40,7 @@ class SelfAssessmentSummaryReportPdf(CourseSummaryReportPdf):
 
 	def _build_student_info(self, username, count=0, perc=0):
 		student_info = self.get_student_info( username )
-		return _StudentInfo( 	student_info.display,
+		return StudentInfo( 	student_info.display,
 								student_info.username,
 								count,
 								perc )

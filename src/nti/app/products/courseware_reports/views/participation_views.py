@@ -56,6 +56,7 @@ from .. import VIEW_STUDENT_PARTICIPATION
 from ..decorators import course_from_forum
 
 from ..reports import _TopCreators
+from ..reports import StudentInfo
 from ..reports import _adjust_date
 from ..reports import _common_buckets
 from ..reports import _format_datetime
@@ -96,7 +97,7 @@ class StudentParticipationReportPdf(_AbstractReportView):
 		return self.md_catalog['creator'].apply({'any_of': (self.context.Username,)})
 
 	def _build_user_info(self, options):
-		options['user'] = self.build_user_info(self.student_user)
+		options['user'] = StudentInfo(self.student_user)
 
 	def _build_forum_data(self, options):
 		course = self.course
@@ -362,7 +363,7 @@ class ForumParticipationReportPdf(_AbstractReportView):
 			parent_comment = None
 			if IGeneralForumComment.providedBy(parent):
 				scope_name = self._get_user_scope_name(parent.creator.username)
-				parent_creator = self.get_student_info(parent.creator)
+				parent_creator = StudentInfo(parent.creator)
 				parent_comment = _CommentInfo(parent_creator.username,
 										parent_creator.display,
 										_format_datetime(_adjust_date(parent.created)),
@@ -372,7 +373,7 @@ class ForumParticipationReportPdf(_AbstractReportView):
 										scope_name)
 			# Now our comment
 			scope_name = self._get_user_scope_name(creator_username)
-			creator = self.get_student_info(creator_username)
+			creator = StudentInfo(creator_username)
 			comment = _CommentInfo(creator.username,
 									creator.display,
 									_format_datetime(_adjust_date(comment.created)),
@@ -397,7 +398,7 @@ class ForumParticipationReportPdf(_AbstractReportView):
 			for username in scope_students:
 				if username in user_comment_dict:
 					scope_dict = scope_results.setdefault(scope_name, {})
-					scope_dict[ self.get_student_info(username) ] = user_comment_dict[ username ]
+					scope_dict[ StudentInfo(username) ] = user_comment_dict[ username ]
 			# Now sort by lower username
 			scope_dict = scope_results.get(scope_name, None)
 			if scope_dict is not None:
@@ -489,7 +490,7 @@ class ForumParticipationReportPdf(_AbstractReportView):
 
 			count = len(comments)
 			user_count = len({c.creator for c in comments})
-			creator = self.get_student_info(topic.creator)
+			creator = StudentInfo(topic.creator)
 			created = topic.created
 			comment_count_by_topic.append(self.TopicStats(topic.title, creator,
 														created, count, user_count))
@@ -533,7 +534,7 @@ class ForumParticipationReportPdf(_AbstractReportView):
 		only_one = 0
 		unique_count = 0
 		for uname in users:
-			student_info = self.get_student_info(uname)
+			student_info = StudentInfo(uname)
 			stat = self.UserStats(student_info,
 									creators.get(uname, 0),
 									commenters.get(uname, 0),

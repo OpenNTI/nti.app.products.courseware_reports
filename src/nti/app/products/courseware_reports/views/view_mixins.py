@@ -56,17 +56,9 @@ from nti.app.products.courseware_reports.interfaces import IPDFReportView
 from nti.app.products.courseware_reports.interfaces import ACT_VIEW_REPORTS
 
 from nti.app.products.courseware_reports.reports import _adjust_date
+from nti.app.products.courseware_reports.reports import StudentInfo
 
-from nti.app.products.courseware_reports.views import ALL_USERS
-
-class _StudentInfo(namedtuple('_StudentInfo',
-							  ('display', 'username', 'sorting_key', 'count', 'perc'))):
-	"""
-	Holds general student info. 'count' and 'perc' are optional values
-	"""
-
-	def __new__(cls, display, username, sorting_key=None, count=None, perc=None):
-		return super(_StudentInfo, cls).__new__(cls, display, username, sorting_key, count, perc)
+from nti.app.products.courseware_reports.views import ALL_USERS	
 
 def _get_enrollment_scope_dict(course, instructors=set()):
 	"""
@@ -214,41 +206,10 @@ class _AbstractReportView(AbstractAuthenticatedView,
 		ids.update(IEnumerableEntityContainer(self.course.SharingScopes['Public']).iter_intids())
 		return ids
 
-	def get_student_info(self, username):
-		"""
-		Given a username, return a _StudentInfo tuple
-		"""
-		# Actually, the `creator` field is meant to hold an arbitrary
-		# entity. If it is a user, User.get_user simply returns it.
-		# If it's some other entity object, default to 'System'.
-		try:
-			user = User.get_user(username)
-		except TypeError:
-			user = None
-			username = 'System'
-		if user:
-			return self.build_user_info(user)
-		return _StudentInfo(username, username)
-
 	def _replace_username(self, username):
 		policy = component.queryUtility(IUsernameSubstitutionPolicy)
 		result = policy.replace(username) if policy else username
 		return result
-
-	def build_user_info(self, user):
-		"""
-		Given a user, return a _StudentInfo tuple
-		"""
-		named_user = IFriendlyNamed(user)
-		display_name = named_user.alias or named_user.realname or named_user.username
-		sorting_key = self.get_sortable_key(named_user)
-
-		username = ""
-		# Do not display username of open students
-		if user.username.lower() in self.for_credit_student_usernames:
-			username = self._replace_username(user.username)
-
-		return _StudentInfo(display_name, username, sorting_key)
 	
 	def get_sortable_key(self, named_user):
 		

@@ -9,12 +9,14 @@ __docformat__ = "restructuredtext en"
 logger = __import__('logging').getLogger(__name__)
 
 import heapq
-from itertools import groupby
+from itertools import groupby, count
 from datetime import datetime
 from datetime import timedelta
 from collections import namedtuple
 
+import nameparser
 import pytz
+import six
 import BTrees
 
 from numpy import std
@@ -34,6 +36,7 @@ from nti.contenttypes.courses.interfaces import ICourseSelfAssessmentItemCatalog
 from nti.dataserver.interfaces import SYSTEM_USER_NAME
 
 from nti.dataserver.users.users import User
+from nti.dataserver.users.interfaces import IFriendlyNamed
 
 from nti.property.property import Lazy
 
@@ -80,12 +83,37 @@ def _get_self_assessments_for_course(course):
 
 _CommonBuckets = namedtuple('_CommonBuckets',
 					  ('count_by_day', 'count_by_week_number', 'top_creators', 'group_dates'))
-
-class _StudentInfo( namedtuple( '_StudentInfo',
-								('display', 'username', 'count', 'perc' ))):
+	
+class StudentInfo(object):
 	"""Holds general student info. 'count' and 'perc' are optional values"""
-	def __new__( self, display, username, count=None, perc=None ):
-		return super(_StudentInfo,self).__new__( self, display, username, count, perc )
+		
+	def __init__(self, user, display=None, count=None, perc=None):
+		
+		if isinstance(user, six.string_types):
+			try:
+				user = User.get_user(user)
+			except TypeError:
+				user = None
+				self.username = self.display = 'System'
+				
+		if user:
+			named_user = IFriendlyNamed(user)
+			self.display = display or named_user.realname or named_user.alias or named_user.username
+			self.username = user.username
+			self.count = count
+			self.perc = perc
+			
+			if named_user.realname and '@' not in named_user.realname:
+				human_name = nameparser.HumanName(named_user.realname)
+				self.last_name = human_name.last or ''
+				self.first_name = human_name.first or ''
+			else:
+				self.last_name = ''
+				self.first_name = ''
+		
+	@Lazy
+	def sorting_key(self):
+		return self.last_name or self.username
 
 class _TopCreators(object):
 	"""Accumulate stats in three parts: for credit students, tourists, and aggregate"""
@@ -102,7 +130,6 @@ class _TopCreators(object):
 	def __init__(self, report):
 		self._data = self.family.OI.BTree()
 		self._instructor_reply_data = self.family.OI.BTree()
-		self._get_student_info = report.get_student_info
 		self.max_contributors = report.count_all_students
 		self._non_credit_students = report.open_student_usernames
 		self.max_contributors_for_credit = report.count_credit_students
@@ -127,12 +154,11 @@ class _TopCreators(object):
 		return self._do_get_largest(self._for_credit_data, self.for_credit_total)
 
 	def _build_student_info(self, stat):
-		student_info = self._get_student_info( stat[0] )
 		count = stat[1]
 		perc = ( count / self.total * 100 ) if self.total else 0.0
-		return _StudentInfo( 	student_info.display,
-								student_info.username,
-								count, perc )
+		return StudentInfo( stat[0],
+							count=count,
+							perc=perc )
 
 	def _do_get_largest(self, data, total_to_change):
 		# Returns the top commenter names, up to (arbitrarily) 10
@@ -146,7 +172,7 @@ class _TopCreators(object):
 			remainder = total_to_change - largest_total
 			# TODO: Localize and map this
 			percent = (remainder / total_to_change) * 100
-			self.aggregate_remainder = _StudentInfo( 'Others', 'Others', largest_total, percent )
+			self.aggregate_remainder = StudentInfo( 'Others', 'Others', largest_total, percent )
 		return largest
 
 	def __iter__(self):

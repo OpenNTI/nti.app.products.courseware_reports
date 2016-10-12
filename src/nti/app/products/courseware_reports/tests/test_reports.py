@@ -41,7 +41,7 @@ from nti.app.products.courseware_reports.reports import _DateCategoryAccum
 
 from nti.app.products.courseware_reports.reports import _adjust_date
 from nti.app.products.courseware_reports.reports import _TopCreators
-from nti.app.products.courseware_reports.reports import _StudentInfo
+from nti.app.products.courseware_reports.reports import StudentInfo
 from nti.app.products.courseware_reports.reports import _common_buckets
 from nti.app.products.courseware_reports.reports import _get_top_answers
 from nti.app.products.courseware_reports.reports import _format_datetime
@@ -453,7 +453,7 @@ class TestBuckets( unittest.TestCase ):
 # ==================
 
 def _mock_student_info( _, username ):
-	return _StudentInfo( username + "_alias", username )
+	return StudentInfo( username + "_alias", username )
 
 class _MockReport(object):
 
