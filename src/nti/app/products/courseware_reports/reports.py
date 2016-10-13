@@ -82,35 +82,46 @@ def _get_self_assessments_for_course(course):
 	return tuple(assessments)
 
 _CommonBuckets = namedtuple('_CommonBuckets',
-					  ('count_by_day', 'count_by_week_number', 'top_creators', 'group_dates'))
-	
+							('count_by_day', 'count_by_week_number', 'top_creators', 'group_dates'))
+
+def _get_name_values( user, username ):
+	if isinstance(user, six.string_types):
+		user = User.get_user(user)
+
+	if user:
+		named_user = IFriendlyNamed(user)
+		display = named_user.realname or named_user.alias or named_user.username
+		# We may be given a username to override the actual username; use it.
+		username = username or user.username
+
+		if named_user.realname and '@' not in named_user.realname:
+			human_name = nameparser.HumanName(named_user.realname)
+			last = human_name.last or ''
+			first = human_name.first or ''
+		else:
+			first = last = ''
+	else:
+		return 'System', 'System', '', ''
+	return username, display, first, last
+
 class StudentInfo(object):
-	"""Holds general student info. 'count' and 'perc' are optional values"""
-		
-	def __init__(self, user, display=None, count=None, perc=None):
-		
-		if isinstance(user, six.string_types):
-			try:
-				user = User.get_user(user)
-			except TypeError:
-				user = None
-				self.username = self.display = 'System'
-				
-		if user:
-			named_user = IFriendlyNamed(user)
-			self.display = display or named_user.realname or named_user.alias or named_user.username
-			self.username = user.username
-			self.count = count
-			self.perc = perc
-			
-			if named_user.realname and '@' not in named_user.realname:
-				human_name = nameparser.HumanName(named_user.realname)
-				self.last_name = human_name.last or ''
-				self.first_name = human_name.first or ''
-			else:
-				self.last_name = ''
-				self.first_name = ''
-		
+	"""
+	Holds general student info. 'count' and 'perc' are optional values.
+	"""
+
+	def __init__(self, user=None, username=None, display=None, count=None, perc=None):
+
+		if username and display:
+			self.username = username
+			self.display = display
+			self.last_name = ''
+			self.first_name = ''
+		else:
+			self.username, self.display, self.first_name, self.last_name = _get_name_values( user, username )
+
+		self.count = count
+		self.perc = perc
+
 	@Lazy
 	def sorting_key(self):
 		return self.last_name or self.username
@@ -166,13 +177,16 @@ class _TopCreators(object):
 		largest = heapq.nlargest(10, data.items(), key=lambda x: x[1])
 		largest = [self._build_student_info(x) for x in largest]
 
-		#Get aggregate remainder
+		# Get aggregate remainder
 		if len(data) > len(largest):
 			largest_total = sum( (x.count for x in largest) )
 			remainder = total_to_change - largest_total
 			# TODO: Localize and map this
 			percent = (remainder / total_to_change) * 100
-			self.aggregate_remainder = StudentInfo( 'Others', 'Others', largest_total, percent )
+			self.aggregate_remainder = StudentInfo( username='Others',
+													display='Others',
+													count=largest_total,
+													perc=percent )
 		return largest
 
 	def __iter__(self):

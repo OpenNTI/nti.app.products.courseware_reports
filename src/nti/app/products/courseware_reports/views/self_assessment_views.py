@@ -20,7 +20,6 @@ from nti.contenttypes.courses.interfaces import ICourseInstance
 from nti.app.products.courseware_reports import VIEW_SELF_ASSESSMENT_SUMMARY
 
 from nti.app.products.courseware_reports.reports import _TopCreators
-from nti.app.products.courseware_reports.reports import StudentInfo
 
 from nti.app.products.courseware_reports.views.summary_views import CourseSummaryReportPdf
 
@@ -38,13 +37,6 @@ class SelfAssessmentSummaryReportPdf(CourseSummaryReportPdf):
 
 	report_title = _('Self Assessment Report')
 
-	def _build_student_info(self, username, count=0, perc=0):
-		student_info = self.get_student_info( username )
-		return StudentInfo( 	student_info.display,
-								student_info.username,
-								count,
-								perc )
-
 	def _get_by_student_stats(self, stats, assessment_names, student_names):
 		"""
 		Get our sorted stats, including zero'd stats for users
@@ -52,8 +44,7 @@ class SelfAssessmentSummaryReportPdf(CourseSummaryReportPdf):
 		"""
 		assessment_usernames = {x.lower() for x in assessment_names}
 		missing_usernames = student_names - assessment_usernames
-		stats.extend( (self._build_student_info( username )
-					   for username in missing_usernames) )
+		stats.extend( (self.build_user_info( username ) for username in missing_usernames) )
 		stats = sorted( stats, key=lambda x:x.display.lower() )
 		return stats
 
@@ -107,7 +98,7 @@ class SelfAssessmentSummaryReportPdf(CourseSummaryReportPdf):
 		for username in student_names:
 			submitted_count = len( submission_data.get( username, () ))
 			perc = "%0.1f" % (submitted_count/question_count * 100.0) if question_count else 'NA'
-			student_info = self._build_student_info(username, submitted_count, perc)
+			student_info = self.build_user_info(username, count=submitted_count, perc=perc)
 			results.append( student_info )
 		results = sorted( results, key=lambda x: x.display.lower() )
 		return results

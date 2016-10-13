@@ -9,10 +9,11 @@ __docformat__ = "restructuredtext en"
 
 logger = __import__('logging').getLogger(__name__)
 
+import six
 import nameparser
 import textwrap
+
 from datetime import datetime
-from collections import namedtuple
 
 from zope import component
 from zope import interface
@@ -42,10 +43,9 @@ from nti.dataserver.interfaces import IDeletedObjectPlaceholder
 from nti.dataserver.interfaces import IEnumerableEntityContainer
 from nti.dataserver.interfaces import IUsernameSubstitutionPolicy
 
-from nti.dataserver.users.users import User
-from nti.dataserver.users.interfaces import IFriendlyNamed
-
 from nti.dataserver.metadata_index import CATALOG_NAME
+
+from nti.dataserver.users import User
 
 from nti.property.property import Lazy
 
@@ -55,10 +55,10 @@ from nti.app.products.courseware_reports.interfaces import IPDFReportView
 
 from nti.app.products.courseware_reports.interfaces import ACT_VIEW_REPORTS
 
-from nti.app.products.courseware_reports.reports import _adjust_date
 from nti.app.products.courseware_reports.reports import StudentInfo
+from nti.app.products.courseware_reports.reports import _adjust_date
 
-from nti.app.products.courseware_reports.views import ALL_USERS	
+from nti.app.products.courseware_reports.views import ALL_USERS
 
 def _get_enrollment_scope_dict(course, instructors=set()):
 	"""
@@ -210,16 +210,25 @@ class _AbstractReportView(AbstractAuthenticatedView,
 		policy = component.queryUtility(IUsernameSubstitutionPolicy)
 		result = policy.replace(username) if policy else username
 		return result
-	
+
+	def build_user_info(self, user, **kwargs):
+		# Do not display username of open students
+		if isinstance( user, six.string_types ):
+			user = User.get_user( user )
+		username = None
+		if user.username.lower() in self.for_credit_student_usernames:
+			username = self._replace_username(user.username)
+		return StudentInfo( user, username=username, **kwargs )
+
 	def get_sortable_key(self, named_user):
-		
+
 		if named_user.realname and '@' not in named_user.realname:
 			human_name = nameparser.HumanName(named_user.realname)
 			last_name = human_name.last or ''
 			first_name = human_name.first or ''
 			return last_name + ' ' + first_name
 		else:
-			return named_user.alias or named_user.username			
+			return named_user.alias or named_user.username
 
 	def filter_objects(self, objects):
 		"""
