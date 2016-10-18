@@ -80,7 +80,7 @@ def _get_self_assessments_for_course(course):
 	in the course.
 	"""
 	catalog = ICourseSelfAssessmentItemCatalog(course)
-	assessments = catalog.iter_assessment_items( exclude_editable=False )
+	assessments = catalog.iter_assessment_items( exclude_editable=True )
 	assessments = (x for x in assessments if x.is_published())
 	return tuple(assessments)
 
