@@ -11,6 +11,8 @@ logger = __import__('logging').getLogger(__name__)
 
 from .. import MessageFactory as _
 
+import operator
+
 from numbers import Number
 from six import string_types
 from collections import namedtuple
@@ -402,7 +404,8 @@ class ForumParticipationReportPdf(_AbstractReportView):
 			scope_dict = scope_results.get(scope_name, None)
 			if scope_dict is not None:
 				scope_results[scope_name] = OrderedDict(
-								sorted(scope_dict.items()))
+								sorted(scope_dict.items(),
+										key=operator.itemgetter(1)))
 
 		# Now build our sorted output
 		# { ScopeName : { StudentInfo : (Comments) } }

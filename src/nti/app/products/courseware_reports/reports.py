@@ -132,12 +132,6 @@ class StudentInfo(object):
 			return (self.sorting_key.lower() < other.sorting_key.lower())
 		except AttributeError:
 			return NotImplemented
-		
-	def __gt___(self, other):
-		try:
-			return (self.sorting_key.lower() > other.sorting_key.lower())
-		except AttributeError:
-			return NotImplemented
 
 	@Lazy
 	def sorting_key(self):
