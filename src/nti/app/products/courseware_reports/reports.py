@@ -13,6 +13,7 @@ from itertools import groupby, count
 from datetime import datetime
 from datetime import timedelta
 from collections import namedtuple
+from functools import total_ordering
 
 import nameparser
 import pytz
@@ -39,6 +40,8 @@ from nti.dataserver.users.users import User
 from nti.dataserver.users.interfaces import IFriendlyNamed
 
 from nti.property.property import Lazy
+
+from nti.schema.eqhash import EqHash
 
 from nti.site.site import get_component_hierarchy_names
 
@@ -104,6 +107,8 @@ def _get_name_values( user, username ):
 		return 'System', 'System', '', ''
 	return username, display, first, last
 
+@total_ordering
+@EqHash("sorting_key")
 class StudentInfo(object):
 	"""
 	Holds general student info. 'count' and 'perc' are optional values.
@@ -121,6 +126,18 @@ class StudentInfo(object):
 
 		self.count = count
 		self.perc = perc
+	
+	def __lt__(self, other):
+		try:
+			return (self.sorting_key.lower() < other.sorting_key.lower())
+		except AttributeError:
+			return NotImplemented
+		
+	def __gt___(self, other):
+		try:
+			return (self.sorting_key.lower() > other.sorting_key.lower())
+		except AttributeError:
+			return NotImplemented
 
 	@Lazy
 	def sorting_key(self):
