@@ -45,7 +45,7 @@ class SelfAssessmentSummaryReportPdf(CourseSummaryReportPdf):
 		assessment_usernames = {x.lower() for x in assessment_names}
 		missing_usernames = student_names - assessment_usernames
 		stats.extend( (self.build_user_info( username ) for username in missing_usernames) )
-		stats = sorted( stats, key=lambda x:x.sorting_key.lower() )
+		stats = sorted( stats )
 		return stats
 
 	def _get_self_assessments_by_student( self ):
@@ -100,7 +100,7 @@ class SelfAssessmentSummaryReportPdf(CourseSummaryReportPdf):
 			perc = "%0.1f" % (submitted_count/question_count * 100.0) if question_count else 'NA'
 			student_info = self.build_user_info(username, count=submitted_count, perc=perc)
 			results.append( student_info )
-		results = sorted( results, key=lambda x: x.sorting_key.lower() )
+		results = sorted( results )
 		return results
 
 	def _get_self_assessments_completion(self):

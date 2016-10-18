@@ -402,8 +402,7 @@ class ForumParticipationReportPdf(_AbstractReportView):
 			scope_dict = scope_results.get(scope_name, None)
 			if scope_dict is not None:
 				scope_results[scope_name] = OrderedDict(
-								sorted(scope_dict.items(),
-										key=lambda(k, _): k.sorting_key.lower()))
+								sorted(scope_dict.items()))
 
 		# Now build our sorted output
 		# { ScopeName : { StudentInfo : (Comments) } }
@@ -544,7 +543,7 @@ class ForumParticipationReportPdf(_AbstractReportView):
 			if stat.total_comment_count > 0:
 				unique_count += 1
 
-		user_stats.sort(key=lambda x: x.username.sorting_key.lower())
+		user_stats.sort()
 		return (user_stats, only_one, unique_count)
 
 	def __call__(self):
