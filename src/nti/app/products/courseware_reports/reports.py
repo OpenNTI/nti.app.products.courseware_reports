@@ -48,16 +48,7 @@ from nti.schema.eqhash import EqHash
 
 from nti.site.site import get_component_hierarchy_names
 
-# XXX: Fix a unicode decode issue.
-# TODO: Make this a formal patch
-import reportlab.platypus.paragraph
-_reportlab_paragraph = reportlab.platypus.paragraph
-
 family64 = BTrees.family64
-
-class _SplitText(unicode):
-	pass
-reportlab.platypus.paragraph._SplitText = _SplitText
 
 def _adjust_timestamp( timestamp ):
 	"""Takes a timestamp and returns a timezoned datetime"""
