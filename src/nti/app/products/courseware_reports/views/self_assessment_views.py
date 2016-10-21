@@ -122,14 +122,18 @@ class SelfAssessmentSummaryReportPdf(CourseSummaryReportPdf):
 			open_students = self._get_completion_student_data( qset_submission_data,
 															   self.open_student_usernames,
 															   question_count )
-			open_completion = _SelfAssessmentCompletion( title, question_count, open_students )
-			open_results.append( open_completion )
+			if open_students:
+				open_completion = _SelfAssessmentCompletion( title, question_count,
+															 open_students )
+				open_results.append( open_completion )
 			# Credit
 			credit_students = self._get_completion_student_data( qset_submission_data,
 																 self.for_credit_student_usernames,
 																 question_count )
-			credit_completion = _SelfAssessmentCompletion( title, question_count, credit_students )
-			credit_results.append( credit_completion )
+			if credit_students:
+				credit_completion = _SelfAssessmentCompletion( title, question_count,
+															   credit_students )
+				credit_results.append( credit_completion )
 		open_results = sorted( open_results, key=lambda x: x.title )
 		credit_results = sorted( credit_results, key=lambda x: x.title )
 		return open_results, credit_results
