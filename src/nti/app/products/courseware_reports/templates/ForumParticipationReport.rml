@@ -157,11 +157,11 @@
 		<hr width="100%" />
 
 		<h2 style="h2">
-			For-Credit Comment Activity
+			${view/for_credit_scope_name} Comment Activity
 		</h2>
 		<para 	style="subdesc"
 				tal:condition="not:options/for_credit_user_stats">
-			This forum does not have any comments by for-credit students.
+			This forum does not have any comments by ${view/for_credit_scope_name} students.
 		</para>
 
 		<blockTable style="table_user_1"
@@ -187,11 +187,11 @@
 		<condPageBreak height="4in" />
 
 		<h2 style="h2">
-			Non-Credit Comment Activity
+			${view/non_credit_scope_name} Comment Activity
 		</h2>
 		<para 	style="subdesc"
 				tal:condition="not:options/non_credit_user_stats">
-			This forum does not have any comments by non-credit students.
+			This forum does not have any comments by ${view/non_credit_scope_name} students.
 		</para>
 
 
@@ -253,10 +253,13 @@
 				<tal:block tal:repeat="scoped_item python: section_item[1].items()">
 
 					<tal:block tal:define="scope_name python: scoped_item[0]">
+					<tal:block tal:define="scope_alias python: view._scope_alias_dict[scope_name]">
 
-					<!-- Scope header, if we have more than one -->
+					<!-- Scope header, if we have more than one (do we want section_name displayed?
+						 Some scope alias' will include the ProviderUniqueID name.
+					-->
 					<h2 style="h2" fontSize="12" spaceBefore=".1in">
-						${section_name}: ${scope_name} Comments
+						${scope_alias} Comments
 					</h2>
 
 					<!-- Loop through each section/scope/user's comments -->
@@ -297,7 +300,7 @@
 
 					</blockTable>
 
-
+					</tal:block> <!-- tal define scope_alias -->
 					</tal:block> <!-- tal define scope_name -->
 
 					<condPageBreak height="4in" />

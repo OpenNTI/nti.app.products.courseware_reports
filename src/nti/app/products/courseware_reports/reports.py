@@ -36,7 +36,10 @@ from nti.contenttypes.courses.interfaces import ICourseSelfAssessmentItemCatalog
 
 from nti.dataserver.interfaces import SYSTEM_USER_NAME
 
+from nti.dataserver.interfaces import IUser
+
 from nti.dataserver.users.users import User
+
 from nti.dataserver.users.interfaces import IFriendlyNamed
 
 from nti.property.property import Lazy
@@ -91,7 +94,7 @@ def _get_name_values( user, username ):
 	if isinstance(user, six.string_types):
 		user = User.get_user(user)
 
-	if user:
+	if user and IUser.providedBy( user ):
 		named_user = IFriendlyNamed(user)
 		display = named_user.realname or named_user.alias or named_user.username
 		# We may be given a username to override the actual username; use it.
@@ -104,6 +107,7 @@ def _get_name_values( user, username ):
 		else:
 			first = last = ''
 	else:
+		# IF a community/sharing scope, show generic.
 		return 'System', 'System', '', ''
 	return username, display, first, last
 
@@ -126,7 +130,7 @@ class StudentInfo(object):
 
 		self.count = count
 		self.perc = perc
-	
+
 	def __lt__(self, other):
 		try:
 			return (self.sorting_key.lower() < other.sorting_key.lower())

@@ -20,19 +20,19 @@
 					<para style="header">Survey Title</para>
 				</td>
 				<td tal:condition="options/count_for_credit">
-					<para style="header_r">For-Credit Students</para>
+					<para style="header_r">${view/for_credit_scope_name} Students</para>
 				</td>
 				<td tal:condition="options/count_open">
-					<para style="header_r">Non-Credit Students</para>
+					<para style="header_r">${view/non_credit_scope_name} Students</para>
 				</td>
 				<td tal:condition="python: options['count_for_credit'] and options['count_open']">
 					<para style="header_r">Total Students</para>
 				</td>
 				<td tal:condition="options/count_for_credit">
-					<para style="header_r">For-Credit <br/> Attempted (%)</para>
+					<para style="header_r">${view/for_credit_scope_name} <br/> Attempted (%)</para>
 				</td>
 				<td tal:condition="options/count_open">
-					<para style="header_r">Non-Credit <br/> Attempted (%)</para>
+					<para style="header_r">${view/non_credit_scope_name} <br/> Attempted (%)</para>
 				</td>
 			</tr>
 			<tr>
@@ -40,10 +40,10 @@
 					<para tal:content="options/title" style="data" >The Survey Title</para>
 				</td>
 				<td tal:condition="options/count_for_credit"
-					tal:content="options/for_credit_submit_total">For-Credit Attempts
+					tal:content="options/for_credit_submit_total">${view/for_credit_scope_name} Attempts
 				</td>
 				<td tal:condition="options/count_open"
-					tal:content="options/non_credit_submit_total">Non-Credit Attempts
+					tal:content="options/non_credit_submit_total">${view/non_credit_scope_name} Attempts
 				</td>
 				<td tal:condition="python: options['count_for_credit'] and options['count_open']"
 					tal:content="options/submit_total">Total Attempts

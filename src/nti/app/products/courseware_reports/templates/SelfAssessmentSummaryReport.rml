@@ -64,14 +64,14 @@
 		<condPageBreak height="4in" />
 
 		<h2 style="h2" tal:condition="options/self_assessment_for_credit">
-			Self-Assessments By For Credit Student
+			Self-Assessments By ${view/for_credit_scope_name} Student
 		</h2>
 
 		<para style="subdesc"
 			  spaceAfter=".3in"
 			  tal:condition="options/self_assessment_for_credit">
 			This table shows the number of self-assessment attempts made by
-			each For Credit student in the course.
+			each ${view/for_credit_scope_name} student in the course.
 		</para>
 
 		<blockTable style='table_user_1'
@@ -104,14 +104,14 @@
 		<condPageBreak height="4in" />
 
 		<h2 style="h2" tal:condition="options/self_assessment_non_credit">
-			Self-Assessments By Non Credit Student
+			Self-Assessments By ${view/non_credit_scope_name} Student
 		</h2>
 
 		<para style="subdesc"
 			  spaceAfter=".3in"
 			  tal:condition="options/self_assessment_non_credit">
 			This table shows the number of self-assessment attempts made by
-			each Non Credit student in the course.
+			each ${view/non_credit_scope_name} student in the course.
 		</para>
 
 		<blockTable style='table_user_1_non_credit'
@@ -138,14 +138,14 @@
 		<nextPage />
 
 		<h2 style="h2" tal:condition="options/self_assessment_credit_completion">
-			Self-Assessment Completion For Credit
+			Self-Assessment Completion ${view/for_credit_scope_name}
 		</h2>
 
 		<para style="subdesc"
 			  spaceAfter=".3in"
 			  tal:condition="options/self_assessment_credit_completion">
 			This table shows the number of questions completed by
-			For Credit students for each self-assessment in the course.
+			${view/for_credit_scope_name} students for each self-assessment in the course.
 		</para>
 
 		<tal:block  tal:repeat="item options/self_assessment_credit_completion"
@@ -192,14 +192,14 @@
 		<nextPage />
 
 		<h2 style="h2" tal:condition="options/self_assessment_open_completion">
-			Self-Assessment Completion Non Credit
+			Self-Assessment Completion ${view/non_credit_scope_name}
 		</h2>
 
 		<para style="subdesc"
 			  spaceAfter=".3in"
 			  tal:condition="options/self_assessment_open_completion">
 			This table shows the number of questions completed by
-			Non Credit students for each self-assessment in the course.
+			${view/non_credit_scope_name} students for each self-assessment in the course.
 		</para>
 
 		<tal:block  tal:repeat="item options/self_assessment_open_completion"

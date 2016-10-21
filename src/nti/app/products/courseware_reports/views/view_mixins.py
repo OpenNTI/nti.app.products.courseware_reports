@@ -10,7 +10,6 @@ __docformat__ = "restructuredtext en"
 logger = __import__('logging').getLogger(__name__)
 
 import six
-import nameparser
 import textwrap
 
 from datetime import datetime
@@ -34,6 +33,9 @@ import BTrees
 
 from nti.app.base.abstract_views import AbstractAuthenticatedView
 
+from nti.contenttypes.courses.interfaces import ES_PUBLIC
+from nti.contenttypes.courses.interfaces import ES_CREDIT
+
 from nti.contenttypes.courses.interfaces import ICourseInstance
 from nti.contenttypes.courses.interfaces import ICourseCatalogEntry
 
@@ -46,6 +48,8 @@ from nti.dataserver.interfaces import IUsernameSubstitutionPolicy
 from nti.dataserver.metadata_index import CATALOG_NAME
 
 from nti.dataserver.users import User
+
+from nti.dataserver.users.interfaces import IFriendlyNamed
 
 from nti.property.property import Lazy
 
@@ -159,11 +163,28 @@ class _AbstractReportView(AbstractAuthenticatedView,
 		"""
 		Build a dict of scope_name to usernames.
 		"""
-		# XXX We are not exposing these multiple scopes in many places,
+		# XXX: We are not exposing these multiple scopes in many places,
 		# including many reports and in TopCreators.
-		# XXX This is confusing if we are nesting scopes.  Perhaps
+		# XXX: This is confusing if we are nesting scopes.  Perhaps
 		# it makes more sense to keep things in the Credit/NonCredit camps.
 		return _get_enrollment_scope_dict(self.course, self.instructor_usernames)
+
+	@Lazy
+	def _scope_alias_dict(self):
+		"""
+		A dict of scope_name -> scope_alias.
+		"""
+		result = dict()
+		for scope in self.course.SharingScopes.values():
+			scope_alias = IFriendlyNamed( scope ).alias
+			result[scope.__name__] = scope_alias
+		return result
+
+	def for_credit_scope_name(self):
+		return self._scope_alias_dict[ES_CREDIT]
+
+	def non_credit_scope_name(self):
+		return self._scope_alias_dict[ES_PUBLIC]
 
 	def _get_users_for_scope(self, scope_name):
 		"""
@@ -174,7 +195,7 @@ class _AbstractReportView(AbstractAuthenticatedView,
 
 	@Lazy
 	def for_credit_student_usernames(self):
-		return self._get_users_for_scope('ForCredit')
+		return self._get_users_for_scope(ES_CREDIT)
 
 	@Lazy
 	def open_student_usernames(self):
@@ -219,16 +240,6 @@ class _AbstractReportView(AbstractAuthenticatedView,
 		if user.username.lower() in self.for_credit_student_usernames:
 			username = self._replace_username(user.username)
 		return StudentInfo( user, username=username, **kwargs )
-
-	def get_sortable_key(self, named_user):
-
-		if named_user.realname and '@' not in named_user.realname:
-			human_name = nameparser.HumanName(named_user.realname)
-			last_name = human_name.last or ''
-			first_name = human_name.first or ''
-			return last_name + ' ' + first_name
-		else:
-			return named_user.alias or named_user.username
 
 	def filter_objects(self, objects):
 		"""
