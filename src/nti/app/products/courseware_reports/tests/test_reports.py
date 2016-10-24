@@ -452,14 +452,10 @@ class TestBuckets( unittest.TestCase ):
 
 # ==================
 
-def _mock_student_info( _, username ):
-	return StudentInfo( username + "_alias", username )
-
 class _MockReport(object):
 
 	for_credit_student_usernames = []
 	open_student_usernames = []
-	get_student_info = _mock_student_info
 	count_all_students = 0
 	count_credit_students = 0
 	count_non_credit_students = 0
@@ -478,9 +474,7 @@ class TestTopCreators( unittest.TestCase ):
 
 	@fudge.patch('nti.app.products.courseware_reports.reports._get_name_values')
 	def test_empty(self, mock_get_name_values):
-
-		mock_get_name_values.is_callable().returns(('user1', 'user1_alias', '', '')) 
-		
+		mock_get_name_values.is_callable().returns(('user1', 'user1_alias', '', ''))
 		assert_that( self.top_creators._for_credit_data, empty() )
 		assert_that( self.top_creators._non_credit_data, empty() )
 		assert_that( self.top_creators._get_largest, empty() )
@@ -494,11 +488,11 @@ class TestTopCreators( unittest.TestCase ):
 		assert_that( self.top_creators.for_credit_keys(), empty() )
 		assert_that( self.top_creators.non_credit_keys(), empty() )
 
-		student_info = StudentInfo('user1')
-		assert_that( student_info.username , equal_to( 'user1' ) )
-		assert_that( student_info.display , equal_to( 'user1_alias' ) )
-		assert_that( student_info.count , equal_to( None ) )
-		assert_that( student_info.perc , equal_to( None ) )
+		student_info = self.top_creators._build_student_info( ('user1', None) )
+		assert_that( student_info.username, equal_to( 'user1' ) )
+		assert_that( student_info.display, equal_to( 'user1_alias' ) )
+		assert_that( student_info.count, equal_to( None ) )
+		assert_that( student_info.perc, equal_to( 0.0 ) )
 
 		assert_that( self.top_creators.get( 'bleh' ), none() )
 		assert_that( self.top_creators.average_count(), equal_to( 0 ) )
@@ -508,9 +502,11 @@ class TestTopCreators( unittest.TestCase ):
 		assert_that( self.top_creators.for_credit_percent_contributed_str(), not_none() )
 		assert_that( self.top_creators.non_credit_percent_contributed_str(), not_none() )
 
-	@fudge.patch( 'nti.dataserver.users.users.User.get_user' )
-	def test_single(self, mock_get_user):
+	@fudge.patch( 'nti.dataserver.users.users.User.get_user',
+				  'nti.app.products.courseware_reports.reports._get_name_values' )
+	def test_single(self, mock_get_user, mock_name_values):
 		mock_get_user.is_callable().returns( 'Not-none' )
+		mock_name_values.is_callable().returns(  ('for_credit1', 'for_credit1_alias', '', '') )
 		for_credit = 'for_credit1'
 		self.top_creators = _TopCreators( _MockReport( [ for_credit ] ) )
 		self.top_creators.incr_username( for_credit )
@@ -532,12 +528,14 @@ class TestTopCreators( unittest.TestCase ):
 		assert_that( self.top_creators.for_credit_keys(), only_contains( for_credit ) )
 		assert_that( self.top_creators.non_credit_keys(), empty() )
 
+		mock_name_values.is_callable().returns(  ('user1', 'user1_alias', '', '') )
 		student_info = self.top_creators._build_student_info( ('user1', 0 ) )
 		assert_that( student_info.username, equal_to( 'user1' ) )
 		assert_that( student_info.display, equal_to( 'user1_alias' ) )
 		assert_that( student_info.count, equal_to( 0 ) )
 		assert_that( student_info.perc, equal_to( 0.0 ) )
 
+		mock_name_values.is_callable().returns(  ('for_credit1', 'for_credit1_alias', '', '') )
 		student_info = self.top_creators._build_student_info( ('for_credit1', 1 ) )
 		assert_that( student_info.username, equal_to( 'for_credit1' ) )
 		assert_that( student_info.display, equal_to( 'for_credit1_alias' ) )
@@ -553,9 +551,11 @@ class TestTopCreators( unittest.TestCase ):
 		assert_that( self.top_creators.for_credit_percent_contributed_str(), not_none() )
 		assert_that( self.top_creators.non_credit_percent_contributed_str(), not_none() )
 
-	@fudge.patch( 'nti.dataserver.users.users.User.get_user' )
-	def test_multiple(self, mock_get_user):
+	@fudge.patch( 'nti.dataserver.users.users.User.get_user',
+				  'nti.app.products.courseware_reports.reports._get_name_values' )
+	def test_multiple(self, mock_get_user, mock_name_values):
 		mock_get_user.is_callable().returns( 'Not-none' )
+		mock_name_values.is_callable().returns(  ('System', 'System', '', '') )
 		for_credit = 'for_credit1'
 		for_credit2 = 'for_credit2'
 		non_credit1 = 'non_credit1'
@@ -578,8 +578,8 @@ class TestTopCreators( unittest.TestCase ):
 		assert_that( 	self.top_creators._non_credit_data.keys(),
 						only_contains( non_credit1, non_credit2 ) )
 		assert_that( self.top_creators._get_largest, has_length( 3 ) )
-		assert_that( 	self.top_creators._get_largest[0].username,
-						equal_to( 'non_credit2' ) )
+		assert_that( 	self.top_creators._get_largest[0].count,
+						is_( 10 ) )
 		assert_that( self.top_creators._get_for_credit_largest, has_length( 1 ) )
 		assert_that( self.top_creators.unique_contributors_for_credit, equal_to( 1 ) )
 		assert_that( self.top_creators.unique_contributors_non_credit, equal_to( 2 ) )
@@ -592,12 +592,14 @@ class TestTopCreators( unittest.TestCase ):
 		assert_that( self.top_creators.for_credit_keys(), only_contains( for_credit ) )
 		assert_that( self.top_creators.non_credit_keys(), only_contains( non_credit1, non_credit2 ) )
 
+		mock_name_values.is_callable().returns(  ('user1', 'user1_alias', '', '') )
 		student_info = self.top_creators._build_student_info( ('user1', 0 ) )
 		assert_that( student_info.username, equal_to( 'user1' ) )
 		assert_that( student_info.display, equal_to( 'user1_alias' ) )
 		assert_that( student_info.count, equal_to( 0 ) )
 		assert_that( student_info.perc, equal_to( 0.0 ) )
 
+		mock_name_values.is_callable().returns(  ('for_credit1', 'for_credit1_alias', '', '') )
 		student_info = self.top_creators._build_student_info( ('for_credit1', 5 ) )
 		assert_that( student_info.username, equal_to( 'for_credit1' ) )
 		assert_that( student_info.display, equal_to( 'for_credit1_alias' ) )

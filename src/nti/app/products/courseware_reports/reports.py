@@ -123,10 +123,7 @@ class StudentInfo(object):
 		self.perc = perc
 
 	def __lt__(self, other):
-		try:
-			return (self.sorting_key.lower() < other.sorting_key.lower())
-		except AttributeError:
-			return NotImplemented
+		return self.sorting_key.lower() < other.sorting_key.lower()
 
 	@Lazy
 	def sorting_key(self):
