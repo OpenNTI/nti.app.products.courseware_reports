@@ -476,7 +476,11 @@ class TestTopCreators( unittest.TestCase ):
 	def setUp(self):
 		self.top_creators = _TopCreators( _MockReport( [] ) )
 
-	def test_empty(self):
+	@fudge.patch('nti.app.products.courseware_reports.reports._get_name_values')
+	def test_empty(self, mock_get_name_values):
+
+		mock_get_name_values.is_callable().returns(('user1', 'user1_alias', '', '')) 
+		
 		assert_that( self.top_creators._for_credit_data, empty() )
 		assert_that( self.top_creators._non_credit_data, empty() )
 		assert_that( self.top_creators._get_largest, empty() )
@@ -490,11 +494,11 @@ class TestTopCreators( unittest.TestCase ):
 		assert_that( self.top_creators.for_credit_keys(), empty() )
 		assert_that( self.top_creators.non_credit_keys(), empty() )
 
-		student_info = self.top_creators._build_student_info( ('user1',100) )
+		student_info = StudentInfo('user1')
 		assert_that( student_info.username , equal_to( 'user1' ) )
 		assert_that( student_info.display , equal_to( 'user1_alias' ) )
-		assert_that( student_info.count , equal_to( 100 ) )
-		assert_that( student_info.perc , equal_to( 0.0 ) )
+		assert_that( student_info.count , equal_to( None ) )
+		assert_that( student_info.perc , equal_to( None ) )
 
 		assert_that( self.top_creators.get( 'bleh' ), none() )
 		assert_that( self.top_creators.average_count(), equal_to( 0 ) )
