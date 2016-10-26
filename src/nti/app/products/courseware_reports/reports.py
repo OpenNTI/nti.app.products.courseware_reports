@@ -127,6 +127,8 @@ class StudentInfo(object):
 
 	@Lazy
 	def sorting_key(self):
+		if self.last_name and self.first_name:
+			return self.last_name + ', ' + self.first_name
 		return self.last_name or self.username
 
 class _TopCreators(object):
