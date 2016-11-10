@@ -18,7 +18,6 @@ from pyramid.view import view_config
 
 from zope import component
 
-from zope.catalog.catalog import ResultSet
 from zope.catalog.interfaces import ICatalog
 
 from zope.intid.interfaces import IIntIds
@@ -61,6 +60,8 @@ from nti.dataserver.authorization import ACT_MODERATE
 from nti.dataserver.authorization import ACT_NTI_ADMIN
 
 from nti.property.property import CachedProperty
+
+from nti.zope_catalog.catalog import ResultSet
 
 @view_config(route_name='objects.generic.traversal',
 			 name='shared_notes',

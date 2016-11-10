@@ -9,8 +9,6 @@ __docformat__ = "restructuredtext en"
 
 logger = __import__('logging').getLogger(__name__)
 
-from .. import MessageFactory as _
-
 import operator
 
 from numbers import Number
@@ -26,11 +24,30 @@ from zope import component
 from pyramid.view import view_config
 from pyramid.traversal import find_interface
 
-from zope.catalog.catalog import ResultSet
-
 from nti.app.assessment.interfaces import IUsersCourseAssignmentHistory
 
 from nti.app.products.courseware.interfaces import ICourseInstanceEnrollment
+
+from nti.app.products.courseware_reports import MessageFactory as _
+
+from nti.app.products.courseware_reports import VIEW_TOPIC_PARTICIPATION
+from nti.app.products.courseware_reports import VIEW_FORUM_PARTICIPATION
+from nti.app.products.courseware_reports import VIEW_STUDENT_PARTICIPATION
+
+from nti.app.products.courseware_reports.decorators import course_from_forum
+
+from nti.app.products.courseware_reports.reports import _TopCreators
+from nti.app.products.courseware_reports.reports import _adjust_date
+from nti.app.products.courseware_reports.reports import _common_buckets
+from nti.app.products.courseware_reports.reports import _format_datetime
+from nti.app.products.courseware_reports.reports import _build_buckets_options
+from nti.app.products.courseware_reports.reports import _get_self_assessments_for_course
+
+from nti.app.products.courseware_reports.views import CHART_COLORS
+from nti.app.products.courseware_reports.views import FORUM_OBJECT_MIMETYPES
+
+from nti.app.products.courseware_reports.views.view_mixins import _AbstractReportView
+from nti.app.products.courseware_reports.views.view_mixins import _get_enrollment_scope_dict
 
 from nti.app.products.gradebook.interfaces import IGrade
 from nti.app.products.gradebook.assignments import get_course_assignments
@@ -51,24 +68,7 @@ from nti.dataserver.contenttypes.forums.interfaces import ICommunityHeadlineTopi
 
 from nti.property.property import Lazy
 
-from .. import VIEW_TOPIC_PARTICIPATION
-from .. import VIEW_FORUM_PARTICIPATION
-from .. import VIEW_STUDENT_PARTICIPATION
-
-from ..decorators import course_from_forum
-
-from ..reports import _TopCreators
-from ..reports import _adjust_date
-from ..reports import _common_buckets
-from ..reports import _format_datetime
-from ..reports import _build_buckets_options
-from ..reports import _get_self_assessments_for_course
-
-from . import CHART_COLORS
-from . import FORUM_OBJECT_MIMETYPES
-
-from .view_mixins import _AbstractReportView
-from .view_mixins import _get_enrollment_scope_dict
+from nti.zope_catalog.catalog import ResultSet
 
 class _AssignmentInfo(object):
 
