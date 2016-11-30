@@ -174,8 +174,9 @@
 				<tal:block tal:define="scope_alias python: view._scope_alias_dict[scope_name]">
 
 				<!-- Scope header, if we have more than one -->
-				<h2 style="h2" tal:condition="python: len( section_item[1].items() ) > 1">
-					${view/_scope_alias_dict/scope_name} Comments
+				<h2 style="h2" tal:condition="python: len( section_item[1].items() ) > 1"
+					tal:content="python: view._scope_alias_dict[scope_name] + ' Comments'">
+					Scope Comments
 				</h2>
 
 				<!-- Loop through each section/scope/user's comments -->
@@ -246,7 +247,7 @@
 
 				<!-- Reset our page template for the next section -->
 				<setNextTemplate name="main" />
-				<nextPage />
+				<nextPageIfNotEmpty />
 
 			</tal:block> <!-- scope block -->
 
