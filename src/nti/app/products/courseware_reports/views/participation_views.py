@@ -427,7 +427,7 @@ class ForumParticipationReportPdf(_AbstractReportView):
 		if subinstances:
 			for subinstance_key, subinstance in subinstances.items():
 				scope_dict = _get_enrollment_scope_dict(subinstance,
-														set( subinstance.instructors ))
+														set(x.username.lower() for x in subinstance.instructors))
 				user_comment_dict_by_scope = self._get_scope_user_dict_for_course(
 													scope_dict, user_comment_dict)
 				# Store with a displayable key
@@ -439,12 +439,10 @@ class ForumParticipationReportPdf(_AbstractReportView):
 			for scope, users in super_scope_dict.items():
 				_new_dict[scope] = users.intersection( self._only_course_enrollments )
 			super_scope_dict = _new_dict
-
-
 		user_comment_dict_by_scope = self._get_scope_user_dict_for_course(
 											super_scope_dict, user_comment_dict)
 		# Store with displayble name; useful for not accidentally
-		# calling setNextTemplate with int-convertable index (e.g. '003' ).
+		# calling setNextTemplate with int-convertable index (e.g. '003').
 		results[ self.course_name() ] = user_comment_dict_by_scope
 
 		results = OrderedDict(sorted(results.items()))
