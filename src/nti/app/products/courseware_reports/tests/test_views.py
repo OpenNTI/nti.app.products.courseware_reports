@@ -149,6 +149,7 @@ class TestAssignmentSummaryReport(RegisterAssignmentLayerMixin,
 
 		# No link with no submissions
 		assignment = res.json_body.get( 'Items' )['tag:nextthought.com,2011-10:OU-HTML-CLC3403_LawAndJustice.sec:QUIZ_01.01'][0]
+		assignment_href = assignment.get('href')
 		self.forbid_link_with_rel( assignment, 'report-' + VIEW_ASSIGNMENT_SUMMARY )
 
 		# Sends an assignment through the application by posting to the assignment
@@ -162,8 +163,7 @@ class TestAssignmentSummaryReport(RegisterAssignmentLayerMixin,
 								'tag:nextthought.com,2011-10:NTI-CourseInfo-Fall2013_CLC3403_LawAndJustice',
 								status=201 )
 
-		self.testapp.post_json( '/dataserver2/Objects/' + self.assignment_id,
-								ext_obj)
+		self.testapp.post_json( assignment_href, ext_obj )
 
 		# Now we have proper link
 		res = self.testapp.get( self.assignments_path,
