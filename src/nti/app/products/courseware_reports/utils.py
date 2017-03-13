@@ -88,22 +88,3 @@ def find_course_for_user(data, user, request=None):
 
     return course
 _find_course_for_user = find_course_for_user
-
-VIDEO_COMPLETION_THRESHOLD = 0.9
-
-
-def _check_video_completion(video):
-    total_duration = _video_duration_to_seconds(video.video_duration)
-    watched_duration = _video_duration_to_seconds(
-        video.watch_times.average_total_watch_time)
-
-    if float(watched_duration) / total_duration >= VIDEO_COMPLETION_THRESHOLD:
-        return True
-    return False
-
-
-def _video_duration_to_seconds(str_duration):
-    duration = [int(i) for i in str_duration.split(':')]
-    seconds = duration[-1]
-    seconds += duration[-2] * 60
-    return seconds
