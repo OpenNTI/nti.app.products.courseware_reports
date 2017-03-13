@@ -46,8 +46,6 @@ from nti.app.products.courseware_reports.reports import _format_datetime
 from nti.app.products.courseware_reports.reports import _build_buckets_options
 from nti.app.products.courseware_reports.reports import _get_self_assessments_for_course
 
-from nti.app.products.courseware_reports.utils import _check_video_completion
-
 from nti.app.products.courseware_reports.views import CHART_COLORS
 from nti.app.products.courseware_reports.views import FORUM_OBJECT_MIMETYPES
 
@@ -291,7 +289,7 @@ class StudentParticipationReportPdf(_AbstractReportView):
             resource_data.append(data)
 
         non_viewed_resources = [
-            {'title': x.label} for x in self._get_non_viewed_resources(viewed_resource_ntiids)]
+            {'title': x.label} for x in self._get_non_viewed_objects_from_catalog(INTIRelatedWorkRef, viewed_resource_ntiids)]
 
         resource_data = resource_data + non_viewed_resources
         resource_data = sorted(resource_data, key=lambda x: x['title'])
@@ -308,37 +306,29 @@ class StudentParticipationReportPdf(_AbstractReportView):
                 'total_watch_time'] = video.watch_times.average_total_watch_time
             data[
                 'average_session_watch_time'] = video.watch_times.average_session_watch_time
-            data['video_completion'] = _check_video_completion(video)
+            if video.number_watched_completely >= 1:
+                data['video_completion'] = True
+            else:
+                data['video_completion'] = False
             viewed_video_ntiids.add(video.ntiid)
             video_data.append(data)
 
         non_viewed_videos = [
-            {'title': x.title} for x in self._get_non_viewed_videos(viewed_video_ntiids)]
+            {'title': x.title} for x in self._get_non_viewed_objects_from_catalog(INTIVideo, viewed_video_ntiids)]
         video_data = video_data + non_viewed_videos
         video_data = sorted(video_data, key=lambda x: x['title'])
 
         options['resource_completion'] = resource_data
         options['video_completion'] = video_data
 
-    def _get_non_viewed_resources(self, viewed_resource_ntiids):
+    def _get_non_viewed_objects_from_catalog(self, interface, viewed_object_ntiids):
         catalog = get_catalog()
         rs = catalog.search_objects(container_ntiids=(ICourseCatalogEntry(self.context).ntiid,),
                                     sites=get_component_hierarchy_names(),
-                                    provided=INTIRelatedWorkRef)
+                                    provided=interface)
         results = []
         for resource in rs:
-            if not is_ntiid_of_type(resource.ntiid, RELATED_WORK) and resource.ntiid not in viewed_resource_ntiids:
-                results.append(resource)
-        return results
-
-    def _get_non_viewed_videos(self, viewed_video_ntiids):
-        catalog = get_catalog()
-        rs = catalog.search_objects(container_ntiids=ICourseCatalogEntry(self.context).ntiid,
-                                    sites=get_component_hierarchy_names(),
-                                    provided=INTIVideo)
-        results = []
-        for resource in rs:
-            if resource.ntiid not in viewed_video_ntiids:
+            if not is_ntiid_of_type(resource.ntiid, RELATED_WORK) and resource.ntiid not in viewed_object_ntiids:
                 results.append(resource)
         return results
 
