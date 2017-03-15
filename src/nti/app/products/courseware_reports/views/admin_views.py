@@ -41,8 +41,6 @@ from nti.app.products.courseware_reports.views import parse_datetime
 
 from nti.app.products.courseware_reports.views.participation_views import StudentParticipationReportPdf
 
-from nti.app.products.gradebook.assignments import get_course_assignments
-
 from nti.app.products.gradebook.interfaces import NO_SUBMIT_PART_NAME
 from nti.app.products.gradebook.interfaces import IGradeBook
 from nti.app.products.gradebook.interfaces import IGrade
@@ -474,11 +472,9 @@ class StudentParticipationCSVView(AbstractAuthenticatedView):
         return ICourseInstance(self.context)
 
     def __call__(self):
-        values = self.request.params
-        start_time = parse_datetime(values.get('start_time'))
-        usernames = values.get('usernames')
-        usernames = set((User.get_user(x)
-                         for x in usernames.split())) if usernames else ()
+
+        reader = csv.DictReader(self.request.body_file)
+        usernames = set((User.get_user(x['username']) for x in reader))
 
         response = self.request.response
         response.content_encoding = str('identity')
@@ -504,9 +500,9 @@ class StudentParticipationCSVView(AbstractAuthenticatedView):
         # construct a header row with the names of all the columns we'll need.
         header_row = ['username']
         for video in videos:
-            header_row.append(video.title)
+            header_row.append('Video: ' + video.title)
         for assignment in assignment_catalog:
-            header_row.append(assignment.title)
+            header_row.append('Assignment: ' + assignment.title)
         _write(header_row, writer, stream)
 
         for user in usernames:
@@ -523,7 +519,7 @@ class StudentParticipationCSVView(AbstractAuthenticatedView):
             # Add all the video completion data, in order
             for video in videos:
                 if video.ntiid in completed_video_ntiids:
-                    row_data.append('Yes')
+                    row_data.append('Completed')
                 else:
                     row_data.append('')
 
@@ -533,23 +529,8 @@ class StudentParticipationCSVView(AbstractAuthenticatedView):
 
             # Add the assignment grades
             for assignment in assignment_catalog:
-                history_item = histories.get(assignment.ntiid)
-                if history_item:
-                    grade_value = getattr(
-                        IGrade(history_item, None), 'value', '')
-                    # Convert the webapp's "number - letter" scheme to a number, iff
-                    # the letter scheme is empty
-                    if grade_value and isinstance(grade_value, string_types) and grade_value.endswith(' -'):
-                        try:
-                            grade_value = float(grade_value.split()[0])
-                        except ValueError:
-                            pass
-                    if isinstance(grade_value, Number):
-                        grade_value = '%0.1f' % grade_value
-                else:
-                    grade_value = ''
-
-                row_data.append(grade_value)
+                grade = self._get_grade_from_assignment(assignment, histories)
+                row_data.append(grade)
 
             # After we have constructed this row, add it to the CSV
             _write(row_data, writer, stream)
@@ -558,6 +539,24 @@ class StudentParticipationCSVView(AbstractAuthenticatedView):
         stream.seek(0)
         response.body_file = stream
         return response
+
+    def _get_grade_from_assignment(self, assignment, user_histories):
+        history_item = user_histories.get(assignment.ntiid)
+        if history_item:
+            grade_value = getattr(
+                IGrade(history_item, None), 'value', '')
+            # Convert the webapp's "number - letter" scheme to a number, iff
+            # the letter scheme is empty
+            if grade_value and isinstance(grade_value, string_types) and grade_value.endswith(' -'):
+                try:
+                    grade_value = float(grade_value.split()[0])
+                except ValueError:
+                    pass
+            if isinstance(grade_value, Number):
+                grade_value = '%0.1f' % grade_value
+        else:
+            grade_value = ''
+        return grade_value
 
     def _get_non_viewed_objects_from_catalog(self, interface, viewed_object_ntiids):
         catalog = get_catalog()
