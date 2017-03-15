@@ -458,9 +458,9 @@ def _write(data, writer, stream):
              permission=ACT_NTI_ADMIN)
 class StudentParticipationCSVView(AbstractAuthenticatedView):
     """
-    Given a list of student usernames, return a CSV of 
+    Given a CSV of student usernames, return a CSV of 
     participation statistics for those students. Expects
-    a `username` param with a list of usernames for this course.
+    a CSV with a header and a column named `username`.
     """
 
     @Lazy
