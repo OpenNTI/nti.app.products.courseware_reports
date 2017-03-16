@@ -21,8 +21,6 @@ from nti.app.products.courseware_reports import VIEW_FORUM_PARTICIPATION
 from nti.app.products.courseware_reports import VIEW_TOPIC_PARTICIPATION
 from nti.app.products.courseware_reports import VIEW_STUDENT_PARTICIPATION
 
-from nti.app.products.courseware_reports.utils import _check_video_completion
-
 from nti.app.assessment.tests import RegisterAssignmentLayerMixin
 from nti.app.assessment.tests import RegisterAssignmentsForEveryoneLayer
 
@@ -201,17 +199,3 @@ class TestAssignmentSummaryReport(RegisterAssignmentLayerMixin,
             assignment, 'report-' + VIEW_ASSIGNMENT_SUMMARY)
         res = self.testapp.get(report_href, extra_environ=instructor_environ)
         assert_that(res, has_property('content_type', 'application/pdf'))
-
-
-class TestCompletionReportStats(unittest.TestCase):
-
-    def test_video_completion(self):
-        fake_video = fudge.Fake().has_attr(video_duration='1:40',
-                                           watch_times=fudge.Fake().has_attr(average_total_watch_time='1:00'))
-        completion = _check_video_completion(fake_video)
-        assert_that(completion, is_(False))
-
-        fake_video = fudge.Fake().has_attr(video_duration='1:40',
-                                           watch_times=fudge.Fake().has_attr(average_total_watch_time='1:30'))
-        completion = _check_video_completion(fake_video)
-        assert_that(completion, is_(True))
