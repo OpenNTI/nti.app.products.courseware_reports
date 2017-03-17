@@ -27,6 +27,8 @@ from zope.intid.interfaces import IIntIds
 from nti.app.base.abstract_views import AbstractAuthenticatedView
 
 from nti.app.assessment.common import get_course_assignments
+from nti.app.assessment.common import get_course_self_assessments
+
 from nti.app.assessment.interfaces import IUsersCourseAssignmentHistory
 from nti.app.assessment.interfaces import IUsersCourseAssignmentHistoryItem
 
@@ -83,7 +85,7 @@ from nti.zope_catalog.catalog import ResultSet
              context=IDataserverFolder,
              permission=ACT_MODERATE)
 def shared_notes(request):
-    """    
+    """
     Return the shared_note count by course.  The shared notes are broken down
     by public, course-only, and private.
     """
@@ -458,7 +460,7 @@ def _write(data, writer, stream):
              permission=ACT_NTI_ADMIN)
 class StudentParticipationCSVView(AbstractAuthenticatedView):
     """
-    Given a CSV of student usernames, return a CSV of 
+    Given a CSV of student usernames, return a CSV of
     participation statistics for those students. Expects
     a CSV with a header and a column named `username`.
     """
@@ -470,6 +472,24 @@ class StudentParticipationCSVView(AbstractAuthenticatedView):
     @Lazy
     def course(self):
         return ICourseInstance(self.context)
+
+    def get_qset_submissions(self, usernames):
+        usernames = {x.lower() for x in usernames}
+        md_catalog = component.getUtility(ICatalog, CATALOG_NAME)
+        uidutil =  component.getUtility(IIntIds)
+        intids_created = md_catalog['creator'].apply({'any_of': usernames})
+        self_assessments = get_course_self_assessments(self.course)
+        self_assessment_qsids = {x.ntiid: x for x in self_assessments}
+
+        intids_of_submitted_qsets = md_catalog['mimeType'].apply(
+            {'any_of': ('application/vnd.nextthought.assessment.assessedquestionset',)})
+        intids_of_submitted_qsets_by_student = md_catalog.family.IF.intersection(intids_of_submitted_qsets,
+                                                                                 intids_created)
+
+        qsets_by_student_in_course = [x for x in ResultSet(intids_of_submitted_qsets_by_student, uidutil)
+                                      if x.questionSetId in self_assessment_qsids]
+
+        return qsets_by_student_in_course
 
     def __call__(self):
 
@@ -486,7 +506,6 @@ class StudentParticipationCSVView(AbstractAuthenticatedView):
         writer = csv.writer(stream)
 
         # Get a list of all videos and their ntiids.
-        video_completion_data = {}
         catalog = get_catalog()
         rs = catalog.search_objects(container_ntiids=(ICourseCatalogEntry(self.context).ntiid,),
                                     sites=get_component_hierarchy_names(),
@@ -495,33 +514,57 @@ class StudentParticipationCSVView(AbstractAuthenticatedView):
         videos = [x for x in rs]
         videos = sorted(videos, key=lambda x: x.title)
 
+        user_self_assess = dict()
         assignment_catalog = get_course_assignments(self.course)
+        assessments = get_course_self_assessments(self.course)
+        qset_submissions = self.get_qset_submissions([x.username for x in usernames])
+        for submission in qset_submissions or ():
+            if submission.creator.username not in user_self_assess:
+                user_self_assess[submission.creator.username] = dict()
+
+            user_tmp = user_self_assess[submission.creator.username]
+            if submission.questionSetId not in user_tmp:
+                user_tmp[submission.questionSetId] = 0
+            user_tmp[submission.questionSetId] += 1
 
         # construct a header row with the names of all the columns we'll need.
         header_row = ['username']
         for video in videos:
-            header_row.append('Video: ' + video.title)
+#             header_row.append('[VideoCompleted] ' + video.title)
+            header_row.append('[VideoViewCount] ' + video.title)
         for assignment in assignment_catalog:
-            header_row.append('Assignment: ' + assignment.title)
+            header_row.append('[Assignment] ' + assignment.title)
+        for assessment in assessments or ():
+            title = assessment.title or getattr(assessment.__parent__, 'title', '' )
+            header_row.append('[SelfAssessment] ' + title)
         _write(header_row, writer, stream)
-
         for user in usernames:
             row_data = [user.username]
-            video_row_data = []
 
             video_usage_stats = component.queryMultiAdapter(
                 (self.course, user), IVideoUsageStats)
 
             viewed_videos = video_usage_stats.get_stats()
-            completed_video_ntiids = [
-                x.ntiid for x in viewed_videos if x.number_watched_completely >= 1]
+            user_video = {x.ntiid:x for x in viewed_videos}
+#             completed_video_ntiids = [
+#                 x.ntiid for x in viewed_videos if x.number_watched_completely >= 1]
 
             # Add all the video completion data, in order
             for video in videos:
-                if video.ntiid in completed_video_ntiids:
-                    row_data.append('Completed')
+                video_stat = user_video.get( video.ntiid )
+                if video_stat:
+#                     if video_stat.number_watched_completely >= 1:
+#                         row_data.append( 'Completed')
+#                     else:
+#                         row_data.append('')
+                    row_data.append(video_stat.view_event_count)
                 else:
+#                     row_data.append('')
                     row_data.append('')
+#                 if video.ntiid in completed_video_ntiids:
+#                     row_data.append('Completed')
+#                 else:
+#                     row_data.append('')
 
             assignment_catalog = get_course_assignments(self.course)
             histories = component.getMultiAdapter((self.course, user),
@@ -531,6 +574,12 @@ class StudentParticipationCSVView(AbstractAuthenticatedView):
             for assignment in assignment_catalog:
                 grade = self._get_grade_from_assignment(assignment, histories)
                 row_data.append(grade)
+
+            user_qset_submissions = user_self_assess.get(user.username) or {}
+            for self_assess in assessments:
+                val = user_qset_submissions.get( self_assess.ntiid, '')
+                row_data.append(val)
+
 
             # After we have constructed this row, add it to the CSV
             _write(row_data, writer, stream)
