@@ -9,17 +9,25 @@ __docformat__ = "restructuredtext en"
 
 from hamcrest import assert_that
 from hamcrest import is_
+from hamcrest import is_not
+from hamcrest import has_entries
 from hamcrest import has_property
+from hamcrest import has_key
+from hamcrest import has_item
 from hamcrest import contains_string
 
 import unittest
 import fudge
+
+from nti.app.analytics.usage_stats import _VideoInfo
+from nti.app.analytics.usage_stats import _AverageWatchTimes
 
 from nti.app.products.courseware_reports import VIEW_COURSE_SUMMARY
 from nti.app.products.courseware_reports import VIEW_ASSIGNMENT_SUMMARY
 from nti.app.products.courseware_reports import VIEW_FORUM_PARTICIPATION
 from nti.app.products.courseware_reports import VIEW_TOPIC_PARTICIPATION
 from nti.app.products.courseware_reports import VIEW_STUDENT_PARTICIPATION
+from nti.app.products.courseware_reports.views.participation_views import StudentParticipationReportPdf
 
 from nti.app.assessment.tests import RegisterAssignmentLayerMixin
 from nti.app.assessment.tests import RegisterAssignmentsForEveryoneLayer
@@ -28,13 +36,21 @@ from nti.app.products.courseware.tests import InstructedCourseApplicationTestLay
 
 from nti.app.testing.decorators import WithSharedApplicationMockDS
 from nti.app.testing.application_webtest import ApplicationLayerTest
+from nti.app.testing.request_response import DummyRequest
+
+from nti.contenttypes.courses.interfaces import ICourseInstance
+
+from nti.dataserver.tests import mock_dataserver
+from nti.dataserver.users.users import User
+
+from nti.ntiids.ntiids import find_object_with_ntiid
 
 
 class TestStudentParticipationReport(ApplicationLayerTest):
 
     layer = RegisterAssignmentsForEveryoneLayer
-
     default_origin = b'http://janux.ou.edu'
+    course_ntiid = 'tag:nextthought.com,2011-10:OU-HTML-CLC3403_LawAndJustice.course_info'
 
     @WithSharedApplicationMockDS(users=True, testapp=True, default_authenticate=True)
     def test_application_view_empty_report(self):
@@ -62,6 +78,68 @@ class TestStudentParticipationReport(ApplicationLayerTest):
 
         res = self.testapp.get(view_href, extra_environ=instructor_environ)
         assert_that(res, has_property('content_type', 'application/pdf'))
+
+    @WithSharedApplicationMockDS(users=True, testapp=True, default_authenticate=True)
+    @fudge.patch('nti.app.products.courseware_reports.views.view_mixins._AbstractReportView._check_access',
+                 'nti.app.analytics.usage_stats.UserCourseVideoUsageStats.get_stats')
+    def test_report_completion_data(self, fake_check_access, fake_video_stats):
+
+        fake_check_access.is_callable().returns(True)
+        fake_video_stats.is_callable().returns([])
+
+        with mock_dataserver.mock_db_trans(self.ds, site_name='platform.ou.edu'):
+            obj = find_object_with_ntiid(self.course_ntiid)
+            course = ICourseInstance(obj)
+            request = DummyRequest(params={})
+
+            participation_report = StudentParticipationReportPdf(
+                course, request)
+
+            student_user = User.get_user('sjohnson@nextthought.com')
+            participation_report.student_user = student_user
+            course.Username = student_user.username
+
+            options = participation_report()
+
+            # If we have not yet watched any videos, we should
+            # have no entries with session count, view count,
+            # total watch time, average session time, or
+            # video completion.
+
+            assert_that(options['video_completion'], is_not(
+                has_item((has_key('session_count')))))
+            assert_that(options['video_completion'], is_not(
+                has_item((has_key('view_count')))))
+            assert_that(options['video_completion'], is_not(
+                has_item((has_key('total_watch_time')))))
+            assert_that(options['video_completion'], is_not(
+                has_item((has_key('average_session_watch_time')))))
+            assert_that(options['video_completion'], is_not(
+                has_item((has_key('video_completion')))))
+
+            # Add stats for a video and check that they show up
+            # correctly in the report
+            video_ntiid = 'tag:nextthought.com,2011-10:OU-NTIVideo-CLC3403_LawAndJustice.ntivideo.video_02.01'
+
+            fake_video_stats.is_callable().returns((_VideoInfo('fake title',
+                                                               video_ntiid,
+                                                               2,
+                                                               3,
+                                                               _AverageWatchTimes(
+                                                                   '1:30', '2:30'),
+                                                               '3:30',
+                                                               '100',
+                                                               1,
+                                                               None),))
+            options = participation_report()
+
+            assert_that(
+                options['video_completion'], has_item(has_entries('session_count', 2,
+                                                                  'view_count', 3,
+                                                                  'total_watch_time', '1:30',
+                                                                  'average_session_watch_time', '2:30',
+                                                                  'video_completion', True,
+                                                                  'title', 'fake title')))
 
 
 class TestForumParticipationReport(ApplicationLayerTest):
