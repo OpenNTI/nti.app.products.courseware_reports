@@ -18,6 +18,9 @@ from hamcrest import contains_string
 
 import unittest
 import fudge
+import csv
+
+from StringIO import StringIO
 
 from nti.app.analytics.usage_stats import _VideoInfo
 from nti.app.analytics.usage_stats import _AverageWatchTimes
@@ -28,6 +31,7 @@ from nti.app.products.courseware_reports import VIEW_FORUM_PARTICIPATION
 from nti.app.products.courseware_reports import VIEW_TOPIC_PARTICIPATION
 from nti.app.products.courseware_reports import VIEW_STUDENT_PARTICIPATION
 from nti.app.products.courseware_reports.views.participation_views import StudentParticipationReportPdf
+from nti.app.products.courseware_reports.views.admin_views import StudentParticipationCSVView
 
 from nti.app.assessment.tests import RegisterAssignmentLayerMixin
 from nti.app.assessment.tests import RegisterAssignmentsForEveryoneLayer
@@ -277,3 +281,94 @@ class TestAssignmentSummaryReport(RegisterAssignmentLayerMixin,
             assignment, 'report-' + VIEW_ASSIGNMENT_SUMMARY)
         res = self.testapp.get(report_href, extra_environ=instructor_environ)
         assert_that(res, has_property('content_type', 'application/pdf'))
+
+
+class TestStudentParticipationCSV(ApplicationLayerTest):
+
+    layer = RegisterAssignmentsForEveryoneLayer
+    default_origin = b'http://janux.ou.edu'
+
+    course_ntiid = 'tag:nextthought.com,2011-10:OU-HTML-CLC3403_LawAndJustice.course_info'
+
+    @WithSharedApplicationMockDS(users=True, testapp=True, default_authenticate=True)
+    @fudge.patch('nti.app.products.courseware_reports.views.admin_views.StudentParticipationCSVView._get_users_from_request',
+                 'nti.app.products.courseware_reports.views.admin_views.StudentParticipationCSVView._get_all_videos',
+                 'nti.app.analytics.usage_stats.UserCourseVideoUsageStats.get_stats',
+                 'nti.app.products.courseware_reports.views.admin_views.StudentParticipationCSVView._get_grade_from_assignment',
+                 'nti.app.products.courseware_reports.views.admin_views.get_course_assignments')
+    def test_csv_results(self, fake_get_users, fake_get_videos, fake_video_stats, fake_assignment_grade, fake_assignment_catalog):
+
+        with mock_dataserver.mock_db_trans(self.ds, site_name='platform.ou.edu'):
+
+            obj = find_object_with_ntiid(self.course_ntiid)
+            course = ICourseInstance(obj)
+            request = DummyRequest(params={})
+            request.context = course
+
+            video_ntiid = 'tag:nextthought.com,2011-10:OU-NTIVideo-CLC3403_LawAndJustice.ntivideo.video_02.01'
+            video_ntiid_2 = 'tag:nextthought.com,2011-10:OU-NTIVideo-CLC3403_LawAndJustice.ntivideo.video_02.02'
+
+            fake_get_users.is_callable().returns([
+                User.get_user('sjohnson@nextthought.com')])
+
+            fake_video_1 = fudge.Fake().has_attr(
+                title='fake video title 1', ntiid=video_ntiid)
+            fake_video_2 = fudge.Fake().has_attr(
+                title='fake video title 2', ntiid=video_ntiid_2)
+
+            fake_get_videos.is_callable().returns([fake_video_1, fake_video_2])
+
+            fake_video_stats.is_callable().returns((_VideoInfo('fake video title 1',
+                                                               video_ntiid,
+                                                               2,
+                                                               3,
+                                                               _AverageWatchTimes(
+                                                                   '1:30', '2:30'),
+                                                               '3:30',
+                                                               '100',
+                                                               1,
+                                                               None),
+                                                    _VideoInfo('fake video title 2',
+                                                               video_ntiid_2,
+                                                               4,
+                                                               5,
+                                                               _AverageWatchTimes(
+                                                                   '5:30', '8:30'),
+                                                               '5:30',
+                                                               '100',
+                                                               1,
+                                                               None),))
+
+            fake_assignment_1 = fudge.Fake().has_attr(
+                title='fake assignment 1', grade=100)
+            fake_assignment_2 = fudge.Fake().has_attr(
+                title='fake assignment 2', grade=67)
+            fake_assignment_catalog.is_callable().returns(
+                [fake_assignment_1, fake_assignment_2])
+            fake_assignment_grade.is_callable().calls(
+                self._fake_get_grade_from_assignment)
+
+            csv_view = StudentParticipationCSVView(request)
+            response = csv_view()
+
+            csv_read_buffer = StringIO(response.body)
+            response_reader = csv.DictReader(csv_read_buffer)
+
+            # We are using dict reader, so we can just check that
+            # the keys have the correct values. If the CSV was
+            # misaligned, these values would be incorrect.
+
+            response_rows = [row for row in response_reader]
+            assert_that(response_rows, has_item(
+                has_entries('username', 'sjohnson@nextthought.com',
+                            '[VideoViewCount] fake video title 1', '3',
+                            '[VideoCompleted] fake video title 1', 'Completed',
+                            '[VideoViewCount] fake video title 2', '5',
+                            '[VideoCompleted] fake video title 2', 'Completed',
+                            '[AssignmentGrade] fake assignment 1', '100',
+                            '[AssignmentGrade] fake assignment 2', '67')))
+
+            # TODO: add tests for self-assessments
+
+    def _fake_get_grade_from_assignment(self, assignment, user_histories):
+        return assignment.grade
