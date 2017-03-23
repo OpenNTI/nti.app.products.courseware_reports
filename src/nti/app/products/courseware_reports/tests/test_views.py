@@ -7,20 +7,18 @@ __docformat__ = "restructuredtext en"
 # disable: accessing protected members, too many methods
 # pylint: disable=W0212,R0904
 
-from hamcrest import assert_that
-from hamcrest import is_
+
 from hamcrest import is_not
-from hamcrest import has_entries
-from hamcrest import has_property
 from hamcrest import has_key
 from hamcrest import has_item
+from hamcrest import assert_that
+from hamcrest import has_entries
+from hamcrest import has_property
 from hamcrest import contains_string
 
-import unittest
-import fudge
 import csv
-
-from StringIO import StringIO
+import fudge
+from six import StringIO
 
 from nti.app.analytics.usage_stats import _VideoInfo
 from nti.app.analytics.usage_stats import _AverageWatchTimes
@@ -30,24 +28,29 @@ from nti.app.products.courseware_reports import VIEW_ASSIGNMENT_SUMMARY
 from nti.app.products.courseware_reports import VIEW_FORUM_PARTICIPATION
 from nti.app.products.courseware_reports import VIEW_TOPIC_PARTICIPATION
 from nti.app.products.courseware_reports import VIEW_STUDENT_PARTICIPATION
+
+from nti.dataserver.users.users import User
+
 from nti.app.products.courseware_reports.views.participation_views import StudentParticipationReportPdf
+
 from nti.app.products.courseware_reports.views.admin_views import StudentParticipationCSVView
+
+from nti.ntiids.ntiids import find_object_with_ntiid
 
 from nti.app.assessment.tests import RegisterAssignmentLayerMixin
 from nti.app.assessment.tests import RegisterAssignmentsForEveryoneLayer
 
 from nti.app.products.courseware.tests import InstructedCourseApplicationTestLayer
 
-from nti.app.testing.decorators import WithSharedApplicationMockDS
 from nti.app.testing.application_webtest import ApplicationLayerTest
+
+from nti.app.testing.decorators import WithSharedApplicationMockDS
+
 from nti.app.testing.request_response import DummyRequest
 
 from nti.contenttypes.courses.interfaces import ICourseInstance
 
 from nti.dataserver.tests import mock_dataserver
-from nti.dataserver.users.users import User
-
-from nti.ntiids.ntiids import find_object_with_ntiid
 
 
 class TestStudentParticipationReport(ApplicationLayerTest):
