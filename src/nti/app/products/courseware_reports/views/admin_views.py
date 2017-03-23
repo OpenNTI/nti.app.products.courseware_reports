@@ -70,6 +70,8 @@ from nti.dataserver.metadata_index import CATALOG_NAME
 from nti.dataserver.authorization import ACT_MODERATE
 from nti.dataserver.authorization import ACT_NTI_ADMIN
 
+from nti.ntiids.ntiids import is_ntiid_of_type
+
 from nti.property.property import CachedProperty
 from nti.property.property import Lazy
 
@@ -491,10 +493,23 @@ class StudentParticipationCSVView(AbstractAuthenticatedView):
 
         return qsets_by_student_in_course
 
+    def _get_users_from_request(self, request):
+
+        reader = csv.DictReader(request.body_file)
+        return set((User.get_user(x['username']) for x in reader))
+
+    def _get_all_videos(self):
+
+        catalog = get_catalog()
+        rs = catalog.search_objects(container_ntiids=(ICourseCatalogEntry(self.context).ntiid,),
+                                    sites=get_component_hierarchy_names(),
+                                    provided=INTIVideo)
+        videos = [x for x in rs]
+        return sorted(videos, key=lambda x: x.title)
+
     def __call__(self):
 
-        reader = csv.DictReader(self.request.body_file)
-        usernames = set((User.get_user(x['username']) for x in reader))
+        users = self._get_users_from_request(self.request)
 
         response = self.request.response
         response.content_encoding = str('identity')
@@ -505,20 +520,13 @@ class StudentParticipationCSVView(AbstractAuthenticatedView):
         stream = BytesIO()
         writer = csv.writer(stream)
 
-        # Get a list of all videos and their ntiids.
-        catalog = get_catalog()
-        rs = catalog.search_objects(container_ntiids=(ICourseCatalogEntry(self.context).ntiid,),
-                                    sites=get_component_hierarchy_names(),
-                                    provided=INTIVideo)
-
-        videos = [x for x in rs]
-        videos = sorted(videos, key=lambda x: x.title)
+        videos = self._get_all_videos()
 
         user_self_assess = dict()
         assignment_catalog = get_course_assignments(self.course)
         assessments = get_course_self_assessments(self.course)
         qset_submissions = self.get_qset_submissions(
-            [x.username for x in usernames])
+            [x.username for x in users])
         for submission in qset_submissions or ():
             if submission.creator.username not in user_self_assess:
                 user_self_assess[submission.creator.username] = dict()
@@ -535,7 +543,8 @@ class StudentParticipationCSVView(AbstractAuthenticatedView):
             header_row.append('[VideoCompleted] ' + video.title)
             header_row.append('[VideoViewCount] ' + video.title)
         for assignment in assignment_catalog:
-            header_row.append('[AssignmentGrade] ' + assignment.title)
+            header_row.append('[AssignmentGrade] ' + (assignment.title or ''))
+
         for assessment in assessments or ():
             title = assessment.title or getattr(
                 assessment.__parent__, 'title', '')
@@ -545,7 +554,7 @@ class StudentParticipationCSVView(AbstractAuthenticatedView):
         # For each username, generate a row of data. It's very important
         # that the fields in this row match the fields in the header, or
         # else the resulting CSV will be incorrect.
-        for user in usernames:
+        for user in users:
             row_data = [user.username]
 
             video_usage_stats = component.queryMultiAdapter(
@@ -569,7 +578,6 @@ class StudentParticipationCSVView(AbstractAuthenticatedView):
                     row_data.append('')
                     row_data.append('')
 
-            assignment_catalog = get_course_assignments(self.course)
             histories = component.getMultiAdapter((self.course, user),
                                                   IUsersCourseAssignmentHistory)
 
