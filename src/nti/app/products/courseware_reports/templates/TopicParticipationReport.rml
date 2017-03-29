@@ -186,11 +186,11 @@
 
 					<!-- Username header for comments: credit/non-credit -->
 					<tal:block tal:define="student_info python: all_user_comments[0]" >
-						<h3 style="h3" textColor="#3fb3f6"
+						<h3 style="h2" textColor="#3fb3f6"
 							tal:condition="python: scope_name == 'ForCredit'">
 							${student_info/display} (${student_info/username})
 						</h3>
-						<h3 style="h3" textColor="#40b450"
+						<h3 style="h2" textColor="#40b450"
 							tal:condition="not:python: scope_name == 'ForCredit'">
 							${student_info/display}
 						</h3>
@@ -198,48 +198,57 @@
 
 					<!-- HTML Cannot use 'structure', as embedded links will break the template -->
 					<!-- Can we avoid overflow errors, using pseudo tables? -->
-					<blockTable style="table_user_1"
-							alignment="left" colWidths="15% 15% 15% 55%"
-							repeatRows="1">
-						<tr>
-							<td>Name</td>
-							<td>Created</td>
-							<td>Modified</td>
-							<td>Comment</td>
-						</tr>
-						<tal:block tal:repeat="user_comment python: all_user_comments[1]">
-							<tr tal:condition="user_comment/parent">
-								<td background="#d3d3d3">
-									<para style="data" tal:content="user_comment/parent/display"
-										tal:attributes="textColor python: '#3fb3f6' if user_comment.parent.scope_name == 'ForCredit' else '#40b450'">
-										user1
-									</para>
-								</td>
-								<td background="#d3d3d3" tal:content="user_comment/parent/created">Yesterday</td>
-								<td background="#d3d3d3" tal:content="user_comment/parent/modified">Today</td>
-								<td background="#d3d3d3">
-									<para style="data" tal:content="user_comment/parent/content">
-										This course rocks!
-									</para>
-								</td>
-							</tr>
-							<tr>
-								<td tal:attributes="leftPadding python: 30 if user_comment.parent else 0">
-									<para style="data" tal:content="user_comment/display"
-										tal:attributes="textColor python: '#3fb3f6' if user_comment.scope_name == 'ForCredit' else '#40b450'">
-										user1
-									</para>
-								</td>
-								<td tal:content="user_comment/created">Yesterday</td>
-								<td tal:content="user_comment/modified">Today</td>
-								<td>
-									<para style="data" tal:content="user_comment/content">
-										This course rocks!
-									</para>
-								</td>
-							</tr>
-						</tal:block>
-					</blockTable>
+		
+					<tal:block tal:repeat="user_comment python: all_user_comments[1]">
+
+						<!-- If this is a reply to a parent comment, 
+						show the parent comment and timestamp first. -->
+						<para tal:condition="user_comment/parent"
+						tal:attributes="textColor python: '#3fb3f6' if user_comment.scope_name == 'ForCredit' else '#40b450'"
+						spaceBefore=".1in">
+						Parent comment at <span tal:content="user_comment/parent/created"></span>:
+						</para>
+
+						<para
+						tal:condition="user_comment/parent"
+						tal:content='user_comment/parent/content'>
+							Parent comment
+						</para>
+						
+						<!-- If we don't have a parent, this user "commented" -->
+						<para
+						tal:condition="not: user_comment/parent"
+						tal:attributes="textColor python: '#3fb3f6' if user_comment.scope_name == 'ForCredit' else '#40b450';"
+						spaceBefore=".1in">
+						<span tal:content="user_comment/display"></span> commented on <span tal:content="user_comment/created"></span>:
+						</para>
+
+						<!-- If we do have a parent, this user "replied" -->
+						<para
+						tal:condition="user_comment/parent"
+						tal:attributes="textColor python: '#3fb3f6' if user_comment.scope_name == 'ForCredit' else '#40b450';"
+						spaceBefore=".1in">
+						<span tal:content="user_comment/display"></span> replied on <span tal:content="user_comment/created"></span>:
+						</para>
+
+						<!-- Show the comment. It should be indented if it's a reply. -->
+						<para tal:condition="not: user_comment/parent"
+						tal:content="user_comment/content"
+						spaceAfter=".1in">
+							This course rocks!
+						</para>
+
+						<para tal:condition="user_comment/parent"
+						leftIndent="0.25in" 
+						tal:content="user_comment/content"
+						spaceAfter=".1in">
+							This course rocks!
+						</para>
+
+						<!-- Horizontal line to help visually separate comments -->
+						<hr padding="10px" width="100%" tal:attributes="topPadding python: 30"></hr>
+					</tal:block>
+
 
 				</tal:block> <!-- user-comments -->
 				</tal:block> <!-- tal define scope_alias -->
