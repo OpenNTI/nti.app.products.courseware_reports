@@ -700,8 +700,6 @@ _TopicInfo = namedtuple('_TopicInfo',
 _CommentInfo = namedtuple('_CommentInfo',
                           ('username', 'display', 'created', 'modified', 'content', 'parent', 'scope_name'))
 
-COMMENT_MAX_LENGTH = 2000
-
 
 @view_config(context=ICommunityHeadlineTopic,
              name=VIEW_TOPIC_PARTICIPATION)
