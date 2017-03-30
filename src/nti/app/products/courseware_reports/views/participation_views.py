@@ -434,9 +434,6 @@ class ForumParticipationReportPdf(_AbstractReportView):
         except TypeError:
             # Not sure what else we could do with these
             result = '<Non-displayable>'
-
-        if len(result) > COMMENT_MAX_LENGTH:
-            result = result[:COMMENT_MAX_LENGTH] + '...[TRUNCATED]'
         return result
 
     def _get_user_scope_name(self, username):
