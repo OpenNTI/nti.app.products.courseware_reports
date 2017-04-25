@@ -20,6 +20,9 @@ from pyramid.view import view_config
 
 from zope import component
 
+from zope.cachedescriptors.property import Lazy
+from zope.cachedescriptors.property import CachedProperty
+
 from zope.catalog.interfaces import ICatalog
 
 from zope.intid.interfaces import IIntIds
@@ -71,9 +74,6 @@ from nti.dataserver.authorization import ACT_MODERATE
 from nti.dataserver.authorization import ACT_NTI_ADMIN
 
 from nti.ntiids.ntiids import is_ntiid_of_type
-
-from nti.property.property import CachedProperty
-from nti.property.property import Lazy
 
 from nti.site.site import get_component_hierarchy_names
 
