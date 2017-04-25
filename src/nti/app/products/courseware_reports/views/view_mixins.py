@@ -23,6 +23,8 @@ from pyramid.view import view_defaults
 
 from z3c.pagelet.browser import BrowserPagelet
 
+from zope.cachedescriptors.property import Lazy
+
 from zope.catalog.interfaces import ICatalog
 
 from zope.intid.interfaces import IIntIds
@@ -50,8 +52,6 @@ from nti.dataserver.metadata_index import CATALOG_NAME
 from nti.dataserver.users import User
 
 from nti.dataserver.users.interfaces import IFriendlyNamed
-
-from nti.property.property import Lazy
 
 from nti.app.products.courseware_reports import MessageFactory as _
 

@@ -15,6 +15,8 @@ from six import string_types
 
 from zope import component
 
+from zope.cachedescriptors.property import Lazy
+
 from pyramid.view import view_config
 
 from nti.app.assessment.common import aggregate_course_inquiry
@@ -42,7 +44,6 @@ from nti.contentfragments.interfaces import IPlainTextContentFragment
 
 from nti.contenttypes.courses.interfaces import ICourseInstance
 
-from nti.property.property import Lazy 
 from nti.property.property import alias
 
 from nti.traversal.traversal import find_interface

@@ -14,6 +14,8 @@ from collections import namedtuple
 
 from pyramid.view import view_config
 
+from zope.cachedescriptors.property import Lazy
+
 from nti.app.products.courseware.interfaces import IVideoUsageStats
 from nti.app.products.courseware.interfaces import IResourceUsageStats
 
@@ -45,9 +47,8 @@ from nti.contenttypes.courses.common import get_course_content_units
 
 from nti.dataserver.interfaces import IDeletedObjectPlaceholder
 
-from nti.property.property import Lazy
-
 from nti.zope_catalog.catalog import ResultSet
+
 
 _EngagementPerfStat = \
     namedtuple('_EngagementPerfStat',

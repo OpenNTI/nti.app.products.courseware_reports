@@ -21,6 +21,8 @@ from lxml import html
 
 from zope import component
 
+from zope.cachedescriptors.property import Lazy
+
 from pyramid.view import view_config
 from pyramid.traversal import find_interface
 
@@ -78,8 +80,6 @@ from nti.dataserver.contenttypes.forums.interfaces import IGeneralForumComment
 from nti.dataserver.contenttypes.forums.interfaces import ICommunityHeadlineTopic
 
 from nti.ntiids.ntiids import is_ntiid_of_type
-
-from nti.property.property import Lazy
 
 from nti.site.site import get_component_hierarchy_names
 
