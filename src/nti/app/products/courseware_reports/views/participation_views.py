@@ -29,7 +29,6 @@ from pyramid.traversal import find_interface
 from nti.app.assessment.interfaces import IUsersCourseAssignmentHistory
 
 from nti.app.products.courseware.interfaces import ICourseInstanceEnrollment
-from nti.app.products.courseware.interfaces import IUserResourceUsageStats
 from nti.app.products.courseware.interfaces import IResourceUsageStats
 from nti.app.products.courseware.interfaces import IVideoUsageStats
 
@@ -84,8 +83,6 @@ from nti.ntiids.ntiids import is_ntiid_of_type
 from nti.site.site import get_component_hierarchy_names
 
 from nti.zope_catalog.catalog import ResultSet
-
-from reportlab.pdfbase.pdfmetrics import stringWidth
 
 
 class _AssignmentInfo(object):
@@ -281,10 +278,8 @@ class StudentParticipationReportPdf(_AbstractReportView):
             data['title'] = resource.title
             data['view_count'] = resource.view_event_count
             data['session_count'] = resource.session_count
-            data[
-                'total_watch_time'] = resource.watch_times.average_total_watch_time
-            data[
-                'average_session_watch_time'] = resource.watch_times.average_session_watch_time
+            data['total_watch_time'] = resource.watch_times.average_total_watch_time
+            data['average_session_watch_time'] = resource.watch_times.average_session_watch_time
             viewed_resource_ntiids.add(resource.ntiid)
             resource_data.append(data)
 
@@ -302,10 +297,8 @@ class StudentParticipationReportPdf(_AbstractReportView):
             data['title'] = video.title
             data['view_count'] = video.view_event_count
             data['session_count'] = video.session_count
-            data[
-                'total_watch_time'] = video.watch_times.average_total_watch_time
-            data[
-                'average_session_watch_time'] = video.watch_times.average_session_watch_time
+            data['total_watch_time'] = video.watch_times.average_total_watch_time
+            data['average_session_watch_time'] = video.watch_times.average_session_watch_time
             if video.number_watched_completely >= 1:
                 data['video_completion'] = True
             else:
