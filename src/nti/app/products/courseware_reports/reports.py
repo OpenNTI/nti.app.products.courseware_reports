@@ -3,28 +3,33 @@
 """
 .. $Id$
 """
+
 from __future__ import print_function, unicode_literals, absolute_import, division
 __docformat__ = "restructuredtext en"
 
 logger = __import__('logging').getLogger(__name__)
 
 import heapq
-from itertools import groupby, count
+from itertools import count
+from itertools import groupby
 from datetime import datetime
 from datetime import timedelta
 from collections import namedtuple
 from functools import total_ordering
 
-import nameparser
 import pytz
 import six
 import BTrees
+
+import nameparser
 
 from numpy import std
 from numpy import median
 from numpy import asarray
 from numpy import average
 from numbers import Number
+
+from zope.cachedescriptors.property import Lazy
 
 from nti.contentfragments.interfaces import IPlainTextContentFragment
 
@@ -41,8 +46,6 @@ from nti.dataserver.interfaces import IUser
 from nti.dataserver.users.users import User
 
 from nti.dataserver.users.interfaces import IFriendlyNamed
-
-from nti.property.property import Lazy
 
 from nti.schema.eqhash import EqHash
 
