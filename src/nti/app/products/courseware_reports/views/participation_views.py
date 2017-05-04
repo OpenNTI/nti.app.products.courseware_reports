@@ -278,8 +278,10 @@ class StudentParticipationReportPdf(_AbstractReportView):
             data['title'] = resource.title
             data['view_count'] = resource.view_event_count
             data['session_count'] = resource.session_count
-            data['total_watch_time'] = resource.watch_times.average_total_watch_time
-            data['average_session_watch_time'] = resource.watch_times.average_session_watch_time
+            data[
+                'total_watch_time'] = resource.watch_times.average_total_watch_time
+            data[
+                'average_session_watch_time'] = resource.watch_times.average_session_watch_time
             viewed_resource_ntiids.add(resource.ntiid)
             resource_data.append(data)
 
@@ -297,8 +299,10 @@ class StudentParticipationReportPdf(_AbstractReportView):
             data['title'] = video.title
             data['view_count'] = video.view_event_count
             data['session_count'] = video.session_count
-            data['total_watch_time'] = video.watch_times.average_total_watch_time
-            data['average_session_watch_time'] = video.watch_times.average_session_watch_time
+            data[
+                'total_watch_time'] = video.watch_times.average_total_watch_time
+            data[
+                'average_session_watch_time'] = video.watch_times.average_session_watch_time
             if video.number_watched_completely >= 1:
                 data['video_completion'] = True
             else:
@@ -688,7 +692,7 @@ class ForumParticipationReportPdf(_AbstractReportView):
         return options
 
 _TopicInfo = namedtuple('_TopicInfo',
-                        ('topic_name', 'forum_name'))
+                        ('topic_name', 'forum_name', 'topic_shortened_name'))
 
 _CommentInfo = namedtuple('_CommentInfo',
                           ('username', 'display', 'created', 'modified', 'content', 'parent', 'scope_name'))
@@ -721,7 +725,11 @@ class TopicParticipationReportPdf(ForumParticipationReportPdf):
     def _build_topic_info(self):
         topic_name = self.context.title
         forum_name = self.context.__parent__.title
-        return _TopicInfo(topic_name, forum_name)
+        # truncate shortened name to 50 characters and add
+        # elipsis points if necessary
+        topic_shortened_name = topic_name[:50] + '...' if len(topic_name) > 50 \
+            else topic_name
+        return _TopicInfo(topic_name, forum_name, topic_shortened_name)
 
     def __call__(self):
         """

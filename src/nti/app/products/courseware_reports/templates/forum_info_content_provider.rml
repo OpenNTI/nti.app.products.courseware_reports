@@ -4,7 +4,7 @@
 
 	<tr tal:condition="python: 'topic_info' in map">
 		<td>Discussion:</td>
-		<td tal:define="topic_info map/topic_info">${topic_info/forum_name}/${topic_info/topic_name}</td>
+		<td tal:define="topic_info map/topic_info">${topic_info/topic_shortened_name}</td>
 	</tr>
 	<tr tal:condition="python: 'topic_info' not in map">
 		<td>Forum:</td>

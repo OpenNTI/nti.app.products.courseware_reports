@@ -4,8 +4,9 @@
 	tal:define="options view/options">
 
 		<para style="normal" spaceAfter=".1in">
-			This report presents an overview of the <u>${context/title|context/__name__}</u> discussion.
-			It includes information about weekly participation, top commenters, and comment activity per student.
+			This report presents an overview of the <u>${context/title|context/__name__}</u> discussion 
+			in the <u>${options/topic_info/forum_name}</u> forum. It includes information about weekly 
+			participation, top commenters, and comment activity per student.
 		</para>
 		<hr width="100%" />
 
