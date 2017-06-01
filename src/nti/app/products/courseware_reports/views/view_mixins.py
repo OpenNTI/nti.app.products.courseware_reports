@@ -47,7 +47,7 @@ from nti.dataserver.interfaces import IDeletedObjectPlaceholder
 from nti.dataserver.interfaces import IEnumerableEntityContainer
 from nti.dataserver.interfaces import IUsernameSubstitutionPolicy
 
-from nti.dataserver.metadata_index import CATALOG_NAME
+from nti.dataserver.metadata.index import CATALOG_NAME
 
 from nti.dataserver.users import User
 

@@ -60,6 +60,8 @@ from nti.contenttypes.courses.interfaces import ICourseCatalogEntry
 
 from nti.contenttypes.courses.interfaces import ICourseAssignmentCatalog
 
+from nti.contenttypes.presentation import RELATED_WORK
+
 from nti.contenttypes.presentation.interfaces import INTIVideo
 
 from nti.dataserver.interfaces import IUser
@@ -68,10 +70,10 @@ from nti.dataserver.interfaces import IEnumerableEntityContainer
 
 from nti.dataserver.users.users import User
 
-from nti.dataserver.metadata_index import CATALOG_NAME
-
 from nti.dataserver.authorization import ACT_MODERATE
 from nti.dataserver.authorization import ACT_NTI_ADMIN
+
+from nti.dataserver.metadata.index import CATALOG_NAME
 
 from nti.ntiids.ntiids import is_ntiid_of_type
 
@@ -602,8 +604,7 @@ class StudentParticipationCSVView(AbstractAuthenticatedView):
     def _get_grade_from_assignment(self, assignment, user_histories):
         history_item = user_histories.get(assignment.ntiid)
         if history_item:
-            grade_value = getattr(
-                IGrade(history_item, None), 'value', '')
+            grade_value = getattr(IGrade(history_item, None), 'value', '')
             # Convert the webapp's "number - letter" scheme to a number, iff
             # the letter scheme is empty
             if grade_value and isinstance(grade_value, string_types) and grade_value.endswith(' -'):

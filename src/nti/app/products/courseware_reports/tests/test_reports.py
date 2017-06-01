@@ -41,7 +41,6 @@ from nti.app.products.courseware_reports.reports import _DateCategoryAccum
 
 from nti.app.products.courseware_reports.reports import _adjust_date
 from nti.app.products.courseware_reports.reports import _TopCreators
-from nti.app.products.courseware_reports.reports import StudentInfo
 from nti.app.products.courseware_reports.reports import _common_buckets
 from nti.app.products.courseware_reports.reports import _get_top_answers
 from nti.app.products.courseware_reports.reports import _format_datetime
