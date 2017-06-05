@@ -29,7 +29,11 @@ from numpy import asarray
 from numpy import average
 from numbers import Number
 
+from zope import interface
+
 from zope.cachedescriptors.property import Lazy
+
+from nti.app.products.courseware_reports.interfaces import IInstructorReport
 
 from nti.contentfragments.interfaces import IPlainTextContentFragment
 
@@ -48,6 +52,10 @@ from nti.dataserver.users.users import User
 from nti.dataserver.users.interfaces import IFriendlyNamed
 
 from nti.schema.eqhash import EqHash
+
+from nti.schema.fieldproperty import createDirectFieldProperties
+
+from nti.schema.schema import SchemaConfigured
 
 from nti.site.site import get_component_hierarchy_names
 
@@ -720,3 +728,15 @@ def _do_get_containers_in_course( course ):
 	containers_in_course.discard( None )
 
 	return containers_in_course
+
+@interface.implementer(IInstructorReport)
+class InstructorReport(SchemaConfigured):
+	"""
+	Concrete class for building an instructor
+	report.
+	"""
+	createDirectFieldProperties(IInstructorReport)
+	
+	def __init__(self, *args, **kwargs):
+		SchemaConfigured.__init__(self, **kwargs)
+	

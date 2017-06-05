@@ -17,10 +17,13 @@ from zope.security.permission import Permission
 
 from nti.schema.field import TextLine
 
+from nti.contenttypes.reports.interfaces import IReport
+
 # Until we have true pluggable auth-folders that we traverse through
 # we might add instructors to a role having this permission using
 # traversal events
 ACT_VIEW_REPORTS = Permission('nti.actions.courseware_reports.view_reports')
+
 
 class IPDFReportView(interface.Interface):
 	"""
@@ -33,12 +36,18 @@ class IPDFReportView(interface.Interface):
 	"""
 
 	filename = TextLine(title="The final portion of the file name, usually the view name",
-						required=False,
-						default="")
+                     required=False,
+                     default="")
 
 	report_title = TextLine(title="The title of the report.")
+
 
 class IPDFReportHeaderManager(IViewletManager):
 	"""
 	Viewlet manager for the headers of pdf reports.
 	"""
+
+class IInstructorReport(IReport):
+    """
+    Interface defining a report to be viewed by an instructor
+    """

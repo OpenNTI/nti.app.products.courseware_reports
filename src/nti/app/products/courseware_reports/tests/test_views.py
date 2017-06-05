@@ -66,11 +66,11 @@ class TestStudentParticipationReport(ApplicationLayerTest):
         self.testapp.post_json('/dataserver2/users/sjohnson@nextthought.com/Courses/EnrolledCourses',
                                'tag:nextthought.com,2011-10:NTI-CourseInfo-Fall2013_CLC3403_LawAndJustice',
                                status=201)
-
+        
         instructor_environ = self._make_extra_environ(username='harp4162')
         admin_courses = self.testapp.get('/dataserver2/users/harp4162/Courses/AdministeredCourses/',
                                          extra_environ=instructor_environ)
-
+        
         # Get our student from the roster
         course_instance = admin_courses.json_body.get(
             'Items')[0].get('CourseInstance')

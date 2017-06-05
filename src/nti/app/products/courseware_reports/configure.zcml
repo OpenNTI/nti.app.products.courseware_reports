@@ -16,6 +16,12 @@
 	<include file="meta.zcml" package="zope.security" />
 	<include file="meta.zcml" package="zope.securitypolicy" />
 	<include file="meta.zcml" package="nti.securitypolicy" />
+	
+	<include package="nti.contenttypes.reports" />
+	
+	<ext:registerAutoPackageIO
+		root_interfaces=".interfaces.IInstructorReport"
+		modules=".reports" />
 
 	<!-- This should happen early -->
 	<include package="nti.app.pyramid_zope" />
@@ -38,6 +44,12 @@
 	<permission
 		id="nti.actions.courseware_reports.view_reports"
 		title="View reports" />
+
+	<!-- Report Permissions -->
+	<subscriber factory=".permissions.InstructorReportPermission"
+				provides="nti.contenttypes.reports.interfaces.IReportPredicate"
+				for="nti.app.products.courseware_reports.interfaces.IInstructorReport
+					 nti.dataserver.interfaces.IUser" />
 
 	<!--
 		The instructors/TA of a course (locally added to this role

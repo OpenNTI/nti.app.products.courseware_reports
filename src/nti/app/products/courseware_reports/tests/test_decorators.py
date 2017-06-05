@@ -31,7 +31,7 @@ from nti.app.products.courseware_reports.decorators import _TopicParticipationRe
 from nti.app.products.courseware_reports.decorators import _StudentParticipationReport
 from nti.app.products.courseware_reports.decorators import _SelfAssessmentSummaryReport
 
-class TestDecorators( unittest.TestCase ):
+class TestDecorators(unittest.TestCase):
 
 	def test_student_participation_decorator(self):
 		spr = _StudentParticipationReport(object(), None)
@@ -42,7 +42,7 @@ class TestDecorators( unittest.TestCase ):
 		assert_that(result, is_(not_none()))
 
 		assert_that(result, has_entry('Links',
-								contains(has_property('rel', 'report-%s' % VIEW_STUDENT_PARTICIPATION))))
+                                contains(has_property('rel', 'report-%s' % VIEW_STUDENT_PARTICIPATION))))
 
 	def test_forum_participation_decorator(self):
 		spr = _ForumParticipationReport(object(), None)
@@ -53,7 +53,7 @@ class TestDecorators( unittest.TestCase ):
 		assert_that(result, is_(not_none()))
 
 		assert_that(result, has_entry('Links',
-								contains(has_property('rel', 'report-%s' % VIEW_FORUM_PARTICIPATION))))
+                                contains(has_property('rel', 'report-%s' % VIEW_FORUM_PARTICIPATION))))
 
 	def test_topic_participation_decorator(self):
 		spr = _TopicParticipationReport(object(), None)
@@ -64,7 +64,7 @@ class TestDecorators( unittest.TestCase ):
 		assert_that(result, is_(not_none()))
 
 		assert_that(result, has_entry('Links',
-								contains(has_property('rel', 'report-%s' % VIEW_TOPIC_PARTICIPATION))))
+                                contains(has_property('rel', 'report-%s' % VIEW_TOPIC_PARTICIPATION))))
 
 	def test_course_summary_decorator(self):
 		spr = _CourseSummaryReport(object(), None)
@@ -75,7 +75,7 @@ class TestDecorators( unittest.TestCase ):
 		assert_that(result, is_(not_none()))
 
 		assert_that(result, has_entry('Links',
-								contains(has_property('rel', 'report-%s' % VIEW_COURSE_SUMMARY))))
+                                contains(has_property('rel', 'report-%s' % VIEW_COURSE_SUMMARY))))
 
 	def test_self_assessment_summary_decorator(self):
 		spr = _SelfAssessmentSummaryReport(object(), None)
@@ -86,11 +86,12 @@ class TestDecorators( unittest.TestCase ):
 		assert_that(result, is_(not_none()))
 
 		assert_that(result, has_entry('Links',
-								contains(has_property('rel', 'report-%s' % VIEW_SELF_ASSESSMENT_SUMMARY))))
+                                contains(has_property('rel', 'report-%s' % VIEW_SELF_ASSESSMENT_SUMMARY))))
 
-	@fudge.patch( 'nti.app.products.courseware_reports.decorators._AssignmentSummaryReport._gradebook_entry' )
+	@fudge.patch(
+		'nti.app.products.courseware_reports.decorators._AssignmentSummaryReport._gradebook_entry')
 	def test_assignment_history_decorator(self, mock_gradebook_entry):
-		mock_gradebook_entry.is_callable().returns( object() )
+		mock_gradebook_entry.is_callable().returns(object())
 		spr = _AssignmentSummaryReport(object(), None)
 		result = {}
 		spr._do_decorate_external(object(), result)
@@ -99,4 +100,5 @@ class TestDecorators( unittest.TestCase ):
 		assert_that(result, is_(not_none()))
 
 		assert_that(result, has_entry('Links',
-								contains(has_property('rel', 'report-%s' % VIEW_ASSIGNMENT_SUMMARY))))
+                                contains(has_property('rel', 'report-%s' % VIEW_ASSIGNMENT_SUMMARY))))
+			
