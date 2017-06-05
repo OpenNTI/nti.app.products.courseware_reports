@@ -22,7 +22,9 @@ from nti.dataserver.interfaces import IUser
 
 @interface.implementer(IReportPredicate)
 @component.adapter(IInstructorReport, IUser)
-class InstructorReportPermission():
+class InstructorReportPermission(object):
+
+    __slots__ = ()
 
     def __init__(self, *args, **kwargs):
         pass

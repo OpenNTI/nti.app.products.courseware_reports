@@ -4,7 +4,7 @@
 .. $Id$
 """
 
-from __future__ import print_function, unicode_literals, absolute_import, division
+from __future__ import print_function, absolute_import, division
 __docformat__ = "restructuredtext en"
 
 logger = __import__('logging').getLogger(__name__)
@@ -67,7 +67,8 @@ def find_course_for_user(data, user, request=None):
         # Try to find the course within the context of the user;
         # this takes into account the user's enrollment status
         # to find the best course (sub) instance
-        course = component.queryMultiAdapter((data, user), ICourseInstance)
+        course = component.queryMultiAdapter((data, user), 
+                                             ICourseInstance)
 
     if course is None:
         # Ok, can we get there genericlly, as in the old-school
@@ -77,8 +78,8 @@ def find_course_for_user(data, user, request=None):
             # Hmm, maybe we have an assignment-like object and we can
             # try to find the content package it came from and from there
             # go to the one-to-one mapping to courses we used to have
-            course = ICourseInstance(find_interface(data, IContentPackage, strict=False),
-                                     None)
+            package = find_interface(data, IContentPackage, strict=False)
+            course = ICourseInstance(package, None)
         if course is not None:
             # Snap. Well, we found a course (good!), but not by taking
             # the user into account (bad!)

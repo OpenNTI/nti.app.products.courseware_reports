@@ -8,30 +8,24 @@ logger = __import__('logging').getLogger(__name__)
 
 import functools
 
-from zope import interface
-from zope import component
-
 from zope.interface.interface import InterfaceClass
 
-from zope.component.zcml import subscriber
 from zope.component.zcml import utility
+from zope.component.zcml import subscriber
 
-from zope.configuration.fields import Tokens
-from zope.configuration.fields import GlobalObject
+from nti.app.products.courseware_reports.interfaces import IInstructorReport
 
 from nti.base._compat import text_
 
-from nti.contenttypes.reports.interfaces import IReportContext
 from nti.contenttypes.reports.interfaces import IReport
+from nti.contenttypes.reports.interfaces import IReportContext
 
 from nti.app.products.courseware_reports.reports import InstructorReport
 
 from nti.contenttypes.reports.zcml import IRegisterReport
-from nti.contenttypes.reports.zcml import registerReport
-
-from nti.app.products.courseware_reports.interfaces import IInstructorReport
 
 from nti.schema.field import TextLine
+
 
 class IRegisterInstructorReport(IRegisterReport):
     """
