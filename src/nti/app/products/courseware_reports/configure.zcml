@@ -17,8 +17,6 @@
 	<include file="meta.zcml" package="zope.securitypolicy" />
 	<include file="meta.zcml" package="nti.securitypolicy" />
 	
-	<include package="nti.contenttypes.reports" />
-	
 	<ext:registerAutoPackageIO
 		root_interfaces=".interfaces.IInstructorReport"
 		modules=".reports" />
