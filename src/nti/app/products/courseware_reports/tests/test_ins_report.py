@@ -1,24 +1,25 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from __future__ import print_function, unicode_literals, absolute_import, division
+from __future__ import print_function, absolute_import, division
 __docformat__ = "restructuredtext en"
 
 # disable: accessing protected members, too many methods
 # pylint: disable=W0212,R0904
 
-import functools
-import json
 
-from hamcrest import assert_that
-from hamcrest import has_length
+from hamcrest import not_none
 from hamcrest import equal_to
-from hamcrest import has_property
 from hamcrest import has_item
 from hamcrest import has_entry
+from hamcrest import has_length
+from hamcrest import assert_that
 from hamcrest import has_entries
-from hamcrest import not_none
 from hamcrest import contains_inanyorder
+
+import functools
+
+import json
 
 from zope import component
 
@@ -34,7 +35,7 @@ from nti.app.testing.application_webtest import ApplicationLayerTest
 
 from nti.app.testing.decorators import WithSharedApplicationMockDS
 
-from nti.contenttypes.courses.interfaces import ICourseInstance, INSTRUCTOR
+from nti.contenttypes.courses.interfaces import ICourseInstance
 
 from nti.contenttypes.reports.reports import evaluate_permission
 
@@ -52,25 +53,23 @@ CLASS = StandardExternalFields.CLASS
 
 class TestInstructorReport(ApplicationLayerTest):
     """
-    Test the permissions on an
-    instructor report
+    Test the permissions on an instructor report
     """
 
     layer = PersistentInstructedCourseApplicationTestLayer
 
     # Course ntiid
-    course_ntiid = 'tag:nextthought.com,2011-10:OU-HTML-CLC3403_LawAndJustice.course_info'
+    course_ntiid = u'tag:nextthought.com,2011-10:OU-HTML-CLC3403_LawAndJustice.course_info'
 
     # Known instructor for the above course
-    instructor_username = "harp4162"
+    instructor_username = u"harp4162"
 
     # Student username
-    student_username = "sjohnson@nextthought.com"
+    student_username = u"sjohnson@nextthought.com"
 
-    default_origin = b'http://janux.ou.edu'
+    default_origin = 'http://janux.ou.edu'
 
-    @WithSharedApplicationMockDS(
-        testapp=True, users=True, default_authenticate=True)
+    @WithSharedApplicationMockDS(testapp=True, users=True, default_authenticate=True)
     def test_instructor_permissions(self):
 
         # Open transaction to test the permissions
@@ -98,17 +97,16 @@ class TestInstructorReport(ApplicationLayerTest):
             assert_that(reports, has_length(2))
 
             # Evaluate the permissions on both reports
-            ins_perm = evaluate_permission(
-                reports[0], course_instance_obj, ins_user_obj)
-            stu_perm = evaluate_permission(
-                reports[0], course_instance_obj, stu_user_obj)
+            ins_perm = evaluate_permission(reports[0], 
+                                           course_instance_obj, ins_user_obj)
+            stu_perm = evaluate_permission(reports[0], 
+                                           course_instance_obj, stu_user_obj)
 
             # Be sure the values we received are correct
             assert_that(ins_perm, equal_to(True))
             assert_that(stu_perm, equal_to(False))
 
-    @WithSharedApplicationMockDS(
-        testapp=True, users=True, default_authenticate=True)
+    @WithSharedApplicationMockDS(testapp=True, users=True, default_authenticate=True)
     def test_instructor_decoration(self):
         # Register the test report
         self._register_report(u"AnotherTestReport",
@@ -127,25 +125,22 @@ class TestInstructorReport(ApplicationLayerTest):
         # Be sure course has all of the relevant items where
         # the link should be
         assert_that(response_dict, has_entry("Items", not_none()))
-        assert_that(
-            response_dict["Items"],
-            has_item(
-                has_entry(
-                    "CourseInstance",
-                    not_none())))
+        assert_that(response_dict["Items"],
+                    has_item(has_entry("CourseInstance", not_none())))
 
         # Be sure the link came our correctly
-        assert_that(response_dict["Items"][0]["CourseInstance"], has_entry("Links",
-                                                                           has_item(has_entry("rel", "report-AnotherTestReport"))))
+        assert_that(response_dict["Items"][0]["CourseInstance"], 
+                    has_entry("Links",
+                              has_item(has_entry("rel", "report-AnotherTestReport"))))
 
     def test_instructor_externalization(self):
 
         # Create test report
-        report = InstructorReport(name="Test",
-                                  description="TestDescription",
+        report = InstructorReport(name=u"Test",
+                                  description=u"TestDescription",
                                   interface_context=ICourseInstance,
                                   permission=None,
-                                  supported_types=["csv", "pdf"])
+                                  supported_types=[u"csv", u"pdf"])
 
         # Externalize the object
         ext_obj = to_external_object(report)

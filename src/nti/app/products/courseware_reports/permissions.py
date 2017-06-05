@@ -11,7 +11,6 @@ from zope import interface
 
 from nti.app.products.courseware_reports.interfaces import IInstructorReport
 
-from nti.contenttypes.reports.interfaces import IReport
 from nti.contenttypes.reports.interfaces import IReportPredicate
 
 from nti.contenttypes.courses.interfaces import ICourseInstance
@@ -19,8 +18,6 @@ from nti.contenttypes.courses.interfaces import ICourseInstance
 from nti.contenttypes.courses.utils import get_course_instructors
 
 from nti.dataserver.interfaces import IUser
-
-from nti.dataserver.authorization_acl import has_permission
 
 
 @interface.implementer(IReportPredicate)
@@ -31,7 +28,7 @@ class InstructorReportPermission():
         pass
 
     def evaluate(self, report, context, user):
-        # Get the course. 
+        # Get the course.
         course = self._get_course_instance(context)
         # Get the instructors for the course
         instructors = get_course_instructors(course)
