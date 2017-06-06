@@ -10,9 +10,9 @@ __docformat__ = "restructuredtext en"
 import unittest
 
 from hamcrest import not_none
-from hamcrest import has_length
 from hamcrest import assert_that
-from hamcrest import has_property
+from hamcrest import has_properties
+from hamcrest import has_item
 from hamcrest import contains_inanyorder
 from hamcrest import equal_to
 
@@ -46,6 +46,7 @@ HEAD_ZCML_STRING = u"""
 
     <configure>
         <rep:registerInstructorReport name="TestReport"
+                            title="Test Report"
                             description="TestDescription"
                             interface_context="nti.contenttypes.reports.tests.ITestReportContext"
                             supported_types="csv pdf" />
@@ -77,22 +78,18 @@ class TestZcml(unittest.TestCase):
         
         # Be sure that the subscriber we ended up with matches the test registration in the
         # sample ZCML
-        assert_that(reports, has_length(1))
-        uti = reports[0]
-        assert_that(uti, has_property("name", "TestReport"))
-        assert_that(uti, has_property("description", "TestDescription"))
-        assert_that(uti, has_property("interface_context", not_none()))
-        assert_that(uti, has_property("supported_types",
-                                      contains_inanyorder("pdf", "csv")))
-        assert_that(uti, has_property("permission", equal_to(None)))
+        assert_that(reports, not_none())
+        assert_that(reports, has_item(has_properties("name", "TestReport",
+                                                     "title", "Test Report",
+                                                     "description", "TestDescription",
+                                                     "interface_context", not_none(),
+                                                     "supported_types", contains_inanyorder("pdf", "csv"))))
 
         ut_reports = list(component.getAllUtilitiesRegisteredFor(IReport))
-        assert_that(ut_reports, has_length(1))
-        uti = ut_reports[0]
-        assert_that(uti, has_property("name", "TestReport"))
-        assert_that(uti, has_property("description", "TestDescription"))
-        assert_that(uti, has_property("interface_context", not_none()))
-        assert_that(uti, has_property("supported_types",
-                                      contains_inanyorder("pdf", "csv")))
-        assert_that(uti, has_property("permission", equal_to(None)))
+        assert_that(ut_reports, not_none())
+        assert_that(reports, has_item(has_properties("name", "TestReport",
+                                                     "title", "Test Report",
+                                                     "description", "TestDescription",
+                                                     "interface_context", not_none(),
+                                                     "supported_types", contains_inanyorder("pdf", "csv"))))
         

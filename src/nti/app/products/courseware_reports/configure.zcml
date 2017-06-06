@@ -6,6 +6,7 @@
 			xmlns:sp="http://nextthought.com/ntp/securitypolicy"
 			xmlns:zcml="http://namespaces.zope.org/zcml"
 			xmlns:z3c="http://namespaces.zope.org/z3c"
+			xmlns:rep="http://nextthought.com/reports"
 			i18n_domain="nti.app.products.courseware_reports">
 
 	<include package="zope.component" file="meta.zcml" />
@@ -48,6 +49,16 @@
 				provides="nti.contenttypes.reports.interfaces.IReportPredicate"
 				for="nti.app.products.courseware_reports.interfaces.IInstructorReport
 					 nti.dataserver.interfaces.IUser" />
+	
+	<!-- Report Registration -->
+	<include package="nti.contenttypes.reports"/>
+	<include file="meta.zcml" package="nti.contenttypes.reports"/>
+	
+	<rep:registerInstructorReport name="CourseSummaryReport.pdf"
+								  title="Course Summary Report"
+								  description="Course summary of student engagement and assessment"
+								  interface_context="nti.contenttypes.courses.interfaces.ICourseInstance"
+								  supported_types="pdf" />
 
 	<!--
 		The instructors/TA of a course (locally added to this role
@@ -86,10 +97,6 @@
 
 	<!-- A subscriber for getting the topic participation report from the topic -->
 	<subscriber factory=".decorators._TopicParticipationReport"
-				provides="nti.externalization.interfaces.IExternalMappingDecorator" />
-
-	<!-- A subscriber for getting the course summary report from the course info tab -->
-	<subscriber factory=".decorators._CourseSummaryReport"
 				provides="nti.externalization.interfaces.IExternalMappingDecorator" />
 
 	<!-- A subscriber for getting the assignment summary report from the gradebook -->

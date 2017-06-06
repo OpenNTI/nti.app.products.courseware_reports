@@ -23,18 +23,18 @@ from nti.dataserver.interfaces import IUser
 @interface.implementer(IReportPredicate)
 @component.adapter(IInstructorReport, IUser)
 class InstructorReportPermission(object):
-
+    """
+    Evaluate if a user has permission to access
+    a report within the context
+    """
     __slots__ = ()
 
     def __init__(self, *args, **kwargs):
         pass
 
     def evaluate(self, report, context, user):
-        # Get the course.
         course = self._get_course_instance(context)
-        # Get the instructors for the course
         instructors = get_course_instructors(course)
-        # Return if the user is in the instructorset
         return user.username in instructors
 
     def _get_course_instance(self, context):

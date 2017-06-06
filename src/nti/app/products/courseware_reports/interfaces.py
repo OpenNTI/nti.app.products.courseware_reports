@@ -51,3 +51,5 @@ class IInstructorReport(IReport):
     """
     Interface defining a report to be viewed by an instructor
     """
+    permission = TextLine(title=u"The permission level required to access this report",
+						required=False)

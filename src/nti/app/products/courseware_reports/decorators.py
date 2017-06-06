@@ -78,10 +78,10 @@ class _StudentParticipationReport(_AbstractInstructedByDecorator):
 	"""
 	A link to return the student participation report.
 	"""
-
+ 
 	def _course_from_context(self, context):
 		return ICourseInstance(context)
-
+ 
 	def _do_decorate_external(self, context, result_map):
 		links = result_map.setdefault(LINKS, [])
 		links.append(Link(context,
@@ -133,20 +133,6 @@ class _TopicParticipationReport(_AbstractInstructedByDecorator):
 						  rel='report-%s' % VIEW_TOPIC_PARTICIPATION,
 						  elements=('@@'+VIEW_TOPIC_PARTICIPATION,),
 						  title=_('Topic Participation Report')))
-
-@interface.implementer(IExternalMappingDecorator)
-@component.adapter(ICourseInstance, IRequest)
-class _CourseSummaryReport(_AbstractInstructedByDecorator):
-	"""
-	A link to return the course summary report.
-	"""
-
-	def _do_decorate_external(self, context, result_map):
-		links = result_map.setdefault(LINKS, [])
-		links.append(Link(context,
-						  rel='report-%s' % VIEW_COURSE_SUMMARY,
-						  elements=('@@'+VIEW_COURSE_SUMMARY,),
-						  title=_('Course Summary Report')))
 
 @interface.implementer(IExternalMappingDecorator)
 @component.adapter(ICourseInstance, IRequest)

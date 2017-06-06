@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import print_function, unicode_literals, absolute_import, division
+from nti.contenttypes.courses.interfaces import ICourseInstance
 __docformat__ = "restructuredtext en"
 
 # disable: accessing protected members, too many methods
@@ -9,6 +10,7 @@ __docformat__ = "restructuredtext en"
 
 import fudge
 import unittest
+import json
 
 from hamcrest import is_
 from hamcrest import contains
@@ -17,14 +19,12 @@ from hamcrest import has_entry
 from hamcrest import assert_that
 from hamcrest import has_property
 
-from nti.app.products.courseware_reports import VIEW_COURSE_SUMMARY
 from nti.app.products.courseware_reports import VIEW_ASSIGNMENT_SUMMARY
 from nti.app.products.courseware_reports import VIEW_FORUM_PARTICIPATION
 from nti.app.products.courseware_reports import VIEW_TOPIC_PARTICIPATION
 from nti.app.products.courseware_reports import VIEW_STUDENT_PARTICIPATION
 from nti.app.products.courseware_reports import VIEW_SELF_ASSESSMENT_SUMMARY
 
-from nti.app.products.courseware_reports.decorators import _CourseSummaryReport
 from nti.app.products.courseware_reports.decorators import _AssignmentSummaryReport
 from nti.app.products.courseware_reports.decorators import _ForumParticipationReport
 from nti.app.products.courseware_reports.decorators import _TopicParticipationReport
@@ -37,10 +37,10 @@ class TestDecorators(unittest.TestCase):
 		spr = _StudentParticipationReport(object(), None)
 		result = {}
 		spr._do_decorate_external(object(), result)
-
+ 
 		assert(result is not None)
 		assert_that(result, is_(not_none()))
-
+ 
 		assert_that(result, has_entry('Links',
                                 contains(has_property('rel', 'report-%s' % VIEW_STUDENT_PARTICIPATION))))
 
@@ -66,17 +66,6 @@ class TestDecorators(unittest.TestCase):
 		assert_that(result, has_entry('Links',
                                 contains(has_property('rel', 'report-%s' % VIEW_TOPIC_PARTICIPATION))))
 
-	def test_course_summary_decorator(self):
-		spr = _CourseSummaryReport(object(), None)
-		result = {}
-		spr._do_decorate_external(object(), result)
-
-		assert(result is not None)
-		assert_that(result, is_(not_none()))
-
-		assert_that(result, has_entry('Links',
-                                contains(has_property('rel', 'report-%s' % VIEW_COURSE_SUMMARY))))
-
 	def test_self_assessment_summary_decorator(self):
 		spr = _SelfAssessmentSummaryReport(object(), None)
 		result = {}
@@ -101,4 +90,8 @@ class TestDecorators(unittest.TestCase):
 
 		assert_that(result, has_entry('Links',
                                 contains(has_property('rel', 'report-%s' % VIEW_ASSIGNMENT_SUMMARY))))
+
+        
+		
+		
 			
