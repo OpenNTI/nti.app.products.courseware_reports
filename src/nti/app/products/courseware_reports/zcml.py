@@ -24,6 +24,7 @@ class IRegisterInstructorReport(IRegisterReport):
     Interface representing a registration of a new instructor report, defining behavior
     of the various fields
     """
+
     permission = TextLine(title=u"The permission level required to access this report",
                           required=False)
 
