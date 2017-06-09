@@ -28,7 +28,7 @@ class IRegisterInstructorReport(IRegisterReport):
     permission = TextLine(title=u"The permission level required to access this report",
                           required=False)
 
-def registerInstructorReport(_context, name, title, description, interface_context,
+def registerInstructorReport(_context, name, title, description, contexts,
                              supported_types, registration_name=None):
     """
     Take the items from ZCML, turn it into a report object and register it as a
@@ -36,8 +36,8 @@ def registerInstructorReport(_context, name, title, description, interface_conte
     """
     registerReport(_context, name, title, description,
                    permission=None,
+                   contexts=contexts,
                    supported_types=supported_types,
-                   interface_context=interface_context,
                    registration_name=registration_name,
                    report_class=InstructorReport,
                    report_interface=IInstructorReport)

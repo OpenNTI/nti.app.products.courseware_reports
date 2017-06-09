@@ -57,7 +57,7 @@
 	<rep:registerInstructorReport name="CourseSummaryReport.pdf"
 								  title="Course Summary Report"
 								  description="Course summary of student engagement and assessment"
-								  interface_context="nti.contenttypes.courses.interfaces.ICourseInstance"
+								  contexts="nti.contenttypes.courses.interfaces.ICourseInstance"
 								  supported_types="pdf" />
 
 	<!--

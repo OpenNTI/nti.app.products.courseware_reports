@@ -7,14 +7,13 @@ __docformat__ = "restructuredtext en"
 # disable: accessing protected members, too many methods
 # pylint: disable=W0212,R0904
 
-import unittest
-
+from hamcrest import has_item
 from hamcrest import not_none
 from hamcrest import assert_that
 from hamcrest import has_properties
-from hamcrest import has_item
 from hamcrest import contains_inanyorder
-from hamcrest import equal_to
+
+import unittest
 
 from zope import component
 from zope import interface
@@ -25,8 +24,6 @@ from zope.configuration import xmlconfig
 from nti.app.products.courseware_reports.interfaces import IInstructorReport
 
 from nti.contenttypes.reports.interfaces import IReport
-
-from nti.contenttypes.reports.reports import ReportContext
 
 from nti.contenttypes.reports.tests import ITestReportContext
 
@@ -48,7 +45,7 @@ HEAD_ZCML_STRING = u"""
         <rep:registerInstructorReport name="TestReport"
                             title="Test Report"
                             description="TestDescription"
-                            interface_context="nti.contenttypes.reports.tests.ITestReportContext"
+                            contexts="nti.contenttypes.reports.tests.ITestReportContext"
                             supported_types="csv pdf" />
     </configure>
 </configure>
