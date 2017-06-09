@@ -51,14 +51,16 @@ HEAD_ZCML_STRING = u"""
 </configure>
 """
 
+
 @interface.implementer(ITestReportContext)
 class TestReportContext():
     pass
 
+
 class TestZcml(unittest.TestCase):
-    
+
     get_config_package = AbstractTestBase.get_configuration_package.__func__
-    
+
     def test_zcml(self):
         # Using the above ZCML string, set up the temporary configuration and run the string
         # through ZCML processor
@@ -66,27 +68,26 @@ class TestZcml(unittest.TestCase):
         context.package = self.get_config_package()
         xmlconfig.registerCommonDirectives(context)
         xmlconfig.string(HEAD_ZCML_STRING, context)
-        
+
         # Build test object
         test_context = TestReportContext()
 
         # Get all subscribers that are registered to an IReport object
         reports = component.subscribers((test_context,), IInstructorReport)
-        
+
         # Be sure that the subscriber we ended up with matches the test registration in the
         # sample ZCML
         assert_that(reports, not_none())
         assert_that(reports, has_item(has_properties("name", "TestReport",
                                                      "title", "Test Report",
+                                                     "contexts", not_none(),
                                                      "description", "TestDescription",
-                                                     "interface_context", not_none(),
                                                      "supported_types", contains_inanyorder("pdf", "csv"))))
 
         ut_reports = list(component.getAllUtilitiesRegisteredFor(IReport))
         assert_that(ut_reports, not_none())
         assert_that(reports, has_item(has_properties("name", "TestReport",
                                                      "title", "Test Report",
+                                                     "contexts", not_none(),
                                                      "description", "TestDescription",
-                                                     "interface_context", not_none(),
                                                      "supported_types", contains_inanyorder("pdf", "csv"))))
-        

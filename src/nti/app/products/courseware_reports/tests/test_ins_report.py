@@ -11,6 +11,7 @@ from hamcrest import equal_to
 from hamcrest import has_item
 from hamcrest import not_none
 from hamcrest import has_entry
+from hamcrest import has_length
 from hamcrest import assert_that
 from hamcrest import has_entries
 from hamcrest import contains_inanyorder
@@ -36,6 +37,7 @@ from nti.app.testing.decorators import WithSharedApplicationMockDS
 from nti.contenttypes.courses.interfaces import ICourseInstance
 
 from nti.contenttypes.reports.reports import evaluate_permission
+from nti.contenttypes.reports.reports import DefaultReportAvailablePredicate
 
 from nti.dataserver.tests import mock_dataserver
 
@@ -81,7 +83,7 @@ class TestInstructorReport(ApplicationLayerTest):
             self._register_report(u"TestReport",
                                   u"Test Report",
                                   u"TestDescription",
-                                  ICourseInstance,
+                                  (ICourseInstance,),
                                   [u"csv", u"pdf"])
 
             reports = component.subscribers(
@@ -106,7 +108,7 @@ class TestInstructorReport(ApplicationLayerTest):
         self._register_report(u"AnotherTestReport",
                               u"Another Test Report",
                               u"AnotherTestDescription",
-                              ICourseInstance,
+                              (ICourseInstance,),
                               [u"csv", u"pdf"])
 
         instructor_environ = self._make_extra_environ(username='harp4162')
@@ -131,7 +133,7 @@ class TestInstructorReport(ApplicationLayerTest):
         report = InstructorReport(name=u"Test",
                                   title=u"Test",
                                   description=u"TestDescription",
-                                  interface_context=ICourseInstance,
+                                  contexts=(ICourseInstance,),
                                   supported_types=[u"csv", u"pdf"])
         
         ext_obj = to_external_object(report)
@@ -141,23 +143,23 @@ class TestInstructorReport(ApplicationLayerTest):
                                 "name", "Test",
                                 "title", "Test",
                                 "description", "TestDescription",
-                                "interface_context", has_entry(CLASS,
-                                                               ICourseInstance.__name__),
+                                "contexts", has_length(1),
                                 "permission", equal_to(None),
                                 "supported_types", contains_inanyorder("csv", "pdf")))
 
     def _register_report(self, name, title, description,
-                         interface_context, supported_types):
+                         contexts, supported_types):
         """
         Register a temp report
         """
         report = functools.partial(InstructorReport,
                                    name=name,
                                    title=title,
+                                   contexts=contexts,
                                    description=description,
-                                   interface_context=interface_context,
-                                   supported_types=supported_types)
+                                   supported_types=supported_types,
+                                   condition=DefaultReportAvailablePredicate,)
 
         getGlobalSiteManager().registerSubscriptionAdapter(report,
-                                                           (interface_context,),
+                                                           contexts,
                                                            IInstructorReport)
