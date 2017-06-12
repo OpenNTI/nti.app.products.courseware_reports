@@ -30,14 +30,11 @@ from nti.app.products.courseware_reports.reports import InstructorReport
 
 from nti.app.products.courseware.tests import PersistentInstructedCourseApplicationTestLayer
 
-from nti.app.testing.application_webtest import ApplicationLayerTest
-
 from nti.app.testing.decorators import WithSharedApplicationMockDS
 
 from nti.contenttypes.courses.interfaces import ICourseInstance
 
 from nti.contenttypes.reports.reports import evaluate_permission
-from nti.contenttypes.reports.reports import DefaultReportAvailablePredicate
 
 from nti.dataserver.tests import mock_dataserver
 
@@ -48,10 +45,13 @@ from nti.externalization.externalization import StandardExternalFields
 
 from nti.ntiids.ntiids import find_object_with_ntiid
 
+from nti.app.products.courseware_reports.tests import ReportsLayerTest
+
 CLASS = StandardExternalFields.CLASS
+ITEMS = StandardExternalFields.ITEMS
 
 
-class TestInstructorReport(ApplicationLayerTest):
+class TestInstructorReport(ReportsLayerTest):
     """
     Test the permissions on an instructor report
     """
@@ -80,12 +80,6 @@ class TestInstructorReport(ApplicationLayerTest):
             ins_user_obj = User.get_user(self.instructor_username)
             stu_user_obj = User.get_user(self.student_username)
 
-            self._register_report(u"TestReport",
-                                  u"Test Report",
-                                  u"TestDescription",
-                                  (ICourseInstance,),
-                                  [u"csv", u"pdf"])
-
             reports = component.subscribers(
                 (course_instance_obj,), IInstructorReport)
 
@@ -105,11 +99,6 @@ class TestInstructorReport(ApplicationLayerTest):
         Test that instructor report links are 
         decorated correctly
         """
-        self._register_report(u"AnotherTestReport",
-                              u"Another Test Report",
-                              u"AnotherTestDescription",
-                              (ICourseInstance,),
-                              [u"csv", u"pdf"])
 
         instructor_environ = self._make_extra_environ(username='harp4162')
         admin_courses = self.testapp.get('/dataserver2/users/harp4162/Courses/AdministeredCourses/',
@@ -143,23 +132,7 @@ class TestInstructorReport(ApplicationLayerTest):
                                 "name", "Test",
                                 "title", "Test",
                                 "description", "TestDescription",
-                                "contexts", has_length(1),
+                                "contexts", has_entry(ITEMS,
+                                                               contains_inanyorder(ICourseInstance.__name__)),
                                 "permission", equal_to(None),
                                 "supported_types", contains_inanyorder("csv", "pdf")))
-
-    def _register_report(self, name, title, description,
-                         contexts, supported_types):
-        """
-        Register a temp report
-        """
-        report = functools.partial(InstructorReport,
-                                   name=name,
-                                   title=title,
-                                   contexts=contexts,
-                                   description=description,
-                                   supported_types=supported_types,
-                                   condition=DefaultReportAvailablePredicate,)
-
-        getGlobalSiteManager().registerSubscriptionAdapter(report,
-                                                           contexts,
-                                                           IInstructorReport)

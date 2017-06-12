@@ -82,6 +82,7 @@ class TestZcml(unittest.TestCase):
                                                      "title", "Test Report",
                                                      "contexts", not_none(),
                                                      "description", "TestDescription",
+                                                     "contexts", not_none(),
                                                      "supported_types", contains_inanyorder("pdf", "csv"))))
 
         ut_reports = list(component.getAllUtilitiesRegisteredFor(IReport))
@@ -90,4 +91,5 @@ class TestZcml(unittest.TestCase):
                                                      "title", "Test Report",
                                                      "contexts", not_none(),
                                                      "description", "TestDescription",
+                                                     "contexts", not_none(),
                                                      "supported_types", contains_inanyorder("pdf", "csv"))))

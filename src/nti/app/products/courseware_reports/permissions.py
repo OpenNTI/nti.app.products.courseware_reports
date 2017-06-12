@@ -19,6 +19,8 @@ from nti.contenttypes.courses.utils import get_course_instructors
 
 from nti.dataserver.interfaces import IUser
 
+from nti.app.products.courseware_reports.utils import find_course_for_user
+
 
 @interface.implementer(IReportPredicate)
 @component.adapter(IInstructorReport, IUser)
@@ -33,9 +35,6 @@ class InstructorReportPermission(object):
         pass
 
     def evaluate(self, report, context, user):
-        course = self._get_course_instance(context)
+        course = find_course_for_user(context, user)
         instructors = get_course_instructors(course)
         return user.username in instructors
-
-    def _get_course_instance(self, context):
-        return ICourseInstance(context)

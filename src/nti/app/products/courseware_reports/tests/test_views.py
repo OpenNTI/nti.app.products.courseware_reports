@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import print_function, unicode_literals, absolute_import, division
+from Cython.Compiler.TypeSlots import inquiry
 __docformat__ = "restructuredtext en"
 
 # disable: accessing protected members, too many methods
@@ -19,6 +20,7 @@ from hamcrest import contains_string
 import csv
 import fudge
 from six import StringIO
+import json
 
 from nti.app.analytics.usage_stats import _VideoInfo
 from nti.app.analytics.usage_stats import _AverageWatchTimes
@@ -28,6 +30,7 @@ from nti.app.products.courseware_reports import VIEW_ASSIGNMENT_SUMMARY
 from nti.app.products.courseware_reports import VIEW_FORUM_PARTICIPATION
 from nti.app.products.courseware_reports import VIEW_TOPIC_PARTICIPATION
 from nti.app.products.courseware_reports import VIEW_STUDENT_PARTICIPATION
+from nti.app.products.courseware_reports import VIEW_INQUIRY_REPORT
 
 from nti.dataserver.users.users import User
 
@@ -48,6 +51,8 @@ from nti.app.testing.decorators import WithSharedApplicationMockDS
 
 from nti.app.testing.request_response import DummyRequest
 
+from nti.assessment.survey import QPollSubmission
+
 from nti.contenttypes.courses.interfaces import ICourseInstance
 
 from nti.dataserver.tests import mock_dataserver
@@ -59,18 +64,19 @@ class TestStudentParticipationReport(ApplicationLayerTest):
     default_origin = b'http://janux.ou.edu'
     course_ntiid = 'tag:nextthought.com,2011-10:OU-HTML-CLC3403_LawAndJustice.course_info'
 
-    @WithSharedApplicationMockDS(users=True, testapp=True, default_authenticate=True)
+    @WithSharedApplicationMockDS(
+        users=True, testapp=True, default_authenticate=True)
     def test_application_view_empty_report(self):
         # Trivial test to make sure we can fetch the report even with
         # no data.
         self.testapp.post_json('/dataserver2/users/sjohnson@nextthought.com/Courses/EnrolledCourses',
                                'tag:nextthought.com,2011-10:NTI-CourseInfo-Fall2013_CLC3403_LawAndJustice',
                                status=201)
-        
+
         instructor_environ = self._make_extra_environ(username='harp4162')
         admin_courses = self.testapp.get('/dataserver2/users/harp4162/Courses/AdministeredCourses/',
                                          extra_environ=instructor_environ)
-        
+
         # Get our student from the roster
         course_instance = admin_courses.json_body.get(
             'Items')[0].get('CourseInstance')
@@ -78,6 +84,7 @@ class TestStudentParticipationReport(ApplicationLayerTest):
             course_instance, 'CourseEnrollmentRoster')
         sj_enrollment = self.testapp.get(roster_link,
                                          extra_environ=instructor_environ)
+
         sj_enrollment = sj_enrollment.json_body.get('Items')[0]
 
         view_href = self.require_link_href_with_rel(sj_enrollment,
@@ -86,7 +93,8 @@ class TestStudentParticipationReport(ApplicationLayerTest):
         res = self.testapp.get(view_href, extra_environ=instructor_environ)
         assert_that(res, has_property('content_type', 'application/pdf'))
 
-    @WithSharedApplicationMockDS(users=True, testapp=True, default_authenticate=True)
+    @WithSharedApplicationMockDS(
+        users=True, testapp=True, default_authenticate=True)
     @fudge.patch('nti.app.products.courseware_reports.views.view_mixins._AbstractReportView._check_access',
                  'nti.app.analytics.usage_stats.UserCourseVideoUsageStats.get_stats')
     def test_report_completion_data(self, fake_check_access, fake_video_stats):
@@ -149,13 +157,64 @@ class TestStudentParticipationReport(ApplicationLayerTest):
                                                                   'title', 'fake title')))
 
 
+class TestInquiryReport(ApplicationLayerTest):
+
+    layer = InstructedCourseApplicationTestLayer
+
+    default_origin = b'http://janux.ou.edu'
+
+    COURSE_NTIID = 'tag:nextthought.com,2011-10:NTI-CourseInfo-Fall2013_CLC3403_LawAndJustice'
+
+    default_username = 'outest75'
+
+    poll_ntiid = "tag:nextthought.com,2011-10:OU-NAQ-CLC3403_LawAndJustice.naq.pollid.aristotle.1"
+
+    @WithSharedApplicationMockDS(
+        users=True, testapp=True, default_authenticate=True)
+    def test_link(self):
+        instructor_environ = self._make_extra_environ(username='harp4162')
+        res = self.testapp.get('/dataserver2/Objects/' + self.poll_ntiid,
+                               extra_environ=instructor_environ)
+        
+        # No submissions, no report link
+        self.forbid_link_with_rel(
+            res.json_body,
+            'report-' +
+            VIEW_INQUIRY_REPORT)
+
+        submission = QPollSubmission(pollId=self.poll_ntiid, parts=[0])
+
+        ext_obj = to_external_object(submission)
+        del ext_obj['Class']
+
+        # Submit to a poll
+        res = self.testapp.post_json('/dataserver2/users/' + self.default_username + '/Courses/EnrolledCourses',
+                                     self.COURSE_NTIID,
+                                     status=201)
+
+        course_inquiries_link = self.require_link_href_with_rel(
+            res.json_body['CourseInstance'], 'CourseInquiries')
+
+        submission_href = '%s/%s' % (course_inquiries_link, self.poll_ntiid)
+
+        res = self.testapp.post_json(submission_href, ext_obj)
+
+        res = self.testapp.get('/dataserver2/Objects/' + self.poll_ntiid,
+                               extra_environ=instructor_environ)
+
+        # Now we should see the link
+        self.require_link_href_with_rel(
+            res.json_body, 'report-' + VIEW_INQUIRY_REPORT)
+
+
 class TestForumParticipationReport(ApplicationLayerTest):
 
     layer = InstructedCourseApplicationTestLayer
 
     default_origin = b'http://janux.ou.edu'
 
-    @WithSharedApplicationMockDS(users=True, testapp=True, default_authenticate=True)
+    @WithSharedApplicationMockDS(
+        users=True, testapp=True, default_authenticate=True)
     def test_link(self):
         enrollment_res = self.testapp.post_json('/dataserver2/users/sjohnson@nextthought.com/Courses/EnrolledCourses',
                                                 'tag:nextthought.com,2011-10:NTI-CourseInfo-Fall2013_CLC3403_LawAndJustice',
@@ -179,7 +238,8 @@ class TestTopicParticipationReport(ApplicationLayerTest):
 
     default_origin = b'http://janux.ou.edu'
 
-    @WithSharedApplicationMockDS(users=True, testapp=True, default_authenticate=True)
+    @WithSharedApplicationMockDS(
+        users=True, testapp=True, default_authenticate=True)
     def test_link(self):
         enrollment_res = self.testapp.post_json('/dataserver2/users/sjohnson@nextthought.com/Courses/EnrolledCourses',
                                                 'tag:nextthought.com,2011-10:NTI-CourseInfo-Fall2013_CLC3403_LawAndJustice',
@@ -205,7 +265,8 @@ class TestCourseSummaryReport(ApplicationLayerTest):
 
     default_origin = b'http://janux.ou.edu'
 
-    @WithSharedApplicationMockDS(users=True, testapp=True, default_authenticate=True)
+    @WithSharedApplicationMockDS(
+        users=True, testapp=True, default_authenticate=True)
     def test_application_view_empty_report(self):
         # Trivial test to make sure we can fetch the report even with
         # no data.
@@ -221,6 +282,7 @@ class TestCourseSummaryReport(ApplicationLayerTest):
         res = self.testapp.get(report_href, extra_environ=instructor_environ)
         assert_that(res, has_property('content_type', 'application/pdf'))
 
+
 from nti.assessment.submission import AssignmentSubmission
 from nti.assessment.submission import QuestionSetSubmission
 from nti.externalization.externalization import to_external_object
@@ -235,7 +297,8 @@ class TestAssignmentSummaryReport(RegisterAssignmentLayerMixin,
 
     assignments_path = '/dataserver2/%2B%2Betc%2B%2Bhostsites/platform.ou.edu/%2B%2Betc%2B%2Bsite/Courses/Fall2013/CLC3403_LawAndJustice/AssignmentsByOutlineNode'
 
-    @WithSharedApplicationMockDS(users=True, testapp=True, default_authenticate=True)
+    @WithSharedApplicationMockDS(
+        users=True, testapp=True, default_authenticate=True)
     def test_link(self):
         instructor_environ = self._make_extra_environ(username='harp4162')
         res = self.testapp.get(self.assignments_path,
@@ -246,7 +309,8 @@ class TestAssignmentSummaryReport(RegisterAssignmentLayerMixin,
         self.forbid_link_with_rel(
             assignment, 'report-' + VIEW_ASSIGNMENT_SUMMARY)
 
-    @WithSharedApplicationMockDS(users=True, testapp=True, default_authenticate=True)
+    @WithSharedApplicationMockDS(
+        users=True, testapp=True, default_authenticate=True)
     def test_application_view_report(self):
         instructor_environ = self._make_extra_environ(username='harp4162')
         res = self.testapp.get(self.assignments_path,
@@ -278,10 +342,12 @@ class TestAssignmentSummaryReport(RegisterAssignmentLayerMixin,
         # Now we have proper link
         res = self.testapp.get(self.assignments_path,
                                extra_environ=instructor_environ)
+
         assignment = res.json_body.get('Items')[
             'tag:nextthought.com,2011-10:OU-HTML-CLC3403_LawAndJustice.sec:QUIZ_01.01'][0]
         report_href = self.require_link_href_with_rel(
             assignment, 'report-' + VIEW_ASSIGNMENT_SUMMARY)
+
         res = self.testapp.get(report_href, extra_environ=instructor_environ)
         assert_that(res, has_property('content_type', 'application/pdf'))
 
@@ -293,13 +359,15 @@ class TestStudentParticipationCSV(ApplicationLayerTest):
 
     course_ntiid = 'tag:nextthought.com,2011-10:OU-HTML-CLC3403_LawAndJustice.course_info'
 
-    @WithSharedApplicationMockDS(users=True, testapp=True, default_authenticate=True)
+    @WithSharedApplicationMockDS(
+        users=True, testapp=True, default_authenticate=True)
     @fudge.patch('nti.app.products.courseware_reports.views.admin_views.StudentParticipationCSVView._get_users_from_request',
                  'nti.app.products.courseware_reports.views.admin_views.StudentParticipationCSVView._get_all_videos',
                  'nti.app.analytics.usage_stats.UserCourseVideoUsageStats.get_stats',
                  'nti.app.products.courseware_reports.views.admin_views.StudentParticipationCSVView._get_grade_from_assignment',
                  'nti.app.products.courseware_reports.views.admin_views.get_course_assignments')
-    def test_csv_results(self, fake_get_users, fake_get_videos, fake_video_stats, fake_assignment_grade, fake_assignment_catalog):
+    def test_csv_results(self, fake_get_users, fake_get_videos,
+                         fake_video_stats, fake_assignment_grade, fake_assignment_catalog):
 
         with mock_dataserver.mock_db_trans(self.ds, site_name='platform.ou.edu'):
 

@@ -54,12 +54,76 @@
 	<include package="nti.contenttypes.reports"/>
 	<include file="meta.zcml" package="nti.contenttypes.reports"/>
 	
+	<!-- Predicate Subscribers -->
+	<subscriber factory=".decorators.ForumParticipationPredicate"
+				provides="nti.contenttypes.reports.interfaces.IReportAvailablePredicate"
+				for="nti.dataserver.contenttypes.forums.interfaces.ICommunityForum" />
+				
+	<subscriber factory=".decorators.TopicParticipationPredicate"
+				provides="nti.contenttypes.reports.interfaces.IReportAvailablePredicate"
+				for="nti.dataserver.contenttypes.forums.interfaces.ICommunityHeadlineTopic" />
+	
+	<subscriber factory=".decorators.CourseInstancePredicate"
+				provides="nti.contenttypes.reports.interfaces.IReportAvailablePredicate"
+				for="nti.contenttypes.courses.interfaces.ICourseInstance" />
+				
+	<subscriber factory=".decorators.AssignmentPredicate"
+				provides="nti.contenttypes.reports.interfaces.IReportAvailablePredicate"
+				for="nti.assessment.interfaces.IQAssignment" />
+	
+	<subscriber factory=".decorators.InquiryPredicate"
+				provides="nti.contenttypes.reports.interfaces.IReportAvailablePredicate"
+				for="nti.assessment.interfaces.IQInquiry" />
+	
+	<subscriber factory=".decorators.InquiryPredicate"
+				provides="nti.contenttypes.reports.interfaces.IReportAvailablePredicate"
+				for="nti.contenttypes.presentation.interfaces.INTIInquiryRef" />
+	
 	<rep:registerInstructorReport name="CourseSummaryReport.pdf"
 								  title="Course Summary Report"
 								  description="Course summary of student engagement and assessment"
 								  contexts="nti.contenttypes.courses.interfaces.ICourseInstance"
 								  supported_types="pdf" />
+								  
+	<rep:registerInstructorReport name="AssignmentSummaryReport.pdf"
+								  title="Assignment Summary Report"
+								  description="Summary of assignments and their content"
+								  contexts="nti.assessment.interfaces.IQAssignment"
+								  supported_types="pdf" 
+								  link_provider=".decorators.AssignmentSummaryLinkProvider"/>
+	
+	<rep:registerInstructorReport name="SelfAssessmentSummaryReport.pdf"
+								  title="Self Assessment Summary Report"
+								  description="Summary of assessments"
+								  contexts="nti.contenttypes.courses.interfaces.ICourseInstance"
+								  supported_types="pdf" />
 
+	<rep:registerInstructorReport name="StudentParticipationReport.pdf"
+								  title="Student Participation Report"
+								  description="Summary of student participation in this course"
+								  contexts="nti.app.products.courseware.interfaces.ICourseInstanceEnrollment"
+								  supported_types="pdf" />
+	
+	<rep:registerInstructorReport name="ForumParticipationReport.pdf"
+								  title="Forum Participation Report"
+								  description="Summary of the participation in forums in this course"
+								  contexts="nti.dataserver.contenttypes.forums.interfaces.ICommunityForum"
+								  supported_types="pdf" />
+								  
+	<rep:registerInstructorReport name="TopicParticipationReport.pdf"
+								  title="Topic Participation Report"
+								  description="Summary of the participation in various topics in this course"
+								  contexts="nti.dataserver.contenttypes.forums.interfaces.ICommunityHeadlineTopic"
+								  supported_types="pdf" />
+	
+	<rep:registerInstructorReport name="InquiryReport.pdf"
+								  title="Inquiry Report"
+								  description="Summary of inquiries"
+								  contexts="nti.assessment.interfaces.IQInquiry
+								  			nti.contenttypes.presentation.interfaces.INTIInquiryRef"
+								  supported_types="pdf"
+								  link_provider=".decorators.InquiryLinkProvider" />
+	
 	<!--
 		The instructors/TA of a course (locally added to this role
 		for the course) can view reports
@@ -87,32 +151,12 @@
 			 factory=".views.ReportAdapter"
 			 provides="zope.traversing.interfaces.IPathAdapter" />
 
-	<!-- A subscriber for getting the student participation report from course enrollment records -->
-	<subscriber factory=".decorators._StudentParticipationReport"
-				provides="nti.externalization.interfaces.IExternalMappingDecorator" />
-
-	<!-- A subscriber for getting the forum participation report from the forums -->
-	<subscriber factory=".decorators._ForumParticipationReport"
-				provides="nti.externalization.interfaces.IExternalMappingDecorator" />
-
-	<!-- A subscriber for getting the topic participation report from the topic -->
-	<subscriber factory=".decorators._TopicParticipationReport"
-				provides="nti.externalization.interfaces.IExternalMappingDecorator" />
-
-	<!-- A subscriber for getting the assignment summary report from the gradebook -->
-	<subscriber factory=".decorators._AssignmentSummaryReport"
-				provides="nti.externalization.interfaces.IExternalMappingDecorator" />
-
-	<!-- A subscriber for getting the self summary report from the course info tab -->
-	<subscriber factory=".decorators._SelfAssessmentSummaryReport"
-				provides="nti.externalization.interfaces.IExternalMappingDecorator" />
-
 	<!-- A subscriber for getting the video views summary report from analytics records -->
 	<!-- <subscriber factory=".decorators._VideoViewsReport"
 				provides="nti.externalization.interfaces.IExternalMappingDecorator" /> -->
 
 	<!-- A subscriber for getting the report from an inquiry -->
-	<subscriber factory=".decorators._InquiryReport"
+	<!-- <subscriber factory=".decorators._InquiryReport"
 				provides="nti.externalization.interfaces.IExternalMappingDecorator"
 				for="nti.assessment.interfaces.IQInquiry
 					 pyramid.interfaces.IRequest" />
@@ -120,7 +164,7 @@
 	<subscriber factory=".decorators._InquiryReport"
 				provides="nti.externalization.interfaces.IExternalMappingDecorator"
 				for="nti.contenttypes.presentation.interfaces.INTIInquiryRef
-					 pyramid.interfaces.IRequest" />
+					 pyramid.interfaces.IRequest" /> -->
 
 	<!-- Default layout for reports -->
 	<!--

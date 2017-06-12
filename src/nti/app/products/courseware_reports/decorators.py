@@ -12,216 +12,139 @@ logger = __import__('logging').getLogger(__name__)
 from zope import component
 from zope import interface
 
-from zope.security.management import checkPermission
-
-from pyramid.interfaces import IRequest
-
 from nti.app.assessment.common import inquiry_submissions
 
-from nti.app.products.courseware.interfaces import ICourseInstanceEnrollment
-
-from nti.app.products.courseware_reports import MessageFactory as _
-
-from nti.app.products.courseware_reports import VIEW_COURSE_SUMMARY
-from nti.app.products.courseware_reports import VIEW_INQUIRY_REPORT
-from nti.app.products.courseware_reports import VIEW_ASSIGNMENT_SUMMARY
-from nti.app.products.courseware_reports import VIEW_FORUM_PARTICIPATION
-from nti.app.products.courseware_reports import VIEW_TOPIC_PARTICIPATION
-from nti.app.products.courseware_reports import VIEW_STUDENT_PARTICIPATION
-from nti.app.products.courseware_reports import VIEW_SELF_ASSESSMENT_SUMMARY
-
-from nti.app.products.courseware_reports.interfaces import ACT_VIEW_REPORTS
-
-from nti.app.products.courseware_reports.utils import course_from_forum
 from nti.app.products.courseware_reports.utils import find_course_for_user
+from nti.app.products.courseware_reports.utils import course_from_forum
 
 from nti.app.products.gradebook.interfaces import IGradeBook
 
-from nti.app.renderers.decorators import AbstractAuthenticatedRequestAwareDecorator
-
 from nti.assessment.interfaces import IQInquiry
-from nti.assessment.interfaces import IQAssignment
 
 from nti.contenttypes.courses.interfaces import ICourseInstance
 
+from nti.contenttypes.courses.utils import get_course_enrollments
+
 from nti.contenttypes.presentation.interfaces import INTIInquiryRef
 
-from nti.dataserver.contenttypes.forums.interfaces import ICommunityForum
-from nti.dataserver.contenttypes.forums.interfaces import ICommunityHeadlineTopic
+from nti.contenttypes.reports.interfaces import IReport
+from nti.contenttypes.reports.interfaces import IReportAvailablePredicate
 
-from nti.externalization.interfaces import StandardExternalFields
-from nti.externalization.interfaces import IExternalMappingDecorator
-
-from nti.links.links import Link
+from nti.contenttypes.reports.reports import DefaultReportLinkProvider
 
 from nti.traversal.traversal import find_interface
 
-LINKS = StandardExternalFields.LINKS
 
-class _AbstractInstructedByDecorator(AbstractAuthenticatedRequestAwareDecorator):
-
-	def _course_from_context(self, context):
-		return context
-
-	def _predicate(self, context, result):
-		# TODO: This can probably go back to using the AuthorizationPolicy methods
-		# now that we're integrating the two
-		# XXX: Surprisingly, our has_permission check fails because we turn the course
-		# into an ACLProvider when we check zope permissions (the fall-back).
-		return 	self._is_authenticated \
-			and checkPermission(ACT_VIEW_REPORTS.id,
-								self._course_from_context(context))
-
-@interface.implementer(IExternalMappingDecorator)
-@component.adapter(ICourseInstanceEnrollment, IRequest)
-class _StudentParticipationReport(_AbstractInstructedByDecorator):
+class AbstractFromCourseEvaluator():
 	"""
-	A link to return the student participation report.
-	"""
- 
-	def _course_from_context(self, context):
-		return ICourseInstance(context)
- 
-	def _do_decorate_external(self, context, result_map):
-		links = result_map.setdefault(LINKS, [])
-		links.append(Link(context,
-						  rel='report-%s' % VIEW_STUDENT_PARTICIPATION,
-						  elements=('@@'+VIEW_STUDENT_PARTICIPATION,),
-						  title=_('Student Participation Report')))
-
-@interface.implementer(IExternalMappingDecorator)
-@component.adapter(ICommunityForum, IRequest)
-class _ForumParticipationReport(_AbstractInstructedByDecorator):
-	"""
-	A link to return the forum participation report.
+	Defines a class that involves knowing
+	about a course
 	"""
 
-	def _predicate(self, context, result):
-		result = super(_ForumParticipationReport, self)._predicate(context, result)
-		if result:
-			# Decorate if we have any comments in this forum's topics.
-			result = any(len(x.values()) for x in context.values())
-		return result and len(context)
+	def __init__(self, *args, **kwargs):
+		pass
 
-	def _course_from_context(self, context):
-		return course_from_forum(context)
-
-	def _do_decorate_external(self, context, result_map):
-		links = result_map.setdefault(LINKS, [])
-		links.append(Link(context,
-						  rel='report-%s' % VIEW_FORUM_PARTICIPATION,
-						  elements=('@@'+VIEW_FORUM_PARTICIPATION,),
-						  title=_('Forum Participation Report')))
-
-@interface.implementer(IExternalMappingDecorator)
-@component.adapter(ICommunityHeadlineTopic, IRequest)
-class _TopicParticipationReport(_AbstractInstructedByDecorator):
-	"""
-	A link to return the topic participation report.
-	"""
-
-	def _predicate(self, context, result):
-		result = super(_TopicParticipationReport, self)._predicate(context, result)
-		return result and len(context.values())
-
-	def _course_from_context(self, context):
-		return course_from_forum(context.__parent__)
-
-	def _do_decorate_external(self, context, result_map):
-		links = result_map.setdefault(LINKS, [])
-		links.append(Link(context,
-						  rel='report-%s' % VIEW_TOPIC_PARTICIPATION,
-						  elements=('@@'+VIEW_TOPIC_PARTICIPATION,),
-						  title=_('Topic Participation Report')))
-
-@interface.implementer(IExternalMappingDecorator)
-@component.adapter(ICourseInstance, IRequest)
-class _SelfAssessmentSummaryReport(_AbstractInstructedByDecorator):
-	"""
-	A link to return the self-assessment summary report.
-	"""
-
-	def _do_decorate_external(self, context, result_map):
-		links = result_map.setdefault(LINKS, [])
-		links.append(Link(context,
-						  rel='report-%s' % VIEW_SELF_ASSESSMENT_SUMMARY,
-						  elements=('@@'+VIEW_SELF_ASSESSMENT_SUMMARY,),
-						  title=_('SelfAssessment Summary Report')))
-
-@interface.implementer(IExternalMappingDecorator)
-@component.adapter(IQAssignment, IRequest)
-class _AssignmentSummaryReport(_AbstractInstructedByDecorator):
-	"""
-	A link to return the assignment summary report.
-	"""
-
-	def _predicate(self, context, result):
-		result = super(_AssignmentSummaryReport, self)._predicate(context, result)
-		if result:
-			gradebook_entry = self._gradebook_entry(context)
-			if gradebook_entry is not None:
-				result = len(gradebook_entry.items())
-		return result
-
-	def _course_from_context(self, context):
-		self.course = find_interface(self.request.context, ICourseInstance,
-									 strict=False)
+	def _course_from_context(self, context, user):
+		self.course = find_interface(context, ICourseInstance, strict=False)
 		if self.course is None:
-			self.course = find_course_for_user(context, self.remoteUser)
+			self.course = find_course_for_user(context, user)
 		return self.course
 
-	def _gradebook_entry(self, context):
-		book = IGradeBook(self.course)
+
+"""
+Predicates the evaluate if that kind of report
+should be decorated onto the corresponding context
+for that user.
+"""
+
+
+@interface.implementer(IReportAvailablePredicate)
+class AbstractFromCoursePredicate(AbstractFromCourseEvaluator):
+
+	def evaluate(self, report, context, user):
+		return True
+
+
+@interface.implementer(IReportAvailablePredicate)
+class ForumParticipationPredicate():
+
+ 	def __init__(self, *args, **kwargs):
+ 		pass
+
+	def evaluate(self, report, context, user):
+		return (any(len(x.values()) for x in context.values()) and len(context))
+
+
+@interface.implementer(IReportAvailablePredicate)
+class TopicParticipationPredicate():
+
+ 	def __init__(self, *args, **kwargs):
+ 		pass
+
+	def evaluate(self, report, context, user):
+		return len(context.values())
+
+
+class CourseInstancePredicate(AbstractFromCoursePredicate):
+
+	def evaluate(self, report, context, user):
+		course = self._course_from_context(context, user)
+		return get_course_enrollments(course) is not None
+
+
+class AssignmentPredicate(AbstractFromCoursePredicate):
+
+	def evaluate(self, report, context, user):
+		course = self._course_from_context(context, user)
+		book = IGradeBook(course)
+		self.gradebook_entry = book.getColumnForAssignmentId(context.__name__)
+		return len(self.gradebook_entry.items()) > 0
+
+
+class InquiryPredicate(AbstractFromCoursePredicate):
+
+	def evaluate(self, report, context, user):
+		course = self._course_from_context(IQInquiry(context, None), user)
+		result = inquiry_submissions(context, course, subinstances=False)
+		result = len(result)
+		if not result:
+			return False
+		self.inquiry = IQInquiry(context, None)
+		return self.inquiry is not None
+
+
+"""
+Link providers that, given a context, will define the proper link
+elements to be decorated onto the context
+"""
+
+
+class AbstractFromCourseLinkProvider(DefaultReportLinkProvider,
+                                     AbstractFromCourseEvaluator):
+	"""
+	Defines a link provider that comes from a course context
+	"""
+
+
+class AssignmentSummaryLinkProvider(AbstractFromCourseLinkProvider):
+
+	def set_link_elements(self, report, context, user):
+		course = self._course_from_context(context, user)
+		book = IGradeBook(course)
 		gradebook_entry = book.getColumnForAssignmentId(context.__name__)
-		return gradebook_entry
+		self.context = gradebook_entry
+		self.rel = "report-%s" % report.name
+		self.elements = ("@@" + report.name,)
 
-	def _do_decorate_external(self, context, result_map):
-		gradebook_entry = self._gradebook_entry(context)
-		if gradebook_entry is None:  # pragma: no cover
-			# mostly tests
-			return
 
-		links = result_map.setdefault(LINKS, [])
-		links.append(Link(gradebook_entry,
-						  rel='report-%s' % VIEW_ASSIGNMENT_SUMMARY,
-						  elements=('@@'+VIEW_ASSIGNMENT_SUMMARY,),
-						  title=_('Assignment Summary Report')))
+class InquiryLinkProvider(AbstractFromCourseLinkProvider):
 
-@interface.implementer(IExternalMappingDecorator)
-@component.adapter(IQInquiry, IRequest)
-@component.adapter(INTIInquiryRef, IRequest)
-class _InquiryReport(_AbstractInstructedByDecorator):
-	"""
-	A link to return the inquiry report.
-	"""
-
-	def _predicate(self, context, result):
-		result = super(_InquiryReport, self)._predicate(context, result)
-		if result:
-			course = self._course_from_context(context)
-			# XXX: Subinstances?
-			result = inquiry_submissions(context, course, subinstances=False)
-			result = len(result)
-		return result
-
-	def _course_from_context(self, context):
-		inquiry = IQInquiry(context, None)
-		self.course = find_interface(inquiry, ICourseInstance, strict=False)
-		if self.course is None:
-			self.course = find_course_for_user(inquiry, self.remoteUser)
-		return self.course
-
-	def _do_decorate_external(self, context, result_map):
-		inquiry = IQInquiry(context, None)
-		if inquiry is not None:
-			report_el = '@@'+VIEW_INQUIRY_REPORT
-			elements = (report_el,)
-			if self.course is not None:
-				# Try to build a course context-sensitive link if possible.
-				elements = ('Assessments', context.ntiid, report_el)
-				context = self.course
-			links = result_map.setdefault(LINKS, [])
-			links.append(Link(context,
-							  rel='report-%s' % VIEW_INQUIRY_REPORT,
-							  elements=elements,
-							  title=_('Inquiry Report')))
+	def set_link_elements(self, report, context, user):
+		course = self._course_from_context(IQInquiry(context, None), user)
+		self.context = context
+	 	self.rel = "report-%s" % report.name
+	 	report_element = "@@" + report.name
+	 	self.elements = (report_element,)
+	 	if course is not None:
+	 		self.elements = ('Assessments', context.ntiid, report_element)
+	 		self.context = course

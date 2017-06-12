@@ -29,7 +29,7 @@ class IRegisterInstructorReport(IRegisterReport):
                           required=False)
 
 def registerInstructorReport(_context, name, title, description, contexts,
-                             supported_types, registration_name=None):
+                             supported_types, link_provider=None, registration_name=None):
     """
     Take the items from ZCML, turn it into a report object and register it as a
     new utility in the current context
@@ -38,6 +38,7 @@ def registerInstructorReport(_context, name, title, description, contexts,
                    permission=None,
                    contexts=contexts,
                    supported_types=supported_types,
+                   link_provider=link_provider,
                    registration_name=registration_name,
                    report_class=InstructorReport,
                    report_interface=IInstructorReport)
