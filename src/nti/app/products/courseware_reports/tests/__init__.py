@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import print_function, unicode_literals, absolute_import, division
+from chameleon.nodes import Default
 __docformat__ = "restructuredtext en"
 
 # disable: accessing protected members, too many methods
@@ -28,7 +29,9 @@ from nti.app.testing.application_webtest import ApplicationLayerTest
 
 from nti.contenttypes.courses.interfaces import ICourseInstance
 
-from nti.contenttypes.reports.reports import DefaultReportLinkProvider
+from nti.app.contenttypes.reports.interfaces import IReportLinkProvider
+
+from nti.app.contenttypes.reports.reports import DefaultReportLinkProvider
 
 from nti.testing.base import AbstractTestBase
 
@@ -37,6 +40,7 @@ class ReportsLayerTest(ApplicationLayerTest):
 
     utils = []
     factory = None
+    link_provider = None
 
     @classmethod
     def setUp(self):
@@ -58,8 +62,7 @@ class ReportsLayerTest(ApplicationLayerTest):
                                        title=title,
                                        description=description,
                                        contexts=contexts,
-                                       supported_types=supported_types,
-                                       link_provider=DefaultReportLinkProvider)
+                                       supported_types=supported_types)
             self.factory = report
 
             report_obj = report()
@@ -92,6 +95,10 @@ class ReportsLayerTest(ApplicationLayerTest):
                                            u"ThirdTestDescription",
                                            (ICourseInstance,),
                                            [u"csv", u"pdf"]))
+        
+        self.link_provider = functools.partial(DefaultReportLinkProvider)
+        
+        getGlobalSiteManager().registerSubscriptionAdapter(self.link_provider, (InstructorReport,), IReportLinkProvider)
 
     @classmethod
     def tearDown(self):
@@ -109,3 +116,6 @@ class ReportsLayerTest(ApplicationLayerTest):
         sm.unregisterSubscriptionAdapter(
             factory=self.factory, required=(
                 ICourseInstance,), provided=IInstructorReport)
+        sm.unregisterSubscriptionAdapter(factory=self.link_provider,
+                                         required=(InstructorReport,),
+                                         provided=IReportLinkProvider)

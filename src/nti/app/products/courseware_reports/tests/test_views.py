@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import print_function, unicode_literals, absolute_import, division
-from Cython.Compiler.TypeSlots import inquiry
 __docformat__ = "restructuredtext en"
 
 # disable: accessing protected members, too many methods
@@ -342,6 +341,10 @@ class TestAssignmentSummaryReport(RegisterAssignmentLayerMixin,
         # Now we have proper link
         res = self.testapp.get(self.assignments_path,
                                extra_environ=instructor_environ)
+        
+#         import pprint
+#         pp = pprint.PrettyPrinter()
+#         pp.pprint(json.loads(res.body))
 
         assignment = res.json_body.get('Items')[
             'tag:nextthought.com,2011-10:OU-HTML-CLC3403_LawAndJustice.sec:QUIZ_01.01'][0]

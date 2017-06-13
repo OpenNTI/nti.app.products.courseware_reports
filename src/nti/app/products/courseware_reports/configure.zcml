@@ -79,6 +79,25 @@
 				provides="nti.contenttypes.reports.interfaces.IReportAvailablePredicate"
 				for="nti.contenttypes.presentation.interfaces.INTIInquiryRef" />
 	
+	<!-- Decorator Adapters -->
+	<adapter name="default"
+			 factory="nti.app.contenttypes.reports.reports.DefaultReportLinkProvider"
+			 provides="nti.app.contenttypes.reports.interfaces.IReportLinkProvider"
+			 for="nti.contenttypes.reports.interfaces.IReport" />
+	
+	<adapter name="AssignmentSummaryReport.pdf"
+			 factory=".decorators.AssignmentSummaryLinkProvider"
+			 provides="nti.app.contenttypes.reports.interfaces.IReportLinkProvider"
+			 for="nti.app.products.courseware_reports.interfaces.IInstructorReport
+				  pyramid.interfaces.IRequest" />
+					 
+	<adapter name="InquiryReport.pdf"
+			 factory=".decorators.InquiryLinkProvider"
+			 provides="nti.app.contenttypes.reports.interfaces.IReportLinkProvider"
+			 for="nti.app.products.courseware_reports.interfaces.IInstructorReport
+				  pyramid.interfaces.IRequest" />
+	
+	<!-- Report Registrations -->
 	<rep:registerInstructorReport name="CourseSummaryReport.pdf"
 								  title="Course Summary Report"
 								  description="Course summary of student engagement and assessment"
@@ -89,8 +108,7 @@
 								  title="Assignment Summary Report"
 								  description="Summary of assignments and their content"
 								  contexts="nti.assessment.interfaces.IQAssignment"
-								  supported_types="pdf" 
-								  link_provider=".decorators.AssignmentSummaryLinkProvider"/>
+								  supported_types="pdf" />
 	
 	<rep:registerInstructorReport name="SelfAssessmentSummaryReport.pdf"
 								  title="Self Assessment Summary Report"
@@ -121,8 +139,7 @@
 								  description="Summary of inquiries"
 								  contexts="nti.assessment.interfaces.IQInquiry
 								  			nti.contenttypes.presentation.interfaces.INTIInquiryRef"
-								  supported_types="pdf"
-								  link_provider=".decorators.InquiryLinkProvider" />
+								  supported_types="pdf" />
 	
 	<!--
 		The instructors/TA of a course (locally added to this role
