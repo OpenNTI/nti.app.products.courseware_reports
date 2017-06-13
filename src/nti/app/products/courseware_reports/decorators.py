@@ -69,7 +69,7 @@ class ForumParticipationPredicate():
         pass
 
     def evaluate(self, report, context, user):
-        return (any(bool(x.values()) for x in context.values()) and bool(context))
+        return (bool(context) and any(bool(x.values()) for x in context.values()))
 
 
 @interface.implementer(IReportAvailablePredicate)
