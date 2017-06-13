@@ -80,8 +80,7 @@
 				for="nti.contenttypes.presentation.interfaces.INTIInquiryRef" />
 	
 	<!-- Decorator Adapters -->
-	<adapter name="default"
-			 factory="nti.app.contenttypes.reports.reports.DefaultReportLinkProvider"
+	<adapter factory="nti.app.contenttypes.reports.reports.DefaultReportLinkProvider"
 			 provides="nti.app.contenttypes.reports.interfaces.IReportLinkProvider"
 			 for="nti.contenttypes.reports.interfaces.IReport" />
 	
