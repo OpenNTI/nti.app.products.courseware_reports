@@ -38,7 +38,7 @@ from nti.app.products.courseware_reports import VIEW_TOPIC_PARTICIPATION
 from nti.app.products.courseware_reports import VIEW_FORUM_PARTICIPATION
 from nti.app.products.courseware_reports import VIEW_STUDENT_PARTICIPATION
 
-from nti.app.products.courseware_reports.decorators import course_from_forum
+from nti.app.products.courseware_reports.utils import course_from_forum
 
 from nti.app.products.courseware_reports.reports import _TopCreators
 from nti.app.products.courseware_reports.reports import _adjust_date
