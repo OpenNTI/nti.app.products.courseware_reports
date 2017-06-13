@@ -95,7 +95,7 @@ class AssignmentPredicate(AbstractFromCoursePredicate):
         course = self._course_from_context(context, user)
         book = IGradeBook(course)
         entry = book.getColumnForAssignmentId(context.__name__)
-        result = entry is not None and bool(self.gradebook_entry.items())
+        result = entry is not None and bool(entry.items())
         return result
 
 
