@@ -272,8 +272,9 @@ class TestCourseSummaryReport(ApplicationLayerTest):
         instructor_environ = self._make_extra_environ(username='harp4162')
         admin_courses = self.testapp.get('/dataserver2/users/harp4162/Courses/AdministeredCourses/',
                                          extra_environ=instructor_environ)
-
+        
         course = admin_courses.json_body.get('Items')[0].get('CourseInstance')
+        
         report_href = self.require_link_href_with_rel(
             course, 'report-' + VIEW_COURSE_SUMMARY)
         assert_that(report_href, contains_string('CLC3403'))
@@ -341,10 +342,6 @@ class TestAssignmentSummaryReport(RegisterAssignmentLayerMixin,
         # Now we have proper link
         res = self.testapp.get(self.assignments_path,
                                extra_environ=instructor_environ)
-        
-#         import pprint
-#         pp = pprint.PrettyPrinter()
-#         pp.pprint(json.loads(res.body))
 
         assignment = res.json_body.get('Items')[
             'tag:nextthought.com,2011-10:OU-HTML-CLC3403_LawAndJustice.sec:QUIZ_01.01'][0]
