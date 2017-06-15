@@ -13,6 +13,7 @@ from hamcrest import has_key
 from hamcrest import has_item
 from hamcrest import assert_that
 from hamcrest import has_entries
+from hamcrest import has_entry
 from hamcrest import has_property
 from hamcrest import contains_string
 
@@ -56,6 +57,10 @@ from nti.contenttypes.courses.interfaces import ICourseInstance
 
 from nti.dataserver.tests import mock_dataserver
 
+def _require_link_with_title(item, title):
+    assert_that(item,
+                    has_entry("Links",
+                              (has_item(has_entry("title", title)))))
 
 class TestStudentParticipationReport(ApplicationLayerTest):
 
@@ -83,11 +88,13 @@ class TestStudentParticipationReport(ApplicationLayerTest):
             course_instance, 'CourseEnrollmentRoster')
         sj_enrollment = self.testapp.get(roster_link,
                                          extra_environ=instructor_environ)
-
+        
         sj_enrollment = sj_enrollment.json_body.get('Items')[0]
 
         view_href = self.require_link_href_with_rel(sj_enrollment,
                                                     'report-%s' % VIEW_STUDENT_PARTICIPATION)
+        
+        _require_link_with_title(sj_enrollment, "Student Participation Report")
 
         res = self.testapp.get(view_href, extra_environ=instructor_environ)
         assert_that(res, has_property('content_type', 'application/pdf'))
@@ -205,6 +212,7 @@ class TestInquiryReport(ApplicationLayerTest):
         self.require_link_href_with_rel(
             res.json_body, 'report-' + VIEW_INQUIRY_REPORT)
 
+        _require_link_with_title(res.json_body, "Inquiry Report")
 
 class TestForumParticipationReport(ApplicationLayerTest):
 
@@ -277,6 +285,9 @@ class TestCourseSummaryReport(ApplicationLayerTest):
         
         report_href = self.require_link_href_with_rel(
             course, 'report-' + VIEW_COURSE_SUMMARY)
+        
+        _require_link_with_title(course, "Course Summary Report")
+        
         assert_that(report_href, contains_string('CLC3403'))
 
         res = self.testapp.get(report_href, extra_environ=instructor_environ)
@@ -347,6 +358,8 @@ class TestAssignmentSummaryReport(RegisterAssignmentLayerMixin,
             'tag:nextthought.com,2011-10:OU-HTML-CLC3403_LawAndJustice.sec:QUIZ_01.01'][0]
         report_href = self.require_link_href_with_rel(
             assignment, 'report-' + VIEW_ASSIGNMENT_SUMMARY)
+        
+        _require_link_with_title(assignment, "Assignment Summary Report")
 
         res = self.testapp.get(report_href, extra_environ=instructor_environ)
         assert_that(res, has_property('content_type', 'application/pdf'))

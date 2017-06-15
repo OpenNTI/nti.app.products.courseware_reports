@@ -16,6 +16,8 @@ from nti.app.assessment.common import has_submissions
 
 from nti.app.contenttypes.reports.reports import DefaultReportLinkProvider
 
+from nti.app.products.courseware_reports import MessageFactory as _
+
 from nti.app.products.courseware_reports.utils import find_course_for_user
 
 from nti.app.products.gradebook.interfaces import IGradeBook
@@ -132,7 +134,8 @@ class AssignmentSummaryLinkProvider(AbstractFromCourseLinkProvider):
         if entry is not None:
             return Link(entry,
                         rel="report-%s" % report.name,
-                        elements=("@@" + report.name,))
+                        elements=("@@" + report.name,),
+                        title=_(report.title))
         return None
 
 
@@ -148,4 +151,5 @@ class InquiryLinkProvider(AbstractFromCourseLinkProvider):
             context = course
         return Link(context,
                     rel=rel,
-                    elements=elements)
+                    elements=elements,
+                    title=_(report.title))
