@@ -562,11 +562,11 @@ class TestTopCreators( unittest.TestCase ):
 
 		self.top_creators = _TopCreators( _MockReport( [ for_credit, for_credit2 ], [non_credit1,non_credit2] ) )
 
-		for _ in xrange(5):
+		for _ in range(5):
 			self.top_creators.incr_username( for_credit )
 			self.top_creators.incr_username( non_credit1 )
 
-		for _ in xrange(10):
+		for _ in range(10):
 			self.top_creators.incr_username( non_credit2 )
 
 		assert_that( self.top_creators.total, equal_to( 20 ) )

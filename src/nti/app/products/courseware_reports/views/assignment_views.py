@@ -154,7 +154,7 @@ class AssignmentSummaryReportPdf(_AbstractReportView):
 			question_stats[ question_id ] = question_stat = _QuestionStat(question_part_stats)
 
 		# make sure the data we always have the correct number of parts
-		for idx in xrange(len(parts)):
+		for idx in range(len(parts)):
 			if idx not in question_part_stats:
 				question_part_stats[idx] = _QuestionPartStat(roman.toRoman(idx + 1))
 
