@@ -11,15 +11,13 @@ from zope import interface
 
 from nti.app.products.courseware_reports.interfaces import IInstructorReport
 
-from nti.contenttypes.reports.interfaces import IReportPredicate
+from nti.app.products.courseware_reports.utils import find_course_for_user
 
-from nti.contenttypes.courses.interfaces import ICourseInstance
+from nti.contenttypes.reports.interfaces import IReportPredicate
 
 from nti.contenttypes.courses.utils import get_course_instructors
 
 from nti.dataserver.interfaces import IUser
-
-from nti.app.products.courseware_reports.utils import find_course_for_user
 
 
 @interface.implementer(IReportPredicate)

@@ -28,6 +28,7 @@ class IRegisterInstructorReport(IRegisterReport):
     permission = TextLine(title=u"The permission level required to access this report",
                           required=False)
 
+
 def registerInstructorReport(_context, name, title, description, contexts,
                              supported_types, registration_name=None):
     """
