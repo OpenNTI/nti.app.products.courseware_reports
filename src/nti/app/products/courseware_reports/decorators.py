@@ -5,7 +5,6 @@
 """
 
 from __future__ import print_function, absolute_import, division
-from nti.assessment._latexplastexdomcompare import grade
 __docformat__ = "restructuredtext en"
 
 logger = __import__('logging').getLogger(__name__)
@@ -129,13 +128,14 @@ class AssignmentSummaryLinkProvider(AbstractFromCourseLinkProvider):
 
     def link(self, report, context, user):
         course = self._course_from_context(context, user)
-        book = IGradeBook(course)
-        entry = book.getColumnForAssignmentId(context.__name__)
-        if entry is not None:
-            return Link(entry,
-                        rel="report-%s" % report.name,
-                        elements=("@@" + report.name,),
-                        title=_(report.title))
+        book = IGradeBook(course, None)
+        if book is not None:
+            entry = book.getColumnForAssignmentId(context.__name__)
+            if entry is not None:
+                return Link(entry,
+                            rel="report-%s" % report.name,
+                            elements=("@@" + report.name,),
+                            title=_(report.title))
         return None
 
 
