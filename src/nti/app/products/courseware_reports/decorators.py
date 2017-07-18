@@ -88,24 +88,26 @@ class CourseInstancePredicate(AbstractFromCoursePredicate):
 
     def evaluate(self, report, context, user):
         course = self._course_from_context(context, user)
-        return get_course_enrollments(course) is not None
+        return course is not None and get_course_enrollments(course) is not None
 
 
 class AssignmentPredicate(AbstractFromCoursePredicate):
 
     def evaluate(self, report, context, user):
         course = self._course_from_context(context, user)
-        book = IGradeBook(course)
-        entry = book.getColumnForAssignmentId(context.__name__)
-        result = entry is not None and bool(entry.items())
-        return result
+        book = IGradeBook(course, None)
+        if book is not None:
+            entry = book.getColumnForAssignmentId(context.__name__)
+            result = entry is not None and bool(entry.items())
+            return result
+        return False
 
 
 class InquiryPredicate(AbstractFromCoursePredicate):
 
     def evaluate(self, report, context, user):
         course = self._course_from_context(IQInquiry(context, None), user)
-        if has_submissions(context, course):
+        if course is not None and has_submissions(context, course):
             self.inquiry = IQInquiry(context, None)
             return self.inquiry is not None
         return False
