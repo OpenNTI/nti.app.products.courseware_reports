@@ -53,7 +53,7 @@ HEAD_ZCML_STRING = u"""
 
 
 @interface.implementer(ITestReportContext)
-class TestReportContext():
+class TestReportContext(object):
     pass
 
 

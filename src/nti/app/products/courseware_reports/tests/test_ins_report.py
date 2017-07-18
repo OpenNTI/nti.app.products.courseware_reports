@@ -11,18 +11,13 @@ from hamcrest import equal_to
 from hamcrest import has_item
 from hamcrest import not_none
 from hamcrest import has_entry
-from hamcrest import has_length
 from hamcrest import assert_that
 from hamcrest import has_entries
 from hamcrest import contains_inanyorder
 
-import functools
-
 import json
 
 from zope import component
-
-from zope.component import getGlobalSiteManager
 
 from nti.app.products.courseware_reports.interfaces import IInstructorReport
 

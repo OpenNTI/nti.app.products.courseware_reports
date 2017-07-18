@@ -20,7 +20,6 @@ from hamcrest import contains_string
 import csv
 import fudge
 from six import StringIO
-import json
 
 from nti.app.analytics.usage_stats import _VideoInfo
 from nti.app.analytics.usage_stats import _AverageWatchTimes
