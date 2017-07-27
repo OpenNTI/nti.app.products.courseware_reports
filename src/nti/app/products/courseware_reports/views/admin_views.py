@@ -29,8 +29,8 @@ from zope.intid.interfaces import IIntIds
 
 from nti.app.base.abstract_views import AbstractAuthenticatedView
 
-from nti.app.assessment.common import get_course_assignments
-from nti.app.assessment.common import get_course_self_assessments
+from nti.app.assessment.common.evaluations import get_course_assignments
+from nti.app.assessment.common.evaluations import get_course_self_assessments
 
 from nti.app.assessment.interfaces import IUsersCourseAssignmentHistory
 from nti.app.assessment.interfaces import IUsersCourseAssignmentHistoryItem

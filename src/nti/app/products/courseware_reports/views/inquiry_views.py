@@ -19,8 +19,9 @@ from zope.cachedescriptors.property import Lazy
 
 from pyramid.view import view_config
 
-from nti.app.assessment.common import aggregate_course_inquiry
-from nti.app.assessment.common import inquiry_submissions
+from nti.app.assessment.common.inquiries import aggregate_course_inquiry
+
+from nti.app.assessment.common.submissions import inquiry_submissions
 
 from nti.app.assessment.interfaces import ICourseAggregatedInquiries
 

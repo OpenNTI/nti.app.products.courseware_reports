@@ -11,7 +11,7 @@ logger = __import__('logging').getLogger(__name__)
 
 from zope import interface
 
-from nti.app.assessment.common import has_submissions
+from nti.app.assessment.common.submissions import has_submissions
 
 from nti.app.contenttypes.reports.reports import DefaultReportLinkProvider
 
