@@ -81,7 +81,7 @@ class SelfAssessmentSummaryReportPdf(CourseSummaryReportPdf):
 				completed = True
 				for question in submission.questions:
 					for part in question.parts:
-						if part.submittedResponse:
+						if part.submittedResponse is not None:
 							student_set.add( question.questionId )
 						else:
 							completed = False
