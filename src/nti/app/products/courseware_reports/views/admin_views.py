@@ -11,10 +11,10 @@ logger = __import__('logging').getLogger(__name__)
 
 import csv
 import time
-import urllib
+from io import BytesIO
 from numbers import Number
 from six import string_types
-from io import BytesIO
+from six.moves import urllib_parse
 
 from pyramid.view import view_config
 
@@ -226,13 +226,12 @@ def whitelist_participation(request):
     response = request.response
     response.content_encoding = str('identity')
     response.content_type = str('text/csv; charset=UTF-8')
-    response.content_disposition = str(
-        'attachment; filename="whitelist_participation.csv"')
+    response.content_disposition = str('attachment; filename="whitelist_participation.csv"')
 
     # Inputs
     # -CSV of email addresses
     # -Course
-    values = urllib.unquote(request.body)
+    values = urllib_parse.unquote(request.body)
     user_emails = set(values.split())
     course_name = request.headers.get('NTcourse')
 
