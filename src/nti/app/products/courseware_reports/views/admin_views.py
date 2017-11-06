@@ -4,15 +4,15 @@
 .. $Id$
 """
 
-from __future__ import print_function, unicode_literals, absolute_import, division
-__docformat__ = "restructuredtext en"
-
-logger = __import__('logging').getLogger(__name__)
+from __future__ import division
+from __future__ import print_function
+from __future__ import absolute_import
 
 import csv
 import time
 from io import BytesIO
 from numbers import Number
+
 from six import string_types
 from six.moves import urllib_parse
 
@@ -22,8 +22,6 @@ from zope import component
 
 from zope.cachedescriptors.property import Lazy
 from zope.cachedescriptors.property import CachedProperty
-
-from zope.catalog.interfaces import ICatalog
 
 from zope.intid.interfaces import IIntIds
 
@@ -35,9 +33,10 @@ from nti.app.assessment.common.evaluations import get_course_self_assessments
 from nti.app.assessment.interfaces import IUsersCourseAssignmentHistory
 from nti.app.assessment.interfaces import IUsersCourseAssignmentHistoryItem
 
-from nti.app.products.courseware.workspaces import CourseInstanceEnrollment
-from nti.app.products.courseware.interfaces import ICourseInstanceEnrollment
 from nti.app.products.courseware.interfaces import IVideoUsageStats
+from nti.app.products.courseware.interfaces import ICourseInstanceEnrollment
+
+from nti.app.products.courseware.workspaces import CourseInstanceEnrollment
 
 from nti.app.products.courseware_reports.reports import _do_get_containers_in_course
 from nti.app.products.courseware_reports.reports import _get_self_assessments_for_course
@@ -47,8 +46,9 @@ from nti.app.products.courseware_reports.views import parse_datetime
 from nti.app.products.courseware_reports.views.participation_views import StudentParticipationReportPdf
 
 from nti.app.products.gradebook.interfaces import NO_SUBMIT_PART_NAME
-from nti.app.products.gradebook.interfaces import IGradeBook
+
 from nti.app.products.gradebook.interfaces import IGrade
+from nti.app.products.gradebook.interfaces import IGradeBook
 
 from nti.appserver.account_recovery_views import find_users_with_email
 
@@ -81,6 +81,10 @@ from nti.site.site import get_component_hierarchy_names
 
 from nti.zope_catalog.catalog import ResultSet
 
+from nti.zope_catalog.interfaces import IDeferredCatalog
+
+logger = __import__('logging').getLogger(__name__)
+
 
 @view_config(route_name='objects.generic.traversal',
              name='shared_notes',
@@ -96,26 +100,27 @@ def shared_notes(request):
     stream = BytesIO()
     writer = csv.writer(stream)
     response = request.response
-    response.content_encoding = str('identity')
-    response.content_type = str('text/csv; charset=UTF-8')
-    response.content_disposition = str(
-        'attachment; filename="shared_notes.csv"')
+    response.content_encoding = 'identity'
+    response.content_type = 'text/csv; charset=UTF-8'
+    response.content_disposition = 'attachment; filename="shared_notes.csv"'
 
     writer.writerow(['Course', 'Public', 'Course', 'Other (Private)'])
 
     def all_usernames(course):
         everyone = course.legacy_community
         everyone_usernames = {
-            x.lower() for x in IEnumerableEntityContainer(everyone).iter_usernames()}
+            x.lower() for x in IEnumerableEntityContainer(everyone).iter_usernames()
+        }
         return everyone_usernames
 
     course_catalog = component.getUtility(ICourseCatalog)
-    md_catalog = component.getUtility(ICatalog, CATALOG_NAME)
+    md_catalog = component.getUtility(IDeferredCatalog, CATALOG_NAME)
     uidutil = component.getUtility(IIntIds)
 
     intersection = md_catalog.family.IF.intersection
     intids_of_notes = md_catalog['mimeType'].apply(
-        {'any_of': ('application/vnd.nextthought.note',)})
+        {'any_of': ('application/vnd.nextthought.note',)}
+    )
 
     def _intersect(set1, set2):
         return any(x in set1 for x in set2)
@@ -130,19 +135,19 @@ def shared_notes(request):
                                               intids_of_objects_in_course_containers)
         notes = ResultSet(course_intids_of_notes, uidutil)
 
-        public_scopes = course.SharingScopes.getAllScopesImpliedbyScope(
-            'Public')
+        public_scopes = course.SharingScopes.getAllScopesImpliedbyScope('Public')
         other_scopes = [
-            x for x in course.SharingScopes.values() if x not in public_scopes]
+            x for x in course.SharingScopes.values() if x not in public_scopes
+        ]
 
         shared_public = 0
         shared_course = 0
         shared_other = 0
 
         course_users = all_usernames(course)
-
         notes = (
-            x for x in notes if x.creator.username.lower() in course_users)
+            x for x in notes if x.creator.username.lower() in course_users
+        )
 
         for note in notes:
             if _intersect(public_scopes, note.sharingTargets):
@@ -153,7 +158,8 @@ def shared_notes(request):
                 shared_other += 1
 
         writer.writerow(
-            [course.__name__, shared_public, shared_course, shared_other])
+            [course.__name__, shared_public, shared_course, shared_other]
+        )
 
     stream.flush()
     stream.seek(0)
@@ -220,13 +226,15 @@ def _get_course(course_name, course_catalog):
              context=IDataserverFolder,
              permission=ACT_MODERATE)
 def whitelist_participation(request):
-    """    Return the participation of students found in a whitelist."""
+    """
+    Return the participation of students found in a whitelist.
+    """
     stream = BytesIO()
     writer = csv.writer(stream)
     response = request.response
-    response.content_encoding = str('identity')
-    response.content_type = str('text/csv; charset=UTF-8')
-    response.content_disposition = str('attachment; filename="whitelist_participation.csv"')
+    response.content_encoding = 'identity'
+    response.content_type = 'text/csv; charset=UTF-8'
+    response.content_disposition = 'attachment; filename="whitelist_participation.csv"'
 
     # Inputs
     # -CSV of email addresses
@@ -236,7 +244,7 @@ def whitelist_participation(request):
     course_name = request.headers.get('NTcourse')
 
     course_catalog = component.getUtility(ICourseCatalog)
-    md_catalog = component.getUtility(ICatalog, CATALOG_NAME)
+    md_catalog = component.getUtility(IDeferredCatalog, CATALOG_NAME)
     uidutil = component.getUtility(IIntIds)
     intersection = md_catalog.family.IF.intersection
 
@@ -247,7 +255,8 @@ def whitelist_participation(request):
     course_self_assessment_count = len(self_assessments)
     self_assessment_qsids = {x.ntiid: x for x in self_assessments}
     intids_of_submitted_qsets = md_catalog['mimeType'].apply(
-        {'any_of': ('application/vnd.nextthought.assessment.assessedquestionset',)})
+        {'any_of': ('application/vnd.nextthought.assessment.assessedquestionset',)}
+    )
 
     # Assignments
     assignment_catalog = ICourseAssignmentCatalog(course)
@@ -259,8 +268,10 @@ def whitelist_participation(request):
 
     self_assessment_header = 'Self-Assessments Completed (%s)' % course_self_assessment_count
     assignment_header = 'Assignments Completed (%s)' % course_assignment_count
-    writer.writerow(['Email', self_assessment_header,
-                     assignment_header, 'Has Final Grade', 'Final Grade'])
+    writer.writerow(
+        ['Email', self_assessment_header,
+         assignment_header, 'Has Final Grade', 'Final Grade']
+    )
 
     for email in user_emails:
         users = find_users_with_email(email, dataserver=None)
@@ -292,11 +303,11 @@ def whitelist_participation(request):
 
         # Final grade
         if final_grade_entry.has_key(username):
-            has_final_grade = 'Yes'
+            has_final_grade = u'Yes'
             final_grade_val = final_grade_entry[username].value
         else:
-            has_final_grade = 'No'
-            final_grade_val = '-'
+            has_final_grade = u'No'
+            final_grade_val = u'-'
 
         writer.writerow([email, unique_self_assessment_count,
                          unique_assignment_count, has_final_grade, final_grade_val])
@@ -326,7 +337,6 @@ class InstructorParticipationReport(StudentParticipationReportPdf):
 
         for asg in assignment_catalog:
             column = gradebook.getColumnForAssignmentId(asg.ntiid)
-
             for grade in column.values():
                 try:
                     history = IUsersCourseAssignmentHistoryItem(grade)
@@ -344,7 +354,8 @@ class InstructorParticipationReport(StudentParticipationReportPdf):
         intersection = md_catalog.family.IF.intersection
 
         intids_of_notes = md_catalog['mimeType'].apply(
-            {'any_of': ('application/vnd.nextthought.note',)})
+            {'any_of': ('application/vnd.nextthought.note',)}
+        )
         intids_of_objects_in_course_containers = self._containers_in_course
 
         intids_of_notes = intersection(intids_of_notes,
@@ -355,13 +366,11 @@ class InstructorParticipationReport(StudentParticipationReportPdf):
         return len(intids_of_notes)
 
     def __call__(self):
-        # TODO Reply-tos
         options = self.options
         self._build_user_info(options)
-
         self._build_forum_data(options)
-        options['AssignmentFeedbackCount'] = self._get_feedback_count()
         options['NoteCount'] = self._get_note_count()
+        options['AssignmentFeedbackCount'] = self._get_feedback_count()
         return options
 
 
@@ -381,16 +390,14 @@ class InstructorParticipationView(AbstractAuthenticatedView):
     def __call__(self):
         values = self.request.params
         start_time = parse_datetime(values.get('start_time'))
-        usernames = values.get('usernames')
-        usernames = set((User.get_user(x)
-                         for x in usernames.split())) if usernames else ()
+        usernames = values.get('usernames') or u''
+        usernames = set(User.get_user(x) for x in usernames.split())
         catalog = component.getUtility(ICourseCatalog)
 
         response = self.request.response
-        response.content_encoding = str('identity')
-        response.content_type = str('text/csv; charset=UTF-8')
-        response.content_disposition = str(
-            'attachment; filename="instructor_participation.csv"')
+        response.content_encoding = 'identity'
+        response.content_type = 'text/csv; charset=UTF-8'
+        response.content_disposition = 'attachment; filename="instructor_participation.csv"'
 
         stream = BytesIO()
         writer = csv.writer(stream)
@@ -398,29 +405,28 @@ class InstructorParticipationView(AbstractAuthenticatedView):
         # We do not bother with super-course instance collecting
         # at the subinstance level. We should have the public instance
         # in our iteration and we do not want to double-count.
-        header = ['Display Name', 'Username', 'Course', 'Topics Created',
-                  'Comments Created', 'Notes Created', 'Assignment Feedback Created']
+        header = [
+            'Display Name', 'Username', 'Course', 'Topics Created',
+            'Comments Created', 'Notes Created', 'Assignment Feedback Created'
+        ]
         writer.writerow(header)
 
         for catalog_entry in catalog.iterCatalogEntries():
-
             # Filter by start date
-            if         start_time \
-                    and catalog_entry.StartDate \
-                    and start_time > time.mktime(catalog_entry.StartDate.timetuple()):
+            if      start_time \
+                and catalog_entry.StartDate \
+                and start_time > time.mktime(catalog_entry.StartDate.timetuple()):
                 continue
 
             # Filter by usernames param
             course = ICourseInstance(catalog_entry)
             instructors = set(course.instructors)
-            to_check = usernames.intersection(
-                instructors) if usernames else instructors
+            to_check = usernames.intersection(instructors) if usernames else instructors
 
             for instructor in to_check:
                 instructor = IUser(instructor, None)
                 if instructor is None:
                     continue
-
                 enrollment = component.queryMultiAdapter((course, instructor),
                                                          ICourseInstanceEnrollment)
                 if enrollment is None:
@@ -428,6 +434,7 @@ class InstructorParticipationView(AbstractAuthenticatedView):
                     enrollment = CourseInstanceEnrollment(course, instructor)
 
                 spr = InstructorParticipationReport(enrollment, self.request)
+
                 options = spr()
                 user_info = options['user']
                 comments_created = options['total_forum_objects_created']
@@ -478,19 +485,22 @@ class StudentParticipationCSVView(AbstractAuthenticatedView):
 
     def get_qset_submissions(self, usernames):
         usernames = {x.lower() for x in usernames}
-        md_catalog = component.getUtility(ICatalog, CATALOG_NAME)
+        md_catalog = component.getUtility(IDeferredCatalog, CATALOG_NAME)
         uidutil = component.getUtility(IIntIds)
         intids_created = md_catalog['creator'].apply({'any_of': usernames})
         self_assessments = get_course_self_assessments(self.course)
         self_assessment_qsids = {x.ntiid: x for x in self_assessments}
 
         intids_of_submitted_qsets = md_catalog['mimeType'].apply(
-            {'any_of': ('application/vnd.nextthought.assessment.assessedquestionset',)})
+            {'any_of': ('application/vnd.nextthought.assessment.assessedquestionset',)}
+        )
         intids_of_submitted_qsets_by_student = md_catalog.family.IF.intersection(intids_of_submitted_qsets,
                                                                                  intids_created)
 
-        qsets_by_student_in_course = [x for x in ResultSet(intids_of_submitted_qsets_by_student, uidutil)
-                                      if x.questionSetId in self_assessment_qsids]
+        qsets_by_student_in_course = [
+            x for x in ResultSet(intids_of_submitted_qsets_by_student, uidutil)
+            if x.questionSetId in self_assessment_qsids
+        ]
 
         return qsets_by_student_in_course
 
@@ -513,10 +523,9 @@ class StudentParticipationCSVView(AbstractAuthenticatedView):
         users = self._get_users_from_request(self.request)
 
         response = self.request.response
-        response.content_encoding = str('identity')
-        response.content_type = str('text/csv; charset=UTF-8')
-        response.content_disposition = str(
-            'attachment; filename="student_participation.csv"')
+        response.content_encoding = 'identity'
+        response.content_type = 'text/csv; charset=UTF-8'
+        response.content_disposition = 'attachment; filename="student_participation.csv"'
 
         stream = BytesIO()
         writer = csv.writer(stream)
@@ -526,12 +535,10 @@ class StudentParticipationCSVView(AbstractAuthenticatedView):
         user_self_assess = dict()
         assignment_catalog = get_course_assignments(self.course)
         assessments = get_course_self_assessments(self.course)
-        qset_submissions = self.get_qset_submissions(
-            [x.username for x in users])
+        qset_submissions = self.get_qset_submissions([x.username for x in users])
         for submission in qset_submissions or ():
             if submission.creator.username not in user_self_assess:
                 user_self_assess[submission.creator.username] = dict()
-
             user_tmp = user_self_assess[submission.creator.username]
             if submission.questionSetId not in user_tmp:
                 user_tmp[submission.questionSetId] = 0
@@ -547,8 +554,7 @@ class StudentParticipationCSVView(AbstractAuthenticatedView):
             header_row.append('[AssignmentGrade] ' + (assignment.title or ''))
 
         for assessment in assessments or ():
-            title = assessment.title or getattr(
-                assessment.__parent__, 'title', '')
+            title = assessment.title or getattr(assessment.__parent__, 'title', '')
             header_row.append('[SelfAssessment] ' + title)
         _write(header_row, writer, stream)
 
@@ -557,9 +563,8 @@ class StudentParticipationCSVView(AbstractAuthenticatedView):
         # else the resulting CSV will be incorrect.
         for user in users:
             row_data = [user.username]
-
-            video_usage_stats = component.queryMultiAdapter(
-                (self.course, user), IVideoUsageStats)
+            video_usage_stats = component.queryMultiAdapter((self.course, user),
+                                                            IVideoUsageStats)
 
             viewed_videos = video_usage_stats.get_stats()
             user_video = {x.ntiid: x for x in viewed_videos}
@@ -606,7 +611,9 @@ class StudentParticipationCSVView(AbstractAuthenticatedView):
             grade_value = getattr(IGrade(history_item, None), 'value', '')
             # Convert the webapp's "number - letter" scheme to a number, iff
             # the letter scheme is empty
-            if grade_value and isinstance(grade_value, string_types) and grade_value.endswith(' -'):
+            if      grade_value \
+                and isinstance(grade_value, string_types) \
+                and grade_value.endswith(' -'):
                 try:
                     grade_value = float(grade_value.split()[0])
                 except ValueError:
@@ -624,6 +631,7 @@ class StudentParticipationCSVView(AbstractAuthenticatedView):
                                     provided=interface)
         results = []
         for resource in rs:
-            if not is_ntiid_of_type(resource.ntiid, RELATED_WORK) and resource.ntiid not in viewed_object_ntiids:
+            if      not is_ntiid_of_type(resource.ntiid, RELATED_WORK) \
+                and resource.ntiid not in viewed_object_ntiids:
                 results.append(resource)
         return results
