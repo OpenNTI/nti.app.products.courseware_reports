@@ -4,10 +4,9 @@
 .. $Id$
 """
 
-from __future__ import print_function, absolute_import, division
-__docformat__ = "restructuredtext en"
-
-logger = __import__('logging').getLogger(__name__)
+from __future__ import division
+from __future__ import print_function
+from __future__ import absolute_import
 
 from zope import interface
 
@@ -33,8 +32,10 @@ from nti.links.links import Link
 
 from nti.traversal.traversal import find_interface
 
+logger = __import__('logging').getLogger(__name__)
 
-class AbstractFromCourseEvaluator():
+
+class AbstractFromCourseEvaluator(object):
     """
     Defines a class that involves knowing
     about a course
@@ -60,7 +61,7 @@ for that user.
 @interface.implementer(IReportAvailablePredicate)
 class AbstractFromCoursePredicate(AbstractFromCourseEvaluator):
 
-    def evaluate(self, report, context, user):
+    def evaluate(self, unused_report, unused_context, unused_user):
         return True
 
 
@@ -70,7 +71,7 @@ class ForumParticipationPredicate():
     def __init__(self, *args, **kwargs):
         pass
 
-    def evaluate(self, report, context, user):
+    def evaluate(self, unused_report, context, unused_user):
         return (bool(context) and any(bool(x.values()) for x in context.values()))
 
 
@@ -80,20 +81,20 @@ class TopicParticipationPredicate():
     def __init__(self, *args, **kwargs):
         pass
 
-    def evaluate(self, report, context, user):
+    def evaluate(self, unused_report, context, unused_user):
         return bool(context.values())
 
 
 class CourseInstancePredicate(AbstractFromCoursePredicate):
 
-    def evaluate(self, report, context, user):
+    def evaluate(self, unused_report, context, user):
         course = self._course_from_context(context, user)
         return course is not None and get_course_enrollments(course) is not None
 
 
 class AssignmentPredicate(AbstractFromCoursePredicate):
 
-    def evaluate(self, report, context, user):
+    def evaluate(self, unused_report, context, user):
         course = self._course_from_context(context, user)
         book = IGradeBook(course, None)
         if book is not None:
@@ -105,7 +106,7 @@ class AssignmentPredicate(AbstractFromCoursePredicate):
 
 class InquiryPredicate(AbstractFromCoursePredicate):
 
-    def evaluate(self, report, context, user):
+    def evaluate(self, unused_report, context, user):
         course = self._course_from_context(IQInquiry(context, None), user)
         if course is not None and has_submissions(context, course):
             self.inquiry = IQInquiry(context, None)
