@@ -37,8 +37,7 @@ logger = __import__('logging').getLogger(__name__)
 
 class AbstractFromCourseEvaluator(object):
     """
-    Defines a class that involves knowing
-    about a course
+    Defines a class that involves knowing about a course
     """
 
     def __init__(self, *args, **kwargs):
