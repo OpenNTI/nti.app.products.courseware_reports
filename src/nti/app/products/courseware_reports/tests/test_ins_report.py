@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from __future__ import print_function, absolute_import, division
-__docformat__ = "restructuredtext en"
+from __future__ import division
+from __future__ import print_function
+from __future__ import absolute_import
 
 # disable: accessing protected members, too many methods
 # pylint: disable=W0212,R0904
@@ -52,12 +53,14 @@ class TestInstructorReport(ReportsLayerTest):
     """
 
     layer = PersistentInstructedCourseApplicationTestLayer
-    
+
     course_ntiid = u'tag:nextthought.com,2011-10:OU-HTML-CLC3403_LawAndJustice.course_info'
-    
+
     instructor_username = u"harp4162"
-    
-    student_username = u"sjohnson@nextthought.com"
+
+    student_username = u'student001'
+
+    admin_username = u"sjohnson@nextthought.com"
 
     default_origin = 'http://janux.ou.edu'
 
@@ -66,32 +69,36 @@ class TestInstructorReport(ReportsLayerTest):
         """
         Test that only instructors can access instructor reports
         """
-        
+
         with mock_dataserver.mock_db_trans(self.ds, site_name='platform.ou.edu'):
-            
+
             course_obj = find_object_with_ntiid(self.course_ntiid)
             course_instance_obj = ICourseInstance(course_obj)
 
             ins_user_obj = User.get_user(self.instructor_username)
             stu_user_obj = User.get_user(self.student_username)
+            admin_user_obj = User.get_user(self.admin_username)
 
             reports = component.subscribers(
                 (course_instance_obj,), IInstructorReport)
 
             assert_that(reports, not_none())
 
-            ins_perm = evaluate_permission(reports[0], 
+            ins_perm = evaluate_permission(reports[0],
                                            course_instance_obj, ins_user_obj)
-            stu_perm = evaluate_permission(reports[0], 
+            stu_perm = evaluate_permission(reports[0],
                                            course_instance_obj, stu_user_obj)
+            admin_perm = evaluate_permission(reports[0],
+                                             course_instance_obj, admin_user_obj)
 
             assert_that(ins_perm, equal_to(True))
             assert_that(stu_perm, equal_to(False))
+            assert_that(admin_perm, equal_to(True))
 
     @WithSharedApplicationMockDS(testapp=True, users=True, default_authenticate=True)
     def test_instructor_decoration(self):
         """
-        Test that instructor report links are 
+        Test that instructor report links are
         decorated correctly
         """
 
@@ -105,7 +112,7 @@ class TestInstructorReport(ReportsLayerTest):
         assert_that(response_dict["Items"],
                     has_item(has_entry("CourseInstance", not_none())))
 
-        assert_that(response_dict["Items"][0]["CourseInstance"], 
+        assert_that(response_dict["Items"][0]["CourseInstance"],
                     has_entry("Links",
                               has_item(has_entry("rel", "report-AnotherTestReport"))))
 
@@ -119,7 +126,7 @@ class TestInstructorReport(ReportsLayerTest):
                                   description=u"TestDescription",
                                   contexts=(ICourseInstance,),
                                   supported_types=[u"csv", u"pdf"])
-        
+
         ext_obj = to_external_object(report)
 
         assert_that(ext_obj,
