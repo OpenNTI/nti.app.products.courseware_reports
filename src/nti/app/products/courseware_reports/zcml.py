@@ -4,10 +4,10 @@
 .. $Id$
 """
 
-from __future__ import print_function, absolute_import, division
+from __future__ import division
+from __future__ import print_function
+from __future__ import absolute_import
 __docformat__ = "restructuredtext en"
-
-logger = __import__('logging').getLogger(__name__)
 
 from nti.app.products.courseware_reports.interfaces import IInstructorReport
 
@@ -17,6 +17,8 @@ from nti.contenttypes.reports.zcml import registerReport
 from nti.contenttypes.reports.zcml import IRegisterReport
 
 from nti.schema.field import TextLine
+
+logger = __import__('logging').getLogger(__name__)
 
 
 class IRegisterInstructorReport(IRegisterReport):
@@ -30,13 +32,14 @@ class IRegisterInstructorReport(IRegisterReport):
 
 
 def registerInstructorReport(_context, name, title, description, contexts,
-                             supported_types, registration_name=None):
+                             supported_types, registration_name=None, rel=None):
     """
     Take the items from ZCML, turn it into a report object and register it as a
     new utility in the current context
     """
     registerReport(_context, name, title, description,
                    permission=None,
+                   rel=rel,
                    contexts=contexts,
                    supported_types=supported_types,
                    registration_name=registration_name,
