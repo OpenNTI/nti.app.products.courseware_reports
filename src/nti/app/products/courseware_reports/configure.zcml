@@ -338,6 +338,15 @@
 		permission="zope.Public"
 		manager=".interfaces.IPDFReportHeaderManager" />
 
+	<!-- User Enrollment report -->
+	<browser:viewlet
+			name="user_enrollment_provider"
+			template="templates/user_enrollment_provider.rml"
+			view=".views.user_views.UserEnrollmentReportPdf"
+			layer="pyramid.interfaces.IRequest"
+			permission="zope.Public"
+			manager=".interfaces.IPDFReportHeaderManager" />
+	
 	<!-- Default macros for the reports -->
 	<!--
 		 NOTE: There is probably a better, more modern way
