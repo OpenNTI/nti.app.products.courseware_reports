@@ -339,6 +339,11 @@
 		manager=".interfaces.IPDFReportHeaderManager" />
 
 	<!-- User Enrollment report -->
+	<z3c:template
+		template="templates/UserEnrollmentReport.rml"
+		for=".views.user_views.UserEnrollmentReportPdf"
+		layer="pyramid.interfaces.IRequest" />
+	
 	<browser:viewlet
 			name="user_enrollment_provider"
 			template="templates/user_enrollment_provider.rml"

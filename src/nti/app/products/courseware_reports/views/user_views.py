@@ -33,16 +33,13 @@ from nti.app.products.courseware_reports.interfaces import IPDFReportHeaderManag
 from nti.app.products.courseware_reports.reports import StudentInfo
 from nti.app.products.courseware_reports.reports import _adjust_date
 from nti.app.products.courseware_reports.reports import _format_datetime
+from nti.app.products.courseware_reports.views.view_mixins import _AbstractReportView
+from nti.dataserver.authorization import ACT_READ
 
-@view_config(route_name='objects.generic.traversal',
-             renderer="../templates/user_enrollment_report_layout.rml",
-             request_method='GET',
-             context=IUser,
+@view_config(context=IUser,
              name=VIEW_USER_ENROLLMENT)
 
-@interface.implementer(IPDFReportView, IPDFReportHeaderManager)
-
-class UserEnrollmentReportPdf():
+class UserEnrollmentReportPdf(_AbstractReportView):
   report_title = _('User Enrollment Report')
 
   def get_context_enrollment_records(self):
