@@ -17,9 +17,9 @@ from zope import component
 
 from zope.component import getGlobalSiteManager
 
-from nti.analytics_database.interfaces import IAnalyticsDB
-
 from nti.analytics_database.database import AnalyticsDB
+
+from nti.analytics_database.interfaces import IAnalyticsDB
 
 from nti.app.contenttypes.reports.interfaces import IReportLinkProvider
 
