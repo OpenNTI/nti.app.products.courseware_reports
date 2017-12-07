@@ -1,12 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from __future__ import print_function, unicode_literals, absolute_import, division
-from chameleon.nodes import Default
-__docformat__ = "restructuredtext en"
+from __future__ import division
+from __future__ import print_function
+from __future__ import absolute_import
 
-# disable: accessing protected members, too many methods
-# pylint: disable=W0212,R0904
+# pylint: disable=protected-access,too-many-public-methods
 
 import functools
 
@@ -18,8 +17,13 @@ from zope import component
 
 from zope.component import getGlobalSiteManager
 
-from nti.analytics.database.interfaces import IAnalyticsDB
-from nti.analytics.database.database import AnalyticsDB
+from nti.analytics_database.interfaces import IAnalyticsDB
+
+from nti.analytics_database.database import AnalyticsDB
+
+from nti.app.contenttypes.reports.interfaces import IReportLinkProvider
+
+from nti.app.contenttypes.reports.reports import DefaultReportLinkProvider
 
 from nti.app.products.courseware_reports.reports import InstructorReport
 
@@ -28,10 +32,6 @@ from nti.app.products.courseware_reports.interfaces import IInstructorReport
 from nti.app.testing.application_webtest import ApplicationLayerTest
 
 from nti.contenttypes.courses.interfaces import ICourseInstance
-
-from nti.app.contenttypes.reports.interfaces import IReportLinkProvider
-
-from nti.app.contenttypes.reports.reports import DefaultReportLinkProvider
 
 from nti.testing.base import AbstractTestBase
 
@@ -95,27 +95,27 @@ class ReportsLayerTest(ApplicationLayerTest):
                                            u"ThirdTestDescription",
                                            (ICourseInstance,),
                                            [u"csv", u"pdf"]))
-        
+
         self.link_provider = functools.partial(DefaultReportLinkProvider)
-        
-        getGlobalSiteManager().registerSubscriptionAdapter(self.link_provider, (InstructorReport,), IReportLinkProvider)
+
+        getGlobalSiteManager().registerSubscriptionAdapter(self.link_provider,
+                                                           (InstructorReport,),
+                                                           IReportLinkProvider)
 
     @classmethod
     def tearDown(self):
         """
-        Unregister all test utilities and
-        subscribers
+        Unregister all test utilities and subscribers
         """
         sm = component.getGlobalSiteManager()
         sm.unregisterUtility(self.db)
         for util in self.utils:
-            sm.unregisterUtility(
-                component=util,
-                provided=IInstructorReport,
-                name=util.name)
-        sm.unregisterSubscriptionAdapter(
-            factory=self.factory, required=(
-                ICourseInstance,), provided=IInstructorReport)
+            sm.unregisterUtility(component=util,
+                                 provided=IInstructorReport,
+                                 name=util.name)
+        sm.unregisterSubscriptionAdapter(factory=self.factory,
+                                         required=(ICourseInstance,),
+                                         provided=IInstructorReport)
         sm.unregisterSubscriptionAdapter(factory=self.link_provider,
                                          required=(InstructorReport,),
                                          provided=IReportLinkProvider)
