@@ -140,6 +140,12 @@
 								  			nti.contenttypes.presentation.interfaces.INTIInquiryRef"
 								  supported_types="pdf" />
 
+	<rep:registerInstructorReport name="UserEnrollmentReport.pdf"
+								  title="User Enrollment Report"
+								  description="User Enrollment Report"
+								  contexts="nti.dataserver.interfaces.IUser"
+								  supported_types="pdf" />
+
 	<!--
 		The instructors/TA of a course (locally added to this role
 		for the course) can view reports
@@ -338,6 +344,20 @@
 		permission="zope.Public"
 		manager=".interfaces.IPDFReportHeaderManager" />
 
+	<!-- User Enrollment report -->
+	<z3c:template
+		template="templates/UserEnrollmentReport.rml"
+		for=".views.user_views.UserEnrollmentReportPdf"
+		layer="pyramid.interfaces.IRequest" />
+	
+	<browser:viewlet
+			name="user_enrollment_provider"
+			template="templates/user_enrollment_provider.rml"
+			view=".views.user_views.UserEnrollmentReportPdf"
+			layer="pyramid.interfaces.IRequest"
+			permission="zope.Public"
+			manager=".interfaces.IPDFReportHeaderManager" />
+	
 	<!-- Default macros for the reports -->
 	<!--
 		 NOTE: There is probably a better, more modern way
