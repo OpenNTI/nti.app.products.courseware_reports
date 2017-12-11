@@ -16,8 +16,6 @@ from zope import interface
 
 from zope.cachedescriptors.property import Lazy
 
-from nti.traversal.traversal import find_interface
-
 from datetime import datetime
 
 from nti.dataserver.interfaces import IUser
@@ -25,31 +23,16 @@ from nti.dataserver.users.users import User
 
 from nti.app.products.courseware_reports import MessageFactory as _
 from nti.app.products.courseware_reports import VIEW_USER_ENROLLMENT
-from nti.contenttypes.courses.utils import get_context_enrollment_records
 from nti.contenttypes.courses.interfaces import ICourseCatalogEntry
-from nti.contenttypes.courses.interfaces import ICourseInstance
-from nti.app.products.courseware_reports.interfaces import IPDFReportView
-from nti.app.products.courseware_reports.interfaces import IPDFReportHeaderManager
-from nti.app.products.courseware_reports.reports import StudentInfo
 from nti.app.products.courseware_reports.reports import _adjust_date
 from nti.app.products.courseware_reports.reports import _format_datetime
-from nti.app.products.courseware_reports.views.view_mixins import _AbstractReportView
-from nti.dataserver.authorization import ACT_READ
+from nti.app.products.courseware_reports.views.view_mixins import AbstractCourseReportView
 
 @view_config(context=IUser,
              name=VIEW_USER_ENROLLMENT)
 
-class UserEnrollmentReportPdf(_AbstractReportView):
+class UserEnrollmentReportPdf(AbstractCourseReportView):
   report_title = _('User Enrollment Report')
-
-  def get_context_enrollment_records(self):
-    return get_context_enrollment_records(self.context, self.remoteUser)
-
-  def get_course_for_node(self, node):
-    return find_interface(node, ICourseInstance, strict=False)
-
-  def build_user_info(self, user):
-    return StudentInfo(user)
 
   def get_user_info(self):
     return self.build_user_info(self.context)
@@ -64,7 +47,8 @@ class UserEnrollmentReportPdf(_AbstractReportView):
   def __init__(self, context, request):
     self.context = context
     self.request = request
-    self.remoteUser = User.get_user(request.remote_user)
+
+    self.remoteUser = self.getRemoteUser()
     self.options = {}
 
     if request.view_name:
@@ -73,7 +57,7 @@ class UserEnrollmentReportPdf(_AbstractReportView):
   def __call__(self):
     options = self.options
     records = self.get_context_enrollment_records()
-    records = sorted(records, key=lambda x:x.createdTime, reverse=True)
+    records = sorted(records, key=lambda x:x.createdTime)
 
     options["user"] = self.get_user_info()
 
@@ -82,7 +66,7 @@ class UserEnrollmentReportPdf(_AbstractReportView):
     for record in records:
       enrollment = {}
       
-      course = self.get_course_for_node(record)
+      course = self.get_courses_from_enrollments(record)
       course = ICourseCatalogEntry(course)
       
       enrollment["title"] = course.title

@@ -140,6 +140,12 @@
 								  			nti.contenttypes.presentation.interfaces.INTIInquiryRef"
 								  supported_types="pdf" />
 
+	<rep:registerInstructorReport name="UserEnrollmentReport.pdf"
+								  title="User Enrollment Report"
+								  description="User Enrollment Report"
+								  contexts="nti.dataserver.interfaces.IUser"
+								  supported_types="pdf" />
+
 	<!--
 		The instructors/TA of a course (locally added to this role
 		for the course) can view reports
