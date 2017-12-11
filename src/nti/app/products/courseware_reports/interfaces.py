@@ -17,6 +17,7 @@ from zope.security.permission import Permission
 
 from nti.contenttypes.reports.interfaces import IReport
 
+from nti.schema.field import Choice
 from nti.schema.field import TextLine
 
 # Until we have true pluggable auth-folders that we traverse through
@@ -52,5 +53,6 @@ class IInstructorReport(IReport):
     """
     Interface defining a report to be viewed by an instructor
     """
-    permission = TextLine(title=u"The permission level required to access this report",
-                          required=False)
+    permission = Choice(vocabulary='Permission Ids',
+                        title=u"The permission level required to access this report",
+                        required=False)

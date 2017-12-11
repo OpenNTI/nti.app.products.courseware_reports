@@ -9,14 +9,14 @@ from __future__ import print_function
 from __future__ import absolute_import
 __docformat__ = "restructuredtext en"
 
+from zope.security.zcml import Permission
+
 from nti.app.products.courseware_reports.interfaces import IInstructorReport
 
 from nti.app.products.courseware_reports.reports import InstructorReport
 
 from nti.contenttypes.reports.zcml import registerReport
 from nti.contenttypes.reports.zcml import IRegisterReport
-
-from nti.schema.field import TextLine
 
 logger = __import__('logging').getLogger(__name__)
 
@@ -27,9 +27,8 @@ class IRegisterInstructorReport(IRegisterReport):
     of the various fields
     """
 
-    permission = TextLine(title=u"The permission level required to access this report",
-                          required=False)
-
+    permission = Permission(title=u"The permission level required to access this report",
+                            required=False)
 
 def registerInstructorReport(_context, name, title, description, contexts,
                              supported_types, registration_name=None, rel=None):
@@ -37,10 +36,11 @@ def registerInstructorReport(_context, name, title, description, contexts,
     Take the items from ZCML, turn it into a report object and register it as a
     new utility in the current context
     """
+    permission = None
     registerReport(_context, name, title, description,
-                   permission=None,
+                   contexts,
+                   permission,
                    rel=rel,
-                   contexts=contexts,
                    supported_types=supported_types,
                    registration_name=registration_name,
                    report_class=InstructorReport,

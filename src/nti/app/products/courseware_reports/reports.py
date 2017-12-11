@@ -736,7 +736,6 @@ class InstructorReport(SchemaConfigured):
 	report.
 	"""
 	createDirectFieldProperties(IInstructorReport)
-	
+
 	def __init__(self, *args, **kwargs):
 		SchemaConfigured.__init__(self, **kwargs)
-	

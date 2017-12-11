@@ -52,6 +52,7 @@
 
 	<!-- Report Registration -->
 	<include package="nti.contenttypes.reports"/>
+	<include package="nti.app.contenttypes.reports"/>
 	<include file="meta.zcml" package="nti.contenttypes.reports"/>
 
 	<!-- Predicate Subscribers -->
