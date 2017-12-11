@@ -41,10 +41,12 @@ setup(
 		'z3c.pagelet',
 		'z3c.template',
 		'zope.viewlet',
+		'zope.security',
 		'zope.contentprovider',
 		'nti.app.pyramid_zope',
 		'nti.app.products.gradebook',
-		'nti.app.products.courseware'
+		'nti.app.products.courseware',
+		'nti.app.contenttypes.reports'
 	],
 	extras_require={
 		'test': tests_require,

@@ -736,7 +736,10 @@ class InstructorReport(SchemaConfigured):
 	report.
 	"""
 	createDirectFieldProperties(IInstructorReport)
-	
+
 	def __init__(self, *args, **kwargs):
-		SchemaConfigured.__init__(self, **kwargs)
-	
+		try:
+			SchemaConfigured.__init__(self, **kwargs)
+		except:
+			from IPython.terminal.debugger import set_trace;set_trace()
+			from IPython.terminal.debugger import set_trace;set_trace()

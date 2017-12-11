@@ -9,6 +9,8 @@ from __future__ import absolute_import
 
 import functools
 
+import unittest
+
 import zope
 
 import zope.testing
@@ -16,10 +18,6 @@ import zope.testing
 from zope import component
 
 from zope.component import getGlobalSiteManager
-
-from nti.analytics_database.database import AnalyticsDB
-
-from nti.analytics_database.interfaces import IAnalyticsDB
 
 from nti.app.contenttypes.reports.interfaces import IReportLinkProvider
 
@@ -47,9 +45,6 @@ class ReportsLayerTest(ApplicationLayerTest):
         """
         Set up environment for app layer report testing
         """
-        self.db = AnalyticsDB(dburi='sqlite://')
-        component.getGlobalSiteManager().registerUtility(self.db, IAnalyticsDB)
-
         def _register_report(name, title, description,
                              contexts, supported_types):
             """
@@ -108,7 +103,6 @@ class ReportsLayerTest(ApplicationLayerTest):
         Unregister all test utilities and subscribers
         """
         sm = component.getGlobalSiteManager()
-        sm.unregisterUtility(self.db)
         for util in self.utils:
             sm.unregisterUtility(component=util,
                                  provided=IInstructorReport,

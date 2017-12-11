@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from __future__ import print_function, absolute_import, division
-__docformat__ = "restructuredtext en"
+from __future__ import division
+from __future__ import print_function
+from __future__ import absolute_import
 
 # disable: accessing protected members, too many methods
 # pylint: disable=W0212,R0904
@@ -17,6 +18,8 @@ import unittest
 
 from zope import component
 from zope import interface
+
+from zope.component.hooks import setHooks
 
 from zope.configuration import config
 from zope.configuration import xmlconfig
@@ -40,6 +43,7 @@ HEAD_ZCML_STRING = u"""
     <include package="zope.security" file="meta.zcml" />
     <include package="zope.component" />
     <include package="." file="meta.zcml"/>
+    <include package="zope.vocabularyregistry" />
 
     <configure>
         <rep:registerInstructorReport name="TestReport"
@@ -60,6 +64,10 @@ class TestReportContext(object):
 class TestZcml(unittest.TestCase):
 
     get_config_package = AbstractTestBase.get_configuration_package.__func__
+
+    def setUp(self):
+        super(TestZcml, self).setUp()
+        setHooks()
 
     def test_zcml(self):
         # Using the above ZCML string, set up the temporary configuration and run the string
