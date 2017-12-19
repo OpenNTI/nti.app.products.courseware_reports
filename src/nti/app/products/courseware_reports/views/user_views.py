@@ -14,6 +14,8 @@ from pyramid.view import view_config
 from zope import component
 from zope import interface
 
+from pyramid.httpexceptions import HTTPForbidden
+
 from zope.cachedescriptors.property import Lazy
 
 from datetime import datetime
@@ -26,16 +28,27 @@ from nti.app.products.courseware_reports import VIEW_USER_ENROLLMENT
 from nti.contenttypes.courses.interfaces import ICourseCatalogEntry
 from nti.app.products.courseware_reports.reports import _adjust_date
 from nti.app.products.courseware_reports.reports import _format_datetime
-from nti.app.products.courseware_reports.views.view_mixins import AbstractCourseReportView
+from nti.app.products.courseware_reports.views.view_mixins import AbstractReportView
+from nti.contenttypes.courses.utils import get_context_enrollment_records
+from nti.traversal.traversal import find_interface
+from nti.contenttypes.courses.interfaces import ICourseInstance
+from nti.dataserver.authorization import is_admin_or_site_admin
+
 
 @view_config(context=IUser,
              name=VIEW_USER_ENROLLMENT)
 
-class UserEnrollmentReportPdf(AbstractCourseReportView):
+class UserEnrollmentReportPdf(AbstractReportView):
   report_title = _('User Enrollment Report')
 
+  def _check_access(self):
+    if is_admin_or_site_admin(self.remoteUser) or self.context == self.remoteUser:
+      return True
+    else:
+      raise HTTPForbidden()
+
   def get_user_info(self):
-    return self.build_user_info(self.context)
+      return self.build_user_info(self.context)
 
   def generate_footer(self):
     date = _adjust_date(datetime.utcnow())
@@ -43,6 +56,13 @@ class UserEnrollmentReportPdf(AbstractCourseReportView):
     title = self.report_title
     user = self.context.username
     return "%s %s %s" % (title, user, date)
+
+  def get_context_enrollment_records(self):
+    return get_context_enrollment_records(self.context, self.remoteUser)
+
+  def get_courses_from_enrollments(self, node):
+    course = ICourseInstance(node)
+    return find_interface(course, ICourseInstance, strict=False)
 
   def __init__(self, context, request):
     self.context = context
@@ -55,6 +75,7 @@ class UserEnrollmentReportPdf(AbstractCourseReportView):
       self.filename = request.view_name
 
   def __call__(self):
+    self._check_access()
     options = self.options
     records = self.get_context_enrollment_records()
     records = sorted(records, key=lambda x:x.createdTime)

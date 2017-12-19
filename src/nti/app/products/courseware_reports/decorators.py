@@ -32,6 +32,8 @@ from nti.links.links import Link
 
 from nti.traversal.traversal import find_interface
 
+from nti.dataserver.authorization import is_admin_or_site_admin
+
 logger = __import__('logging').getLogger(__name__)
 
 
@@ -112,6 +114,19 @@ class InquiryPredicate(AbstractFromCoursePredicate):
             return self.inquiry is not None
         return False
 
+@interface.implementer(IReportAvailablePredicate)
+class UserEnrollmentPredicate():
+
+    def __init__(self, *args, **kwargs):
+        pass
+
+    def evaluate(self, unused_report, context, user):
+        if is_admin_or_site_admin(user):
+            return True
+
+        course = self._course_from_context(context, user)
+
+        return course is not None and get_course_enrollments(course) is not None
 
 """
 Link providers that, given a context, will define the proper link

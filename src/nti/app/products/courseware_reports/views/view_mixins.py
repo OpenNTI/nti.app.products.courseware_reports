@@ -63,10 +63,6 @@ from nti.dataserver.users.users import User
 
 from nti.zope_catalog.interfaces import IDeferredCatalog
 
-from nti.contenttypes.courses.utils import get_context_enrollment_records
-
-from nti.traversal.traversal import find_interface
-
 logger = __import__('logging').getLogger(__name__)
 
 
@@ -311,14 +307,6 @@ class AbstractReportView(AbstractAuthenticatedView,
         if request.view_name:
             self.filename = request.view_name
 
-    def _check_access(self):
-        if not checkPermission(ACT_VIEW_REPORTS.id, self.course):
-            raise HTTPForbidden()
-
-    @Lazy
-    def course(self):
-        return ICourseInstance(self.context)
-
     @Lazy
     def md_catalog(self):
         return component.getUtility(IDeferredCatalog, CATALOG_NAME)
@@ -385,7 +373,7 @@ class AbstractReportView(AbstractAuthenticatedView,
         # Do not display username of open students
         if isinstance(user, six.string_types):
             user = User.get_user(user)
-        username = None
+        username = self._replace_username(user.username)
         return StudentInfo(user, username=username, **kwargs)
 
     def filter_objects(self, objects):
@@ -401,6 +389,15 @@ class AbstractReportView(AbstractAuthenticatedView,
 
 class AbstractCourseReportView(AbstractReportView):
     
+    def _check_access(self):
+        if not checkPermission(ACT_VIEW_REPORTS.id, self.course):
+            raise HTTPForbidden()
+
+    @Lazy
+    def course(self):
+        return ICourseInstance(self.context)
+
+
     @Lazy
     def course_start_date(self):
         try:
@@ -472,10 +469,3 @@ class AbstractCourseReportView(AbstractReportView):
 
         start_year = start_date.year if start_date else None
         return u'- %s %s' % (semester, start_year) if start_date else ''
-    
-    def get_context_enrollment_records(self):
-        return get_context_enrollment_records(self.context, self.remoteUser)
-
-    def get_courses_from_enrollments(self, node):
-        course = ICourseInstance(node)
-        return find_interface(course, ICourseInstance, strict=False)

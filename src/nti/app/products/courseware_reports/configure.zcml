@@ -79,6 +79,11 @@
 				provides="nti.contenttypes.reports.interfaces.IReportAvailablePredicate"
 				for="nti.contenttypes.presentation.interfaces.INTIInquiryRef" />
 
+	<subscriber factory=".decorators.UserEnrollmentPredicate"
+				provides="nti.contenttypes.reports.interfaces.IReportAvailablePredicate"
+				for="nti.dataserver.interfaces.IUser" />
+
+
 	<!-- Decorator Adapters -->
 	<adapter factory="nti.app.contenttypes.reports.reports.DefaultReportLinkProvider"
 			 provides="nti.app.contenttypes.reports.interfaces.IReportLinkProvider"
@@ -138,12 +143,6 @@
 								  description="Summary of inquiries"
 								  contexts="nti.assessment.interfaces.IQInquiry
 								  			nti.contenttypes.presentation.interfaces.INTIInquiryRef"
-								  supported_types="pdf" />
-
-	<rep:registerInstructorReport name="UserEnrollmentReport.pdf"
-								  title="User Enrollment Report"
-								  description="User Enrollment Report"
-								  contexts="nti.dataserver.interfaces.IUser"
 								  supported_types="pdf" />
 
 	<!--
