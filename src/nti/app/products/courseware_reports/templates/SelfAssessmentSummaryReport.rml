@@ -87,6 +87,12 @@
 				<td>
 					<para style="header_r">Total Attempts</para>
 				</td>
+				<td>
+                    <para style="header_r">Unique Attempts</para>
+                </td>
+                <td>
+                    <para style="header_r">Assessment Count</para>
+                </td>
 			</tr>
 			<tr tal:repeat="item options/self_assessment_for_credit">
 				<td tal:content="item/display">
@@ -98,6 +104,12 @@
 				<td tal:content="item/count">
 					Count
 				</td>
+				<td tal:content="item/unique_attempts">
+                    Unique Attempts
+                </td>
+                <td tal:content="item/assessment_count">
+                    Assessment Count
+                </td>
 			</tr>
 		</blockTable>
 
@@ -124,6 +136,12 @@
 				<td>
 					<para style="header_r">Total Attempts</para>
 				</td>
+				<td>
+                    <para style="header_r">Unique Attempts</para>
+                </td>
+                <td>
+                    <para style="header_r">Assessment Count</para>
+                </td>
 			</tr>
 			<tr tal:repeat="item options/self_assessment_non_credit">
 				<td tal:content="item/display">
@@ -132,6 +150,12 @@
 				<td tal:content="item/count">
 					Count
 				</td>
+				<td tal:content="item/unique_attempts">
+                    Unique Attempts
+                </td>
+                <td tal:content="item/assessment_count">
+                    Assessment Count
+                </td>
 			</tr>
 		</blockTable>
 

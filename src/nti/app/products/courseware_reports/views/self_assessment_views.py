@@ -26,6 +26,12 @@ from nti.app.products.courseware_reports.views.summary_views import CourseSummar
 _SelfAssessmentCompletion = namedtuple( '_SelfAssessmentCompletion',
 										('title', 'question_count', 'students'))
 
+_StudentSelfAssessmentCompletion = namedtuple( '_SelfAssessmentCompletion',
+											 ('display', 'username',
+											  'count', 'unique_attempts',
+											  'assessment_count'))
+
+
 @view_config(context=ICourseInstance,
 			 name=VIEW_SELF_ASSESSMENT_SUMMARY)
 class SelfAssessmentSummaryReportPdf(CourseSummaryReportPdf):
@@ -37,27 +43,42 @@ class SelfAssessmentSummaryReportPdf(CourseSummaryReportPdf):
 
 	report_title = _('Self Assessment Report')
 
-	def _get_by_student_stats(self, stats, assessment_names, student_names):
+	def _get_by_student_stats(self, stats, assessment_names, student_names,
+							  user_submission_sets, assessment_count):
 		"""
-		Get our sorted stats, including zero'd stats for users
-		without self assessment submissions.
+		Get our sorted stats, including zero'd stats for users without self
+		assessment submissions.
 		"""
 		assessment_usernames = {x.lower() for x in assessment_names}
 		missing_usernames = student_names - assessment_usernames
 		stats.extend( (self.build_user_info( username ) for username in missing_usernames) )
 		stats = sorted( stats )
-		return stats
+		result = []
+		for user_stats in sorted(stats):
+			username = user_stats.username
+			user_completed_count = len(user_submission_sets.get(username, {})) or None
+			user_completion = _StudentSelfAssessmentCompletion(user_stats.display,
+															   username,
+															   user_stats.count,
+															   user_completed_count,
+															   assessment_count)
+			result.append(user_completion)
+		return result
 
-	def _get_self_assessments_by_student( self ):
+	def _get_self_assessments_by_student(self, user_submission_sets, assessment_count):
 		"""
 		Get our by student stats for open and credit students.
 		"""
 		open_stats = self._get_by_student_stats( self.assessment_aggregator.open_stats,
 												 self.assessment_aggregator.non_credit_keys(),
-												 self.open_student_usernames )
+												 self.open_student_usernames,
+												 user_submission_sets,
+												 assessment_count )
 		credit_stats = self._get_by_student_stats( self.assessment_aggregator.credit_stats,
 												   self.assessment_aggregator.for_credit_keys(),
-												   self.for_credit_student_usernames )
+												   self.for_credit_student_usernames,
+												   user_submission_sets,
+												   assessment_count )
 		return open_stats, credit_stats
 
 	def _build_qset_to_user_submission(self):
@@ -67,14 +88,18 @@ class SelfAssessmentSummaryReportPdf(CourseSummaryReportPdf):
 		"""
 		# qset.ntiid -> username -> submitted question ntiid set
 		qsid_to_user_submission_set = {}
-		completed_sets = {}
+		user_completed_set = {}
+		user_submitted_set = {}
 		# Iterate through submission, gathering all question_ids with response.
 		for submission in self._self_assessment_submissions:
 			# Content may have changed such that we have an orphaned question set; move on.
 			if submission.questionSetId in self._self_assessment_qsids:
 				asm = self._self_assessment_qsids[submission.questionSetId]
 				username = submission.creator.username.lower()
-				if asm.ntiid in completed_sets.get( username, {} ):
+				user_submitted = user_submitted_set.setdefault( username, set() )
+				user_submitted.add(asm.ntiid)
+
+				if asm.ntiid in user_completed_set.get( username, {} ):
 					continue
 				student_sets = qsid_to_user_submission_set.setdefault( asm.ntiid, {} )
 				student_set = student_sets.setdefault( username, set() )
@@ -86,9 +111,9 @@ class SelfAssessmentSummaryReportPdf(CourseSummaryReportPdf):
 						else:
 							completed = False
 				if completed:
-					user_completed = completed_sets.setdefault( username, set() )
+					user_completed = user_completed_set.setdefault( username, set() )
 					user_completed.add( asm.ntiid )
-		return qsid_to_user_submission_set
+		return qsid_to_user_submission_set, user_submitted_set
 
 	def _get_completion_student_data( self, submission_data, student_names, question_count ):
 		"""
@@ -109,7 +134,7 @@ class SelfAssessmentSummaryReportPdf(CourseSummaryReportPdf):
 		return completion stats.
 		"""
 		# qset.ntiid -> username -> submitted question ntiid set
-		qsid_to_user_submission_set = self._build_qset_to_user_submission()
+		qsid_to_user_submission_set, user_submission_sets = self._build_qset_to_user_submission()
 
 		credit_results = list()
 		open_results = list()
@@ -136,7 +161,7 @@ class SelfAssessmentSummaryReportPdf(CourseSummaryReportPdf):
 				credit_results.append( credit_completion )
 		open_results = sorted( open_results, key=lambda x: x.title )
 		credit_results = sorted( credit_results, key=lambda x: x.title )
-		return open_results, credit_results
+		return open_results, credit_results, user_submission_sets
 
 	def __call__(self):
 		self._check_access()
@@ -144,11 +169,13 @@ class SelfAssessmentSummaryReportPdf(CourseSummaryReportPdf):
 		self.assessment_aggregator = _TopCreators(self)
 
 		self._build_self_assessment_data( options )
-		open_stats, credit_stats = self._get_self_assessments_by_student()
-		options['self_assessment_non_credit'] = open_stats
-		options['self_assessment_for_credit'] = credit_stats
-		open_completion, credit_completion = self._get_self_assessments_completion()
+		assessment_count = len(options['self_assessment_data'])
+		open_completion, credit_completion, user_submission_sets = self._get_self_assessments_completion()
 		options['self_assessment_open_completion'] = open_completion
 		options['self_assessment_credit_completion'] = credit_completion
+		open_stats, credit_stats = self._get_self_assessments_by_student(user_submission_sets,
+																		 assessment_count)
+		options['self_assessment_non_credit'] = open_stats
+		options['self_assessment_for_credit'] = credit_stats
 		self._build_enrollment_info(options)
 		return options
