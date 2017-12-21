@@ -21,6 +21,7 @@ from zope.cachedescriptors.property import Lazy
 from datetime import datetime
 
 from nti.dataserver.interfaces import IUser
+from nti.dataserver.interfaces import ISiteAdminUtility
 from nti.dataserver.users.users import User
 
 from nti.app.products.courseware_reports import MessageFactory as _
@@ -32,7 +33,8 @@ from nti.app.products.courseware_reports.views.view_mixins import AbstractReport
 from nti.contenttypes.courses.utils import get_context_enrollment_records
 from nti.traversal.traversal import find_interface
 from nti.contenttypes.courses.interfaces import ICourseInstance
-from nti.dataserver.authorization import is_admin_or_site_admin
+from nti.dataserver.authorization import is_site_admin
+from nti.dataserver.authorization import is_admin
 
 
 @view_config(context=IUser,
@@ -42,10 +44,15 @@ class UserEnrollmentReportPdf(AbstractReportView):
   report_title = _('User Enrollment Report')
 
   def _check_access(self):
-    if is_admin_or_site_admin(self.remoteUser) or self.context == self.remoteUser:
+    if is_admin(self.remoteUser) or self.context == self.remoteUser:
       return True
-    else:
-      raise HTTPForbidden()
+    
+    if is_site_admin(self.remoteUser):
+      admin_utility = component.getUtility(ISiteAdminUtility)
+      if admin_utility.can_administer_user(self.remoteUser, self.context):
+        return True
+      
+    raise HTTPForbidden()
 
   def get_user_info(self):
       return self.build_user_info(self.context)
@@ -59,10 +66,6 @@ class UserEnrollmentReportPdf(AbstractReportView):
 
   def get_context_enrollment_records(self):
     return get_context_enrollment_records(self.context, self.remoteUser)
-
-  def get_courses_from_enrollments(self, node):
-    course = ICourseInstance(node)
-    return find_interface(course, ICourseInstance, strict=False)
 
   def __init__(self, context, request):
     self.context = context
@@ -83,12 +86,10 @@ class UserEnrollmentReportPdf(AbstractReportView):
     options["user"] = self.get_user_info()
 
     options["enrollments"] = []
-    
     for record in records:
       enrollment = {}
       
-      course = self.get_courses_from_enrollments(record)
-      course = ICourseCatalogEntry(course)
+      course = ICourseCatalogEntry(ICourseInstance(record))
       
       enrollment["title"] = course.title
       
