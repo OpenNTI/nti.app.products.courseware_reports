@@ -1,0 +1,30 @@
+<metal:block
+	xmlns:tal="http://xml.zope.org/namespaces/tal"
+	xmlns:metal="http://xml.zope.org/namespaces/metal"
+	tal:define="options view/options">
+
+	<para style="normal" spaceAfter=".1in">
+		This report presents an overview of all the users are enrolled . It includes
+		information about the user's enrolled courses.
+	</para>
+
+	<blockTable style='default'
+				colWidths="50% 25% 25%"
+				tal:condition="options/enrollments"
+				repeatRows="1">
+		<tr>
+			<td><para style="header">User Name</para></td>
+			<td><para style="header">Enrollment Time</para></td>
+			<td><para style="header">Last Accessed Time</para></td>
+		</tr>
+		<tr tal:repeat="item options/enrollments">
+			<td><para style="data" tal:content="item/username">User name</para></td>
+			<td align="left" tal:content="item/enrollmentTime | default">Enrollment Time</td>
+			<td align="left" tal:content="item/lastAccessed | default">Last Accessed Time</td>
+		</tr>
+	</blockTable>
+	<nextPage />
+	<nextPage />
+	<nextPage />
+
+</metal:block>

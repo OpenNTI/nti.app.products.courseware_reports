@@ -145,6 +145,12 @@
 								  			nti.contenttypes.presentation.interfaces.INTIInquiryRef"
 								  supported_types="pdf" />
 
+	<rep:registerInstructorReport name="CourseRosterReport.pdf"
+								  title="Course Roster Report"
+								  description="Course summary of student enrollment"
+								  contexts="nti.contenttypes.courses.interfaces.ICourseInstance"
+								  supported_types="pdf" />
+
 	<!--
 		The instructors/TA of a course (locally added to this role
 		for the course) can view reports
@@ -350,12 +356,26 @@
 		layer="pyramid.interfaces.IRequest" />
 	
 	<browser:viewlet
-			name="user_enrollment_provider"
-			template="templates/user_enrollment_provider.rml"
-			view=".views.user_views.UserEnrollmentReportPdf"
-			layer="pyramid.interfaces.IRequest"
-			permission="zope.Public"
-			manager=".interfaces.IPDFReportHeaderManager" />
+		name="user_enrollment_provider"
+		template="templates/user_enrollment_provider.rml"
+		view=".views.user_views.UserEnrollmentReportPdf"
+		layer="pyramid.interfaces.IRequest"
+		permission="zope.Public"
+		manager=".interfaces.IPDFReportHeaderManager" />
+
+	<!-- Course Roster report -->
+	<z3c:template
+		template="templates/CourseRosterReport.rml"
+		for=".views.course_roster_views.CourseRosterReportPdf"
+		layer="pyramid.interfaces.IRequest" />
+
+	<browser:viewlet
+		name="course_info_content_provider"
+		template="templates/course_info_content_provider.rml"
+		view=".views.course_roster_views.CourseRosterReportPdf"
+		layer="pyramid.interfaces.IRequest"
+		permission="zope.Public"
+		manager=".interfaces.IPDFReportHeaderManager" />
 	
 	<!-- Default macros for the reports -->
 	<!--
