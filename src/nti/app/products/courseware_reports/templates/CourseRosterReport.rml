@@ -23,8 +23,5 @@
 			<td align="left" tal:content="item/lastAccessed | default">Last Accessed Time</td>
 		</tr>
 	</blockTable>
-	<nextPage />
-	<nextPage />
-	<nextPage />
 
 </metal:block>

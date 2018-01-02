@@ -64,7 +64,6 @@ class CourseRosterReportPdf(AbstractCourseReportView):
 
     enrollments = []
     for record in enrollmentCourses.iter_enrollments():
-      from IPython.terminal.debugger import set_trace;set_trace()
       enrollRecord = {}
       
       enrollRecord["username"] = IUser(record).username
@@ -72,8 +71,7 @@ class CourseRosterReportPdf(AbstractCourseReportView):
       if record.createdTime:
         time = datetime.fromtimestamp(record.createdTime)
         enrollRecord["enrollmentTime"] = _format_datetime(_adjust_date(time))
-        time = datetime.fromtimestamp(record.lastModified)
-        enrollRecord["lastAccessed"] = _format_datetime(_adjust_date(time))
+        enrollRecord["lastAccessed"] = ""
           
       enrollments.append(enrollRecord)
 
