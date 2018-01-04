@@ -126,8 +126,7 @@ class UserEnrollmentPredicate(object):
         
         if is_admin(self.remoteUser) or self.context == self.remoteUser:
             result = True
-        
-        if is_site_admin(self.remoteUser):
+        elif is_site_admin(self.remoteUser):
             admin_utility = component.getUtility(ISiteAdminUtility)
             result = admin_utility.can_administer_user(self.remoteUser, self.context)
     
