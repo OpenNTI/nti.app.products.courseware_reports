@@ -145,11 +145,18 @@
 								  			nti.contenttypes.presentation.interfaces.INTIInquiryRef"
 								  supported_types="pdf" />
 
+	<rep:registerReport name="UserEnrollmentReport.pdf"
+						title="User Enrollment Report"
+						description="Summary user enrolled of report"
+						contexts="nti.dataserver.interfaces.IUser"
+						permission="zope.View"
+						supported_types="pdf" />
+	
 	<rep:registerReport name="CourseRosterReport.pdf"
 						title="Course Roster Report"
 						description="Course summary of student enrollment"
 						contexts="nti.contenttypes.courses.interfaces.ICourseInstance" 
-						permission="zope.View" 
+						permission="zope.View"
 						supported_types="pdf" />
 
 	<!--
