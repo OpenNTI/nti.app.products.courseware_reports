@@ -30,10 +30,14 @@ from nti.app.products.courseware_reports import VIEW_FORUM_PARTICIPATION
 from nti.app.products.courseware_reports import VIEW_TOPIC_PARTICIPATION
 from nti.app.products.courseware_reports import VIEW_STUDENT_PARTICIPATION
 from nti.app.products.courseware_reports import VIEW_INQUIRY_REPORT
+from nti.app.products.courseware_reports import VIEW_USER_ENROLLMENT
+from nti.app.products.courseware_reports import VIEW_COURSE_ROSTER
 
 from nti.dataserver.users.users import User
 
 from nti.app.products.courseware_reports.views.participation_views import StudentParticipationReportPdf
+
+from nti.app.products.courseware_reports.views.user_views import UserEnrollmentReportPdf
 
 from nti.app.products.courseware_reports.views.admin_views import StudentParticipationCSVView
 
@@ -455,3 +459,33 @@ class TestStudentParticipationCSV(ApplicationLayerTest):
 
     def _fake_get_grade_from_assignment(self, assignment, user_histories):
         return assignment.grade
+
+class TestUserEnrollmentReport(ApplicationLayerTest):
+
+    layer = RegisterAssignmentsForEveryoneLayer
+    default_origin = b'http://janux.ou.edu'
+    course_ntiid = 'tag:nextthought.com,2011-10:OU-HTML-CLC3403_LawAndJustice.course_info'
+    fetch_user_url = '/dataserver2/ResolveUser/'
+    @WithSharedApplicationMockDS(
+        users=True, testapp=True, default_authenticate=True)
+    def test_application_view_empty_report(self):
+        
+        self.testapp.post_json('/dataserver2/users/sjohnson@nextthought.com/Courses/EnrolledCourses',
+                               'tag:nextthought.com,2011-10:NTI-CourseInfo-Fall2013_CLC3403_LawAndJustice',
+                               status=201)
+
+        instructor_environ = self._make_extra_environ(username='harp4162')
+        admin_fetch = self.testapp.get(self.fetch_user_url + 'harp4162',
+                                         extra_environ=instructor_environ)
+        
+        report_links = admin_fetch.json_body.get(
+            'Items')[0]
+        
+        view_href = self.require_link_href_with_rel(report_links,
+                                                    'report-%s' % VIEW_USER_ENROLLMENT)
+        
+        
+        _require_link_with_title(report_links, "User Enrollment Report")
+    
+        res = self.testapp.get(view_href, extra_environ=instructor_environ)
+        assert_that(res, has_property('content_type', 'application/pdf'))
