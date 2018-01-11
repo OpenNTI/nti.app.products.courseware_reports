@@ -8,6 +8,7 @@ __docformat__ = "restructuredtext en"
 # pylint: disable=W0212,R0904
 
 
+from hamcrest import is_
 from hamcrest import is_not
 from hamcrest import has_key
 from hamcrest import has_item
@@ -16,6 +17,11 @@ from hamcrest import has_entries
 from hamcrest import has_entry
 from hamcrest import has_property
 from hamcrest import contains_string
+from hamcrest import has_items
+from hamcrest import none
+from hamcrest import described_as
+from hamcrest import has_length
+
 
 import csv
 import fudge
@@ -473,19 +479,77 @@ class TestUserEnrollmentReport(ApplicationLayerTest):
         self.testapp.post_json('/dataserver2/users/sjohnson@nextthought.com/Courses/EnrolledCourses',
                                'tag:nextthought.com,2011-10:NTI-CourseInfo-Fall2013_CLC3403_LawAndJustice',
                                status=201)
+        
+        # user fetch themselves
+        user_environ = self._make_extra_environ(username='sjohnson@nextthought.com')
+        admin_fetch = self.testapp.get(self.fetch_user_url + 'sjohnson@nextthought.com',
+                                       extra_environ=user_environ)
 
+        report_links = admin_fetch.json_body.get(
+            'Items')[0]
+
+        view_href = self.require_link_href_with_rel(report_links,
+                                                    'report-%s' % VIEW_USER_ENROLLMENT)
+
+        _require_link_with_title(report_links, "User Enrollment Report")
+
+        res = self.testapp.get(view_href, extra_environ=user_environ)
+        assert_that(res, has_property('content_type', 'application/pdf'))
+
+        # other users fetch user
         instructor_environ = self._make_extra_environ(username='harp4162')
-        admin_fetch = self.testapp.get(self.fetch_user_url + 'harp4162',
+        admin_fetch = self.testapp.get(self.fetch_user_url + 'sjohnson@nextthought.com',
                                          extra_environ=instructor_environ)
         
         report_links = admin_fetch.json_body.get(
             'Items')[0]
-        
-        view_href = self.require_link_href_with_rel(report_links,
-                                                    'report-%s' % VIEW_USER_ENROLLMENT)
-        
-        
-        _require_link_with_title(report_links, "User Enrollment Report")
-    
-        res = self.testapp.get(view_href, extra_environ=instructor_environ)
-        assert_that(res, has_property('content_type', 'application/pdf'))
+
+        view_href = self.link_href_with_rel(report_links, 'report-%s' % VIEW_USER_ENROLLMENT)
+
+        assert_that(view_href,
+                    described_as("A link with rel %0", is_(none()), 'report-%s' % VIEW_USER_ENROLLMENT))
+
+    @WithSharedApplicationMockDS(
+                users=True, testapp=True, default_authenticate=True)
+    @fudge.patch('nti.app.products.courseware_reports.views.user_views.UserEnrollmentReportPdf._check_access')
+    def test_report_completion_data_no_enrolled(self, fake_check_access):
+        fake_check_access.is_callable().returns(True)
+
+        with mock_dataserver.mock_db_trans(self.ds, site_name='platform.ou.edu'):
+            context = User.get_user('sjohnson@nextthought.com')
+            request = DummyRequest(params={})
+            request.params['remoteUser'] = User.get_user('harp4162')
+            user_enrollment_report = UserEnrollmentReportPdf(
+                context, request)
+
+            options = user_enrollment_report()
+
+            assert_that(options, has_key('user'))
+            assert_that(options, has_key('enrollments'))
+            assert_that(options['enrollments'], has_length(0))
+
+    @WithSharedApplicationMockDS(
+        users=True, testapp=True, default_authenticate=True)
+    @fudge.patch('nti.app.products.courseware_reports.views.user_views.UserEnrollmentReportPdf._check_access')
+    def test_report_completion_data_enrolled(self, fake_check_access):
+        self.testapp.post_json('/dataserver2/users/sjohnson@nextthought.com/Courses/EnrolledCourses',
+                               'tag:nextthought.com,2011-10:NTI-CourseInfo-Fall2013_CLC3403_LawAndJustice',
+                               status=201)
+
+        fake_check_access.is_callable().returns(True)
+
+        with mock_dataserver.mock_db_trans(self.ds, site_name='platform.ou.edu'):
+            context = User.get_user('sjohnson@nextthought.com')
+            request = DummyRequest(params={})
+            request.params['remoteUser'] = User.get_user('harp4162')
+            user_enrollment_report_enrolled = UserEnrollmentReportPdf(
+                context, request)
+
+            options = user_enrollment_report_enrolled()
+
+            assert_that(options, has_key('user'))
+            assert_that(options, has_entry('enrollments',
+                                           has_items(
+                                               has_key('title'),
+                                               has_key('createdTime'))))
+            assert_that(options['enrollments'], has_length(1))
