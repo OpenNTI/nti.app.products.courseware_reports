@@ -87,12 +87,12 @@ class TestStudentParticipationReport(ApplicationLayerTest):
             course_instance, 'CourseEnrollmentRoster')
         sj_enrollment = self.testapp.get(roster_link,
                                          extra_environ=instructor_environ)
-        
+
         sj_enrollment = sj_enrollment.json_body.get('Items')[0]
 
         view_href = self.require_link_href_with_rel(sj_enrollment,
                                                     'report-%s' % VIEW_STUDENT_PARTICIPATION)
-        
+
         _require_link_with_title(sj_enrollment, "Student Participation Report")
 
         res = self.testapp.get(view_href, extra_environ=instructor_environ)
@@ -180,7 +180,7 @@ class TestInquiryReport(ApplicationLayerTest):
         instructor_environ = self._make_extra_environ(username='harp4162')
         res = self.testapp.get('/dataserver2/Objects/' + self.poll_ntiid,
                                extra_environ=instructor_environ)
-        
+
         # No submissions, no report link
         self.forbid_link_with_rel(
             res.json_body,
@@ -279,14 +279,14 @@ class TestCourseSummaryReport(ApplicationLayerTest):
         instructor_environ = self._make_extra_environ(username='harp4162')
         admin_courses = self.testapp.get('/dataserver2/users/harp4162/Courses/AdministeredCourses/',
                                          extra_environ=instructor_environ)
-        
+
         course = admin_courses.json_body.get('Items')[0].get('CourseInstance')
-        
+
         report_href = self.require_link_href_with_rel(
             course, 'report-' + VIEW_COURSE_SUMMARY)
-        
+
         _require_link_with_title(course, "Course Summary Report")
-        
+
         assert_that(report_href, contains_string('CLC3403'))
 
         res = self.testapp.get(report_href, extra_environ=instructor_environ)
@@ -357,7 +357,7 @@ class TestAssignmentSummaryReport(RegisterAssignmentLayerMixin,
             'tag:nextthought.com,2011-10:OU-HTML-CLC3403_LawAndJustice.sec:QUIZ_01.01'][0]
         report_href = self.require_link_href_with_rel(
             assignment, 'report-' + VIEW_ASSIGNMENT_SUMMARY)
-        
+
         _require_link_with_title(assignment, "Assignment Summary Report")
 
         res = self.testapp.get(report_href, extra_environ=instructor_environ)

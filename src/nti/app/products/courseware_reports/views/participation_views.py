@@ -270,39 +270,40 @@ class StudentParticipationReportPdf(_AbstractReportView):
         video_usage_stats = component.queryMultiAdapter(
             (self.course, self.student_user), IVideoUsageStats)
 
+        resources = []
         resource_data = []
         viewed_resource_ntiids = set()
-        resources = resource_usage_stats.get_stats()
+        if resource_usage_stats is not None:
+            resources = resource_usage_stats.get_stats()
         for resource in resources:
             data = {}
             data['title'] = resource.title
             data['view_count'] = resource.view_event_count
             data['session_count'] = resource.session_count
-            data[
-                'total_watch_time'] = resource.watch_times.average_total_watch_time
-            data[
-                'average_session_watch_time'] = resource.watch_times.average_session_watch_time
+            data['total_watch_time'] = resource.watch_times.average_total_watch_time
+            data['average_session_watch_time'] = resource.watch_times.average_session_watch_time
             viewed_resource_ntiids.add(resource.ntiid)
             resource_data.append(data)
 
-        non_viewed_resources = [
-            {'title': x.label} for x in self._get_non_viewed_objects_from_catalog(INTIRelatedWorkRef, viewed_resource_ntiids)]
+        non_viewed_objects = self._get_non_viewed_objects_from_catalog(INTIRelatedWorkRef,
+                                                                       viewed_resource_ntiids)
+        non_viewed_resources = [{'title': x.label} for x in non_viewed_objects]
 
         resource_data = resource_data + non_viewed_resources
         resource_data = sorted(resource_data, key=lambda x: x['title'])
 
+        videos = []
         video_data = []
         viewed_video_ntiids = set()
-        videos = video_usage_stats.get_stats()
+        if video_usage_stats is not None:
+            videos = video_usage_stats.get_stats()
         for video in videos:
             data = {}
             data['title'] = video.title
             data['view_count'] = video.view_event_count
             data['session_count'] = video.session_count
-            data[
-                'total_watch_time'] = video.watch_times.average_total_watch_time
-            data[
-                'average_session_watch_time'] = video.watch_times.average_session_watch_time
+            data['total_watch_time'] = video.watch_times.average_total_watch_time
+            data['average_session_watch_time'] = video.watch_times.average_session_watch_time
             if video.number_watched_completely >= 1:
                 data['video_completion'] = True
             else:
