@@ -47,7 +47,11 @@ class CourseRosterReportPdf(AbstractCourseReportView):
     self.context = context
     self.request = request
 
-    self.remoteUser = self.getRemoteUser()
+    if 'remoteUser' in request.params:
+      self.remoteUser = request.params['remoteUser']
+    else:
+      self.remoteUser = self.getRemoteUser()
+        
     self.options = {}
 
     if request.view_name:
