@@ -80,6 +80,11 @@
 				provides="nti.contenttypes.reports.interfaces.IReportAvailablePredicate"
 				for="nti.contenttypes.presentation.interfaces.INTIInquiryRef" />
 
+	<subscriber factory=".decorators.UserEnrollmentPredicate"
+				provides="nti.contenttypes.reports.interfaces.IReportAvailablePredicate"
+				for="nti.dataserver.interfaces.IUser" />
+
+
 	<!-- Decorator Adapters -->
 	<adapter factory="nti.app.contenttypes.reports.reports.DefaultReportLinkProvider"
 			 provides="nti.app.contenttypes.reports.interfaces.IReportLinkProvider"
@@ -140,6 +145,19 @@
 								  contexts="nti.assessment.interfaces.IQInquiry
 								  			nti.contenttypes.presentation.interfaces.INTIInquiryRef"
 								  supported_types="pdf" />
+	
+	<rep:registerInstructorReport name="CourseRosterReport.pdf"
+								  title="Course Roster Report"
+								  description="Course summary of student enrollment"
+								  contexts="nti.contenttypes.courses.interfaces.ICourseInstance"
+								  supported_types="pdf" />
+
+	<rep:registerReport name="UserEnrollmentReport.pdf"
+						title="User Enrollment Report"
+						description="Summary user enrolled of report"
+						contexts="nti.dataserver.interfaces.IUser"
+						permission="zope.View"
+						supported_types="pdf" />
 
 	<!--
 		The instructors/TA of a course (locally added to this role
@@ -339,6 +357,34 @@
 		permission="zope.Public"
 		manager=".interfaces.IPDFReportHeaderManager" />
 
+	<!-- User Enrollment report -->
+	<z3c:template
+		template="templates/UserEnrollmentReport.rml"
+		for=".views.user_views.UserEnrollmentReportPdf"
+		layer="pyramid.interfaces.IRequest" />
+	
+	<browser:viewlet
+		name="user_enrollment_provider"
+		template="templates/user_enrollment_provider.rml"
+		view=".views.user_views.UserEnrollmentReportPdf"
+		layer="pyramid.interfaces.IRequest"
+		permission="zope.Public"
+		manager=".interfaces.IPDFReportHeaderManager" />
+
+	<!-- Course Roster report -->
+	<z3c:template
+		template="templates/CourseRosterReport.rml"
+		for=".views.course_roster_views.CourseRosterReportPdf"
+		layer="pyramid.interfaces.IRequest" />
+
+	<browser:viewlet
+		name="course_info_content_provider"
+		template="templates/course_info_content_provider.rml"
+		view=".views.course_roster_views.CourseRosterReportPdf"
+		layer="pyramid.interfaces.IRequest"
+		permission="zope.Public"
+		manager=".interfaces.IPDFReportHeaderManager" />
+	
 	<!-- Default macros for the reports -->
 	<!--
 		 NOTE: There is probably a better, more modern way
