@@ -475,7 +475,7 @@ class TestStudentParticipationCSV(ApplicationLayerTest):
 
 class TestUserEnrollmentReport(ApplicationLayerTest):
 
-    layer = RegisterAssignmentsForEveryoneLayer
+    layer = InstructedCourseApplicationTestLayer
     default_origin = b'http://janux.ou.edu'
     course_ntiid = 'tag:nextthought.com,2011-10:OU-HTML-CLC3403_LawAndJustice.course_info'
     fetch_user_url = '/dataserver2/ResolveUser/'
@@ -564,7 +564,7 @@ class TestUserEnrollmentReport(ApplicationLayerTest):
 
 class TestCourseRosterReport(ApplicationLayerTest):
 
-    layer = RegisterAssignmentsForEveryoneLayer
+    layer = InstructedCourseApplicationTestLayer
     default_origin = b'http://janux.ou.edu'
     course_ntiid = 'tag:nextthought.com,2011-10:OU-HTML-CLC3403_LawAndJustice.course_info'
 
