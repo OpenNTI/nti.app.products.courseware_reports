@@ -28,6 +28,7 @@ from nti.contenttypes.courses.interfaces import ICourseEnrollments
 from nti.dataserver.authorization import is_admin_or_site_admin
 
 from nti.dataserver.interfaces import IUser
+from nti.dataserver.users.users import User
 
 logger = __import__('logging').getLogger(__name__)
 
@@ -68,7 +69,12 @@ class CourseRosterReportPdf(AbstractCourseReportView):
         for record in enrollmentCourses.iter_enrollments():
             enrollRecord = {}
 
-            enrollRecord["username"] = IUser(record).username
+            user = IUser(record.Principal, None)
+            
+            if user is None:
+                user = User.get_user(record.Principal)
+
+            enrollRecord["username"] = user.username
 
             if record.createdTime:
                 time = datetime.fromtimestamp(record.createdTime)
