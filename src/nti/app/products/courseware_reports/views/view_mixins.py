@@ -289,6 +289,7 @@ class _AbstractReportView(AbstractAuthenticatedView,
     def wrap_text(self, text, size):
         return textwrap.fill(text, size)
 
+
 @view_defaults(route_name='objects.generic.traversal',
                renderer="../templates/std_report_layout.rml",
                request_method='GET')
@@ -388,7 +389,7 @@ class AbstractReportView(AbstractAuthenticatedView,
         return textwrap.fill(text, size)
 
 class AbstractCourseReportView(AbstractReportView):
-    
+
     def _check_access(self):
         if not checkPermission(ACT_VIEW_REPORTS.id, self.course):
             raise HTTPForbidden()
@@ -411,7 +412,7 @@ class AbstractCourseReportView(AbstractReportView):
     @Lazy
     def instructor_usernames(self):
         return {x.id.lower() for x in self.course.instructors}
-    
+
     @Lazy
     def _get_enrollment_scope_dict(self):
         """
@@ -432,7 +433,7 @@ class AbstractCourseReportView(AbstractReportView):
         result = dict()
         for scope in self.course.SharingScopes.values():
             scope_alias = IFriendlyNamed(scope).alias
-            result[scope.__name__]
+            result[scope.__name__] = scope_alias
 
     @Lazy
     def all_user_intids(self):
