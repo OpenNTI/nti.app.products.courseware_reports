@@ -70,9 +70,12 @@ class CourseRosterReportPdf(AbstractCourseReportView):
             enrollRecord = {}
 
             user = IUser(record.Principal, None)
-            
+
             if user is None:
                 user = User.get_user(record.Principal)
+            if user is None:
+                # Deleted user
+                continue
 
             enrollRecord["username"] = user.username
 
