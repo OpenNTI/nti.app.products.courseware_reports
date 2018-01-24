@@ -63,6 +63,8 @@ from nti.dataserver.users.users import User
 
 from nti.zope_catalog.interfaces import IDeferredCatalog
 
+from nti.dataserver.authorization import is_admin
+
 logger = __import__('logging').getLogger(__name__)
 
 
@@ -110,8 +112,7 @@ def _get_enrollment_scope_dict(course, instructors=set()):
 
 @view_defaults(route_name='objects.generic.traversal',
                renderer="../templates/std_report_layout.rml",
-               request_method='GET',
-               permission=ACT_READ)
+               request_method='GET')
 @interface.implementer(IPDFReportView)
 class _AbstractReportView(AbstractAuthenticatedView,
                           BrowserPagelet):
@@ -128,6 +129,9 @@ class _AbstractReportView(AbstractAuthenticatedView,
             self.filename = request.view_name
 
     def _check_access(self):
+        if is_admin(self.remoteUser):
+            return True
+        
         if not checkPermission(ACT_VIEW_REPORTS.id, self.course):
             raise HTTPForbidden()
 
@@ -391,6 +395,9 @@ class AbstractReportView(AbstractAuthenticatedView,
 class AbstractCourseReportView(AbstractReportView):
 
     def _check_access(self):
+        if is_admin(self.remoteUser):
+            return True
+        
         if not checkPermission(ACT_VIEW_REPORTS.id, self.course):
             raise HTTPForbidden()
 
