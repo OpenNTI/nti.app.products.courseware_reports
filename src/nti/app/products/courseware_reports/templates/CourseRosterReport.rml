@@ -3,7 +3,10 @@
 	xmlns:metal="http://xml.zope.org/namespaces/metal"
 	tal:define="options view/options">
 
-	<para style="normal" spaceAfter=".1in">
+    <para style="normal" spaceAfter=".1in" tal:condition="not:options/enrollments">
+        There are no users enrolled in this course.
+    </para>
+	<para style="normal" spaceAfter=".1in" tal:condition="options/enrollments">
 		This report presents an overview of all the users are enrolled . It includes
 		information about the user's enrolled courses.
 	</para>
