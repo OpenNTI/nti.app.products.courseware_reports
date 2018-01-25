@@ -18,12 +18,10 @@
 		<tr>
 			<td><para style="header">User Name</para></td>
 			<td><para style="header">Enrollment Time</para></td>
-			<td><para style="header">Last Accessed Time</para></td>
 		</tr>
 		<tr tal:repeat="item options/enrollments">
 			<td><para style="data" tal:content="item/username">User name</para></td>
 			<td align="left" tal:content="item/enrollmentTime | default">Enrollment Time</td>
-			<td align="left" tal:content="item/lastAccessed | default">Last Accessed Time</td>
 		</tr>
 	</blockTable>
 
