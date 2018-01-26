@@ -482,11 +482,11 @@ class TestUserEnrollmentReport(ApplicationLayerTest):
     @WithSharedApplicationMockDS(
         users=True, testapp=True, default_authenticate=True)
     def test_application_view_empty_report(self):
-        
+
         self.testapp.post_json('/dataserver2/users/sjohnson@nextthought.com/Courses/EnrolledCourses',
                                'tag:nextthought.com,2011-10:NTI-CourseInfo-Fall2013_CLC3403_LawAndJustice',
                                status=201)
-        
+
         # user fetch themselves
         user_environ = self._make_extra_environ(username='sjohnson@nextthought.com')
         admin_fetch = self.testapp.get(self.fetch_user_url + 'sjohnson@nextthought.com',
@@ -507,7 +507,7 @@ class TestUserEnrollmentReport(ApplicationLayerTest):
         instructor_environ = self._make_extra_environ(username='harp4162')
         admin_fetch = self.testapp.get(self.fetch_user_url + 'sjohnson@nextthought.com',
                                          extra_environ=instructor_environ)
-        
+
         report_links = admin_fetch.json_body.get(
             'Items')[0]
 
@@ -576,11 +576,7 @@ class TestCourseRosterReport(ApplicationLayerTest):
                 if lnk['rel'] == rel:
                     if lnk['href']:
                         return lnk['href']
-                
-        # self.testapp.post_json('/dataserver2/users/sjohnson@nextthought.com/Courses/EnrolledCourses',
-        #                        'tag:nextthought.com,2011-10:NTI-CourseInfo-Fall2013_CLC3403_LawAndJustice',
-        #                        status=201)
-        
+
         # check admin can fetch report
         instructor_environ = self._make_extra_environ(username='sjohnson@nextthought.com')
         admin_courses = self.testapp.get('/dataserver2/users/sjohnson@nextthought.com/Courses/AdministeredCourses/',
@@ -588,7 +584,7 @@ class TestCourseRosterReport(ApplicationLayerTest):
 
         course_instance = admin_courses.json_body.get(
             'Items')[0].get('CourseInstance')
-        
+
         view_href = report_with_rel(
             course_instance, 'report-%s' % VIEW_COURSE_ROSTER)
 
@@ -610,7 +606,7 @@ class TestCourseRosterReport(ApplicationLayerTest):
 
         _require_report_with_title(course_instance, "Course Roster Report")
 
-        self.testapp.get(view_href, extra_environ=instructor_environ, status=403)
+        self.testapp.get(view_href, extra_environ=instructor_environ)
 
     @WithSharedApplicationMockDS(
         users=True, testapp=True, default_authenticate=True)
@@ -620,18 +616,18 @@ class TestCourseRosterReport(ApplicationLayerTest):
 
         with mock_dataserver.mock_db_trans(self.ds, site_name='platform.ou.edu'):
             obj = find_object_with_ntiid(self.course_ntiid)
-            
+
             context = ICourseInstance(obj)
-            
+
             request = DummyRequest(params={})
             request.params['remoteUser'] = User.get_user('sjohnson@nextthought.com')
-            
+
             course_roster_report = CourseRosterReportPdf(
                 context, request)
-            
+
             options = course_roster_report()
-            
-            assert_that(options, 
+
+            assert_that(options,
                         has_entries(
                                     'enrollments', [],
                                     'TotalEnrolledCount', 0))
@@ -648,12 +644,12 @@ class TestCourseRosterReport(ApplicationLayerTest):
 
         with mock_dataserver.mock_db_trans(self.ds, site_name='platform.ou.edu'):
             obj = find_object_with_ntiid(self.course_ntiid)
-            
+
             context = ICourseInstance(obj)
-            
+
             request = DummyRequest(params={})
             request.params['remoteUser'] = User.get_user('sjohnson@nextthought.com')
-            
+
             course_roster_report = CourseRosterReportPdf(
                 context, request)
 
