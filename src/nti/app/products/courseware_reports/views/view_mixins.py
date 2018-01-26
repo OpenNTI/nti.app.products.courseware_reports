@@ -49,8 +49,6 @@ from nti.contenttypes.courses.interfaces import ES_CREDIT
 from nti.contenttypes.courses.interfaces import ICourseInstance
 from nti.contenttypes.courses.interfaces import ICourseCatalogEntry
 
-from nti.dataserver.authorization import ACT_READ
-
 from nti.dataserver.interfaces import IDeletedObjectPlaceholder
 from nti.dataserver.interfaces import IEnumerableEntityContainer
 from nti.dataserver.interfaces import IUsernameSubstitutionPolicy
@@ -63,7 +61,7 @@ from nti.dataserver.users.users import User
 
 from nti.zope_catalog.interfaces import IDeferredCatalog
 
-from nti.dataserver.authorization import is_admin
+from nti.dataserver.authorization import is_admin_or_site_admin
 
 logger = __import__('logging').getLogger(__name__)
 
@@ -129,9 +127,9 @@ class _AbstractReportView(AbstractAuthenticatedView,
             self.filename = request.view_name
 
     def _check_access(self):
-        if is_admin(self.remoteUser):
+        if is_admin_or_site_admin(self.remoteUser):
             return True
-        
+
         if not checkPermission(ACT_VIEW_REPORTS.id, self.course):
             raise HTTPForbidden()
 
@@ -395,9 +393,9 @@ class AbstractReportView(AbstractAuthenticatedView,
 class AbstractCourseReportView(AbstractReportView):
 
     def _check_access(self):
-        if is_admin(self.remoteUser):
+        if is_admin_or_site_admin(self.remoteUser):
             return True
-        
+
         if not checkPermission(ACT_VIEW_REPORTS.id, self.course):
             raise HTTPForbidden()
 
