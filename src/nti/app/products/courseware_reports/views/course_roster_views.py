@@ -10,8 +10,6 @@ from __future__ import absolute_import
 
 from datetime import datetime
 
-from pyramid.httpexceptions import HTTPForbidden
-
 from pyramid.view import view_config
 
 from nti.app.products.courseware_reports import MessageFactory as _
@@ -25,8 +23,6 @@ from nti.app.products.courseware_reports.views.view_mixins import AbstractCourse
 from nti.contenttypes.courses.interfaces import ICourseInstance
 from nti.contenttypes.courses.interfaces import ICourseEnrollments
 
-from nti.dataserver.authorization import is_admin_or_site_admin
-
 from nti.dataserver.interfaces import IUser
 from nti.dataserver.users.users import User
 
@@ -36,12 +32,8 @@ logger = __import__('logging').getLogger(__name__)
 @view_config(context=ICourseInstance,
              name=VIEW_COURSE_ROSTER)
 class CourseRosterReportPdf(AbstractCourseReportView):
-    report_title = _(u'Course Roster Report')
 
-    def _check_access(self):
-        if is_admin_or_site_admin(self.remoteUser):
-            return True
-        raise HTTPForbidden()
+    report_title = _(u'Course Roster Report')
 
     def __init__(self, context, request):
         self.context = context
