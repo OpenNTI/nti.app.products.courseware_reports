@@ -7,8 +7,7 @@
         This user is not enrolled in any courses.
 	</para>
 	<para style="normal" spaceAfter=".1in" tal:condition="options/enrollments">
-		This report presents an overview of all the courses are enrolled by ${options/user/display}. It includes
-		information about the user's enrolled courses.
+		This report presents an overview of ${options/user/display}'s courses and enrollment dates.
 	</para>
 
 	<blockTable style='default'
