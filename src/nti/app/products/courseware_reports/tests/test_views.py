@@ -115,18 +115,17 @@ class TestStudentParticipationReport(ApplicationLayerTest):
         res = self.testapp.get(view_href, extra_environ=instructor_environ)
         assert_that(res, has_property('content_type', 'application/pdf'))
 
-        with mock_dataserver.mock_db_trans(self.ds, site_name='janux.ou.edu'):
-            # check admin role fetch report
-            admin_environ = self._make_extra_environ(username='sjohnson@nextthought.com')
-            res = self.testapp.get(view_href, extra_environ=admin_environ)
-            assert_that(res, has_property('content_type', 'application/pdf'))
+        # check admin role fetch report
+        admin_environ = self._make_extra_environ(username='sjohnson@nextthought.com')
+        res = self.testapp.get(view_href, extra_environ=admin_environ)
+        assert_that(res, has_property('content_type', 'application/pdf'))
 
-            # check site admin role fetch report
-            self.testapp.post_json('/dataserver2/SiteAdmins/harp4162',
-                                   status=200)
-            site_admin_environ = self._make_extra_environ(username='harp4162')
-            res = self.testapp.get(view_href, extra_environ=site_admin_environ)
-            assert_that(res, has_property('content_type', 'application/pdf'))
+        # check site admin role fetch report
+        self.testapp.post_json('/dataserver2/SiteAdmins/harp4162',
+                               status=200)
+        site_admin_environ = self._make_extra_environ(username='harp4162')
+        res = self.testapp.get(view_href, extra_environ=site_admin_environ)
+        assert_that(res, has_property('content_type', 'application/pdf'))
 
 
     @WithSharedApplicationMockDS(
@@ -323,18 +322,17 @@ class TestCourseSummaryReport(ApplicationLayerTest):
         res = self.testapp.get(report_href, extra_environ=instructor_environ)
         assert_that(res, has_property('content_type', 'application/pdf'))
 
-        with mock_dataserver.mock_db_trans(self.ds, site_name='janux.ou.edu'):
-            # check admin role fetch report
-            admin_environ = self._make_extra_environ(username='sjohnson@nextthought.com')
-            res = self.testapp.get(report_href, extra_environ=admin_environ)
-            assert_that(res, has_property('content_type', 'application/pdf'))
+        # check admin role fetch report
+        admin_environ = self._make_extra_environ(username='sjohnson@nextthought.com')
+        res = self.testapp.get(report_href, extra_environ=admin_environ)
+        assert_that(res, has_property('content_type', 'application/pdf'))
 
-            # check site admin role fetch report
-            self.testapp.post_json('/dataserver2/SiteAdmins/harp4162',
-                                   status=200)
-            site_admin_environ = self._make_extra_environ(username='harp4162')
-            res = self.testapp.get(report_href, extra_environ=site_admin_environ)
-            assert_that(res, has_property('content_type', 'application/pdf'))
+        # check site admin role fetch report
+        self.testapp.post_json('/dataserver2/SiteAdmins/harp4162',
+                               status=200)
+        site_admin_environ = self._make_extra_environ(username='harp4162')
+        res = self.testapp.get(report_href, extra_environ=site_admin_environ)
+        assert_that(res, has_property('content_type', 'application/pdf'))
 
 from nti.assessment.submission import AssignmentSubmission
 from nti.assessment.submission import QuestionSetSubmission
@@ -406,18 +404,17 @@ class TestAssignmentSummaryReport(RegisterAssignmentLayerMixin,
         res = self.testapp.get(report_href, extra_environ=instructor_environ)
         assert_that(res, has_property('content_type', 'application/pdf'))
 
-        with mock_dataserver.mock_db_trans(self.ds, site_name='janux.ou.edu'):
-            # check admin role fetch report
-            admin_environ = self._make_extra_environ(username='sjohnson@nextthought.com')
-            res = self.testapp.get(report_href, extra_environ=admin_environ)
-            assert_that(res, has_property('content_type', 'application/pdf'))
+        # check admin role fetch report
+        admin_environ = self._make_extra_environ(username='sjohnson@nextthought.com')
+        res = self.testapp.get(report_href, extra_environ=admin_environ)
+        assert_that(res, has_property('content_type', 'application/pdf'))
 
-            # check site admin role fetch report
-            self.testapp.post_json('/dataserver2/SiteAdmins/harp4162',
-                                   status=200)
-            site_admin_environ = self._make_extra_environ(username='harp4162')
-            res = self.testapp.get(report_href, extra_environ=site_admin_environ)
-            assert_that(res, has_property('content_type', 'application/pdf'))
+        # check site admin role fetch report
+        self.testapp.post_json('/dataserver2/SiteAdmins/harp4162',
+                               status=200)
+        site_admin_environ = self._make_extra_environ(username='harp4162')
+        res = self.testapp.get(report_href, extra_environ=site_admin_environ)
+        assert_that(res, has_property('content_type', 'application/pdf'))
 
 
 class TestStudentParticipationCSV(ApplicationLayerTest):
@@ -557,12 +554,11 @@ class TestUserEnrollmentReport(ApplicationLayerTest):
                     described_as("A link with rel %0", is_(none()), 'report-%s' % VIEW_USER_ENROLLMENT))
 
         # site-admin fetch report
-        with mock_dataserver.mock_db_trans(self.ds, site_name='janux.ou.edu'):
-            self.testapp.post_json('/dataserver2/SiteAdmins/harp4162',
-                                   status=200)
-            site_admin_environ = self._make_extra_environ(username='harp4162')
-            res = self.testapp.get(admin_view_href, extra_environ=site_admin_environ)
-            assert_that(res, has_property('content_type', 'application/pdf'))
+        self.testapp.post_json('/dataserver2/SiteAdmins/harp4162',
+                               status=200)
+        site_admin_environ = self._make_extra_environ(username='harp4162')
+        res = self.testapp.get(admin_view_href, extra_environ=site_admin_environ)
+        assert_that(res, has_property('content_type', 'application/pdf'))
 
     @WithSharedApplicationMockDS(
                 users=True, testapp=True, default_authenticate=True)
@@ -655,12 +651,11 @@ class TestCourseRosterReport(ApplicationLayerTest):
         self.testapp.get(admin_view_href, extra_environ=instructor_environ, status=403)
 
         # site-admin fetch report
-        with mock_dataserver.mock_db_trans(self.ds, site_name='janux.ou.edu'):
-            self.testapp.post_json('/dataserver2/SiteAdmins/harp4162',
-                                   status=200)
-            site_admin_environ = self._make_extra_environ(username='harp4162')
-            res = self.testapp.get(admin_view_href, extra_environ=site_admin_environ)
-            assert_that(res, has_property('content_type', 'application/pdf'))
+        self.testapp.post_json('/dataserver2/SiteAdmins/harp4162',
+                               status=200)
+        site_admin_environ = self._make_extra_environ(username='harp4162')
+        res = self.testapp.get(admin_view_href, extra_environ=site_admin_environ)
+        assert_that(res, has_property('content_type', 'application/pdf'))
 
     @WithSharedApplicationMockDS(
         users=True, testapp=True, default_authenticate=True)
