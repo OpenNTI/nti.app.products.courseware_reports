@@ -115,6 +115,19 @@ class TestStudentParticipationReport(ApplicationLayerTest):
         res = self.testapp.get(view_href, extra_environ=instructor_environ)
         assert_that(res, has_property('content_type', 'application/pdf'))
 
+        # check admin role fetch report
+        admin_environ = self._make_extra_environ(username='sjohnson@nextthought.com')
+        res = self.testapp.get(view_href, extra_environ=admin_environ)
+        assert_that(res, has_property('content_type', 'application/pdf'))
+
+        # check site admin role fetch report
+        self.testapp.post_json('/dataserver2/SiteAdmins/harp4162',
+                               status=200)
+        site_admin_environ = self._make_extra_environ(username='harp4162')
+        res = self.testapp.get(view_href, extra_environ=site_admin_environ)
+        assert_that(res, has_property('content_type', 'application/pdf'))
+
+
     @WithSharedApplicationMockDS(
         users=True, testapp=True, default_authenticate=True)
     @fudge.patch('nti.app.products.courseware_reports.views.view_mixins._AbstractReportView._check_access',
@@ -309,6 +322,17 @@ class TestCourseSummaryReport(ApplicationLayerTest):
         res = self.testapp.get(report_href, extra_environ=instructor_environ)
         assert_that(res, has_property('content_type', 'application/pdf'))
 
+        # check admin role fetch report
+        admin_environ = self._make_extra_environ(username='sjohnson@nextthought.com')
+        res = self.testapp.get(report_href, extra_environ=admin_environ)
+        assert_that(res, has_property('content_type', 'application/pdf'))
+
+        # check site admin role fetch report
+        self.testapp.post_json('/dataserver2/SiteAdmins/harp4162',
+                               status=200)
+        site_admin_environ = self._make_extra_environ(username='harp4162')
+        res = self.testapp.get(report_href, extra_environ=site_admin_environ)
+        assert_that(res, has_property('content_type', 'application/pdf'))
 
 from nti.assessment.submission import AssignmentSubmission
 from nti.assessment.submission import QuestionSetSubmission
@@ -378,6 +402,18 @@ class TestAssignmentSummaryReport(RegisterAssignmentLayerMixin,
         _require_link_with_title(assignment, "Assignment Summary Report")
 
         res = self.testapp.get(report_href, extra_environ=instructor_environ)
+        assert_that(res, has_property('content_type', 'application/pdf'))
+
+        # check admin role fetch report
+        admin_environ = self._make_extra_environ(username='sjohnson@nextthought.com')
+        res = self.testapp.get(report_href, extra_environ=admin_environ)
+        assert_that(res, has_property('content_type', 'application/pdf'))
+
+        # check site admin role fetch report
+        self.testapp.post_json('/dataserver2/SiteAdmins/harp4162',
+                               status=200)
+        site_admin_environ = self._make_extra_environ(username='harp4162')
+        res = self.testapp.get(report_href, extra_environ=site_admin_environ)
         assert_that(res, has_property('content_type', 'application/pdf'))
 
 
@@ -495,12 +531,12 @@ class TestUserEnrollmentReport(ApplicationLayerTest):
         report_links = admin_fetch.json_body.get(
             'Items')[0]
 
-        view_href = self.require_link_href_with_rel(report_links,
+        admin_view_href = self.require_link_href_with_rel(report_links,
                                                     'report-%s' % VIEW_USER_ENROLLMENT)
 
         _require_link_with_title(report_links, "User Enrollment Report")
 
-        res = self.testapp.get(view_href, extra_environ=user_environ)
+        res = self.testapp.get(admin_view_href, extra_environ=user_environ)
         assert_that(res, has_property('content_type', 'application/pdf'))
 
         # other users fetch user
@@ -516,6 +552,13 @@ class TestUserEnrollmentReport(ApplicationLayerTest):
 
         assert_that(view_href,
                     described_as("A link with rel %0", is_(none()), 'report-%s' % VIEW_USER_ENROLLMENT))
+
+        # site-admin fetch report
+        self.testapp.post_json('/dataserver2/SiteAdmins/harp4162',
+                               status=200)
+        site_admin_environ = self._make_extra_environ(username='harp4162')
+        res = self.testapp.get(admin_view_href, extra_environ=site_admin_environ)
+        assert_that(res, has_property('content_type', 'application/pdf'))
 
     @WithSharedApplicationMockDS(
                 users=True, testapp=True, default_authenticate=True)
@@ -585,12 +628,12 @@ class TestCourseRosterReport(ApplicationLayerTest):
         course_instance = admin_courses.json_body.get(
             'Items')[0].get('CourseInstance')
 
-        view_href = report_with_rel(
+        admin_view_href = report_with_rel(
             course_instance, 'report-%s' % VIEW_COURSE_ROSTER)
 
         _require_report_with_title(course_instance, "Course Roster Report")
 
-        res = self.testapp.get(view_href, extra_environ=instructor_environ)
+        res = self.testapp.get(admin_view_href, extra_environ=instructor_environ)
         assert_that(res, has_property('content_type', 'application/pdf'))
 
         # check others user can fetch report
@@ -601,12 +644,18 @@ class TestCourseRosterReport(ApplicationLayerTest):
         course_instance = admin_courses.json_body.get(
                                                     'Items')[0].get('CourseInstance')
 
-        view_href = report_with_rel(
-                                    course_instance, 'report-%s' % VIEW_COURSE_ROSTER)
+        admin_view_href = report_with_rel(course_instance, 'report-%s' % VIEW_COURSE_ROSTER)
 
         _require_report_with_title(course_instance, "Course Roster Report")
 
-        self.testapp.get(view_href, extra_environ=instructor_environ)
+        self.testapp.get(admin_view_href, extra_environ=instructor_environ)
+
+        # site-admin fetch report
+        self.testapp.post_json('/dataserver2/SiteAdmins/harp4162',
+                               status=200)
+        site_admin_environ = self._make_extra_environ(username='harp4162')
+        res = self.testapp.get(admin_view_href, extra_environ=site_admin_environ)
+        assert_that(res, has_property('content_type', 'application/pdf'))
 
     @WithSharedApplicationMockDS(
         users=True, testapp=True, default_authenticate=True)
