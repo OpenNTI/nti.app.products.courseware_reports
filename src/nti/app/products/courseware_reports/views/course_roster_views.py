@@ -25,6 +25,7 @@ from nti.contenttypes.courses.interfaces import ICourseEnrollments
 
 from nti.dataserver.interfaces import IUser
 from nti.dataserver.users.users import User
+from nti.dataserver.users.interfaces import IFriendlyNamed
 
 logger = __import__('logging').getLogger(__name__)
 
@@ -69,7 +70,12 @@ class CourseRosterReportPdf(AbstractCourseReportView):
                 # Deleted user
                 continue
 
+            user = IFriendlyNamed(user)
+            
+            enrollRecord["displayname"] = user.realname or user.alias or user.username
+            enrollRecord["realname"] = user.realname
             enrollRecord["username"] = user.username
+            enrollRecord["email"] = user.email
 
             if record.createdTime:
                 time = datetime.fromtimestamp(record.createdTime)
