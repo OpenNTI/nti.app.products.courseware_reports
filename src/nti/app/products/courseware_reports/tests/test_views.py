@@ -648,7 +648,7 @@ class TestCourseRosterReport(ApplicationLayerTest):
 
         _require_report_with_title(course_instance, "Course Roster Report")
 
-        self.testapp.get(admin_view_href, extra_environ=instructor_environ, status=403)
+        self.testapp.get(admin_view_href, extra_environ=instructor_environ)
 
         # site-admin fetch report
         self.testapp.post_json('/dataserver2/SiteAdmins/harp4162',
