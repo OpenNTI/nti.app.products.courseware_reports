@@ -130,7 +130,7 @@ class TestStudentParticipationReport(ApplicationLayerTest):
 
     @WithSharedApplicationMockDS(
         users=True, testapp=True, default_authenticate=True)
-    @fudge.patch('nti.app.products.courseware_reports.views.view_mixins._AbstractReportView._check_access',
+    @fudge.patch('nti.app.products.courseware_reports.views.view_mixins.AbstractCourseReportView._check_access',
                  'nti.app.analytics.usage_stats.UserCourseVideoUsageStats.get_stats')
     def test_report_completion_data(self, fake_check_access, fake_video_stats):
 

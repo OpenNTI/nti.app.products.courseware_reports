@@ -31,7 +31,7 @@ from nti.app.products.courseware_reports.reports import _TopCreators
 
 from nti.app.products.courseware_reports.utils import find_course_for_user
 
-from nti.app.products.courseware_reports.views.view_mixins import _AbstractReportView
+from nti.app.products.courseware_reports.views.view_mixins import AbstractCourseReportView
 
 from nti.assessment.interfaces import IQPoll
 from nti.assessment.interfaces import IQSurvey
@@ -80,7 +80,8 @@ def plain_text(s):
 	result = IPlainTextContentFragment(s) if s else u''
 	return result.strip()
 
-class InquiryReportPDF(_AbstractReportView):
+
+class InquiryReportPDF(AbstractCourseReportView):
 
 	@Lazy
 	def report_title(self):

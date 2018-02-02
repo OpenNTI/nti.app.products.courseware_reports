@@ -4,10 +4,9 @@
 .. $Id$
 """
 
-from __future__ import print_function, unicode_literals, absolute_import, division
-__docformat__ = "restructuredtext en"
-
-logger = __import__('logging').getLogger(__name__)
+from __future__ import division
+from __future__ import print_function
+from __future__ import absolute_import
 
 from pyramid.view import view_config
 
@@ -17,15 +16,18 @@ from nti.app.products.courseware_reports import MessageFactory as _
 
 from nti.app.products.courseware_reports import VIEW_VIDEO_REPORT
 
-from nti.app.products.courseware_reports.views.view_mixins import _AbstractReportView
+from nti.app.products.courseware_reports.views.view_mixins import AbstractCourseReportView
 
 from nti.contenttypes.courses.interfaces import ICourseInstance
 
+logger = __import__('logging').getLogger(__name__)
+
+
 @view_config(context=ICourseInstance,
 			 name=VIEW_VIDEO_REPORT)
-class VideoUsageReportPdf(_AbstractReportView):
+class VideoUsageReportPdf(AbstractCourseReportView):
 
-	report_title = _('Video Usage Report')
+	report_title = _(u'Video Usage Report')
 
 	def __call__(self):
 		self._check_access()
