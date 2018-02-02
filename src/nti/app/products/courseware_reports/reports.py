@@ -142,8 +142,10 @@ class StudentInfo(object):
 			return self.last_name + ', ' + self.first_name
 		return self.last_name or self.username
 
-class _TopCreators(object):
-	"""Accumulate stats in three parts: for credit students, tourists, and aggregate"""
+class TopCreators(object):
+	"""
+	Accumulate stats in three parts: for credit students, tourists, and aggregate.
+	"""
 
 	family = BTrees.family64
 	total = 0
@@ -323,6 +325,9 @@ class _TopCreators(object):
 
 	def non_credit_percent_contributed_str(self):
 		return "%0.1f" % self.percent_contributed( self.max_contributors_non_credit, self.unique_contributors_non_credit )
+
+_TopCreators = TopCreators
+
 
 class _DateCategoryAccum(object):
 	"""

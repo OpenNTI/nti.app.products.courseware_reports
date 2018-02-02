@@ -201,7 +201,6 @@ class AbstractCourseReportView(AbstractReportView):
         # including many reports and in TopCreators.
         # XXX: This is confusing if we are nesting scopes.  Perhaps
         # it makes more sense to keep things in the Credit/NonCredit camps.
-        # from IPython.terminal.debugger import set_trace;set_trace()
         return _get_enrollment_scope_dict(self.course, self.instructor_usernames)
 
     @Lazy
