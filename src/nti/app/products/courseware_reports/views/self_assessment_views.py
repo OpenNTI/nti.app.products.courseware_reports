@@ -4,10 +4,9 @@
 .. $Id$
 """
 
-from __future__ import print_function, unicode_literals, absolute_import, division
-__docformat__ = "restructuredtext en"
-
-logger = __import__('logging').getLogger(__name__)
+from __future__ import division
+from __future__ import print_function
+from __future__ import absolute_import
 
 from collections import namedtuple
 
@@ -19,7 +18,7 @@ from nti.contenttypes.courses.interfaces import ICourseInstance
 
 from nti.app.products.courseware_reports import VIEW_SELF_ASSESSMENT_SUMMARY
 
-from nti.app.products.courseware_reports.reports import _TopCreators
+from nti.app.products.courseware_reports.reports import TopCreators
 
 from nti.app.products.courseware_reports.views.summary_views import CourseSummaryReportPdf
 
@@ -31,17 +30,55 @@ _StudentSelfAssessmentCompletion = namedtuple( '_SelfAssessmentCompletion',
 											  'count', 'unique_attempts',
 											  'assessment_count'))
 
+logger = __import__('logging').getLogger(__name__)
+
+
+class AbstractSelfAssessmentReport(CourseSummaryReportPdf):
+
+	def _build_qset_to_user_submission(self):
+		"""
+		For each submission, gather the questions completed as well as the
+		submitted question sets per student.
+		"""
+		# qset.ntiid -> username -> submitted question ntiid set
+		qsid_to_user_submission_set = {}
+		user_completed_set = {}
+		user_submitted_set = {}
+		# Iterate through submission, gathering all question_ids with response.
+		for submission in self._self_assessment_submissions:
+			# Content may have changed such that we have an orphaned question set; move on.
+			if submission.questionSetId in self._self_assessment_qsids:
+				asm = self._self_assessment_qsids[submission.questionSetId]
+				username = submission.creator.username.lower()
+				user_submitted = user_submitted_set.setdefault( username, set() )
+				user_submitted.add(asm.ntiid)
+
+				if asm.ntiid in user_completed_set.get( username, {} ):
+					continue
+				student_sets = qsid_to_user_submission_set.setdefault( asm.ntiid, {} )
+				student_set = student_sets.setdefault( username, set() )
+				completed = True
+				for question in submission.questions:
+					for part in question.parts:
+						if part.submittedResponse is not None:
+							student_set.add( question.questionId )
+						else:
+							completed = False
+				if completed:
+					user_completed = user_completed_set.setdefault( username, set() )
+					user_completed.add( asm.ntiid )
+		return qsid_to_user_submission_set, user_submitted_set
+
 
 @view_config(context=ICourseInstance,
 			 name=VIEW_SELF_ASSESSMENT_SUMMARY)
-class SelfAssessmentSummaryReportPdf(CourseSummaryReportPdf):
+class SelfAssessmentSummaryReportPdf(AbstractSelfAssessmentReport):
 	"""
-	A basic SelfAssessment report for a course, including
-	summary data on overall self-assessment usage and per
-	self-assessment completion data.
+	A basic SelfAssessment report for a course, including summary data on
+	overall self-assessment usage and per self-assessment completion data.
 	"""
 
-	report_title = _('Self Assessment Report')
+	report_title = _(u'Self Assessment Report')
 
 	def _get_by_student_stats(self, stats, assessment_names, student_names,
 							  user_submission_sets, assessment_count):
@@ -80,40 +117,6 @@ class SelfAssessmentSummaryReportPdf(CourseSummaryReportPdf):
 												   user_submission_sets,
 												   assessment_count )
 		return open_stats, credit_stats
-
-	def _build_qset_to_user_submission(self):
-		"""
-		For each submission, gather the questions completed
-		by each student.
-		"""
-		# qset.ntiid -> username -> submitted question ntiid set
-		qsid_to_user_submission_set = {}
-		user_completed_set = {}
-		user_submitted_set = {}
-		# Iterate through submission, gathering all question_ids with response.
-		for submission in self._self_assessment_submissions:
-			# Content may have changed such that we have an orphaned question set; move on.
-			if submission.questionSetId in self._self_assessment_qsids:
-				asm = self._self_assessment_qsids[submission.questionSetId]
-				username = submission.creator.username.lower()
-				user_submitted = user_submitted_set.setdefault( username, set() )
-				user_submitted.add(asm.ntiid)
-
-				if asm.ntiid in user_completed_set.get( username, {} ):
-					continue
-				student_sets = qsid_to_user_submission_set.setdefault( asm.ntiid, {} )
-				student_set = student_sets.setdefault( username, set() )
-				completed = True
-				for question in submission.questions:
-					for part in question.parts:
-						if part.submittedResponse is not None:
-							student_set.add( question.questionId )
-						else:
-							completed = False
-				if completed:
-					user_completed = user_completed_set.setdefault( username, set() )
-					user_completed.add( asm.ntiid )
-		return qsid_to_user_submission_set, user_submitted_set
 
 	def _get_completion_student_data( self, submission_data, student_names, question_count ):
 		"""
@@ -166,7 +169,7 @@ class SelfAssessmentSummaryReportPdf(CourseSummaryReportPdf):
 	def __call__(self):
 		self._check_access()
 		options = self.options
-		self.assessment_aggregator = _TopCreators(self)
+		self.assessment_aggregator = TopCreators(self)
 
 		self._build_self_assessment_data( options )
 		assessment_count = len(options['self_assessment_data'])
