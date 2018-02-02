@@ -30,7 +30,7 @@ from nti.app.products.courseware_reports.reports import _QuestionPartStat
 from nti.app.products.courseware_reports.reports import _build_question_stats
 from nti.app.products.courseware_reports.reports import _assignment_stat_for_column
 
-from nti.app.products.courseware_reports.views.view_mixins import _AbstractReportView
+from nti.app.products.courseware_reports.views.view_mixins import AbstractCourseReportView
 
 from nti.app.products.gradebook.interfaces import IGradeBookEntry
 
@@ -38,7 +38,6 @@ from nti.assessment.common import grader_for_response
 
 from nti.assessment.interfaces import IQAssignment
 from nti.assessment.interfaces import IQMatchingPart
-from nti.assessment.interfaces import IQOrderingPart
 from nti.assessment.interfaces import IQMultipleChoicePart
 from nti.assessment.interfaces import IQAssessedQuestionSet
 from nti.assessment.interfaces import IQMultipleChoiceMultipleAnswerPart
@@ -52,7 +51,7 @@ from nti.ntiids.ntiids import find_object_with_ntiid
 
 @view_config(context=IGradeBookEntry,
 			 name=VIEW_ASSIGNMENT_SUMMARY)
-class AssignmentSummaryReportPdf(_AbstractReportView):
+class AssignmentSummaryReportPdf(AbstractCourseReportView):
 
 	report_title = _('Assignment Summary Report')
 

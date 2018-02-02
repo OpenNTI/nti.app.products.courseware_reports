@@ -37,7 +37,7 @@ from nti.app.products.courseware_reports.views import CHART_COLORS
 
 from nti.app.products.courseware_reports.views.participation_views import ForumParticipationReportPdf
 
-from nti.app.products.courseware_reports.views.view_mixins import _AbstractReportView
+from nti.app.products.courseware_reports.views.view_mixins import AbstractCourseReportView
 
 from nti.app.products.gradebook.interfaces import IGradeBook
 from nti.app.products.gradebook.assignments import get_course_assignments
@@ -72,7 +72,7 @@ _NoteStat = namedtuple('_NoteStat',
 
 @view_config(context=ICourseInstance,
              name=VIEW_COURSE_SUMMARY)
-class CourseSummaryReportPdf(_AbstractReportView):
+class CourseSummaryReportPdf(AbstractCourseReportView):
 
     report_title = _('Course Summary Report')
 

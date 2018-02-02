@@ -50,7 +50,7 @@ from nti.app.products.courseware_reports.reports import _get_self_assessments_fo
 from nti.app.products.courseware_reports.views import CHART_COLORS
 from nti.app.products.courseware_reports.views import FORUM_OBJECT_MIMETYPES
 
-from nti.app.products.courseware_reports.views.view_mixins import _AbstractReportView
+from nti.app.products.courseware_reports.views.view_mixins import AbstractCourseReportView
 from nti.app.products.courseware_reports.views.view_mixins import _get_enrollment_scope_dict
 
 from nti.app.products.gradebook.interfaces import IGrade
@@ -98,7 +98,7 @@ class _AssignmentInfo(object):
 
 @view_config(context=ICourseInstanceEnrollment,
              name=VIEW_STUDENT_PARTICIPATION)
-class StudentParticipationReportPdf(_AbstractReportView):
+class StudentParticipationReportPdf(AbstractCourseReportView):
 
     report_title = _('Student Participation Report')
 
@@ -381,7 +381,7 @@ class StudentParticipationReportPdf(_AbstractReportView):
 
 @view_config(context=ICommunityForum,
              name=VIEW_FORUM_PARTICIPATION)
-class ForumParticipationReportPdf(_AbstractReportView):
+class ForumParticipationReportPdf(AbstractCourseReportView):
 
     report_title = _('Forum Participation Report')
 
