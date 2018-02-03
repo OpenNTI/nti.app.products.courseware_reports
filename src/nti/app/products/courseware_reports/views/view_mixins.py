@@ -143,10 +143,12 @@ class AbstractReportView(AbstractAuthenticatedView,
         return result
 
     def build_user_info(self, user, **kwargs):
-        # Do not display username of open students
         if isinstance(user, six.string_types):
+            username = user
             user = User.get_user(user)
-        username = self._replace_username(user.username)
+        else:
+            username = user.username
+        username = self._replace_username(username)
         return StudentInfo(user, username=username, **kwargs)
 
     def filter_objects(self, objects):
