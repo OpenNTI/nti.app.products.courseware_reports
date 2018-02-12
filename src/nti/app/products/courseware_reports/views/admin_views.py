@@ -631,7 +631,8 @@ class StudentParticipationCSVView(AbstractAuthenticatedView):
                                     provided=interface)
         results = []
         for resource in rs:
-            if      not is_ntiid_of_type(resource.ntiid, RELATED_WORK) \
-                and resource.ntiid not in viewed_object_ntiids:
+            if not is_ntiid_of_type(resource.ntiid, RELATED_WORK) \
+              and resource.ntiid not in viewed_object_ntiids \
+              and (not getattr(resource, 'target', None) or resource.target not in viewed_object_ntiids):
                 results.append(resource)
         return results
