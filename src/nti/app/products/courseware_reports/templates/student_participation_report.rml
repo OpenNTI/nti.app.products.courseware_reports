@@ -7,19 +7,19 @@
 		This report presents an overview of the activity by ${options/user/display}. It includes
 		information about the student's forum and discussion participation as well as assignments.
 	</para>
-	
+
 	<hr width="100%" />
 
 	<h1 style="h1" spaceAfter=".5in">
 		Weekly Activity
 	</h1>
-	
-	<para style="subdesc" spaceAfter=".5in" 
+
+	<para style="subdesc" spaceAfter=".5in"
 			tal:condition="options/student_forum_participation/forum_objects_by_week_number">
-		This chart shows the number of comments posted and discussions created 
+		This chart shows the number of comments posted and discussions created
 		each week by ${options/user/display} to the course forums.
 	</para>
-	
+
 	<illustration width="5in" height="3in"
 				  tal:define="forum_stat options/student_forum_participation;
 					  		  value_axis_name string:Forum Activity"
@@ -35,14 +35,14 @@
 	<h2 style="h2" spaceAfter="0.3in">
 		Discussions Created
 	</h2>
-	
-	<para 	style="subdesc" spaceAfter=".5in" 
+
+	<para 	style="subdesc" spaceAfter=".5in"
 			tal:condition="options/topics_created">
 		This table shows the discussions created by ${options/user/display}.
 	</para>
-	
-		
-		<blockTable style='default' 
+
+
+		<blockTable style='default'
 					colWidths="35% 55% 10%"
 					tal:condition="options/topics_created"
 					repeatRows="1">
@@ -59,7 +59,7 @@
 				<td tal:content="item/created/date">Created Date</td>
 			</tr>
 		</blockTable>
-		
+
 		<para style="subdesc" tal:condition="not:options/topics_created">
 			This student has not created any discussions.
 		</para>
@@ -69,14 +69,14 @@
 	<h2 style="h2" spaceAfter="0.3in" spaceBefore="0.5in">
 		Comments
 	</h2>
-	
+
 	<para style="subdesc" spaceAfter=".2in"
 			tal:condition="options/comment_count_by_topic" >
-		This table shows the number of comments posted by ${options/user/display} to 
-		each forum discussion in the course. 
+		This table shows the number of comments posted by ${options/user/display} to
+		each forum discussion in the course.
 	</para>
-	
-		<blockTable style='default' 
+
+		<blockTable style='default'
 					colWidths="40% 40% 20%"
 					tal:condition="options/comment_count_by_topic"
 					repeatRows="1">
@@ -95,25 +95,25 @@
 				<td tal:content="python:item[1]">Comment Count</td>
 			</tr>
 		</blockTable>
-		
+
 		<para style="subdesc" tal:condition="not:options/comment_count_by_topic">
 			This student has not posted any comments.
 		</para>
-		
+
 		<nextPage />
 
 	<h1 style="h1" spaceAfter="0.4in">
 		Assignments and Assessments
 	</h1>
 		<hr width="100%" />
-		
+
 	<h2 style="h2" spaceAfter="0.3in" spaceBefore="0.5in">
 		Self-Assessments
-	</h2>	
-	
-		<blockTable style='default' 
-					alignment="left" 
-					colWidths="54% 10%" 
+	</h2>
+
+		<blockTable style='default'
+					alignment="left"
+					colWidths="54% 10%"
 					tal:condition="options/self_assessment_title_to_count"
 					repeatRows="1">
 			<tr>
@@ -125,7 +125,7 @@
 				<td tal:content="python:item[1]">Times Taken</td>
 			</tr>
 		</blockTable>
-		
+
 		<para style="subdesc" tal:condition="not:options/self_assessment_title_to_count">
 			This course contains no self-assessments.
 		</para>
@@ -134,8 +134,8 @@
 	<h2 style="h2" spaceAfter="0.3in" spaceBefore="0.5in">
 		Assignments
 	</h2>
-	
-		<blockTable style='default' 
+
+		<blockTable style='default'
 					colWidths="44% 18% 18% 10% 10%"
 					tal:condition="options/assignments"
 					repeatRows="1">
@@ -148,7 +148,7 @@
 			</tr>
 			<tr tal:repeat="item options/assignments">
 				<td><para style="data" tal:content="item/title">The Assignment Name</para></td>
-				<td align="left" 
+				<td align="left"
 					tal:content="item/submitted | default"
 					tal:attributes="fontColor python: 'red' if item.submitted_late else default"></td>
 				<td align="left" tal:content="item/due_date | default"></td>
@@ -156,7 +156,7 @@
 				<td tal:content="item/history/FeedbackCount | default"></td>
 			</tr>
 		</blockTable>
-	
+
 		<para style="subdesc" tal:condition="not:options/assignments">
 			This course contains no assignments.
 		</para>
@@ -168,16 +168,20 @@
 		</h1>
 
 		<para style="normal" spaceAfter=".1in">
-			The following tables show ${options/user/display}'s activity for videos and resources in ${view/course_name}. 'Average Session Length' is the average amount of time spent on a particular resource in a session, and ’Total Watch Time’ is the total amount of time spent on a resource across all sessions. A video is considered to be completed if the student has watched at least 90% of the video and has at least one session ending in the last 10% of the video. Times are shown in minutes:seconds. 
+			The following tables show ${options/user/display}'s activity for videos and resources in ${view/course_name}.
+			'Average Session Length' is the average amount of time spent on a particular resource in a session, and
+			'Total Watch Time' is the total amount of time spent on a resource across all sessions. A video is considered
+			to be completed if the student has watched at least 90% of the video and has at least one session ending in
+			the last 10% of the video. Times are shown in minutes:seconds.
 		</para>
 
 		<h2 style="h2" spaceAfter="0.3in" spaceBefore="0.5in">
 			Videos
 		</h2>
-		
-			<blockTable style='default' 
-						alignment="left" 
-						colWidths="54% 10% 15% 25% 10%" 
+
+			<blockTable style='default'
+						alignment="left"
+						colWidths="54% 10% 15% 25% 10%"
 						tal:condition="options/video_completion"
 						repeatRows="1">
 				<tr>
@@ -197,15 +201,15 @@
 					<td tal:condition="not:exists:item/video_completion">-</td>
 				</tr>
 			</blockTable>
-		
+
 		<h2 style="h2" spaceAfter="0.3in" spaceBefore="0.5in">
 			Readings and resources
-		</h2>	
-		
-			<blockTable style='default' 
-						alignment="left" 
-						colWidths="54% 10% 15% 25%" 
-						tal:condition="options/video_completion"
+		</h2>
+
+			<blockTable style='default'
+						alignment="left"
+						colWidths="54% 10% 15% 25%"
+						tal:condition="options/resource_completion"
 						repeatRows="1">
 				<tr>
 					<td>Resource title</td>
@@ -221,11 +225,11 @@
 				</tr>
 			</blockTable>
 
-		
+
 		<!-- Used to investigate large table formatting -->
 		<!-- Headers that try to keepWithNext for large tables (multi-page)
 			 seem to cause a blank page insertion -->
-<!--			 
+<!--
 		<condPageBreak height="4in" />
 
 		<h2 style="h2"
@@ -233,8 +237,8 @@
 			tal:condition="False" >
 			Non-Credit Comment Activity
 		</h2>
-		
-		<blockTable style='default' 
+
+		<blockTable style='default'
 					colWidths="44% 18% 18%"
 					tal:condition="False"
 					repeatRows="1">
@@ -249,6 +253,6 @@
 				<td tal:content="python: item[2]">C/td>
 			</tr>
 		</blockTable>
--->		
-	
+-->
+
 </metal:block>
