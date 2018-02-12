@@ -234,6 +234,16 @@ class SelfAssessmentReportCSV(AbstractSelfAssessmentReport):
     """
 
     report_title = _(u'Self Assessment CSV report')
+    # 
+    def __init__(self, context, request):
+        self.context = context
+        self.request = request
+        self.options = {}
+
+        if 'remoteUser' in request.params:
+            self.remoteUser = request.params['remoteUser']
+        else:
+            self.remoteUser = self.getRemoteUser()
 
     def _check_access(self):
         if is_admin(self.remoteUser):
@@ -321,7 +331,7 @@ class SelfAssessmentReportCSV(AbstractSelfAssessmentReport):
         response = self.request.response
         response.content_encoding = 'identity'
         response.content_type = 'text/csv; charset=UTF-8'
-        response.content_disposition = 'attachment; filename="student_participation.csv"'
+        response.content_disposition = 'attachment; filename="self_assessment_report.csv"'
 
         stream = BytesIO()
         writer = csv.writer(stream)
