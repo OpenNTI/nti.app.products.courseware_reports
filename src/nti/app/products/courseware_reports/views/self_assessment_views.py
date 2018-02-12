@@ -332,7 +332,10 @@ class SelfAssessmentReportCSV(AbstractSelfAssessmentReport):
         _write(header_row, writer, stream)
         
         for stats in open_credit_stats:
-            time = datetime.fromtimestamp(stats.created_time)
+            time = stats.created_time
+            if time:
+                time = datetime.fromtimestamp(time)
+                time = _format_datetime(_adjust_date(time))
             
             data_row = []
             data_row.append(stats.display)
@@ -341,7 +344,7 @@ class SelfAssessmentReportCSV(AbstractSelfAssessmentReport):
             data_row.append(stats.count)
             data_row.append(stats.unique_attempts)
             data_row.append(stats.assessment_count)
-            data_row.append(_format_datetime(_adjust_date(time)))
+            data_row.append(time)
             _write(data_row, writer, stream)
 
         stream.flush()
