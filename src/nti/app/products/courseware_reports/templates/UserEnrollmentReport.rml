@@ -11,16 +11,18 @@
 	</para>
 
 	<blockTable style='default'
-				colWidths="60% 40%"
+				colWidths="60% 20% 20%"
 				tal:condition="options/enrollments"
 				repeatRows="1">
 		<tr>
 			<td><para style="header">Course Title</para></td>
 			<td><para style="header">Date Enrolled</para></td>
+			<td><para style="header">Last Seen</para></td>
 		</tr>
 		<tr tal:repeat="item options/enrollments">
 			<td><para style="data" tal:content="item/title">The Course Title</para></td>
-			<td align="left" tal:content="item/createdTime | default">The Enrolled Time</td>
+			<td align="left" tal:content="item/enrollmentTime | default">The Enrolled Time</td>
+			<td align="left" tal:content="item/lastAccessed | default">The Last Seen Time</td>
 		</tr>
 	</blockTable>
 

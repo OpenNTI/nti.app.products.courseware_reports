@@ -602,7 +602,8 @@ class TestUserEnrollmentReport(ApplicationLayerTest):
             assert_that(options, has_entry('enrollments',
                                                        has_items(
                                                            has_key('title'),
-                                                           has_key('createdTime'))))
+                                                           has_key('enrollmentTime'),
+                                                           has_key('lastAccessed'))))
             assert_that(options['enrollments'], has_length(1))
 
 class TestCourseRosterReport(ApplicationLayerTest):
