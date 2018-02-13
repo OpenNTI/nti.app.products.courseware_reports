@@ -707,7 +707,6 @@ class TestCourseRosterReport(ApplicationLayerTest):
             assert_that(
                         options, has_entries('enrollments', has_items(
                                                                     has_key('displayname'),
-                                                                    has_key('realname'),
                                                                     has_key('username'),
                                                                     has_key('email'),
                                                                     has_key('enrollmentTime'),
