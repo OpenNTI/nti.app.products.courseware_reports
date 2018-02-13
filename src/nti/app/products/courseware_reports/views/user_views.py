@@ -19,6 +19,8 @@ from datetime import datetime
 from nti.dataserver.interfaces import IUser
 from nti.dataserver.interfaces import ISiteAdminUtility
 
+from nti.analytics.stats.interfaces import IActivitySource
+
 from nti.app.products.courseware_reports import MessageFactory as _
 from nti.app.products.courseware_reports import VIEW_USER_ENROLLMENT
 
@@ -89,14 +91,27 @@ class UserEnrollmentReportPdf(AbstractReportView):
 
         options["user"] = self.get_user_info()
 
-        options["enrollments"] = []
+        enrollments = []
         for record in records:
             enrollment = {}
-            course = ICourseCatalogEntry(ICourseInstance(record))
-            enrollment["title"] = course.title
+            course = ICourseInstance(record)
+            catalog_entry = ICourseCatalogEntry(course)
+            enrollment["title"] = catalog_entry.title
 
+            enrollment_time = None
             if record.createdTime:
                 time = datetime.fromtimestamp(record.createdTime)
-                enrollment["createdTime"] = _format_datetime(_adjust_date(time))
-            options["enrollments"].append(enrollment)
+                enrollment_time = _adjust_date(time)
+                enrollment["enrollmentTime"] = _format_datetime(enrollment_time)
+
+            accessed_time = enrollment_time
+            activity_source = component.queryMultiAdapter((self.context, course), IActivitySource)
+            if activity_source:
+                latest = activity_source.activity(limit=1, order_by='timestamp')
+                accessed_time = latest[0].timestamp if latest else None
+
+            enrollment["lastAccessed"] = _format_datetime(accessed_time) if accessed_time else None
+            enrollments.append(enrollment)
+        options['enrollments'] = enrollments
+
         return options

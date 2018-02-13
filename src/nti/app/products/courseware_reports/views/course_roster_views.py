@@ -12,6 +12,12 @@ from datetime import datetime
 
 from pyramid.view import view_config
 
+from zope import component
+
+from zc.displayname.interfaces import IDisplayNameGenerator
+
+from nti.analytics.stats.interfaces import IActivitySource
+
 from nti.app.products.courseware_reports import MessageFactory as _
 from nti.app.products.courseware_reports import VIEW_COURSE_ROSTER
 
@@ -26,6 +32,8 @@ from nti.contenttypes.courses.interfaces import ICourseEnrollments
 from nti.dataserver.interfaces import IUser
 from nti.dataserver.users.users import User
 from nti.dataserver.users.interfaces import IFriendlyNamed
+
+from nti.mailer.interfaces import IEmailAddressable
 
 logger = __import__('logging').getLogger(__name__)
 
@@ -50,6 +58,16 @@ class CourseRosterReportPdf(AbstractCourseReportView):
         if request.view_name:
             self.filename = request.view_name
 
+    def _name(self, user, friendly_named=None):
+        displayname = component.getMultiAdapter((user, self.request), IDisplayNameGenerator)()
+
+        if not friendly_named:
+            friendly_named = IFriendlyNamed(user)
+
+        if friendly_named.realname and displayname != friendly_named.realname:
+            displayname = '%s (%s)' % (friendly_named.realname, displayname)
+        return displayname
+
     def __call__(self):
         self._check_access()
         options = self.options
@@ -62,25 +80,32 @@ class CourseRosterReportPdf(AbstractCourseReportView):
         for record in enrollmentCourses.iter_enrollments():
             enrollRecord = {}
 
-            user = IUser(record.Principal, None)
-
-            if user is None:
-                user = User.get_user(record.Principal)
+            user = User.get_user(record.Principal)
             if user is None:
                 # Deleted user
                 continue
 
-            user = IFriendlyNamed(user)
-            
-            enrollRecord["displayname"] = user.realname or user.alias or user.username
-            enrollRecord["realname"] = user.realname
             enrollRecord["username"] = user.username
-            enrollRecord["email"] = user.email
 
+            fn_user = IFriendlyNamed(user)
+            enrollRecord["displayname"] = self._name(user, friendly_named=fn_user)
+
+            email_addressable = IEmailAddressable(user, None)
+            enrollRecord["email"] = email_addressable.email if email_addressable else None
+
+            enrollment_time = None
             if record.createdTime:
                 time = datetime.fromtimestamp(record.createdTime)
-                enrollRecord["enrollmentTime"] = _format_datetime(_adjust_date(time))
-                enrollRecord["lastAccessed"] = ""
+                enrollment_time = _adjust_date(time)
+                enrollRecord["enrollmentTime"] = _format_datetime(enrollment_time)
+
+            accessed_time = enrollment_time
+            activity_source = component.queryMultiAdapter((user, course), IActivitySource)
+            if activity_source:
+                latest = activity_source.activity(limit=1, order_by='timestamp')
+                accessed_time = latest[0].timestamp if latest else None
+
+            enrollRecord["lastAccessed"] = _format_datetime(accessed_time) if accessed_time else None
 
             enrollments.append(enrollRecord)
 
