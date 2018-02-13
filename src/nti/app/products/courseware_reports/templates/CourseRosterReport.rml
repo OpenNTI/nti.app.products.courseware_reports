@@ -18,7 +18,7 @@
 			<td><para style="header">Name</para></td>
 			<td><para style="header">Username</para></td>
 			<td><para style="header">Email</para></td>
-			<td><para style="header">Enrollment Time</para></td>
+			<td><para style="header">Date Enrolled</para></td>
 			<td><para style="header">Last Seen</para></td>
 		</tr>
 		<tr tal:repeat="item options/enrollments">
