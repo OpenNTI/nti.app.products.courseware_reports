@@ -281,6 +281,8 @@ class SelfAssessmentReportCSV(AbstractSelfAssessmentReport):
                                                                   final_assessment_submitted_time)
             result.append(user_completion)
 
+        # Sort by assessment submission time (desc) then by display name
+        result = sorted(result, key=lambda x: x.display.lower())
         result = sorted(
             result, key=lambda x: x.final_assessment_submitted_time, reverse=True)
 
