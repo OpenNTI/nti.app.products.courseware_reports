@@ -49,6 +49,8 @@ from nti.app.products.courseware_reports.views.course_roster_views import Course
 
 from nti.app.products.courseware_reports.views.admin_views import StudentParticipationCSVView
 
+from nti.app.products.courseware_reports.views.self_assessment_views import SelfAssessmentReportCSV
+
 from nti.ntiids.ntiids import find_object_with_ntiid
 
 from nti.app.assessment.tests import RegisterAssignmentLayerMixin
@@ -715,3 +717,36 @@ class TestCourseRosterReport(ApplicationLayerTest):
 
             assert_that(options['enrollments'], has_length(1))
             assert_that(options['TotalEnrolledCount'], equal_to(1))
+
+class TestSelfAssessmentCSVReport(ApplicationLayerTest):
+
+    layer = InstructedCourseApplicationTestLayer
+    default_origin = b'http://janux.ou.edu'
+    course_ntiid = 'tag:nextthought.com,2011-10:OU-HTML-CLC3403_LawAndJustice.course_info'
+
+    @WithSharedApplicationMockDS(
+        users=True, testapp=True, default_authenticate=True)
+    def test_application_view_empty_report(self):
+
+        with mock_dataserver.mock_db_trans(self.ds, site_name='platform.ou.edu'):
+            obj = find_object_with_ntiid(self.course_ntiid)
+            course = ICourseInstance(obj)
+            request = DummyRequest(params={})
+            request.context = course
+
+            request.params['remoteUser'] = User.get_user('sjohnson@nextthought.com')
+    
+            csv_view = SelfAssessmentReportCSV(course, request)
+            response = csv_view()
+    
+            csv_read_buffer = StringIO(response.body)
+            response_reader = csv.DictReader(csv_read_buffer)
+
+            assert_that(response_reader.fieldnames, has_items(
+                                                        'Display Name',
+                                                        'Alias',
+                                                        'User name',
+                                                        'Total Assessment Attempts',
+                                                        'Unique Assessment Attempts',
+                                                        'Total Assessment Count',
+                                                        'Assessment Completion Date'))
