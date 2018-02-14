@@ -51,17 +51,6 @@ _StudentSelfAssessmentCompletionCSV = namedtuple('_SelfAssessmentCompletion',
                                                   'assessment_count', 'final_assessment_submitted_time'))
 
 
-def _tx_string(s):
-    if s is not None and isinstance(s, six.text_type):
-        s = s.encode('utf-8')
-    return s
-
-
-def _write(data, writer, stream):
-    writer.writerow([_tx_string(x) for x in data])
-    return stream
-
-
 class AbstractSelfAssessmentReport(CourseSummaryReportPdf):
 
     def _build_qset_to_user_submission(self):
@@ -93,6 +82,7 @@ class AbstractSelfAssessmentReport(CourseSummaryReportPdf):
 
                 if asm.ntiid in user_completed_set.get(username, {}):
                     continue
+
                 student_sets = qsid_to_user_submission_set.setdefault(asm.ntiid, {})
                 student_set = student_sets.setdefault(username, set())
                 completed = True
@@ -182,7 +172,7 @@ class SelfAssessmentSummaryReportPdf(AbstractSelfAssessmentReport):
         """
         # qset.ntiid -> username -> submitted question ntiid set
         # pylint: disable=unused-variable
-        qsid_to_user_submission_set, user_submission_sets, unused = self._build_qset_to_user_submission()
+        qsid_to_user_submission_set, user_submission_sets, unused_comp_data = self._build_qset_to_user_submission()
         credit_results = list()
         open_results = list()
         # Now build our completion data.
@@ -252,13 +242,14 @@ class SelfAssessmentReportCSV(AbstractSelfAssessmentReport):
         else:
             self.remoteUser = self.getRemoteUser()
 
-    def _get_by_student_stats(self, stats, assessment_names, student_names,
-                              user_submission_sets, assessment_count, user_to_completion_date_set):
+    def _get_by_student_stats(self, stats, assessment_usernames, student_names,
+                              user_submission_sets, assessment_count,
+                              user_to_completion_date_set):
         """
         Get our sorted stats, including zero'd stats for users without self
         assessment submissions.
         """
-        assessment_usernames = {x.lower() for x in assessment_names}
+        assessment_usernames = {x.lower() for x in assessment_usernames}
         missing_usernames = student_names - assessment_usernames
         stats.extend(
             self.build_user_info(username) for username in missing_usernames
@@ -271,17 +262,14 @@ class SelfAssessmentReportCSV(AbstractSelfAssessmentReport):
             friendlyName = IFriendlyNamed(user)
             completion_date_map = user_to_completion_date_set.get(username, {}) or None
             user_completed_count = len(user_submission_sets.get(username, {})) or None
-
             final_assessment_submitted_time = None
-            completion_date_set = []
 
-            # display the `Comletion Date` if student has submitted all
-            # assessment
+            # Display the `Completion Date` if student has submitted all
+            # assessments
             if completion_date_map and user_completed_count == assessment_count:
-                # pylint: disable=unused-variable
-                for unused, completion_date_value in completion_date_map.iteritems():
-                    completion_date_set.append(min(completion_date_value))
-
+                completion_date_set = []
+                for completion_dates in completion_date_map.values():
+                    completion_date_set.append(min(completion_dates))
                 final_assessment_submitted_time = max(completion_date_set)
 
             user_completion = _StudentSelfAssessmentCompletionCSV(user_stats.display,
@@ -289,7 +277,8 @@ class SelfAssessmentReportCSV(AbstractSelfAssessmentReport):
                                                                   username,
                                                                   user_stats.count,
                                                                   user_completed_count,
-                                                                  assessment_count, final_assessment_submitted_time)
+                                                                  assessment_count,
+                                                                  final_assessment_submitted_time)
             result.append(user_completion)
 
         result = sorted(
@@ -302,8 +291,8 @@ class SelfAssessmentReportCSV(AbstractSelfAssessmentReport):
         Get our by student stats for open and credit students.
         """
         all_stats = self._get_by_student_stats(self.assessment_aggregator.all_stats,
-                                               self.assessment_aggregator.non_credit_keys(),
-                                               self.open_student_usernames,
+                                               self.assessment_aggregator.keys(),
+                                               self.all_student_usernames,
                                                user_submission_sets,
                                                assessment_count,
                                                user_to_completion_date_set)
@@ -314,11 +303,10 @@ class SelfAssessmentReportCSV(AbstractSelfAssessmentReport):
         options = self.options
         self.assessment_aggregator = TopCreators(self)
         self._build_self_assessment_data(options)
-
         assessment_count = len(options['self_assessment_data'])
 
         # pylint: disable=unused-variable
-        unused, user_submission_sets, user_to_completion_date_set = self._build_qset_to_user_submission()
+        unused_submission_set, user_submission_sets, user_to_completion_date_set = self._build_qset_to_user_submission()
 
         all_stats = self._get_self_assessments_by_student(user_submission_sets,
                                                           assessment_count,
@@ -331,8 +319,19 @@ class SelfAssessmentReportCSV(AbstractSelfAssessmentReport):
         stream = BytesIO()
         writer = csv.writer(stream)
 
-        header_row = ['Display Name', 'Alias', 'User name', 'Total Assessment Attempts',
-                      'Unique Assessment Attempts', 'Total Assessment Count', 'Assessment Completion Date']
+        header_row = ['Display Name', 'Alias', 'User name',
+                      'Total Assessment Attempts',
+                      'Unique Assessment Attempts', 'Total Assessment Count',
+                      'Assessment Completion Date']
+
+        def _tx_string(s):
+            if s is not None and isinstance(s, six.text_type):
+                s = s.encode('utf-8')
+            return s
+
+        def _write(data, writer, stream):
+            writer.writerow([_tx_string(x) for x in data])
+            return stream
 
         _write(header_row, writer, stream)
 
@@ -342,14 +341,13 @@ class SelfAssessmentReportCSV(AbstractSelfAssessmentReport):
                 time = datetime.fromtimestamp(time)
                 time = _format_datetime(_adjust_date(time))
 
-            data_row = []
-            data_row.append(stats.display)
-            data_row.append(stats.alias)
-            data_row.append(stats.username)
-            data_row.append(stats.count)
-            data_row.append(stats.unique_attempts)
-            data_row.append(stats.assessment_count)
-            data_row.append(time)
+            data_row = [stats.display,
+                        stats.alias,
+                        stats.username,
+                        stats.count,
+                        stats.unique_attempts,
+                        stats.assessment_count,
+                        time]
             _write(data_row, writer, stream)
 
         stream.flush()
