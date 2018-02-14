@@ -56,7 +56,7 @@ _StudentSelfAssessmentCompletion = namedtuple( '_SelfAssessmentCompletion',
 _StudentSelfAssessmentCompletionCSV = namedtuple( '_SelfAssessmentCompletion',
                                                ('display', 'alias', 'username',
                                                 'count', 'unique_attempts',
-                                                'assessment_count', 'created_time'))
+                                                'assessment_count', 'final_assessment_submitted_time'))
 
 logger = __import__('logging').getLogger(__name__)
 
@@ -89,9 +89,13 @@ class AbstractSelfAssessmentReport(CourseSummaryReportPdf):
                 username = submission.creator.username.lower()
                 user_submitted = user_submitted_set.setdefault( username, set() )
                 user_submitted.add(asm.ntiid)
+                
+                user_to_completion_date = user_to_completion_date_set.setdefault( username, {} )
 
-                user_to_completion_date = user_to_completion_date_set.setdefault( username, [] )
-                user_to_completion_date.append(submission.createdTime)
+                if asm.ntiid in user_to_completion_date:
+                    user_to_completion_date[asm.ntiid].append(submission.createdTime)
+                else:
+                    user_to_completion_date[asm.ntiid] = [submission.createdTime]
                 
                 if asm.ntiid in user_completed_set.get( username, {} ):
                     continue
@@ -107,6 +111,7 @@ class AbstractSelfAssessmentReport(CourseSummaryReportPdf):
                 if completed:
                     user_completed = user_completed_set.setdefault( username, set() )
                     user_completed.add( asm.ntiid )
+            
         return qsid_to_user_submission_set, user_submitted_set, user_to_completion_date_set
 
 
@@ -245,13 +250,6 @@ class SelfAssessmentReportCSV(AbstractSelfAssessmentReport):
         else:
             self.remoteUser = self.getRemoteUser()
 
-    def _check_access(self):
-        if is_admin(self.remoteUser):
-            return True
-
-        if not checkPermission(ACT_VIEW_REPORTS.id, self.course):
-            raise HTTPForbidden()
-
     def _get_by_student_stats(self, stats, assessment_names, student_names,
                               user_submission_sets, assessment_count, user_to_completion_date_set):
         """
@@ -269,28 +267,30 @@ class SelfAssessmentReportCSV(AbstractSelfAssessmentReport):
             user = User.get_user(username)
 
             friendlyName = IFriendlyNamed(user)
-            
-            created_time_set = user_to_completion_date_set.get(username, {}) or None
+
+            completion_date_map = user_to_completion_date_set.get(username, {}) or None
             
             user_completed_count = len(user_submission_sets.get(username, {})) or None
 
-            created_time = ''
+            final_assessment_submitted_time = None
+
+            completion_date_set = []
             
-            if created_time_set:
-                if user_completed_count == assessment_count:
-                    created_time = max(created_time_set)
-                else:
-                    created_time = created_time_set[0]
+            if completion_date_map:
+                for completion_date_key, completion_date_value in completion_date_map.iteritems():
+                    completion_date_set.append(min(completion_date_value))
+            
+                final_assessment_submitted_time = max(completion_date_set)
             
             user_completion = _StudentSelfAssessmentCompletionCSV(user_stats.display,
                                                                friendlyName.alias,
                                                                username,
                                                                user_stats.count,
                                                                user_completed_count,
-                                                               assessment_count, created_time)
+                                                               assessment_count, final_assessment_submitted_time)
             result.append(user_completion)
 
-        result = sorted(result, key=lambda x:x.created_time, reverse=True)
+        result = sorted(result, key=lambda x:x.final_assessment_submitted_time, reverse=True)
         
         return result
 
@@ -298,20 +298,13 @@ class SelfAssessmentReportCSV(AbstractSelfAssessmentReport):
         """
         Get our by student stats for open and credit students.
         """
-        open_stats = self._get_by_student_stats( self.assessment_aggregator.open_stats,
+        all_stats = self._get_by_student_stats( self.assessment_aggregator.all_stats,
                                                  self.assessment_aggregator.non_credit_keys(), 
                                                  self.open_student_usernames,
                                                  user_submission_sets,
                                                  assessment_count,
                                                  user_to_completion_date_set)
-
-        credit_stats = self._get_by_student_stats( self.assessment_aggregator.credit_stats,
-                                                   self.assessment_aggregator.for_credit_keys(),
-                                                   self.for_credit_student_usernames,
-                                                   user_submission_sets,
-                                                   assessment_count,
-                                                   user_to_completion_date_set)
-        return open_stats, credit_stats
+        return all_stats
 
     def __call__(self):
         self._check_access()
@@ -322,12 +315,10 @@ class SelfAssessmentReportCSV(AbstractSelfAssessmentReport):
         assessment_count = len(options['self_assessment_data'])
 
         qsid_to_user_submission_set, user_submission_sets, user_to_completion_date_set = self._build_qset_to_user_submission()
-        
-        open_stats, credit_stats = self._get_self_assessments_by_student(user_submission_sets,
+
+        all_stats = self._get_self_assessments_by_student(user_submission_sets,
                                                                          assessment_count,
                                                                         user_to_completion_date_set)
-        open_credit_stats = open_stats + credit_stats
-        
         response = self.request.response
         response.content_encoding = 'identity'
         response.content_type = 'text/csv; charset=UTF-8'
@@ -341,8 +332,8 @@ class SelfAssessmentReportCSV(AbstractSelfAssessmentReport):
         
         _write(header_row, writer, stream)
         
-        for stats in open_credit_stats:
-            time = stats.created_time
+        for stats in all_stats:
+            time = stats.final_assessment_submitted_time
             if time:
                 time = datetime.fromtimestamp(time)
                 time = _format_datetime(_adjust_date(time))
