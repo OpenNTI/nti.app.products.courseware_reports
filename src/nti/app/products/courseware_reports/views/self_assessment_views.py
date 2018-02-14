@@ -275,8 +275,9 @@ class SelfAssessmentReportCSV(AbstractSelfAssessmentReport):
             final_assessment_submitted_time = None
 
             completion_date_set = []
-            
-            if completion_date_map:
+
+            # display the `Comletion Date` if student has submitted all assessment
+            if completion_date_map and user_completed_count == assessment_count:
                 for completion_date_key, completion_date_value in completion_date_map.iteritems():
                     completion_date_set.append(min(completion_date_value))
             
