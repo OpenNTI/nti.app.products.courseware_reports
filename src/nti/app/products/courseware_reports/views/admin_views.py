@@ -9,6 +9,7 @@ from __future__ import print_function
 from __future__ import absolute_import
 
 import csv
+import six
 import time
 from io import BytesIO
 from numbers import Number
@@ -452,7 +453,7 @@ class InstructorParticipationView(AbstractAuthenticatedView):
 
 
 def _tx_string(s):
-    if s is not None and isinstance(s, unicode):
+    if s is not None and isinstance(s, six.text_type):
         s = s.encode('utf-8')
     return s
 
