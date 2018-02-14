@@ -324,7 +324,7 @@ class SelfAssessmentReportCSV(AbstractSelfAssessmentReport):
         header_row = ['Display Name', 'Alias', 'User name',
                       'Total Assessment Attempts',
                       'Unique Assessment Attempts', 'Total Assessment Count',
-                      'Assessment Completion Date']
+                      'Completion of Assessments Date']
 
         def _tx_string(s):
             if s is not None and isinstance(s, six.text_type):
