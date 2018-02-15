@@ -735,10 +735,10 @@ class TestSelfAssessmentCSVReport(ApplicationLayerTest):
             request.context = course
 
             request.params['remoteUser'] = User.get_user('sjohnson@nextthought.com')
-    
+
             csv_view = SelfAssessmentReportCSV(course, request)
             response = csv_view()
-    
+
             csv_read_buffer = StringIO(response.body)
             response_reader = csv.DictReader(csv_read_buffer)
 
@@ -749,4 +749,4 @@ class TestSelfAssessmentCSVReport(ApplicationLayerTest):
                                                         'Total Assessment Attempts',
                                                         'Unique Assessment Attempts',
                                                         'Total Assessment Count',
-                                                        'Assessment Completion Date'))
+                                                        'Completion of Assessments Date'))
