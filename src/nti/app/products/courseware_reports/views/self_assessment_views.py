@@ -109,13 +109,13 @@ class SelfAssessmentSummaryReportPdf(AbstractSelfAssessmentReport):
 
     report_title = _(u'Self Assessment Report')
 
-    def _get_by_student_stats(self, stats, assessment_names, student_names,
+    def _get_by_student_stats(self, stats, assessment_usernames, student_names,
                               user_submission_sets, assessment_count):
         """
         Get our sorted stats, including zero'd stats for users without self
         assessment submissions.
         """
-        assessment_usernames = {x.lower() for x in assessment_names}
+        assessment_usernames = {x.lower() for x in assessment_usernames}
         missing_usernames = student_names - assessment_usernames
         stats.extend(
             self.build_user_info(username) for username in missing_usernames
@@ -123,10 +123,10 @@ class SelfAssessmentSummaryReportPdf(AbstractSelfAssessmentReport):
         stats = sorted(stats)
         result = []
         for user_stats in sorted(stats):
-            username = user_stats.username
+            username = user_stats.username.lower()
             user_completed_count = len(user_submission_sets.get(username, {})) or None
             user_completion = _StudentSelfAssessmentCompletion(user_stats.display,
-                                                               username,
+                                                               user_stats.username,
                                                                user_stats.count,
                                                                user_completed_count,
                                                                assessment_count)
@@ -257,7 +257,7 @@ class SelfAssessmentReportCSV(AbstractSelfAssessmentReport):
         result = []
 
         for user_stats in stats:
-            username = user_stats.username
+            username = user_stats.username.lower()
             user = User.get_user(username)
             friendlyName = IFriendlyNamed(user)
             completion_date_map = user_to_completion_date_set.get(username, {}) or None
@@ -274,7 +274,7 @@ class SelfAssessmentReportCSV(AbstractSelfAssessmentReport):
 
             user_completion = _StudentSelfAssessmentCompletionCSV(user_stats.display,
                                                                   friendlyName.alias,
-                                                                  username,
+                                                                  user_stats.username,
                                                                   user_stats.count,
                                                                   user_completed_count,
                                                                   assessment_count,
