@@ -136,7 +136,7 @@ class CourseRosterReportPdf(AbstractCourseRosterReport):
              request_method='GET',
              accept='text/csv',
              name='CourseRosterReport.csv')
-class AbstractCourseRosterReport(AbstractCourseRosterReport):
+class CourseRosterReportCSV(AbstractCourseRosterReport):
 
     report_title = _(u'Course Roster Report')
 
