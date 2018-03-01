@@ -89,6 +89,8 @@ class AbstractCourseRosterReport(AbstractCourseReportView):
         return enrollments
 
 @view_config(context=ICourseInstance,
+             request_method='GET',
+             accept='application/pdf',
              name=VIEW_COURSE_ROSTER)
 class CourseRosterReportPdf(AbstractCourseRosterReport):
 
@@ -108,16 +110,6 @@ class CourseRosterReportPdf(AbstractCourseRosterReport):
         if request.view_name:
             self.filename = request.view_name
 
-    def _name(self, user, friendly_named=None):
-        displayname = component.getMultiAdapter((user, self.request), IDisplayNameGenerator)()
-
-        if not friendly_named:
-            friendly_named = IFriendlyNamed(user)
-
-        if friendly_named.realname and displayname != friendly_named.realname:
-            displayname = '%s (%s)' % (friendly_named.realname, displayname)
-        return displayname
-
     def __call__(self):
         self._check_access()
         options = self.options
@@ -135,7 +127,7 @@ class CourseRosterReportPdf(AbstractCourseRosterReport):
 @view_config(context=ICourseInstance,
              request_method='GET',
              accept='text/csv',
-             name='CourseRosterReport.csv')
+             name=VIEW_COURSE_ROSTER)
 class CourseRosterReportCSV(AbstractCourseRosterReport):
 
     report_title = _(u'Course Roster Report')
