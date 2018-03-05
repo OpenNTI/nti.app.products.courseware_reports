@@ -51,7 +51,7 @@ class AbstractCourseRosterReport(AbstractCourseReportView):
         if friendly_named.realname and displayname != friendly_named.realname:
             displayname = '%s (%s)' % (friendly_named.realname, displayname)
         return displayname
-    
+
     def _build_enrollment_info(self, enrollmentCourses):
         enrollments = []
         for record in enrollmentCourses.iter_enrollments():
@@ -85,13 +85,17 @@ class AbstractCourseRosterReport(AbstractCourseReportView):
             enrollRecord["lastAccessed"] = _format_datetime(accessed_time) if accessed_time else None
 
             enrollments.append(enrollRecord)
-            
+
         return enrollments
 
 @view_config(context=ICourseInstance,
              request_method='GET',
-             accept='application/pdf',
-             name=VIEW_COURSE_ROSTER)
+             name=VIEW_COURSE_ROSTER,
+             accept='application/pdf')
+@view_config(context=ICourseInstance,
+             request_method='GET',
+             name=VIEW_COURSE_ROSTER,
+             match_param='format=application/pdf')
 class CourseRosterReportPdf(AbstractCourseRosterReport):
 
     report_title = _(u'Course Roster Report')
@@ -126,8 +130,12 @@ class CourseRosterReportPdf(AbstractCourseRosterReport):
 
 @view_config(context=ICourseInstance,
              request_method='GET',
-             accept='text/csv',
-             name=VIEW_COURSE_ROSTER)
+             name=VIEW_COURSE_ROSTER,
+             accept='text/csv')
+@view_config(context=ICourseInstance,
+             request_method='GET',
+             name=VIEW_COURSE_ROSTER,
+             match_param='format=text/csv')
 class CourseRosterReportCSV(AbstractCourseRosterReport):
 
     report_title = _(u'Course Roster Report')
@@ -145,7 +153,7 @@ class CourseRosterReportCSV(AbstractCourseRosterReport):
 
         if request.view_name:
             self.filename = request.view_name
-            
+
     def __call__(self):
         self._check_access()
 
@@ -177,7 +185,7 @@ class CourseRosterReportCSV(AbstractCourseRosterReport):
             return stream
 
         _write(header_row, writer, stream)
-        
+
         for record in enrollments:
             data_row = [record['displayname'],
                         record['username'],

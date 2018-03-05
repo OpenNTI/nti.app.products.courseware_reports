@@ -806,6 +806,9 @@ class TestCourseRosterCSVReport(ApplicationLayerTest):
         site_admin_environ = self._make_extra_environ(username='harp4162')
         res = self.testapp.get(admin_view_href, extra_environ=site_admin_environ, headers={'accept': str('text/csv')})
         assert_that(res, has_property('content_type', 'text/csv'))
+
+        res = self.testapp.get(admin_view_href, params={'format': 'txt/csv'}, extra_environ=site_admin_environ)
+        assert_that(res, has_property('content_type', 'text/csv'))
         
     @WithSharedApplicationMockDS(
         users=True, testapp=True, default_authenticate=True)

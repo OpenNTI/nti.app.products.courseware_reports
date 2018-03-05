@@ -50,7 +50,7 @@ HEAD_ZCML_STRING = u"""
                             title="Test Report"
                             description="TestDescription"
                             contexts="nti.contenttypes.reports.tests.ITestReportContext"
-                            supported_types="csv pdf" />
+                            supported_types="text/csv pdf" />
     </configure>
 </configure>
 """
@@ -91,7 +91,7 @@ class TestZcml(unittest.TestCase):
                                                      "contexts", not_none(),
                                                      "description", "TestDescription",
                                                      "contexts", not_none(),
-                                                     "supported_types", contains_inanyorder("pdf", "csv"))))
+                                                     "supported_types", contains_inanyorder("application/pdf", "text/csv"))))
 
         ut_reports = list(component.getAllUtilitiesRegisteredFor(IReport))
         assert_that(ut_reports, not_none())
@@ -100,4 +100,4 @@ class TestZcml(unittest.TestCase):
                                                      "contexts", not_none(),
                                                      "description", "TestDescription",
                                                      "contexts", not_none(),
-                                                     "supported_types", contains_inanyorder("pdf", "csv"))))
+                                                     "supported_types", contains_inanyorder("application/pdf", "text/csv"))))
