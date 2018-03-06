@@ -14,6 +14,8 @@ from io import BytesIO
 
 from datetime import datetime
 
+from pyramid.config import not_
+
 from pyramid.view import view_config
 
 from zope import component
@@ -91,11 +93,12 @@ class AbstractCourseRosterReport(AbstractCourseReportView):
 @view_config(context=ICourseInstance,
              request_method='GET',
              name=VIEW_COURSE_ROSTER,
-             accept='application/pdf')
+             accept='application/pdf',
+             request_param=not_('format'))
 @view_config(context=ICourseInstance,
              request_method='GET',
              name=VIEW_COURSE_ROSTER,
-             match_param='format=application/pdf')
+             request_param='format=application/pdf')
 class CourseRosterReportPdf(AbstractCourseRosterReport):
 
     report_title = _(u'Course Roster Report')
@@ -131,11 +134,12 @@ class CourseRosterReportPdf(AbstractCourseRosterReport):
 @view_config(context=ICourseInstance,
              request_method='GET',
              name=VIEW_COURSE_ROSTER,
-             accept='text/csv')
+             accept='text/csv',
+             request_param=not_('format'))
 @view_config(context=ICourseInstance,
              request_method='GET',
              name=VIEW_COURSE_ROSTER,
-             match_param='format=text/csv')
+             request_param='format=text/csv')
 class CourseRosterReportCSV(AbstractCourseRosterReport):
 
     report_title = _(u'Course Roster Report')
