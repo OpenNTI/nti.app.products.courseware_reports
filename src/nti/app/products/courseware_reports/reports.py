@@ -39,6 +39,8 @@ from nti.contentfragments.interfaces import IPlainTextContentFragment
 
 from nti.contentlibrary.indexed_data import get_library_catalog
 
+from nti.contenttypes.courses.common import get_course_packages
+
 from nti.contenttypes.courses.interfaces import ICourseAssignmentCatalog
 from nti.contenttypes.courses.interfaces import ICourseAssessmentItemCatalog
 from nti.contenttypes.courses.interfaces import ICourseSelfAssessmentItemCatalog
@@ -682,11 +684,8 @@ def _finalize_answer_stats( answer_stats, total_submits ):
 		sub.letter_prefix = str( j + 1 )
 		sub.perc_s = '%0.1f' % ( sub.count * 100.0 / total_submits ) if total_submits else 'N/A'
 
-def _do_get_containers_in_course( course ):
-	try:
-		packages = course.ContentPackageBundle.ContentPackages
-	except AttributeError:
-		packages = (course.legacy_content_package,)
+def _do_get_containers_in_course(course):
+	packages = get_course_packages(course)
 
 	def _recur( node, accum ):
 		#Get our embedded ntiids and recursively fetch our children's ntiids
