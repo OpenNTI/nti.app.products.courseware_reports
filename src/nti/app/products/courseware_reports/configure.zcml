@@ -113,51 +113,51 @@
 								  title="Assignment Summary Report"
 								  description="Summary of assignments and their content"
 								  contexts="nti.assessment.interfaces.IQAssignment"
-								  supported_types="pdf" />
+								  supported_types="application/pdf" />
 
 	<rep:registerInstructorReport name="SelfAssessmentSummaryReport.pdf"
 								  title="Self Assessment Summary Report"
 								  description="Summary of assessments"
 								  contexts="nti.contenttypes.courses.interfaces.ICourseInstance"
-								  supported_types="pdf" />
+								  supported_types="application/pdf" />
 
 	<rep:registerInstructorReport name="StudentParticipationReport.pdf"
 								  title="Student Participation Report"
 								  description="Summary of student participation in this course"
 								  contexts="nti.app.products.courseware.interfaces.ICourseInstanceEnrollment"
-								  supported_types="pdf" />
+								  supported_types="application/pdf" />
 
 	<rep:registerInstructorReport name="ForumParticipationReport.pdf"
 								  title="Forum Participation Report"
 								  description="Summary of the participation in forums in this course"
 								  contexts="nti.dataserver.contenttypes.forums.interfaces.ICommunityForum"
-								  supported_types="pdf" />
+								  supported_types="application/pdf" />
 
 	<rep:registerInstructorReport name="TopicParticipationReport.pdf"
 								  title="Topic Participation Report"
 								  description="Summary of the participation in various topics in this course"
 								  contexts="nti.dataserver.contenttypes.forums.interfaces.ICommunityHeadlineTopic"
-								  supported_types="pdf" />
+								  supported_types="application/pdf" />
 
 	<rep:registerInstructorReport name="InquiryReport.pdf"
 								  title="Inquiry Report"
 								  description="Summary of inquiries"
 								  contexts="nti.assessment.interfaces.IQInquiry
 								  			nti.contenttypes.presentation.interfaces.INTIInquiryRef"
-								  supported_types="pdf" />
+								  supported_types="application/pdf" />
 	
 	<rep:registerInstructorReport name="CourseRosterReport"
 								  title="Course Roster Report"
 								  description="Course summary of student enrollment"
 								  contexts="nti.contenttypes.courses.interfaces.ICourseInstance"
-								  supported_types="pdf csv" />
+								  supported_types="application/pdf text/csv" />
 
 	<rep:registerReport name="UserEnrollmentReport.pdf"
 						title="User Enrollment Report"
 						description="Summary user enrolled of report"
 						contexts="nti.dataserver.interfaces.IUser"
 						permission="zope.View"
-						supported_types="pdf" />
+						supported_types="application/pdf" />
 
 	<!--
 		The instructors/TA of a course (locally added to this role
