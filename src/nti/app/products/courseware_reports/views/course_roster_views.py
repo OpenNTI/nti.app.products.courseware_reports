@@ -35,17 +35,20 @@ from nti.app.products.courseware_reports.views.view_mixins import AbstractCourse
 from nti.contenttypes.courses.interfaces import ICourseInstance
 from nti.contenttypes.courses.interfaces import ICourseEnrollments
 
-from nti.dataserver.interfaces import IUser
-from nti.dataserver.users.users import User
 from nti.dataserver.users.interfaces import IFriendlyNamed
+
+from nti.dataserver.users.users import User
 
 from nti.mailer.interfaces import IEmailAddressable
 
 logger = __import__('logging').getLogger(__name__)
 
+
 class AbstractCourseRosterReport(AbstractCourseReportView):
+
     def _name(self, user, friendly_named=None):
-        displayname = component.getMultiAdapter((user, self.request), IDisplayNameGenerator)()
+        displayname = component.getMultiAdapter((user, self.request),
+                                                IDisplayNameGenerator)()
 
         if not friendly_named:
             friendly_named = IFriendlyNamed(user)

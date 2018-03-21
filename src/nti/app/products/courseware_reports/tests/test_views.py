@@ -639,7 +639,7 @@ class TestCourseRosterPDFReport(ApplicationLayerTest):
         _require_report_with_title(course_instance, "Course Roster Report")
 
         res = self.testapp.get(admin_view_href, extra_environ=instructor_environ, headers={'accept': str('application/pdf')})
-        
+
         assert_that(res, has_property('content_type', 'application/pdf'))
 
         # check others user can fetch report
@@ -804,14 +804,17 @@ class TestCourseRosterCSVReport(ApplicationLayerTest):
         self.testapp.post_json('/dataserver2/SiteAdmins/harp4162',
                                status=200)
         site_admin_environ = self._make_extra_environ(username='harp4162')
-        res = self.testapp.get(admin_view_href, extra_environ=site_admin_environ, headers={'accept': str('text/csv')})
+        res = self.testapp.get(admin_view_href,
+                               extra_environ=site_admin_environ,
+                               headers={'accept': str('text/csv')})
         assert_that(res, has_property('content_type', 'text/csv'))
 
-        res = self.testapp.get(admin_view_href, params={'format': 'txt/csv'}, extra_environ=site_admin_environ)
+        res = self.testapp.get(admin_view_href,
+                               params={'format': 'text/csv'},
+                               extra_environ=site_admin_environ)
         assert_that(res, has_property('content_type', 'text/csv'))
-        
-    @WithSharedApplicationMockDS(
-        users=True, testapp=True, default_authenticate=True)
+
+    @WithSharedApplicationMockDS(users=True, testapp=True, default_authenticate=True)
     @fudge.patch('nti.app.products.courseware_reports.views.course_roster_views.CourseRosterReportPdf._check_access')
     def test_report_completion_data_no_enrolled(self, fake_check_access):
         fake_check_access.is_callable().returns(True)
@@ -836,9 +839,8 @@ class TestCourseRosterCSVReport(ApplicationLayerTest):
                 'Name', 'User Name', 'Email',
                 'Date Enrolled',
                 'Last Seen'))
-            
-    @WithSharedApplicationMockDS(
-        users=True, testapp=True, default_authenticate=True)
+
+    @WithSharedApplicationMockDS(users=True, testapp=True, default_authenticate=True)
     @fudge.patch('nti.app.products.courseware_reports.views.course_roster_views.CourseRosterReportPdf._check_access')
     def test_report_completion_data_enrolled(self, fake_check_access):
         fake_check_access.is_callable().returns(True)
@@ -846,7 +848,7 @@ class TestCourseRosterCSVReport(ApplicationLayerTest):
         self.testapp.post_json('/dataserver2/users/sjohnson@nextthought.com/Courses/EnrolledCourses',
                                'tag:nextthought.com,2011-10:NTI-CourseInfo-Fall2013_CLC3403_LawAndJustice',
                                status=201)
-        
+
         with mock_dataserver.mock_db_trans(self.ds, site_name='platform.ou.edu'):
             obj = find_object_with_ntiid(self.course_ntiid)
 
@@ -855,9 +857,7 @@ class TestCourseRosterCSVReport(ApplicationLayerTest):
             request = DummyRequest(params={})
             request.params['remoteUser'] = User.get_user('sjohnson@nextthought.com')
 
-            csv_view = CourseRosterReportCSV(
-                context, request)
-
+            csv_view = CourseRosterReportCSV(context, request)
             response = csv_view()
 
             csv_read_buffer = StringIO(response.body)
