@@ -32,6 +32,8 @@ from nti.app.products.courseware_reports.reports import _format_datetime
 
 from nti.app.products.courseware_reports.views.view_mixins import AbstractCourseReportView
 
+from nti.contenttypes.completion.interfaces import ICourseCompletionProgress
+
 from nti.contenttypes.courses.interfaces import ICourseInstance
 from nti.contenttypes.courses.interfaces import ICourseEnrollments
 
@@ -67,6 +69,10 @@ class AbstractCourseRosterReport(AbstractCourseReportView):
                 # Deleted user
                 continue
 
+            completion = component.queryMultiAdapter((user, self.course), ICourseCompletionProgress)
+            if completion:
+                enrollRecord["completion"] = completion.course_completion()
+
             enrollRecord["username"] = user.username
 
             fn_user = IFriendlyNamed(user)
@@ -92,6 +98,7 @@ class AbstractCourseRosterReport(AbstractCourseReportView):
             enrollments.append(enrollRecord)
 
         return enrollments
+
 
 @view_config(context=ICourseInstance,
              request_method='GET',
@@ -133,6 +140,7 @@ class CourseRosterReportPdf(AbstractCourseRosterReport):
         options["enrollments"] = enrollments
         options["TotalEnrolledCount"] = enrollmentCourses.count_enrollments()
         return options
+
 
 @view_config(context=ICourseInstance,
              request_method='GET',
@@ -180,7 +188,8 @@ class CourseRosterReportCSV(AbstractCourseRosterReport):
 
         header_row = ['Name', 'User Name', 'Email',
                       'Date Enrolled',
-                      'Last Seen']
+                      'Last Seen',
+                      'Completion']
 
         def _tx_string(s):
             if s is not None and isinstance(s, six.text_type):
@@ -198,7 +207,8 @@ class CourseRosterReportCSV(AbstractCourseRosterReport):
                         record['username'],
                         record['email'],
                         record['enrollmentTime'],
-                        record['lastAccessed']]
+                        record['lastAccessed'],
+                        record['completion']]
             _write(data_row, writer, stream)
 
         stream.flush()
