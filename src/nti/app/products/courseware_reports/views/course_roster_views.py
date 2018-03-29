@@ -24,6 +24,8 @@ from zc.displayname.interfaces import IDisplayNameGenerator
 
 from nti.analytics.stats.interfaces import IActivitySource
 
+from nti.app.contenttypes.completion.adapters import CompletionContextProgressFactory
+
 from nti.app.products.courseware_reports import MessageFactory as _
 from nti.app.products.courseware_reports import VIEW_COURSE_ROSTER
 
@@ -59,6 +61,7 @@ class AbstractCourseRosterReport(AbstractCourseReportView):
 
     def _build_enrollment_info(self, enrollmentCourses):
         enrollments = []
+        required_item_providers = None
         for record in enrollmentCourses.iter_enrollments():
             enrollRecord = {}
 
@@ -66,6 +69,24 @@ class AbstractCourseRosterReport(AbstractCourseReportView):
             if user is None:
                 # Deleted user
                 continue
+
+            progress_factory = CompletionContextProgressFactory(user,
+                                                                self.course,
+                                                                required_item_providers)
+            progress = progress_factory()
+            if required_item_providers is None:
+                required_item_providers = progress_factory.required_item_providers
+
+            if progress.Completed:
+                completed_date = _adjust_date(progress.CompletedDate)
+                completed_date = _format_datetime(completed_date)
+                enrollRecord["completion"] = completed_date
+            elif progress.PercentageProgress is not None:
+                enrollRecord["completion"] = progress.PercentageProgress
+            # PercentageProgress returns None if the MaxPossibleProgress is 0
+            # or there is no defined MaxPossibleProgress
+            else:
+                enrollRecord["completion"] = u'N/A'
 
             enrollRecord["username"] = user.username
 
@@ -92,6 +113,7 @@ class AbstractCourseRosterReport(AbstractCourseReportView):
             enrollments.append(enrollRecord)
 
         return enrollments
+
 
 @view_config(context=ICourseInstance,
              request_method='GET',
@@ -133,6 +155,7 @@ class CourseRosterReportPdf(AbstractCourseRosterReport):
         options["enrollments"] = enrollments
         options["TotalEnrolledCount"] = enrollmentCourses.count_enrollments()
         return options
+
 
 @view_config(context=ICourseInstance,
              request_method='GET',
@@ -180,7 +203,8 @@ class CourseRosterReportCSV(AbstractCourseRosterReport):
 
         header_row = ['Name', 'User Name', 'Email',
                       'Date Enrolled',
-                      'Last Seen']
+                      'Last Seen',
+                      'Completion']
 
         def _tx_string(s):
             if s is not None and isinstance(s, six.text_type):
@@ -198,7 +222,8 @@ class CourseRosterReportCSV(AbstractCourseRosterReport):
                         record['username'],
                         record['email'],
                         record['enrollmentTime'],
-                        record['lastAccessed']]
+                        record['lastAccessed'],
+                        record['completion']]
             _write(data_row, writer, stream)
 
         stream.flush()

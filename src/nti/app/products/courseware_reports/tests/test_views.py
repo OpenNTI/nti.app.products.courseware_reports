@@ -716,7 +716,8 @@ class TestCourseRosterPDFReport(ApplicationLayerTest):
                                                                     has_key('username'),
                                                                     has_key('email'),
                                                                     has_key('enrollmentTime'),
-                                                                    has_key('lastAccessed'))))
+                                                                    has_key('lastAccessed'),
+                                                                    has_key('completion'))))
 
             assert_that(options['enrollments'], has_length(1))
             assert_that(options['TotalEnrolledCount'], equal_to(1))
@@ -838,7 +839,8 @@ class TestCourseRosterCSVReport(ApplicationLayerTest):
             assert_that(response_reader.fieldnames, has_items(
                 'Name', 'User Name', 'Email',
                 'Date Enrolled',
-                'Last Seen'))
+                'Last Seen',
+                'Completion'))
 
     @WithSharedApplicationMockDS(users=True, testapp=True, default_authenticate=True)
     @fudge.patch('nti.app.products.courseware_reports.views.course_roster_views.CourseRosterReportPdf._check_access')
@@ -866,10 +868,12 @@ class TestCourseRosterCSVReport(ApplicationLayerTest):
             assert_that(response_reader.fieldnames, has_items(
                 'Name', 'User Name', 'Email',
                 'Date Enrolled',
-                'Last Seen'))
+                'Last Seen',
+                'Completion'))
 
             response_rows = [row for row in response_reader]
             assert_that(response_rows, has_item(
                 has_entries('User Name', 'sjohnson@nextthought.com',
                             'Name', 'sjohnson@nextthought.com',
-                            'Email', '')))
+                            'Email', '',
+                            'Completion', 'N/A')))

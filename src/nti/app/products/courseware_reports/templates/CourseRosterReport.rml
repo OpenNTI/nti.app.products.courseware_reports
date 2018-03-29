@@ -11,7 +11,7 @@
 	</para>
 
 	<blockTable style='default'
-				colWidths="20% 20% 30% 15% 15%"
+				colWidths="18% 18% 28% 12% 12% 12%"
 				tal:condition="options/enrollments"
 				repeatRows="1">
 		<tr>
@@ -20,6 +20,7 @@
 			<td><para style="header">Email</para></td>
 			<td><para style="header">Date Enrolled</para></td>
 			<td><para style="header">Last Seen</para></td>
+			<td><para style="header">Completion</para></td>
 		</tr>
 		<tr tal:repeat="item options/enrollments">
 			<td><para style="data" tal:content="item/displayname">Name</para></td>
@@ -27,6 +28,7 @@
 			<td><para style="data" tal:content="item/email">Email</para></td>
 			<td align="left" tal:content="item/enrollmentTime | default">Enrollment Time</td>
 			<td align="left" tal:content="item/lastAccessed | default">Last Seen</td>
+			<td align="left" tal:content="item/completion">Completion</td>
 		</tr>
 	</blockTable>
 
