@@ -75,7 +75,8 @@ class AbstractCourseRosterReport(AbstractCourseReportView):
                 enrollRecord["completion"] = completion.CompletedDate
             elif completion and completion.PercentageProgress:
                 enrollRecord["completion"] = completion.PercentageProgress
-            else:  # PercentageProgress returns None if the MaxPossibleProgress is 0
+            # PercentageProgress returns None if the MaxPossibleProgress is 0 or there is no defined MaxPossibleProgress
+            else:
                 enrollRecord["completion"] = u'N/A'
 
             enrollRecord["username"] = user.username
