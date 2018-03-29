@@ -840,7 +840,7 @@ class TestCourseRosterCSVReport(ApplicationLayerTest):
                 'Name', 'User Name', 'Email',
                 'Date Enrolled',
                 'Last Seen',
-                'Completion'))
+                'Course Progress (%s)'))
 
     @WithSharedApplicationMockDS(users=True, testapp=True, default_authenticate=True)
     @fudge.patch('nti.app.products.courseware_reports.views.course_roster_views.CourseRosterReportPdf._check_access')
@@ -869,11 +869,11 @@ class TestCourseRosterCSVReport(ApplicationLayerTest):
                 'Name', 'User Name', 'Email',
                 'Date Enrolled',
                 'Last Seen',
-                'Completion'))
+                'Course Progress (%s)'))
 
             response_rows = [row for row in response_reader]
             assert_that(response_rows, has_item(
                 has_entries('User Name', 'sjohnson@nextthought.com',
                             'Name', 'sjohnson@nextthought.com',
                             'Email', '',
-                            'Completion', 'N/A')))
+                            'Course Progress (%s)', 'N/A')))

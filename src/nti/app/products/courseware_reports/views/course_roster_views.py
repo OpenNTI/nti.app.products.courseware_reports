@@ -204,7 +204,7 @@ class CourseRosterReportCSV(AbstractCourseRosterReport):
         header_row = ['Name', 'User Name', 'Email',
                       'Date Enrolled',
                       'Last Seen',
-                      'Completion']
+                      'Course Progress (%s)']
 
         def _tx_string(s):
             if s is not None and isinstance(s, six.text_type):
