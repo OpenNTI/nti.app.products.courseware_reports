@@ -32,7 +32,7 @@ from nti.app.products.courseware_reports.reports import _format_datetime
 
 from nti.app.products.courseware_reports.views.view_mixins import AbstractCourseReportView
 
-from nti.contenttypes.completion.interfaces import ICourseCompletionProgress
+from nti.contenttypes.completion.interfaces import IProgress
 
 from nti.contenttypes.courses.interfaces import ICourseInstance
 from nti.contenttypes.courses.interfaces import ICourseEnrollments
@@ -69,9 +69,14 @@ class AbstractCourseRosterReport(AbstractCourseReportView):
                 # Deleted user
                 continue
 
-            completion = component.queryMultiAdapter((user, self.course), ICourseCompletionProgress)
-            if completion:
-                enrollRecord["completion"] = completion.course_completion()
+            completion = component.queryMultiAdapter((user, self.course), IProgress)
+
+            if completion and completion.Completed:
+                enrollRecord["completion"] = completion.CompletedDate
+            elif completion and completion.PercentageProgress:
+                enrollRecord["completion"] = completion.PercentageProgress
+            else:  # PercentageProgress returns None if the MaxPossibleProgress is 0
+                enrollRecord["completion"] = u'N/A'
 
             enrollRecord["username"] = user.username
 
