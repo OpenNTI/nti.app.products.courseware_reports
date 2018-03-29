@@ -24,6 +24,8 @@ from zc.displayname.interfaces import IDisplayNameGenerator
 
 from nti.analytics.stats.interfaces import IActivitySource
 
+from nti.app.contenttypes.completion.adapters import CompletionContextProgressFactory
+
 from nti.app.products.courseware_reports import MessageFactory as _
 from nti.app.products.courseware_reports import VIEW_COURSE_ROSTER
 
@@ -31,8 +33,6 @@ from nti.app.products.courseware_reports.reports import _adjust_date
 from nti.app.products.courseware_reports.reports import _format_datetime
 
 from nti.app.products.courseware_reports.views.view_mixins import AbstractCourseReportView
-
-from nti.contenttypes.completion.interfaces import IProgress
 
 from nti.contenttypes.courses.interfaces import ICourseInstance
 from nti.contenttypes.courses.interfaces import ICourseEnrollments
@@ -61,6 +61,7 @@ class AbstractCourseRosterReport(AbstractCourseReportView):
 
     def _build_enrollment_info(self, enrollmentCourses):
         enrollments = []
+        required_item_providers = None
         for record in enrollmentCourses.iter_enrollments():
             enrollRecord = {}
 
@@ -69,13 +70,21 @@ class AbstractCourseRosterReport(AbstractCourseReportView):
                 # Deleted user
                 continue
 
-            completion = component.queryMultiAdapter((user, self.course), IProgress)
+            progress_factory = CompletionContextProgressFactory(user,
+                                                                self.course,
+                                                                required_item_providers)
+            progress = progress_factory()
+            if required_item_providers is None:
+                required_item_providers = progress_factory.required_item_providers
 
-            if completion and completion.Completed:
-                enrollRecord["completion"] = completion.CompletedDate
-            elif completion and completion.PercentageProgress:
-                enrollRecord["completion"] = completion.PercentageProgress
-            # PercentageProgress returns None if the MaxPossibleProgress is 0 or there is no defined MaxPossibleProgress
+            if progress.Completed:
+                completed_date = _adjust_date(progress.CompletedDate)
+                completed_date = _format_datetime(completed_date)
+                enrollRecord["completion"] = completed_date
+            elif progress.PercentageProgress is not None:
+                enrollRecord["completion"] = progress.PercentageProgress
+            # PercentageProgress returns None if the MaxPossibleProgress is 0
+            # or there is no defined MaxPossibleProgress
             else:
                 enrollRecord["completion"] = u'N/A'
 
