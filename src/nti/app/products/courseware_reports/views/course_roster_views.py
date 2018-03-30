@@ -101,7 +101,8 @@ class AbstractCourseRosterReport(AbstractCourseReportView):
             if record.createdTime:
                 time = datetime.fromtimestamp(record.createdTime)
                 enrollment_time = _adjust_date(time)
-                enrollRecord["enrollmentTime"] = _format_datetime(enrollment_time)
+                enrollment_time = enrollment_time.strftime("%Y-%m-%d")
+                enrollRecord["enrollmentTime"] = enrollment_time
 
             accessed_time = enrollment_time
             activity_source = component.queryMultiAdapter((user, self.course), IActivitySource)

@@ -11,7 +11,7 @@
 	</para>
 
 	<blockTable style='default'
-				colWidths="15% 15% 22% 17% 17% 14%"
+				colWidths="15% 15% 22% 13% 15% 20%"
 				tal:condition="options/enrollments"
 				repeatRows="1">
 		<tr>
