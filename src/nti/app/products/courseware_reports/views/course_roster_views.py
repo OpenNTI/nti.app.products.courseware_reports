@@ -79,10 +79,11 @@ class AbstractCourseRosterReport(AbstractCourseReportView):
 
             if progress.Completed:
                 completed_date = _adjust_date(progress.CompletedDate)
-                completed_date = _format_datetime(completed_date)
+                completed_date = completed_date.strftime("%Y-%m-%d")
                 enrollRecord["completion"] = completed_date
             elif progress.PercentageProgress is not None:
-                enrollRecord["completion"] = progress.PercentageProgress
+                percent = int(progress.PercentageProgress * 100)
+                enrollRecord["completion"] = percent
             # PercentageProgress returns None if the MaxPossibleProgress is 0
             # or there is no defined MaxPossibleProgress
             else:
