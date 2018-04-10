@@ -109,10 +109,12 @@ class TestInstructorReport(ReportsLayerTest):
         response_dict = json.loads(admin_courses.body)
 
         assert_that(response_dict, has_entry("Items", not_none()))
-        assert_that(response_dict["Items"],
-                    has_item(has_entry("CourseInstance", not_none())))
+        entry_res = response_dict["Items"][0]
+        course_rel = self.require_link_href_with_rel(entry_res, 'CourseInstance')
+        course_res = self.testapp.get(course_rel, extra_environ=instructor_environ)
+        course_res = course_res.json_body
 
-        assert_that(response_dict["Items"][0]["CourseInstance"],
+        assert_that(course_res,
                     has_entry("Links",
                               has_item(has_entry("rel", "report-AnotherTestReport"))))
 

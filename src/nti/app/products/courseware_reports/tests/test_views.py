@@ -88,8 +88,7 @@ class TestStudentParticipationReport(ApplicationLayerTest):
     default_origin = b'http://janux.ou.edu'
     course_ntiid = 'tag:nextthought.com,2011-10:OU-HTML-CLC3403_LawAndJustice.course_info'
 
-    @WithSharedApplicationMockDS(
-        users=True, testapp=True, default_authenticate=True)
+    @WithSharedApplicationMockDS(users=True, testapp=True, default_authenticate=True)
     def test_application_view_empty_report(self):
         # Trivial test to make sure we can fetch the report even with
         # no data.
@@ -102,8 +101,10 @@ class TestStudentParticipationReport(ApplicationLayerTest):
                                          extra_environ=instructor_environ)
 
         # Get our student from the roster
-        course_instance = admin_courses.json_body.get(
-            'Items')[0].get('CourseInstance')
+        entry_res = admin_courses.json_body["Items"][0]
+        course_rel = self.require_link_href_with_rel(entry_res, 'CourseInstance')
+        course_res = self.testapp.get(course_rel, extra_environ=instructor_environ)
+        course_instance = course_res.json_body
         roster_link = self.require_link_href_with_rel(
             course_instance, 'CourseEnrollmentRoster')
         sj_enrollment = self.testapp.get(roster_link,
@@ -208,8 +209,7 @@ class TestInquiryReport(ApplicationLayerTest):
 
     poll_ntiid = "tag:nextthought.com,2011-10:OU-NAQ-CLC3403_LawAndJustice.naq.pollid.aristotle.1"
 
-    @WithSharedApplicationMockDS(
-        users=True, testapp=True, default_authenticate=True)
+    @WithSharedApplicationMockDS(users=True, testapp=True, default_authenticate=True)
     def test_link(self):
         instructor_environ = self._make_extra_environ(username='harp4162')
         res = self.testapp.get('/dataserver2/Objects/' + self.poll_ntiid,
@@ -230,9 +230,9 @@ class TestInquiryReport(ApplicationLayerTest):
         res = self.testapp.post_json('/dataserver2/users/' + self.default_username + '/Courses/EnrolledCourses',
                                      self.COURSE_NTIID,
                                      status=201)
-
-        course_inquiries_link = self.require_link_href_with_rel(
-            res.json_body['CourseInstance'], 'CourseInquiries')
+        course_rel = self.require_link_href_with_rel(res.json_body, 'CourseInstance')
+        course_res = self.testapp.get(course_rel).json_body
+        course_inquiries_link = self.require_link_href_with_rel(course_res, 'CourseInquiries')
 
         submission_href = '%s/%s' % (course_inquiries_link, self.poll_ntiid)
 
@@ -260,8 +260,10 @@ class TestForumParticipationReport(ApplicationLayerTest):
                                                 'tag:nextthought.com,2011-10:NTI-CourseInfo-Fall2013_CLC3403_LawAndJustice',
                                                 status=201)
 
-        board_href = enrollment_res.json_body[
-            'CourseInstance']['Discussions']['href']
+        course_rel = self.require_link_href_with_rel(enrollment_res.json_body,
+                                                     'CourseInstance')
+        course_res = self.testapp.get(course_rel).json_body
+        board_href = course_res['Discussions']['href']
         forum_href = board_href + '/Forum'
         instructor_environ = self._make_extra_environ(username='harp4162')
 
@@ -285,8 +287,10 @@ class TestTopicParticipationReport(ApplicationLayerTest):
                                                 'tag:nextthought.com,2011-10:NTI-CourseInfo-Fall2013_CLC3403_LawAndJustice',
                                                 status=201)
 
-        board_href = enrollment_res.json_body[
-            'CourseInstance']['Discussions']['href']
+        course_rel = self.require_link_href_with_rel(enrollment_res.json_body,
+                                                     'CourseInstance')
+        course_res = self.testapp.get(course_rel).json_body
+        board_href = course_res['Discussions']['href']
         forum_href = board_href + '/Forum'
         instructor_environ = self._make_extra_environ(username='harp4162')
 
@@ -305,8 +309,7 @@ class TestCourseSummaryReport(ApplicationLayerTest):
 
     default_origin = b'http://janux.ou.edu'
 
-    @WithSharedApplicationMockDS(
-        users=True, testapp=True, default_authenticate=True)
+    @WithSharedApplicationMockDS(users=True, testapp=True, default_authenticate=True)
     def test_application_view_empty_report(self):
         # Trivial test to make sure we can fetch the report even with
         # no data.
@@ -314,8 +317,10 @@ class TestCourseSummaryReport(ApplicationLayerTest):
         admin_courses = self.testapp.get('/dataserver2/users/harp4162/Courses/AdministeredCourses/',
                                          extra_environ=instructor_environ)
 
-        course = admin_courses.json_body.get('Items')[0].get('CourseInstance')
-
+        entry_res = admin_courses.json_body.get('Items')[0]
+        course_rel = self.require_link_href_with_rel(entry_res,
+                                                     'CourseInstance')
+        course = self.testapp.get(course_rel).json_body
         report_href = self.require_link_href_with_rel(
             course, 'report-' + VIEW_COURSE_SUMMARY)
 
@@ -510,7 +515,7 @@ class TestStudentParticipationCSV(ApplicationLayerTest):
 
             # TODO: add tests for self-assessments
 
-    def _fake_get_grade_from_assignment(self, assignment, user_histories):
+    def _fake_get_grade_from_assignment(self, assignment, unused_user_histories):
         return assignment.grade
 
 class TestUserEnrollmentReport(ApplicationLayerTest):
@@ -616,8 +621,7 @@ class TestCourseRosterPDFReport(ApplicationLayerTest):
     default_origin = b'http://janux.ou.edu'
     course_ntiid = 'tag:nextthought.com,2011-10:OU-HTML-CLC3403_LawAndJustice.course_info'
 
-    @WithSharedApplicationMockDS(
-        users=True, testapp=True, default_authenticate=True)
+    @WithSharedApplicationMockDS(users=True, testapp=True, default_authenticate=True)
     def test_application_view_empty_report(self):
         def report_with_rel(ext_obj, rel):
             for lnk in ext_obj.get('Reports', ()):
@@ -626,19 +630,23 @@ class TestCourseRosterPDFReport(ApplicationLayerTest):
                         return lnk['href']
 
         # check admin can fetch report
-        instructor_environ = self._make_extra_environ(username='sjohnson@nextthought.com')
+        admin_environ = self._make_extra_environ(username='sjohnson@nextthought.com')
         admin_courses = self.testapp.get('/dataserver2/users/sjohnson@nextthought.com/Courses/AdministeredCourses/',
-                                         extra_environ=instructor_environ)
+                                         extra_environ=admin_environ)
 
-        course_instance = admin_courses.json_body.get(
-            'Items')[0].get('CourseInstance')
+        entry_res = admin_courses.json_body.get('Items')[0]
+        course_rel = self.require_link_href_with_rel(entry_res,
+                                                     'CourseInstance')
+        course_instance = self.testapp.get(course_rel).json_body
 
         admin_view_href = report_with_rel(
             course_instance, 'report-%s' % VIEW_COURSE_ROSTER)
 
         _require_report_with_title(course_instance, "Course Roster Report")
 
-        res = self.testapp.get(admin_view_href, extra_environ=instructor_environ, headers={'accept': str('application/pdf')})
+        res = self.testapp.get(admin_view_href,
+                               extra_environ=admin_environ,
+                               headers={'accept': str('application/pdf')})
 
         assert_that(res, has_property('content_type', 'application/pdf'))
 
@@ -647,8 +655,10 @@ class TestCourseRosterPDFReport(ApplicationLayerTest):
         admin_courses = self.testapp.get('/dataserver2/users/harp4162/Courses/AdministeredCourses/',
                                          extra_environ=instructor_environ)
 
-        course_instance = admin_courses.json_body.get(
-                                                    'Items')[0].get('CourseInstance')
+        entry_res = admin_courses.json_body.get('Items')[0]
+        course_rel = self.require_link_href_with_rel(entry_res,
+                                                     'CourseInstance')
+        course_instance = self.testapp.get(course_rel, extra_environ=instructor_environ).json_body
 
         admin_view_href = report_with_rel(course_instance, 'report-%s' % VIEW_COURSE_ROSTER)
 
@@ -663,8 +673,7 @@ class TestCourseRosterPDFReport(ApplicationLayerTest):
         res = self.testapp.get(admin_view_href, extra_environ=site_admin_environ, headers={'accept': str('application/pdf')})
         assert_that(res, has_property('content_type', 'application/pdf'))
 
-    @WithSharedApplicationMockDS(
-        users=True, testapp=True, default_authenticate=True)
+    @WithSharedApplicationMockDS(users=True, testapp=True, default_authenticate=True)
     @fudge.patch('nti.app.products.courseware_reports.views.course_roster_views.CourseRosterReportPdf._check_access')
     def test_report_completion_data_no_enrolled(self, fake_check_access):
         fake_check_access.is_callable().returns(True)
@@ -687,8 +696,7 @@ class TestCourseRosterPDFReport(ApplicationLayerTest):
                                     'enrollments', [],
                                     'TotalEnrolledCount', 0))
 
-    @WithSharedApplicationMockDS(
-        users=True, testapp=True, default_authenticate=True)
+    @WithSharedApplicationMockDS(users=True, testapp=True, default_authenticate=True)
     @fudge.patch('nti.app.products.courseware_reports.views.course_roster_views.CourseRosterReportPdf._check_access')
     def test_report_completion_data_enrolled(self, fake_check_access):
         fake_check_access.is_callable().returns(True)
@@ -728,8 +736,7 @@ class TestSelfAssessmentCSVReport(ApplicationLayerTest):
     default_origin = b'http://janux.ou.edu'
     course_ntiid = 'tag:nextthought.com,2011-10:OU-HTML-CLC3403_LawAndJustice.course_info'
 
-    @WithSharedApplicationMockDS(
-        users=True, testapp=True, default_authenticate=True)
+    @WithSharedApplicationMockDS(users=True, testapp=True, default_authenticate=True)
     def test_application_view_empty_report(self):
 
         with mock_dataserver.mock_db_trans(self.ds, site_name='platform.ou.edu'):
@@ -771,19 +778,23 @@ class TestCourseRosterCSVReport(ApplicationLayerTest):
                         return lnk['href']
 
         # check admin can fetch report
-        instructor_environ = self._make_extra_environ(username='sjohnson@nextthought.com')
+        admin_environ = self._make_extra_environ(username='sjohnson@nextthought.com')
         admin_courses = self.testapp.get('/dataserver2/users/sjohnson@nextthought.com/Courses/AdministeredCourses/',
-                                         extra_environ=instructor_environ)
+                                         extra_environ=admin_environ)
 
-        course_instance = admin_courses.json_body.get(
-            'Items')[0].get('CourseInstance')
+        entry_res = admin_courses.json_body.get('Items')[0]
+        course_rel = self.require_link_href_with_rel(entry_res,
+                                                     'CourseInstance')
+        course_instance = self.testapp.get(course_rel, extra_environ=admin_environ).json_body
 
         admin_view_href = report_with_rel(
             course_instance, 'report-%s' % VIEW_COURSE_ROSTER)
 
         _require_report_with_title(course_instance, "Course Roster Report")
 
-        res = self.testapp.get(admin_view_href, extra_environ=instructor_environ, headers={'accept': str('text/csv')})
+        res = self.testapp.get(admin_view_href,
+                               extra_environ=admin_environ,
+                               headers={'accept': str('text/csv')})
 
         assert_that(res, has_property('content_type', 'text/csv'))
 
@@ -792,8 +803,10 @@ class TestCourseRosterCSVReport(ApplicationLayerTest):
         admin_courses = self.testapp.get('/dataserver2/users/harp4162/Courses/AdministeredCourses/',
                                          extra_environ=instructor_environ)
 
-        course_instance = admin_courses.json_body.get(
-            'Items')[0].get('CourseInstance')
+        entry_res = admin_courses.json_body.get('Items')[0]
+        course_rel = self.require_link_href_with_rel(entry_res,
+                                                     'CourseInstance')
+        course_instance = self.testapp.get(course_rel, extra_environ=instructor_environ).json_body
 
         admin_view_href = report_with_rel(course_instance, 'report-%s' % VIEW_COURSE_ROSTER)
 
