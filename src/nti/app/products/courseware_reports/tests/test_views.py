@@ -545,8 +545,16 @@ class TestUserEnrollmentReport(ApplicationLayerTest):
 
         _require_link_with_title(report_links, "User Enrollment Report")
 
-        res = self.testapp.get(admin_view_href, extra_environ=user_environ)
+        res = self.testapp.get(admin_view_href,
+                               extra_environ=user_environ,
+                               headers={'accept': str('application/pdf')})
         assert_that(res, has_property('content_type', 'application/pdf'))
+
+        # CSV
+        res = self.testapp.get(admin_view_href,
+                               extra_environ=user_environ,
+                               headers={'accept': str('text/csv')})
+        assert_that(res, has_property('content_type', 'text/csv'))
 
         # other users fetch user
         instructor_environ = self._make_extra_environ(username='harp4162')
@@ -560,14 +568,22 @@ class TestUserEnrollmentReport(ApplicationLayerTest):
                                             'report-%s' % VIEW_USER_ENROLLMENT)
 
         assert_that(view_href,
-                    described_as("A link with rel %0", is_(none()), 'report-%s' % VIEW_USER_ENROLLMENT))
+                    described_as("A link with rel %0",
+                                 is_(none()), 'report-%s' % VIEW_USER_ENROLLMENT))
 
         # site-admin fetch report
         self.testapp.post_json('/dataserver2/SiteAdmins/harp4162',
                                status=200)
         site_admin_environ = self._make_extra_environ(username='harp4162')
-        res = self.testapp.get(admin_view_href, extra_environ=site_admin_environ)
+        res = self.testapp.get(admin_view_href,
+                               extra_environ=site_admin_environ,
+                               params={'format': 'application/pdf'})
         assert_that(res, has_property('content_type', 'application/pdf'))
+
+        res = self.testapp.get(admin_view_href,
+                               params={'format': 'text/csv'},
+                               extra_environ=site_admin_environ)
+        assert_that(res, has_property('content_type', 'text/csv'))
 
     @WithSharedApplicationMockDS(
                 users=True, testapp=True, default_authenticate=True)
@@ -664,7 +680,8 @@ class TestCourseRosterPDFReport(ApplicationLayerTest):
 
         _require_report_with_title(course_instance, "Course Roster Report")
 
-        self.testapp.get(admin_view_href, extra_environ=instructor_environ, headers={'accept': str('application/pdf')})
+        self.testapp.get(admin_view_href, extra_environ=instructor_environ,
+                         headers={'accept': str('application/pdf')})
 
         # site-admin fetch report
         self.testapp.post_json('/dataserver2/SiteAdmins/harp4162',
@@ -812,7 +829,9 @@ class TestCourseRosterCSVReport(ApplicationLayerTest):
 
         _require_report_with_title(course_instance, "Course Roster Report")
 
-        self.testapp.get(admin_view_href, extra_environ=instructor_environ, headers={'accept': str('text/csv')})
+        self.testapp.get(admin_view_href,
+                         extra_environ=instructor_environ,
+                         headers={'accept': str('text/csv')})
 
         # site-admin fetch report
         self.testapp.post_json('/dataserver2/SiteAdmins/harp4162',
