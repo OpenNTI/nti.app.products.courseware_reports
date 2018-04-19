@@ -28,7 +28,7 @@
 			<td><para style="data" tal:content="item/email">Email</para></td>
 			<td align="left" tal:content="item/enrollmentTime | default">Enrollment Time</td>
 			<td align="left" tal:content="item/lastAccessed | default">Last Seen</td>
-			<td align="left" tal:content="item/completion">Completion</td>
+			<td align="right" tal:content="item/completion">Completion</td>
 		</tr>
 	</blockTable>
 

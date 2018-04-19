@@ -107,7 +107,7 @@
 								  title="Course Summary Report"
 								  description="Course summary of student engagement and assessment"
 								  contexts="nti.contenttypes.courses.interfaces.ICourseInstance"
-								  supported_types="pdf" />
+								  supported_types="application/pdf" />
 
 	<rep:registerInstructorReport name="AssignmentSummaryReport.pdf"
 								  title="Assignment Summary Report"
@@ -145,7 +145,7 @@
 								  contexts="nti.assessment.interfaces.IQInquiry
 								  			nti.contenttypes.presentation.interfaces.INTIInquiryRef"
 								  supported_types="application/pdf" />
-	
+
 	<rep:registerInstructorReport name="CourseRosterReport"
 								  title="Course Roster Report"
 								  description="Course summary of student enrollment"
@@ -157,7 +157,7 @@
 						description="Summary user enrolled of report"
 						contexts="nti.dataserver.interfaces.IUser"
 						permission="zope.View"
-						supported_types="application/pdf" />
+						supported_types="application/pdf text/csv" />
 
 	<!--
 		The instructors/TA of a course (locally added to this role
@@ -362,7 +362,7 @@
 		template="templates/UserEnrollmentReport.rml"
 		for=".views.user_views.UserEnrollmentReportPdf"
 		layer="pyramid.interfaces.IRequest" />
-	
+
 	<browser:viewlet
 		name="user_enrollment_provider"
 		template="templates/user_enrollment_provider.rml"
@@ -384,7 +384,7 @@
 		layer="pyramid.interfaces.IRequest"
 		permission="zope.Public"
 		manager=".interfaces.IPDFReportHeaderManager" />
-	
+
 	<!-- Default macros for the reports -->
 	<!--
 		 NOTE: There is probably a better, more modern way
