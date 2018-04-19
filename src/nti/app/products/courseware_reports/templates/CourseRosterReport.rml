@@ -20,7 +20,7 @@
 			<td><para style="header">Email</para></td>
 			<td><para style="header">Date Enrolled</para></td>
 			<td><para style="header">Last Seen</para></td>
-			<td><para style="header">Course Progress (%)</para></td>
+			<td><para style="header_r">Course Progress (%)</para></td>
 		</tr>
 		<tr tal:repeat="item options/enrollments">
 			<td><para style="data" tal:content="item/displayname">Name</para></td>
