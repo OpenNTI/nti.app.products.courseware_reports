@@ -114,7 +114,7 @@ class AbstractUserEnrollmentView(AbstractReportView):
                 enrollment["completion"] = completed_date
             elif progress.PercentageProgress is not None:
                 percent = int(progress.PercentageProgress * 100)
-                enrollment["completion"] = percent
+                enrollment["completion"] = '%s%' % percent
             # PercentageProgress returns None if the MaxPossibleProgress is 0
             # or there is no defined MaxPossibleProgress
             else:

@@ -83,7 +83,7 @@ class AbstractCourseRosterReport(AbstractCourseReportView):
                 enrollRecord["completion"] = completed_date
             elif progress.PercentageProgress is not None:
                 percent = int(progress.PercentageProgress * 100)
-                enrollRecord["completion"] = percent
+                enrollRecord["completion"] = '%s%' % percent
             # PercentageProgress returns None if the MaxPossibleProgress is 0
             # or there is no defined MaxPossibleProgress
             else:
