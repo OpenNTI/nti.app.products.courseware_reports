@@ -486,8 +486,9 @@ _AssignmentStat = namedtuple('_AssignmentStat',
 							  'non_credit_avg_grade', 'median_grade', 'std_dev_grade',
 							  'attempted_perc', 'for_credit_attempted_perc', 'non_credit_attempted_perc' ))
 
-def _assignment_stat_for_column(report, column, predicate=None):
+def _assignment_stat_for_column(report, column, predicate=None, assignment=None):
 	count = len(column)
+	title = getattr(assignment, 'title', '') or column.displayName
 
 	for_credit_keys = report.for_credit_student_usernames
 	non_credit_keys = report.open_student_usernames
@@ -588,7 +589,7 @@ def _assignment_stat_for_column(report, column, predicate=None):
 	else:
 		non_credit_per_s = 'N/A'
 
-	stat = _AssignmentStat( column.displayName, count, column.DueDate, total,
+	stat = _AssignmentStat( title, count, column.DueDate, total,
 							for_credit_total, non_credit_total,
 							avg_grade_s, for_credit_avg_grade_s,
 							non_credit_avg_grade_s,
