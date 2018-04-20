@@ -16,6 +16,8 @@ from docutils.utils import roman
 from zope import interface
 from zope import component
 
+from zope.cachedescriptors.property import Lazy
+
 from pyramid.view import view_config
 
 from nti.app.assessment.interfaces import IUsersCourseAssignmentHistoryItem
@@ -61,12 +63,16 @@ class AssignmentSummaryReportPdf(AbstractCourseReportView):
 		options['count_total'] = options['count_for_credit'] + options['count_open']
 
 	def _build_assignment_data(self, options):
-		stats = [_assignment_stat_for_column(self, self.context)]
+		stats = [_assignment_stat_for_column(self, self.context,
+											 assignment=self.assignment)]
 		options['assignment_data'] = stats
 
+	@Lazy
+	def assignment(self):
+		return component.queryUtility(IQAssignment, name=self.context.AssignmentId)
+
 	def _build_question_data(self, options):
-		assignment = component.queryUtility(IQAssignment, name=self.context.AssignmentId)
-		if assignment is None:
+		if self.assignment is None:
 			# Maybe this is something without an assignment, like Attendance?
 			options['question_stats'] = None
 			return
@@ -75,7 +81,7 @@ class AssignmentSummaryReportPdf(AbstractCourseReportView):
 		# - We might get this for free since we store our questions by ntiids.
 		qids_to_q = {}
 		ordered_questions = []
-		for apart in assignment.parts:
+		for apart in self.assignment.parts:
 			for q in apart.question_set.Items:
 				ordered_questions.append(q)
 				qids_to_q[q.ntiid] = q
