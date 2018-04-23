@@ -332,7 +332,7 @@ class CourseSummaryReportPdf(AbstractCourseReportView):
             column = gradebook.getColumnForAssignmentId(asg.ntiid)
             if column is not None:
                 stats.append(
-                    _assignment_stat_for_column(self, column, predicate))
+                    _assignment_stat_for_column(self, column, predicate, assignment=asg))
 
         stats.sort(key=lambda x: (x.due_date is None, x.due_date, x.title))
         return stats
