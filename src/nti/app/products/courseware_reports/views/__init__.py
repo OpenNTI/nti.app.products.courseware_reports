@@ -4,16 +4,14 @@
 .. $Id$
 """
 
-from __future__ import print_function, unicode_literals, absolute_import, division
-__docformat__ = "restructuredtext en"
-
-logger = __import__('logging').getLogger(__name__)
-
-from .. import MessageFactory as _
+from __future__ import division
+from __future__ import print_function
+from __future__ import absolute_import
 
 import six
 import time
 import isodate
+
 from datetime import date
 from datetime import datetime
 
@@ -25,11 +23,15 @@ from zope.location.interfaces import IContained
 
 from zope.traversing.interfaces import IPathAdapter
 
+from nti.app.products.courseware_reports import MessageFactory as _
+
+logger = __import__('logging').getLogger(__name__)
+
 ALL_USERS = 'ALL_USERS'
 
-CHART_COLORS = ['#1abc9c', '#3498db', '#3f5770', '#e74c3c', '#af7ac4', '#f1c40f',
-				'#e67e22', '#bcd3c7', '#16a085', '#e364ae', '#c0392b', '#2980b9',
-				'#8e44ad' ]
+CHART_COLORS = [u'#1abc9c', u'#3498db', u'#3f5770', u'#e74c3c', u'#af7ac4', u'#f1c40f',
+				u'#e67e22', u'#bcd3c7', u'#16a085', u'#e364ae', u'#c0392b', u'#2980b9',
+				u'#8e44ad' ]
 
 FORUM_OBJECT_MIMETYPES = ['application/vnd.nextthought.forums.generalforumcomment',
 						  'application/vnd.nextthought.forums.communityforumcomment',
@@ -39,12 +41,14 @@ FORUM_OBJECT_MIMETYPES = ['application/vnd.nextthought.forums.generalforumcommen
 ENGAGEMENT_OBJECT_MIMETYPES = ['application/vnd.nextthought.note',
 							   'application/vnd.nextthought.highlight']
 
+
 # XXX: Fix a unicode decode issue.
 # TODO: Make this a formal patch
 import reportlab.platypus.paragraph
 class _SplitText(unicode):
 	pass
 reportlab.platypus.paragraph._SplitText = _SplitText
+
 
 @interface.implementer(IPathAdapter, IContained)
 class ReportAdapter(Contained):
@@ -56,12 +60,14 @@ class ReportAdapter(Contained):
 		self.request = request
 		self.__parent__ = context
 
+
 def is_valid_timestamp(ts):
 	try:
 		ts = float(ts)
 		return ts >= 0
 	except (TypeError, ValueError):
 		return False
+
 
 def parse_datetime(t, safe=False):
 	try:

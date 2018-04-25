@@ -49,6 +49,8 @@ from nti.contenttypes.courses.interfaces import ES_CREDIT
 from nti.contenttypes.courses.interfaces import ICourseInstance
 from nti.contenttypes.courses.interfaces import ICourseCatalogEntry
 
+from nti.dataserver.authorization import is_admin_or_site_admin
+
 from nti.dataserver.interfaces import IDeletedObjectPlaceholder
 from nti.dataserver.interfaces import IEnumerableEntityContainer
 from nti.dataserver.interfaces import IUsernameSubstitutionPolicy
@@ -60,8 +62,6 @@ from nti.dataserver.users.interfaces import IFriendlyNamed
 from nti.dataserver.users.users import User
 
 from nti.zope_catalog.interfaces import IDeferredCatalog
-
-from nti.dataserver.authorization import is_admin_or_site_admin
 
 logger = __import__('logging').getLogger(__name__)
 
@@ -128,6 +128,12 @@ class AbstractReportView(AbstractAuthenticatedView,
 
         if request.view_name:
             self.filename = request.view_name
+
+    def generate_footer(self):
+        date = _adjust_date(datetime.utcnow())
+        date = date.strftime('%b %d, %Y %I:%M %p')
+        title = self.report_title
+        return "%s %s" % (title, date)
 
     @Lazy
     def md_catalog(self):

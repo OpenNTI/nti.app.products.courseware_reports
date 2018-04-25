@@ -11,9 +11,17 @@ from __future__ import absolute_import
 from zope import interface
 from zope import component
 
+from zope.cachedescriptors.property import Lazy
+
+from zope.location.interfaces import ILocation
+
 from nti.app.assessment.common.submissions import has_submissions
 
 from nti.app.contenttypes.reports.reports import DefaultReportLinkProvider
+
+from nti.app.products.courseware.interfaces import ICoursesWorkspace
+
+from nti.app.products.courseware_reports import VIEW_ALL_COURSE_ROSTER
 
 from nti.app.products.courseware_reports import MessageFactory as _
 
@@ -21,13 +29,18 @@ from nti.app.products.courseware_reports.utils import find_course_for_user
 
 from nti.app.products.gradebook.interfaces import IGradeBook
 
+from nti.app.renderers.decorators import AbstractAuthenticatedRequestAwareDecorator
+
 from nti.assessment.interfaces import IQInquiry
 
+from nti.contenttypes.courses.interfaces import ICourseCatalog
 from nti.contenttypes.courses.interfaces import ICourseInstance
 
 from nti.contenttypes.courses.utils import get_course_enrollments
 
 from nti.contenttypes.reports.interfaces import IReportAvailablePredicate
+
+from nti.dataserver.authorization import is_admin_or_site_admin
 
 from nti.links.links import Link
 
@@ -37,6 +50,11 @@ from nti.dataserver.authorization import is_site_admin
 from nti.dataserver.authorization import is_admin
 
 from nti.dataserver.interfaces import ISiteAdminUtility
+
+from nti.externalization.interfaces import StandardExternalFields
+from nti.externalization.interfaces import IExternalObjectDecorator
+
+LINKS = StandardExternalFields.LINKS
 
 logger = __import__('logging').getLogger(__name__)
 
@@ -126,14 +144,15 @@ class UserEnrollmentPredicate(object):
 
     def evaluate(self, unused_report, context, user):
         result = False
-        
+
         if is_admin(user) or context == user:
             result = True
         elif is_site_admin(user):
             admin_utility = component.getUtility(ISiteAdminUtility)
             result = admin_utility.can_administer_user(user, context)
-    
+
         return result
+
 
 """
 Link providers that, given a context, will define the proper link
@@ -177,3 +196,31 @@ class InquiryLinkProvider(AbstractFromCourseLinkProvider):
                     rel=rel,
                     elements=elements,
                     title=_(report.title))
+
+
+@component.adapter(ICoursesWorkspace)
+@interface.implementer(IExternalObjectDecorator)
+class _CourseWorkspaceReportDecorator(AbstractAuthenticatedRequestAwareDecorator):
+    """
+    A decorator that provides the all course roster link on the catalog.
+    Ideally, this would be decorated automatically as some `global` report,
+    for contexts that do not get externalized.
+    """
+
+    @Lazy
+    def catalog(self):
+        return component.queryUtility(ICourseCatalog)
+
+    def _predicate(self, unused_context, unused_result):
+        return self.catalog is not None \
+           and is_admin_or_site_admin(self.remoteUser)
+
+    def _do_decorate_external(self, context, result):
+        _links = result.setdefault(LINKS, [])
+        link = Link(self.catalog,
+                    rel=VIEW_ALL_COURSE_ROSTER,
+                    elements=('@@%s' % VIEW_ALL_COURSE_ROSTER,))
+        interface.alsoProvides(link, ILocation)
+        link.__name__ = ''
+        link.__parent__ = context
+        _links.append(link)

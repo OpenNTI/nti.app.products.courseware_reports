@@ -537,8 +537,7 @@ class TestUserEnrollmentReport(ApplicationLayerTest):
         admin_fetch = self.testapp.get(self.fetch_user_url + 'sjohnson@nextthought.com',
                                        extra_environ=user_environ)
 
-        report_links = admin_fetch.json_body.get(
-            'Items')[0]
+        report_links = admin_fetch.json_body.get('Items')[0]
 
         admin_view_href = self.require_link_href_with_rel(report_links,
                                                     'report-%s' % VIEW_USER_ENROLLMENT)

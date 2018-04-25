@@ -1,0 +1,3 @@
+<tr>
+	<td>${view/__parent__/report_description}</td>
+</tr>

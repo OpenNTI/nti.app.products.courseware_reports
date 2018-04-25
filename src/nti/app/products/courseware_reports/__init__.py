@@ -19,5 +19,6 @@ VIEW_FORUM_PARTICIPATION = "ForumParticipationReport.pdf"
 VIEW_TOPIC_PARTICIPATION = "TopicParticipationReport.pdf"
 VIEW_STUDENT_PARTICIPATION = "StudentParticipationReport.pdf"
 VIEW_SELF_ASSESSMENT_SUMMARY = 'SelfAssessmentSummaryReport.pdf'
-VIEW_USER_ENROLLMENT = 'UserEnrollmentReport.pdf'
+VIEW_USER_ENROLLMENT = 'UserEnrollmentReport'
 VIEW_COURSE_ROSTER = 'CourseRosterReport'
+VIEW_ALL_COURSE_ROSTER = 'AllCourseRosterReport'
