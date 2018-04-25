@@ -84,6 +84,11 @@
 				provides="nti.contenttypes.reports.interfaces.IReportAvailablePredicate"
 				for="nti.dataserver.interfaces.IUser" />
 
+    <!-- Workspace -->
+    <subscriber factory=".decorators._CourseWorkspaceReportDecorator"
+                provides="nti.externalization.interfaces.IExternalObjectDecorator"
+                for="nti.app.products.courseware.interfaces.ICoursesWorkspace
+                     pyramid.interfaces.IRequest" />
 
 	<!-- Decorator Adapters -->
 	<adapter factory="nti.app.contenttypes.reports.reports.DefaultReportLinkProvider"
@@ -213,11 +218,10 @@
 
 	<!-- Default layout for reports -->
 	<!--
-		NOTE: Not really necessary, each report view
-		is going to have to specify this as its view template,
-		unfortunately.
-		We should work towards being able to use the normal
-		template/layout rendering steps.
+		NOTE: Not really necessary, each report view is going to have to
+		specify this as its view template, unfortunately. We should work
+		towards being able to use the normal template/layout rendering
+		steps.
 	-->
 	<z3c:layout
 		template="templates/std_report_layout.rml"
