@@ -7,7 +7,7 @@
         There are no users enrolled in this course.
     </para>
 	<para style="normal" spaceAfter=".1in" tal:condition="options/enrollments">
-		This report presents an overview of user enrollment.
+		This report presents an overview of the course roster.
 	</para>
 
 	<blockTable style='default'
