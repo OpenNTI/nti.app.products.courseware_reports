@@ -35,6 +35,7 @@ from nti.assessment.interfaces import IQInquiry
 
 from nti.contenttypes.courses.interfaces import ICourseCatalog
 from nti.contenttypes.courses.interfaces import ICourseInstance
+from nti.contenttypes.courses.interfaces import IGlobalCourseCatalog
 
 from nti.contenttypes.courses.utils import get_course_enrollments
 
@@ -213,6 +214,7 @@ class _CourseWorkspaceReportDecorator(AbstractAuthenticatedRequestAwareDecorator
 
     def _predicate(self, unused_context, unused_result):
         return self.catalog is not None \
+           and not IGlobalCourseCatalog.providedBy(self.catalog) \
            and is_admin_or_site_admin(self.remoteUser)
 
     def _do_decorate_external(self, context, result):
