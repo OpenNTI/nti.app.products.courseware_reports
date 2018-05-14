@@ -95,11 +95,11 @@
                 </td>
 			</tr>
 			<tr tal:repeat="item options/self_assessment_for_credit">
-				<td tal:content="item/display">
-					user1
+				<td>
+				    <para tal:content="item/display" style="data">user1</para>
 				</td>
-				<td align="left" tal:content="item/username">
-					user2
+				<td>
+				    <para tal:content="item/username" style="data">user2</para>
 				</td>
 				<td tal:content="item/count">
 					Count
@@ -144,9 +144,9 @@
                 </td>
 			</tr>
 			<tr tal:repeat="item options/self_assessment_non_credit">
-				<td tal:content="item/display">
-					user1
-				</td>
+				<td>
+                    <para tal:content="item/display" style="data">user1</para>
+                </td>
 				<td tal:content="item/count">
 					Count
 				</td>
@@ -197,12 +197,12 @@
 					</td>
 				</tr>
 				<tr tal:repeat="student item/students">
-					<td tal:content="student/display">
-						user1
-					</td>
-					<td align="left" tal:content="student/username">
-						user2
-					</td>
+					<td>
+                        <para tal:content="student/display" style="data">user1</para>
+                    </td>
+                    <td>
+                        <para tal:content="student/username" style="data">user2</para>
+                    </td>
 					<td tal:content="student/count">
 						Count
 					</td>
@@ -248,9 +248,9 @@
 					</td>
 				</tr>
 				<tr tal:repeat="student item/students">
-					<td tal:content="student/display">
-						user1
-					</td>
+					<td>
+                        <para tal:content="student/display" style="data">user1</para>
+                    </td>
 					<td tal:content="student/count">
 						Count
 					</td>
