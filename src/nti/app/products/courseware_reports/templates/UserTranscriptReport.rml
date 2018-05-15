@@ -15,7 +15,8 @@
     </h2>
 
 	<blockTable style='default'
-                colWidths="30% 30%"
+	            alignment="left"
+                colWidths="22% 22%"
                 tal:condition="options/aggregate_credit"
                 repeatRows="1">
         <tr>
@@ -28,7 +29,7 @@
         </tr>
     </blockTable>
 
-    <condPageBreak height="4in" />
+    <condPageBreak height="2in" />
 
     <h2 style="h2" spaceBefore=".3in">
         User Transcript
