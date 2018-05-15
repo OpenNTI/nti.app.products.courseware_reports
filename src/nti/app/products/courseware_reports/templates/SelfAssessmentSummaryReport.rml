@@ -18,7 +18,9 @@
 			Self-Assessments Summary
 		</h2>
 
-		<blockTable style='default' tal:condition="options/self_assessment_data"
+		<blockTable style='default'
+		            colWidths="32% 17% 17% 17% 17%"
+		            tal:condition="options/self_assessment_data"
 					repeatRows="1">
 			<tr>
 				<td>
@@ -75,6 +77,7 @@
 		</para>
 
 		<blockTable style='table_user_1'
+		            colWidths="35% 35% 10% 10% 10%"
 					tal:condition="options/self_assessment_for_credit"
 					repeatRows="1">
 			<tr>
@@ -127,6 +130,7 @@
 		</para>
 
 		<blockTable style='table_user_1_non_credit'
+		            colWidths="55% 15% 15% 15%"
 					tal:condition="options/self_assessment_non_credit"
 					repeatRows="1">
 			<tr>
@@ -181,7 +185,9 @@
 					${item/title} (${item/question_count} Questions)
 			</h3>
 
-			<blockTable style='table_user_1' repeatRows="1">
+			<blockTable style='table_user_1'
+			            colWidths="35% 35% 15% 15%"
+			            repeatRows="1">
 				<tr>
 					<td>
 						<para style="header">Name</para>
@@ -235,7 +241,9 @@
 					${item/title} (${item/question_count} Questions)
 			</h3>
 
-			<blockTable style='table_user_1_non_credit' repeatRows="1">
+			<blockTable style='table_user_1_non_credit'
+			            colWidths="60% 20% 20%"
+			            repeatRows="1">
 				<tr>
 					<td>
 						<para style="header">Name</para>
