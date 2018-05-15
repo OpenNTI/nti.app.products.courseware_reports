@@ -129,11 +129,14 @@ class AbstractReportView(AbstractAuthenticatedView,
         if request.view_name:
             self.filename = request.view_name
 
-    def generate_footer(self):
+    @Lazy
+    def report_date_str(self):
         date = _adjust_date(datetime.utcnow())
-        date = date.strftime('%b %d, %Y %I:%M %p')
+        return date.strftime('%b %d, %Y %I:%M %p')
+
+    def generate_footer(self):
         title = self.report_title
-        return "%s %s" % (title, date)
+        return "%s %s" % (title, self.report_date_str)
 
     @Lazy
     def md_catalog(self):

@@ -10,7 +10,7 @@
 		This report presents an overview of ${options/user/display}'s awarded credit.
 	</para>
 
-    <h2 style="h2" spaceBefore=".3in">
+    <h2 style="h2" spaceBefore=".3in" tal:condition="options/aggregate_credit">
         Transcript Summary
     </h2>
 
@@ -31,7 +31,7 @@
 
     <condPageBreak height="2in" />
 
-    <h2 style="h2" spaceBefore=".3in">
+    <h2 style="h2" spaceBefore=".3in" tal:condition="options/awarded_credits">
         User Transcript
     </h2>
 

@@ -13,3 +13,9 @@
 	Username
 </td>
 </tr>
+<tr>
+<td>Date:</td>
+<td tal:content="view/__parent__/report_date_str">
+    date
+</td>
+</tr>
