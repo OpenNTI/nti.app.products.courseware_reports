@@ -170,6 +170,13 @@
 						permission="zope.View"
 						supported_types="application/pdf text/csv" />
 
+	<rep:registerReport name="UserTranscriptReport"
+                        title="User Transcript Report"
+                        description="View a user's transcript."
+                        contexts="nti.coremetadata.interfaces.IUser"
+                        permission="zope.View"
+                        supported_types="application/pdf text/csv" />
+
 	<!--
 		The instructors/TA of a course (locally added to this role
 		for the course) can view reports
@@ -405,6 +412,24 @@
         name="catalog_content_provider"
         template="templates/catalog_content_provider.rml"
         view=".views.course_roster_views.AllCourseRosterReportPdf"
+        layer="pyramid.interfaces.IRequest"
+        permission="zope.Public"
+        manager=".interfaces.IPDFReportHeaderManager" />
+
+    <!-- Transcript reports -->
+    <subscriber factory=".predicates.UseTranscriptPredicate"
+                provides="nti.contenttypes.reports.interfaces.IReportAvailablePredicate"
+                for="nti.coremetadata.interfaces.IUser" />
+
+    <z3c:template
+        template="templates/UserTranscriptReport.rml"
+        for=".views.transcript_views.UserTranscriptReportPdf"
+        layer="pyramid.interfaces.IRequest" />
+
+    <browser:viewlet
+        name="user_transcript_provider"
+        template="templates/user_transcript_provider.rml"
+        view=".views.transcript_views.UserTranscriptReportPdf"
         layer="pyramid.interfaces.IRequest"
         permission="zope.Public"
         manager=".interfaces.IPDFReportHeaderManager" />
