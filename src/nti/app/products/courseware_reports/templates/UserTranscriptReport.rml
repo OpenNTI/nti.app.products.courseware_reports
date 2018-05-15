@@ -1,0 +1,33 @@
+<metal:block
+	xmlns:tal="http://xml.zope.org/namespaces/tal"
+	xmlns:metal="http://xml.zope.org/namespaces/metal"
+	tal:define="options view/options">
+
+	<para style="normal" spaceAfter=".1in" tal:condition="not:options/awarded_credits">
+        This user does not have any awarded credits.
+	</para>
+	<para style="normal" spaceAfter=".1in" tal:condition="options/awarded_credits">
+		This report presents an overview of ${options/user/display}'s awarded credit.
+	</para>
+
+	<blockTable style='default'
+				colWidths="20% 20% 20% 20% 20%"
+				tal:condition="options/awarded_credits"
+				repeatRows="1">
+		<tr>
+			<td><para style="header">Title</para></td>
+			<td><para style="header">Issuer</para></td>
+			<td><para style="header">Awarded Date</para></td>
+			<td><para style="header">Type</para></td>
+			<td><para style="header_r">Amount</para></td>
+		</tr>
+		<tr tal:repeat="item options/awarded_credits">
+			<td><para style="data" tal:content="item/title">Title</para></td>
+			<td align="left" tal:content="item/issuer | default">Issuer</td>
+			<td align="left" tal:content="item/awarded_date | default">Awarded date</td>
+			<td align="left" tal:content="item/type | default">Credit Type</td>
+			<td align="right" tal:content="item/amount">Credit Amount</td>
+		</tr>
+	</blockTable>
+
+</metal:block>
