@@ -25,6 +25,8 @@ from pyramid.view import view_config
 
 from zope import component
 
+from zope.cachedescriptors.property import Lazy
+
 from nti.dataserver.interfaces import IUser
 from nti.dataserver.interfaces import ISiteAdminUtility
 
@@ -80,7 +82,8 @@ class AbstractUserTranscriptView(AbstractReportView,
                 return True
         raise HTTPForbidden()
 
-    def _get_sorted_credits(self):
+    @Lazy
+    def sorted_credits(self):
         awarded_credits = ICreditTranscript(self.context)
         awarded_credits = awarded_credits.iter_awarded_credits()
         awarded_credits = self.filter_credits(awarded_credits)
@@ -92,9 +95,8 @@ class AbstractUserTranscriptView(AbstractReportView,
         return result
 
     def _get_awarded_credits(self):
-        awarded_credits = self._get_sorted_credits()
         result = []
-        for awarded_credit in awarded_credits:
+        for awarded_credit in self.sorted_credits:
             awarded_credit_record = {}
             awarded_credit_record['title'] = awarded_credit.title
             awarded_credit_record['issuer'] = awarded_credit.issuer
@@ -106,9 +108,9 @@ class AbstractUserTranscriptView(AbstractReportView,
             result.append(awarded_credit_record)
         return result
 
-    def _get_aggregate_credit(self, awarded_credits):
+    def _get_aggregate_credit(self):
         credit_amount_map = {}
-        for awarded_credit in awarded_credits:
+        for awarded_credit in self.sorted_credits:
             credit_def = awarded_credit.credit_definition
             current_amount = credit_amount_map.get(credit_def) or 0
             credit_amount_map[credit_def] = current_amount + awarded_credit.amount
@@ -149,8 +151,8 @@ class UserTranscriptReportPdf(AbstractUserTranscriptView):
     def _do_call(self):
         options = self.options
         options["user"] = self.get_user_info()
-        options['awarded_credits'] = awarded_credits = self._get_awarded_credits()
-        options['aggregate_credit'] = self._get_aggregate_credit(awarded_credits)
+        options['awarded_credits'] = self._get_awarded_credits()
+        options['aggregate_credit'] = self._get_aggregate_credit()
         return options
 
 
