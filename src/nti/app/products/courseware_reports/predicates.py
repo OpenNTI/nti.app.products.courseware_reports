@@ -26,7 +26,7 @@ logger = __import__('logging').getLogger(__name__)
 
 
 @interface.implementer(IReportAvailablePredicate)
-class UseTranscriptPredicate(object):
+class UserTranscriptPredicate(object):
 
     def __init__(self, *args, **kwargs):
         pass

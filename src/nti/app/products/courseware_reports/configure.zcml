@@ -84,6 +84,10 @@
 				provides="nti.contenttypes.reports.interfaces.IReportAvailablePredicate"
 				for="nti.dataserver.interfaces.IUser" />
 
+	<subscriber factory=".predicates.UserTranscriptPredicate"
+                provides="nti.contenttypes.reports.interfaces.IReportAvailablePredicate"
+                for="nti.dataserver.interfaces.IUser" />
+
     <!-- Workspace -->
     <subscriber factory=".decorators._CourseWorkspaceReportDecorator"
                 provides="nti.externalization.interfaces.IExternalObjectDecorator"
@@ -166,7 +170,7 @@
 	<rep:registerReport name="UserEnrollmentReport"
 						title="User Enrollment Report"
 						description="Summary user enrolled of report"
-						contexts="nti.dataserver.interfaces.IUser"
+						contexts="nti.coremetadata.interfaces.IUser"
 						permission="zope.View"
 						supported_types="application/pdf text/csv" />
 
@@ -417,10 +421,6 @@
         manager=".interfaces.IPDFReportHeaderManager" />
 
     <!-- Transcript reports -->
-    <subscriber factory=".predicates.UseTranscriptPredicate"
-                provides="nti.contenttypes.reports.interfaces.IReportAvailablePredicate"
-                for="nti.coremetadata.interfaces.IUser" />
-
     <z3c:template
         template="templates/UserTranscriptReport.rml"
         for=".views.transcript_views.UserTranscriptReportPdf"
