@@ -10,6 +10,30 @@
 		This report presents an overview of ${options/user/display}'s awarded credit.
 	</para>
 
+    <h2 style="h2" spaceBefore=".1in">
+        User Transcript Totals
+    </h2>
+
+	<blockTable style='default'
+                colWidths="30% 30%"
+                tal:condition="options/aggregate_credit"
+                repeatRows="1">
+        <tr>
+            <td><para style="header">Type</para></td>
+            <td><para style="header">Amount</para></td>
+        </tr>
+        <tr tal:repeat="item options/aggregate_credit">
+            <td align="left" tal:content="item/type | default">Credit Type</td>
+            <td align="right" tal:content="item/amount">Credit Amount</td>
+        </tr>
+    </blockTable>
+
+    <condPageBreak height="4in" />
+
+    <h2 style="h2" spaceBefore=".1in">
+        User Transcript
+    </h2>
+
 	<blockTable style='default'
 				colWidths="20% 20% 20% 20% 20%"
 				tal:condition="options/awarded_credits"
