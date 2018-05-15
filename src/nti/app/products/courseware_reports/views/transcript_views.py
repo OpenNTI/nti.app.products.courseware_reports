@@ -11,6 +11,8 @@ from __future__ import absolute_import
 import csv
 import six
 
+from collections import namedtuple
+
 from datetime import datetime
 
 from io import BytesIO
@@ -26,19 +28,15 @@ from zope import component
 from nti.dataserver.interfaces import IUser
 from nti.dataserver.interfaces import ISiteAdminUtility
 
+from nti.app.contenttypes.credit.views import UserAwardedCreditFilterMixin
+
 from nti.app.products.courseware_reports import MessageFactory as _
 
 from nti.app.products.courseware_reports import VIEW_USER_TRANSCRIPT
 
 from nti.app.products.courseware_reports.reports import _adjust_date
-from nti.app.products.courseware_reports.reports import _format_datetime
 
 from nti.app.products.courseware_reports.views.view_mixins import AbstractReportView
-
-from nti.contenttypes.completion.interfaces import IProgress
-
-from nti.contenttypes.courses.interfaces import ICourseInstance
-from nti.contenttypes.courses.interfaces import ICourseCatalogEntry
 
 from nti.contenttypes.credit.interfaces import ICreditTranscript
 
@@ -48,7 +46,12 @@ from nti.dataserver.authorization import is_site_admin
 logger = __import__('logging').getLogger(__name__)
 
 
-class AbstractUserTranscriptView(AbstractReportView):
+AggregateCredit = namedtuple("AggregateCredit",
+                             ('type', 'amount'))
+
+
+class AbstractUserTranscriptView(AbstractReportView,
+                                 UserAwardedCreditFilterMixin):
 
     def __init__(self, context, request):
         self.context = context
@@ -80,7 +83,8 @@ class AbstractUserTranscriptView(AbstractReportView):
     def _get_sorted_credits(self):
         awarded_credits = ICreditTranscript(self.context)
         awarded_credits = awarded_credits.iter_awarded_credits()
-        return sorted(awarded_credits, key=lambda x:x.awarded_date, reverse=True)
+        awarded_credits = self.filter_credits(awarded_credits)
+        return self.sort_credits(awarded_credits)
 
     def _get_credit_amount(self, awarded_credit):
         result = '%s %s' % (awarded_credit.amount,
@@ -100,6 +104,18 @@ class AbstractUserTranscriptView(AbstractReportView):
             awarded_date = awarded_date.strftime("%Y-%m-%d")
             awarded_credit_record['awarded_date'] = awarded_date
             result.append(awarded_credit_record)
+        return result
+
+    def _get_aggregate_credit(self, awarded_credits):
+        credit_amount_map = {}
+        for awarded_credit in awarded_credits:
+            credit_def = awarded_credit.credit_definition
+            current_amount = credit_amount_map.get(credit_def) or 0
+            credit_amount_map[credit_def] = current_amount + awarded_credit.amount
+        result = [(credit_def, amount) for credit_def, amount in credit_amount_map.items()]
+        result = sorted(result, lambda x: x[1], reverse=True)
+        result = [AggregateCredit(x[0].credit_type, '%s %s' % (x[1], x[0].credit_units))
+                  for x in result]
         return result
 
     def __call__(self):
@@ -133,7 +149,8 @@ class UserTranscriptReportPdf(AbstractUserTranscriptView):
     def _do_call(self):
         options = self.options
         options["user"] = self.get_user_info()
-        options['awarded_credits'] = self._get_awarded_credits()
+        options['awarded_credits'] = awarded_credits = self._get_awarded_credits()
+        options['aggregate_credit'] = self._get_aggregate_credit(awarded_credits)
         return options
 
 
