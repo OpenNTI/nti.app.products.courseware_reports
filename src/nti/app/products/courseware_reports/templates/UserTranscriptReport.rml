@@ -10,8 +10,8 @@
 		This report presents an overview of ${options/user/display}'s awarded credit.
 	</para>
 
-    <h2 style="h2" spaceBefore=".1in">
-        User Transcript Totals
+    <h2 style="h2" spaceBefore=".3in">
+        Transcript Summary
     </h2>
 
 	<blockTable style='default'
@@ -30,7 +30,7 @@
 
     <condPageBreak height="4in" />
 
-    <h2 style="h2" spaceBefore=".1in">
+    <h2 style="h2" spaceBefore=".3in">
         User Transcript
     </h2>
 

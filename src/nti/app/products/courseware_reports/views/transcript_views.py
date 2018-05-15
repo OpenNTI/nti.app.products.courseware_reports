@@ -115,7 +115,7 @@ class AbstractUserTranscriptView(AbstractReportView,
             current_amount = credit_amount_map.get(credit_def) or 0
             credit_amount_map[credit_def] = current_amount + awarded_credit.amount
         result = [(credit_def, amount) for credit_def, amount in credit_amount_map.items()]
-        result = sorted(result, lambda x: x[1], reverse=True)
+        result = sorted(result, key=lambda x: x[1], reverse=True)
         result = [AggregateCredit(x[0].credit_type, '%s %s' % (x[1], x[0].credit_units))
                   for x in result]
         return result
