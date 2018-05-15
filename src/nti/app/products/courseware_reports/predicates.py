@@ -9,14 +9,10 @@ from __future__ import print_function
 from __future__ import absolute_import
 
 from zope import interface
-from zope import component
+
+from nti.contenttypes.credit.interfaces import ICreditTranscript
 
 from nti.contenttypes.reports.interfaces import IReportAvailablePredicate
-
-from nti.dataserver.authorization import is_site_admin
-from nti.dataserver.authorization import is_admin
-
-from nti.dataserver.interfaces import ISiteAdminUtility
 
 from nti.externalization.interfaces import StandardExternalFields
 
@@ -31,11 +27,7 @@ class UserTranscriptPredicate(object):
     def __init__(self, *args, **kwargs):
         pass
 
-    def evaluate(self, unused_report, context, user):
-        result = False
-        if is_admin(user) or context == user:
-            result = True
-        elif is_site_admin(user):
-            admin_utility = component.getUtility(ISiteAdminUtility)
-            result = admin_utility.can_administer_user(user, context)
-        return result
+    def evaluate(self, report, context, unused_user):
+        # Must have a transcript to get the transcript report
+        return report.name != 'UserTranscriptReport' \
+            or ICreditTranscript(context, None) is not None
