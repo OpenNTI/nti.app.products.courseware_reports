@@ -90,8 +90,8 @@ class AbstractUserTranscriptView(AbstractReportView,
         return self.sort_credits(awarded_credits)
 
     def _get_credit_amount(self, awarded_credit):
-        result = '%s %s' % (awarded_credit.amount,
-                            awarded_credit.credit_definition.credit_units)
+        result = '%.2f %s' % (awarded_credit.amount,
+                              awarded_credit.credit_definition.credit_units)
         return result
 
     def _get_awarded_credits(self):
@@ -116,7 +116,7 @@ class AbstractUserTranscriptView(AbstractReportView,
             credit_amount_map[credit_def] = current_amount + awarded_credit.amount
         result = [(credit_def, amount) for credit_def, amount in credit_amount_map.items()]
         result = sorted(result, key=lambda x: x[1], reverse=True)
-        result = [AggregateCredit(x[0].credit_type, '%s %s' % (x[1], x[0].credit_units))
+        result = [AggregateCredit(x[0].credit_type, '%.2f %s' % (x[1], x[0].credit_units))
                   for x in result]
         return result
 
