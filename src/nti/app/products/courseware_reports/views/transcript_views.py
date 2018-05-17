@@ -89,6 +89,32 @@ class AbstractUserTranscriptView(AbstractReportView,
         awarded_credits = self.filter_credits(awarded_credits)
         return self.sort_credits(awarded_credits)
 
+    def _get_filter_str(self):
+        result = []
+        if self.definition_type_filter is not None:
+            result.append(u'with "%s" type' % self.definition_type_filter)
+        if self.definition_units_filter is not None:
+            result.append(u'with "%s" units' % self.definition_units_filter)
+        if self.not_before is not None:
+            not_before = _adjust_date(self.not_before)
+            not_before = not_before.strftime('%b %d, %Y')
+            result.append(u'not before %s' % not_before)
+        if self.not_after is not None:
+            not_after = _adjust_date(self.not_after)
+            not_after = not_after.strftime('%b %d, %Y')
+            result.append(u'not after %s' % not_after)
+        if self.amount_filter:
+            result.append(u'greater than %s' % self.amount_filter)
+
+        if len(result) == 1:
+            result = result[0]
+        elif len(result) == 2:
+            result = '%s and %s' % (result[0], result[1])
+        elif len(result) > 2:
+            prefix = ', '.join(result[:-1])
+            result = '%s, and %s' % (prefix, result[-1])
+        return result
+
     def _get_credit_amount(self, awarded_credit):
         result = '%.2f %s' % (awarded_credit.amount,
                               awarded_credit.credit_definition.credit_units)
@@ -153,6 +179,7 @@ class UserTranscriptReportPdf(AbstractUserTranscriptView):
         options["user"] = self.get_user_info()
         options['awarded_credits'] = self._get_awarded_credits()
         options['aggregate_credit'] = self._get_aggregate_credit()
+        options['filter_str'] = self._get_filter_str()
         return options
 
 
