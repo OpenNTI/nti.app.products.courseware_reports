@@ -4,7 +4,7 @@
 	tal:define="options view/options">
 
 	<para style="normal" tal:condition="not:options/awarded_credits">
-        This user does not have any awarded credits<span tal:condition="options/filter_str">when only including items ${options/filter_str}</span>.
+        This user does not have any awarded credits <span tal:condition="options/filter_str">when only including items ${options/filter_str}</span>.
 	</para>
 	<para style="normal" tal:condition="options/awarded_credits">
 	   This report presents an overview of ${options/user/display}'s awarded credit<span tal:condition="options/filter_str">, only including items ${options/filter_str}</span>.
