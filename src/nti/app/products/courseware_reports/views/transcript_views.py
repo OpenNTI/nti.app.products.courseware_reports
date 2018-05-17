@@ -97,11 +97,11 @@ class AbstractUserTranscriptView(AbstractReportView,
             result.append(u'with "%s" units' % self.definition_units_filter)
         if self.not_before is not None:
             not_before = _adjust_date(self.not_before)
-            not_before = not_before.strftime('%b %d, %Y')
+            not_before = not_before.strftime('%B %d, %Y')
             result.append(u'not before %s' % not_before)
         if self.not_after is not None:
             not_after = _adjust_date(self.not_after)
-            not_after = not_after.strftime('%b %d, %Y')
+            not_after = not_after.strftime('%B %d, %Y')
             result.append(u'not after %s' % not_after)
         if self.amount_filter:
             result.append(u'greater than %s' % self.amount_filter)
