@@ -36,9 +36,6 @@ from nti.app.products.courseware_reports import MessageFactory as _
 from nti.app.products.courseware_reports import VIEW_COURSE_ROSTER
 from nti.app.products.courseware_reports import VIEW_ALL_COURSE_ROSTER
 
-from nti.app.products.courseware_reports.reports import _adjust_date
-from nti.app.products.courseware_reports.reports import _format_datetime
-
 from nti.app.products.courseware_reports.views.view_mixins import AbstractReportView
 from nti.app.products.courseware_reports.views.view_mixins import AbstractCourseReportView
 
@@ -63,7 +60,7 @@ CatalogEntryRecord = \
                ('title', 'start_date', 'instructors'))
 
 
-class RosterReportMixin(object):
+class RosterReportMixin(AbstractReportView):
 
     def _name(self, user, friendly_named=None):
         displayname = component.getMultiAdapter((user, self.request),
@@ -96,7 +93,7 @@ class RosterReportMixin(object):
                 required_item_providers = progress_factory.required_item_providers
 
             if progress.Completed:
-                completed_date = _adjust_date(progress.CompletedDate)
+                completed_date = self._adjust_date(progress.CompletedDate)
                 completed_date = completed_date.strftime(u"%Y-%m-%d")
                 enrollRecord["completion"] = completed_date
             elif progress.PercentageProgress is not None:
@@ -118,7 +115,7 @@ class RosterReportMixin(object):
             enrollment_time = None
             if record.createdTime:
                 time = datetime.fromtimestamp(record.createdTime)
-                enrollment_time = _adjust_date(time)
+                enrollment_time = self._adjust_date(time)
                 enrollment_time = enrollment_time.strftime(u"%Y-%m-%d")
                 enrollRecord["enrollmentTime"] = enrollment_time
 
@@ -128,7 +125,7 @@ class RosterReportMixin(object):
                 latest = activity_source.activity(limit=1, order_by='timestamp')
                 accessed_time = latest[0].timestamp if latest else None
 
-            enrollRecord["lastAccessed"] = _format_datetime(accessed_time) if accessed_time else None
+            enrollRecord["lastAccessed"] = self._format_datetime(accessed_time) if accessed_time else None
 
             enrollments.append(enrollRecord)
 
@@ -178,8 +175,7 @@ class CourseRosterReportPdf(AbstractCourseRosterReport):
         return options
 
 
-class AbstractAllCourseReport(AbstractReportView,
-                              RosterReportMixin):
+class AbstractAllCourseReport(RosterReportMixin):
 
     def report_description(self):
         return u"This report presents the roster of all courses."

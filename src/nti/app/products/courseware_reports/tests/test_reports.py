@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from __future__ import print_function, unicode_literals, absolute_import, division
-__docformat__ = "restructuredtext en"
+from __future__ import division
+from __future__ import print_function
+from __future__ import absolute_import
 
 # disable: accessing protected members, too many methods
 # pylint: disable=W0212,R0904
@@ -24,8 +25,6 @@ from hamcrest import greater_than
 from hamcrest import only_contains
 from hamcrest import greater_than_or_equal_to
 
-import time
-
 from six import string_types
 from datetime import datetime
 from collections import namedtuple
@@ -39,34 +38,15 @@ from nti.app.products.courseware_reports.reports import _AssignmentStat
 from nti.app.products.courseware_reports.reports import _QuestionPartStat
 from nti.app.products.courseware_reports.reports import _DateCategoryAccum
 
-from nti.app.products.courseware_reports.reports import _adjust_date
 from nti.app.products.courseware_reports.reports import _TopCreators
 from nti.app.products.courseware_reports.reports import _common_buckets
 from nti.app.products.courseware_reports.reports import _get_top_answers
-from nti.app.products.courseware_reports.reports import _format_datetime
-from nti.app.products.courseware_reports.reports import _adjust_timestamp
 from nti.app.products.courseware_reports.reports import _build_question_stats
 from nti.app.products.courseware_reports.reports import _build_buckets_options
 from nti.app.products.courseware_reports.reports import _finalize_answer_stats
 from nti.app.products.courseware_reports.reports import _assignment_stat_for_column
 
 class TestReports(unittest.TestCase):
-
-	def test_format_date( self ):
-		time = datetime.now()
-		assert_that( _format_datetime( time ), not_none() )
-
-	def test_adjust_timestamp(self):
-		ts = int(time.time())
-		adjusted = _adjust_timestamp( ts )
-		assert_that( adjusted, not_none() )
-		assert_that( adjusted.tzname(), not_none() )
-
-	def test_adjust_date(self):
-		d = datetime.now()
-		adjusted = _adjust_date( d )
-		assert_that( adjusted, not_none() )
-		assert_that( adjusted.tzname(), not_none() )
 
 	def test_finalize_answer_stats(self):
 		_finalize_answer_stats( [], 4 )

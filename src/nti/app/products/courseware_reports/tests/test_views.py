@@ -133,8 +133,7 @@ class TestStudentParticipationReport(ApplicationLayerTest):
         assert_that(res, has_property('content_type', 'application/pdf'))
 
 
-    @WithSharedApplicationMockDS(
-        users=True, testapp=True, default_authenticate=True)
+    @WithSharedApplicationMockDS(users=True, testapp=True, default_authenticate=True)
     @fudge.patch('nti.app.products.courseware_reports.views.view_mixins.AbstractCourseReportView._check_access',
                  'nti.app.analytics.usage_stats.UserCourseVideoUsageStats.get_stats')
     def test_report_completion_data(self, fake_check_access, fake_video_stats):
@@ -146,20 +145,18 @@ class TestStudentParticipationReport(ApplicationLayerTest):
             obj = find_object_with_ntiid(self.course_ntiid)
             course = ICourseInstance(obj)
             request = DummyRequest(params={})
+            request.params['remoteUser'] = student_user = User.get_user('sjohnson@nextthought.com')
 
-            participation_report = StudentParticipationReportPdf(
-                course, request)
-
-            student_user = User.get_user('sjohnson@nextthought.com')
+            participation_report = StudentParticipationReportPdf(course, request)
+            participation_report.getRemoteUser = lambda: student_user
             participation_report.student_user = student_user
             course.Username = student_user.username
 
             options = participation_report()
 
-            # If we have not yet watched any videos, we should
-            # have no entries with session count, view count,
-            # total watch time, average session time, or
-            # video completion.
+            # If we have not yet watched any videos, we should have no entries
+            # with session count, view count, total watch time, average session
+            # time, or video completion.
 
             assert_that(options['video_completion'], is_not(
                 has_item((has_key('session_count')))))
@@ -448,6 +445,7 @@ class TestStudentParticipationCSV(ApplicationLayerTest):
             obj = find_object_with_ntiid(self.course_ntiid)
             course = ICourseInstance(obj)
             request = DummyRequest(params={})
+            request.params['remoteUser'] = User.get_user('sjohnson@nextthought.com')
             request.context = course
 
             video_ntiid = 'tag:nextthought.com,2011-10:OU-NTIVideo-CLC3403_LawAndJustice.ntivideo.video_02.01'
@@ -560,9 +558,7 @@ class TestUserEnrollmentReport(ApplicationLayerTest):
         admin_fetch = self.testapp.get(self.fetch_user_url + 'sjohnson@nextthought.com',
                                          extra_environ=instructor_environ)
 
-        report_links = admin_fetch.json_body.get(
-            'Items')[0]
-
+        report_links = admin_fetch.json_body.get('Items')[0]
         view_href = self.link_href_with_rel(report_links,
                                             'report-%s' % VIEW_USER_ENROLLMENT)
 
@@ -584,8 +580,7 @@ class TestUserEnrollmentReport(ApplicationLayerTest):
                                extra_environ=site_admin_environ)
         assert_that(res, has_property('content_type', 'text/csv'))
 
-    @WithSharedApplicationMockDS(
-                users=True, testapp=True, default_authenticate=True)
+    @WithSharedApplicationMockDS(users=True, testapp=True, default_authenticate=True)
     @fudge.patch('nti.app.products.courseware_reports.views.user_views.UserEnrollmentReportPdf._check_access')
     def test_report_completion_data_no_enrolled(self, fake_check_access):
         fake_check_access.is_callable().returns(True)
@@ -598,13 +593,11 @@ class TestUserEnrollmentReport(ApplicationLayerTest):
                 context, request)
 
             options = user_enrollment_report()
-
             assert_that(options, has_key('user'))
             assert_that(options, has_key('enrollments'))
             assert_that(options['enrollments'], has_length(0))
 
-    @WithSharedApplicationMockDS(
-        users=True, testapp=True, default_authenticate=True)
+    @WithSharedApplicationMockDS(users=True, testapp=True, default_authenticate=True)
     @fudge.patch('nti.app.products.courseware_reports.views.user_views.UserEnrollmentReportPdf._check_access')
     def test_report_completion_data_enrolled(self, fake_check_access):
         self.testapp.post_json('/dataserver2/users/sjohnson@nextthought.com/Courses/EnrolledCourses',

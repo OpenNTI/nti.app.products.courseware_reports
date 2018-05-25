@@ -9,7 +9,6 @@ from __future__ import print_function
 from __future__ import absolute_import
 
 import six
-import pytz
 import heapq
 import BTrees
 import nameparser
@@ -72,31 +71,6 @@ from nti.site.site import get_component_hierarchy_names
 family64 = BTrees.family64
 
 logger = __import__('logging').getLogger(__name__)
-
-
-def _adjust_timestamp( timestamp ):
-    """
-    Takes a timestamp and returns a timezoned datetime
-    """
-    date = datetime.utcfromtimestamp( timestamp )
-    return _adjust_date( date )
-
-
-def _adjust_date( date ):
-    """
-    Takes a date and returns a timezoned datetime
-    """
-    # XXX: Hard code everything to CST for now
-    utc_date = pytz.utc.localize( date )
-    cst_tz = pytz.timezone('US/Central')
-    return utc_date.astimezone( cst_tz )
-
-
-def _format_datetime( local_date ):
-    """
-    Returns a string formatted datetime object
-    """
-    return local_date.strftime(u"%Y-%m-%d %H:%M")
 
 
 def _get_course_ntiids(instance):

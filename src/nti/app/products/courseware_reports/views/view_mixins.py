@@ -39,9 +39,10 @@ from nti.app.products.courseware_reports.interfaces import IPDFReportView
 from nti.app.products.courseware_reports.interfaces import ACT_VIEW_REPORTS
 
 from nti.app.products.courseware_reports.reports import StudentInfo
-from nti.app.products.courseware_reports.reports import _adjust_date
 
 from nti.app.products.courseware_reports.views import ALL_USERS
+
+from nti.appserver.interfaces import IDisplayableTimeProvider
 
 from nti.contenttypes.courses.interfaces import ES_PUBLIC
 from nti.contenttypes.courses.interfaces import ES_CREDIT
@@ -130,13 +131,42 @@ class AbstractReportView(AbstractAuthenticatedView,
             self.filename = request.view_name
 
     @Lazy
+    def timezone_util(self):
+        return component.queryMultiAdapter((self.remoteUser, self.request),
+                                           IDisplayableTimeProvider)
+
+    def _adjust_date(self, date):
+        """
+        Takes a date and returns a timezoned datetime.
+        """
+        return self.timezone_util.adjust_date(date)
+
+    def _adjust_timestamp(self, timestamp):
+        """
+        Takes a timestamp and returns a timezoned datetime
+        """
+        date = datetime.utcfromtimestamp(timestamp)
+        return self._adjust_date(date)
+
+    def _format_datetime(self, local_date):
+        """
+        Returns a string formatted datetime object
+        """
+        return local_date.strftime(u"%Y-%m-%d %H:%M")
+
+    @Lazy
     def report_date_str(self):
-        date = _adjust_date(datetime.utcnow())
+        date = self._adjust_date(datetime.utcnow())
         return date.strftime('%b %d, %Y %I:%M %p')
+
+    @Lazy
+    def timezone_info_str(self):
+        tz_display = self.timezone_util.get_timezone_display_name()
+        return '(Times in %s)' % tz_display
 
     def generate_footer(self):
         title = self.report_title
-        return "%s %s" % (title, self.report_date_str)
+        return "%s %s %s" % (title, self.report_date_str, self.timezone_info_str)
 
     @Lazy
     def md_catalog(self):
@@ -287,12 +317,12 @@ class AbstractCourseReportView(AbstractReportView):
         return result
 
     def generate_footer(self):
-        date = _adjust_date(datetime.utcnow())
+        date = self._adjust_date(datetime.utcnow())
         date = date.strftime('%b %d, %Y %I:%M %p')
         title = self.report_title
         course = self.course_name()
         student = getattr(self, 'student_user', '')
-        return "%s %s %s %s" % (title, course, student, date)
+        return "%s %s %s %s %s" % (title, course, student, date, self.timezone_info_str)
 
     def generate_semester(self):
         """

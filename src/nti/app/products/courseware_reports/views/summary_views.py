@@ -25,8 +25,6 @@ from nti.app.products.courseware_reports import VIEW_COURSE_SUMMARY
 
 from nti.app.products.courseware_reports.reports import _TopCreators
 from nti.app.products.courseware_reports.reports import _CommonBuckets
-from nti.app.products.courseware_reports.reports import _format_datetime
-from nti.app.products.courseware_reports.reports import _adjust_timestamp
 from nti.app.products.courseware_reports.reports import _DateCategoryAccum
 from nti.app.products.courseware_reports.reports import _build_buckets_options
 from nti.app.products.courseware_reports.reports import _assignment_stat_for_column
@@ -351,10 +349,8 @@ class CourseSummaryReportPdf(AbstractCourseReportView):
             forum_view.options = forum_stat
 
             last_mod_ts = forum.NewestDescendantCreatedTime
-            last_mod_time = _adjust_timestamp(
-                last_mod_ts) if last_mod_ts > 0 else None
-            forum_stat['last_modified'] = _format_datetime(
-                last_mod_time) if last_mod_time else 'N/A'
+            last_mod_time = self._adjust_timestamp(last_mod_ts) if last_mod_ts > 0 else None
+            forum_stat['last_modified'] = self._format_datetime(last_mod_time) if last_mod_time else 'N/A'
 
             forum_view.for_credit_student_usernames = self.for_credit_student_usernames
             forum_view()
