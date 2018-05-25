@@ -36,8 +36,6 @@ from nti.app.products.courseware_reports import MessageFactory as _
 
 from nti.app.products.courseware_reports import VIEW_USER_TRANSCRIPT
 
-from nti.app.products.courseware_reports.reports import _adjust_date
-
 from nti.app.products.courseware_reports.views.view_mixins import AbstractReportView
 
 from nti.contenttypes.credit.interfaces import ICreditTranscript
@@ -96,11 +94,11 @@ class AbstractUserTranscriptView(AbstractReportView,
         if self.definition_units_filter is not None:
             result.append(u'with "%s" units' % self.definition_units_filter)
         if self.not_before is not None:
-            not_before = _adjust_date(self.not_before)
+            not_before = self._adjust_date(self.not_before)
             not_before = not_before.strftime('%B %d, %Y')
             result.append(u'after %s' % not_before)
         if self.not_after is not None:
-            not_after = _adjust_date(self.not_after)
+            not_after = self._adjust_date(self.not_after)
             not_after = not_after.strftime('%B %d, %Y')
             result.append(u'before %s' % not_after)
         if self.amount_filter:
@@ -128,7 +126,7 @@ class AbstractUserTranscriptView(AbstractReportView,
             awarded_credit_record['issuer'] = awarded_credit.issuer
             awarded_credit_record['type'] = awarded_credit.credit_definition.credit_type
             awarded_credit_record['amount'] = self._get_credit_amount(awarded_credit)
-            awarded_date = _adjust_date(awarded_credit.awarded_date)
+            awarded_date = self._adjust_date(awarded_credit.awarded_date)
             awarded_date = awarded_date.strftime("%Y-%m-%d")
             awarded_credit_record['awarded_date'] = awarded_date
             result.append(awarded_credit_record)
@@ -168,7 +166,7 @@ class UserTranscriptReportPdf(AbstractUserTranscriptView):
     report_title = _(u'User Transcript Report')
 
     def generate_footer(self):
-        date = _adjust_date(datetime.utcnow())
+        date = self._adjust_date(datetime.utcnow())
         date = date.strftime('%b %d, %Y %I:%M %p')
         title = self.report_title
         user = self.context.username

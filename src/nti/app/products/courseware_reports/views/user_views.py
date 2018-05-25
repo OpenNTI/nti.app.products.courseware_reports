@@ -31,9 +31,6 @@ from nti.analytics.stats.interfaces import IActivitySource
 from nti.app.products.courseware_reports import MessageFactory as _
 from nti.app.products.courseware_reports import VIEW_USER_ENROLLMENT
 
-from nti.app.products.courseware_reports.reports import _adjust_date
-from nti.app.products.courseware_reports.reports import _format_datetime
-
 from nti.app.products.courseware_reports.views.view_mixins import AbstractReportView
 
 from nti.contenttypes.completion.interfaces import IProgress
@@ -94,22 +91,23 @@ class AbstractUserEnrollmentView(AbstractReportView):
             enrollment_time = None
             if record.createdTime:
                 time = datetime.fromtimestamp(record.createdTime)
-                enrollment_time = _adjust_date(time)
+                enrollment_time = self._adjust_date(time)
                 enrollment_time = enrollment_time.strftime("%Y-%m-%d")
                 enrollment["enrollmentTime"] = enrollment_time
 
             accessed_time = enrollment_time
-            activity_source = component.queryMultiAdapter((self.context, course), IActivitySource)
+            activity_source = component.queryMultiAdapter((self.context, course),
+                                                          IActivitySource)
             if activity_source:
                 latest = activity_source.activity(limit=1, order_by='timestamp')
                 accessed_time = latest[0].timestamp if latest else None
 
-            enrollment["lastAccessed"] = _format_datetime(accessed_time) if accessed_time else None
+            enrollment["lastAccessed"] = self._format_datetime(accessed_time) if accessed_time else None
 
             progress = component.queryMultiAdapter((self.context, course),
                                                    IProgress)
             if progress.Completed:
-                completed_date = _adjust_date(progress.CompletedDate)
+                completed_date = self._adjust_date(progress.CompletedDate)
                 completed_date = completed_date.strftime("%Y-%m-%d")
                 enrollment["completion"] = completed_date
             elif progress.PercentageProgress is not None:
@@ -145,7 +143,7 @@ class UserEnrollmentReportPdf(AbstractUserEnrollmentView):
     report_title = _(u'User Enrollment Report')
 
     def generate_footer(self):
-        date = _adjust_date(datetime.utcnow())
+        date = self._adjust_date(datetime.utcnow())
         date = date.strftime('%b %d, %Y %I:%M %p')
         title = self.report_title
         user = self.context.username

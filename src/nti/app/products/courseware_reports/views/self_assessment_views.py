@@ -23,8 +23,6 @@ from nti.app.products.courseware_reports import MessageFactory as _
 from nti.app.products.courseware_reports import VIEW_SELF_ASSESSMENT_SUMMARY
 
 from nti.app.products.courseware_reports.reports import TopCreators
-from nti.app.products.courseware_reports.reports import _adjust_date
-from nti.app.products.courseware_reports.reports import _format_datetime
 
 from nti.app.products.courseware_reports.views.summary_views import CourseSummaryReportPdf
 
@@ -341,7 +339,7 @@ class SelfAssessmentReportCSV(AbstractSelfAssessmentReport):
             time = stats.final_assessment_submitted_time
             if time:
                 time = datetime.fromtimestamp(time)
-                time = _format_datetime(_adjust_date(time))
+                time = self._format_datetime(self._adjust_date(time))
 
             data_row = [stats.display,
                         stats.alias,

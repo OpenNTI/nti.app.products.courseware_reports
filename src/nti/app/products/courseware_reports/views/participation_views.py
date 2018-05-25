@@ -41,9 +41,7 @@ from nti.app.products.courseware_reports import VIEW_STUDENT_PARTICIPATION
 from nti.app.products.courseware_reports.utils import course_from_forum
 
 from nti.app.products.courseware_reports.reports import _TopCreators
-from nti.app.products.courseware_reports.reports import _adjust_date
 from nti.app.products.courseware_reports.reports import _common_buckets
-from nti.app.products.courseware_reports.reports import _format_datetime
 from nti.app.products.courseware_reports.reports import _build_buckets_options
 from nti.app.products.courseware_reports.reports import _get_self_assessments_for_course
 
@@ -259,9 +257,9 @@ class StudentParticipationReportPdf(AbstractCourseReportView):
         # Toggle timezones
         for x in asg_data:
             if x.due_date:
-                x.due_date = _format_datetime(_adjust_date(x.due_date))
+                x.due_date = self._format_datetime(self._adjust_date(x.due_date))
             if x.submitted:
-                x.submitted = _format_datetime(_adjust_date(x.submitted))
+                x.submitted = self._format_datetime(self._adjust_date(x.submitted))
         options['assignments'] = asg_data
 
     def _build_completion_data(self, options):
@@ -460,10 +458,10 @@ class ForumParticipationReportPdf(AbstractCourseReportView):
                 parent_creator = self.build_user_info(parent.creator)
                 parent_comment = _CommentInfo(parent_creator.username,
                                               parent_creator.display,
-                                              _format_datetime(
-                                                  _adjust_date(parent.created)),
-                                              _format_datetime(
-                                                  _adjust_date(parent.modified)),
+                                              self._format_datetime(
+                                                  self._adjust_date(parent.created)),
+                                              self._format_datetime(
+                                                  self._adjust_date(parent.modified)),
                                               self._get_comment_body(
                                                   parent.body),
                                               None,
@@ -473,10 +471,10 @@ class ForumParticipationReportPdf(AbstractCourseReportView):
             creator = self.build_user_info(creator_username)
             comment = _CommentInfo(creator.username,
                                    creator.display,
-                                   _format_datetime(
-                                       _adjust_date(comment.created)),
-                                   _format_datetime(
-                                       _adjust_date(comment.created)),
+                                   self._format_datetime(
+                                       self._adjust_date(comment.created)),
+                                   self._format_datetime(
+                                       self._adjust_date(comment.created)),
                                    self._get_comment_body(comment.body),
                                    parent_comment,
                                    scope_name)
