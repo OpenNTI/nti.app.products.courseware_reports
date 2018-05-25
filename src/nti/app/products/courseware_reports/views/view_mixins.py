@@ -159,9 +159,14 @@ class AbstractReportView(AbstractAuthenticatedView,
         date = self._adjust_date(datetime.utcnow())
         return date.strftime('%b %d, %Y %I:%M %p')
 
+    @Lazy
+    def timezone_info_str(self):
+        tz_display = self.timezone_util.get_timezone_display_name()
+        return '(Times in %s)' % tz_display
+
     def generate_footer(self):
         title = self.report_title
-        return "%s %s" % (title, self.report_date_str)
+        return "%s %s %s" % (title, self.report_date_str, self.timezone_info_str)
 
     @Lazy
     def md_catalog(self):
@@ -317,7 +322,7 @@ class AbstractCourseReportView(AbstractReportView):
         title = self.report_title
         course = self.course_name()
         student = getattr(self, 'student_user', '')
-        return "%s %s %s %s" % (title, course, student, date)
+        return "%s %s %s %s %s" % (title, course, student, date, self.timezone_info_str)
 
     def generate_semester(self):
         """

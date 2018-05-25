@@ -147,7 +147,7 @@ class UserEnrollmentReportPdf(AbstractUserEnrollmentView):
         date = date.strftime('%b %d, %Y %I:%M %p')
         title = self.report_title
         user = self.context.username
-        return u"%s %s %s" % (title, user, date)
+        return u"%s %s %s %s" % (title, user, date, self.timezone_info_str)
 
     def _do_call(self):
         options = self.options
