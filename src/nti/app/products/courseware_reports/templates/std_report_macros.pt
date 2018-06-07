@@ -97,7 +97,9 @@
 		<paraStyle name="question" fontName="OpenSans" fontSize="12" textColor="#494949" />
 
 		<paraStyle name="answer" fontName="OpenSans" fontSize="12" textColor="#494949"
-				   leading="15" />
+			   leading="15" />
+
+		<paraStyle name="user" fontName="OpenSansLight" fontSize="12" textColor="#3fb3f6"/>
 
 		<blockTableStyle id="default">
 			<lineStyle 	start="0,0" stop="-1,-1"
@@ -155,7 +157,7 @@
 			<blockFont start="0,1" stop="-1,-1" name="OpenSans" size="12" />
 
 			<!-- Username column #1 -->
-			<blockTextColor start="0,1" stop="0,-1" colorName="#40b450" />
+			<blockTextColor start="0,1" stop="0,-1" colorName="#3fb3f6" />
 
 			<!-- First column onward. Since we have one fixed decimal point,
 				 we should be able to line everything except the first column-->
@@ -302,7 +304,7 @@
 				<td>Percent</td>
 			</tr>
 			<tr tal:repeat="item python: [x for x in top_commenters] ">
-				<td tal:content="item/display">Display Name</td>
+				<td><para style="user" tal:content="item/display">Display Name</para></td>
 				<td tal:content="item/count">count</td>
 				<td tal:content="python: '%0.1f' % item.perc">percent</td>
 			</tr>
