@@ -87,10 +87,23 @@ class AbstractUserTranscriptView(AbstractReportView,
         awarded_credits = self.filter_credits(awarded_credits)
         return self.sort_credits(awarded_credits)
 
+    def _convert_list_to_str(self, list_input, connector='and'):
+        result = ''
+        if len(list_input) == 1:
+            result = list_input[0]
+        elif len(list_input) == 2:
+            result = '%s %s %s' % (list_input[0], connector, list_input[1])
+        elif len(list_input) > 2:
+            prefix = ', '.join(list_input[:-1])
+            result = '%s, %s %s' % (prefix, connector, list_input[-1])
+        return result
+
     def _get_filter_str(self):
         result = []
-        if self.definition_type_filter is not None:
-            result.append(u'with "%s" type' % self.definition_type_filter)
+        if self.definition_type_filter:
+            type_filter_str = self._convert_list_to_str(self.definition_type_filter,
+                                                        connector='or')
+            result.append(u'with %s type' % type_filter_str)
         if self.definition_units_filter is not None:
             result.append(u'with "%s" units' % self.definition_units_filter)
         if self.not_before is not None:
@@ -104,13 +117,7 @@ class AbstractUserTranscriptView(AbstractReportView,
         if self.amount_filter:
             result.append(u'greater than %s' % self.amount_filter)
 
-        if len(result) == 1:
-            result = result[0]
-        elif len(result) == 2:
-            result = '%s and %s' % (result[0], result[1])
-        elif len(result) > 2:
-            prefix = ', '.join(result[:-1])
-            result = '%s, and %s' % (prefix, result[-1])
+        result = self._convert_list_to_str(result)
         return result
 
     def _get_credit_amount(self, awarded_credit):
