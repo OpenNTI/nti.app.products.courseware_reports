@@ -261,6 +261,13 @@ class TestForumParticipationReport(ApplicationLayerTest):
                                                      'CourseInstance')
         course_res = self.testapp.get(course_rel).json_body
         board_href = course_res['Discussions']['href']
+
+        self.testapp.post_json(board_href, {'MimeType':'application/vnd.nextthought.forums.communityforum',
+                                            'title':'Forum'},
+                               status=201,
+                               extra_environ=self._make_extra_environ(username='harp4162'))
+
+        
         forum_href = board_href + '/Forum'
         instructor_environ = self._make_extra_environ(username='harp4162')
 
@@ -288,8 +295,18 @@ class TestTopicParticipationReport(ApplicationLayerTest):
                                                      'CourseInstance')
         course_res = self.testapp.get(course_rel).json_body
         board_href = course_res['Discussions']['href']
-        forum_href = board_href + '/Forum'
+
+        
         instructor_environ = self._make_extra_environ(username='harp4162')
+
+        forum_href = board_href + '/Forum'
+
+        self.testapp.post_json(board_href, {'MimeType':'application/vnd.nextthought.forums.communityforum',
+                                            'title':'Forum'},
+                               status=201,
+                               extra_environ=instructor_environ)
+        
+        
 
         # Create a topic
         res = self.testapp.post_json(forum_href,
