@@ -21,7 +21,7 @@
 
 			<para style="subdesc" spaceAfter=".2in"
 				tal:condition="options/top_video_usage">
-					The following tables show user resource activity in ${context/__name__}. Top videos are sorted by view
+					The following tables show user resource activity in ${view/course_name}. Top videos are sorted by view
 					count, and the table of all videos is sorted by title. 'Average Session Length' is the average amount of
 					time a user spends on a particular video in one session, and 'Average Time Spent on Video' refers to the
 					total amount of time a user spends on a video across all their sessions (including users who do not

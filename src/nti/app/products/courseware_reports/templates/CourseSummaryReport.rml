@@ -20,7 +20,7 @@
 
 			<para style="subdesc" >
 				This chart shows a breakdown of ${view/for_credit_scope_name} and ${view/non_credit_scope_name}
-				students taking ${context/__name__}. There
+				students taking ${view/course_name}. There
 				 ${python:request.localizer.pluralize('is', 'are', options['count_total'])}
 				 ${options/count_total}
 				 ${python:request.localizer.pluralize('student', 'students', options['count_total'])} taking this
@@ -223,7 +223,7 @@
 		</h1>
 
 		<para style="subdesc" spaceAfter=".1in">
-			The following items show activity taking place in ${context/__name__}. This information
+			The following items show activity taking place in ${view/course_name}. This information
 			includes the number of notes, highlights, discussions, and comments created by all the students
 			in the course, where applicable.
 		</para>
@@ -289,7 +289,7 @@
 
 		<para style="subdesc" spaceAfter=".2in"
 				tal:condition="options/aggregate_forum_stats/forum_objects_by_week_number" >
-			The following information presents an overview of the discussion activity for ${context/__name__}.
+			The following information presents an overview of the discussion activity for ${view/course_name}.
 		</para>
 		<hr width="100%" />
 
@@ -369,7 +369,7 @@
 
 			<para style="subdesc" spaceAfter=".2in"
 				tal:condition="options/top_video_usage">
-					The following tables show user resource activity in ${context/__name__}. Top videos are sorted by view
+					The following tables show user resource activity in ${view/course_name}. Top videos are sorted by view
 					count, and the table of all videos is sorted by title. 'Average Session Length' is the average amount of
 					time a user spends on a particular video in one session, and 'Average Time Spent on Video' refers to the
 					total amount of time a user spends on a video across all their sessions (including users who do not
@@ -456,7 +456,7 @@
 
 			<para style="subdesc" spaceAfter=".2in"
 				tal:condition="options/top_resource_usage">
-					The following tables show user resource activity in ${context/__name__}. Top resources are sorted by view
+					The following tables show user resource activity in ${view/course_name}. Top resources are sorted by view
 					count, and the table of all resources is sorted by title. 'Average Session Length' is the average amount of
 					time a user spends on a particular resources in one session, and 'Average Time Spent on Resource' refers to the
 					total amount of time a user spends on a resource across all their sessions (including users who do not
