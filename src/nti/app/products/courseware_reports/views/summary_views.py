@@ -31,7 +31,7 @@ from nti.app.products.courseware_reports.reports import _assignment_stat_for_col
 from nti.app.products.courseware_reports.reports import _do_get_containers_in_course
 from nti.app.products.courseware_reports.reports import _get_self_assessments_for_course
 
-from nti.app.products.courseware_reports.views import CHART_COLORS
+from nti.app.contenttypes.reports.views import CHART_COLORS
 
 from nti.app.products.courseware_reports.views.participation_views import ForumParticipationReportPdf
 

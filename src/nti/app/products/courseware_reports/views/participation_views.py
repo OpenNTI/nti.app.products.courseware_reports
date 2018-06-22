@@ -45,8 +45,8 @@ from nti.app.products.courseware_reports.reports import _common_buckets
 from nti.app.products.courseware_reports.reports import _build_buckets_options
 from nti.app.products.courseware_reports.reports import _get_self_assessments_for_course
 
-from nti.app.products.courseware_reports.views import CHART_COLORS
-from nti.app.products.courseware_reports.views import FORUM_OBJECT_MIMETYPES
+from nti.app.contenttypes.reports.views import CHART_COLORS
+from nti.app.contenttypes.reports.views import FORUM_OBJECT_MIMETYPES
 
 from nti.app.products.courseware_reports.views.view_mixins import AbstractCourseReportView
 from nti.app.products.courseware_reports.views.view_mixins import _get_enrollment_scope_dict

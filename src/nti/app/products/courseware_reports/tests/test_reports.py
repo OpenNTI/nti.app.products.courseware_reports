@@ -451,7 +451,7 @@ class TestTopCreators( unittest.TestCase ):
 	def setUp(self):
 		self.top_creators = _TopCreators( _MockReport( [] ) )
 
-	@fudge.patch('nti.app.products.courseware_reports.reports._get_name_values')
+	@fudge.patch('nti.app.contenttypes.reports.utils._get_name_values')
 	def test_empty(self, mock_get_name_values):
 		mock_get_name_values.is_callable().returns(('user1', 'user1_alias', '', ''))
 		assert_that( self.top_creators._for_credit_data, empty() )
@@ -482,7 +482,7 @@ class TestTopCreators( unittest.TestCase ):
 		assert_that( self.top_creators.non_credit_percent_contributed_str(), not_none() )
 
 	@fudge.patch( 'nti.dataserver.users.users.User.get_user',
-				  'nti.app.products.courseware_reports.reports._get_name_values' )
+				  'nti.app.contenttypes.reports.utils._get_name_values' )
 	def test_single(self, mock_get_user, mock_name_values):
 		mock_get_user.is_callable().returns( 'Not-none' )
 		mock_name_values.is_callable().returns(  ('for_credit1', 'for_credit1_alias', '', '') )
@@ -531,7 +531,7 @@ class TestTopCreators( unittest.TestCase ):
 		assert_that( self.top_creators.non_credit_percent_contributed_str(), not_none() )
 
 	@fudge.patch( 'nti.dataserver.users.users.User.get_user',
-				  'nti.app.products.courseware_reports.reports._get_name_values' )
+				  'nti.app.contenttypes.reports.utils._get_name_values' )
 	def test_multiple(self, mock_get_user, mock_name_values):
 		mock_get_user.is_callable().returns( 'Not-none' )
 		mock_name_values.is_callable().returns(  ('System', 'System', '', '') )

@@ -137,7 +137,7 @@ class AbstractUserEnrollmentView(AbstractReportView):
              request_param='format=application/pdf')
 class UserEnrollmentReportPdf(AbstractUserEnrollmentView):
     """
-    A PDF report of a user's transcript.
+    A PDF report of a user's enrollment.
     """
 
     report_title = _(u'User Enrollment Report')
@@ -167,7 +167,7 @@ class UserEnrollmentReportPdf(AbstractUserEnrollmentView):
              request_param='format=text/csv')
 class UserEnrollmentReportCSV(AbstractUserEnrollmentView):
     """
-    A CSV report of a user's transcript.
+    A CSV report of a user's enrollment.
     """
 
     def _do_call(self):
@@ -175,7 +175,7 @@ class UserEnrollmentReportCSV(AbstractUserEnrollmentView):
         response = self.request.response
         response.content_encoding = 'identity'
         response.content_type = 'text/csv; charset=UTF-8'
-        filename = "%s_transcript_report.csv" % self.context.username
+        filename = "%s_enrollment_report.csv" % self.context.username
         response.content_disposition = 'attachment; filename="%s"' % filename
 
         stream = BytesIO()
