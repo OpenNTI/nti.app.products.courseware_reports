@@ -8,17 +8,13 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import absolute_import
 
-import six
 import heapq
 import BTrees
-import nameparser
 
 from collections import namedtuple
 
 from datetime import datetime
 from datetime import timedelta
-
-from functools import total_ordering
 
 from itertools import count
 from itertools import groupby
@@ -33,6 +29,8 @@ from numbers import Number
 from zope import interface
 
 from zope.cachedescriptors.property import Lazy
+
+from nti.app.contenttypes.reports.utils import UserInfo as StudentInfo
 
 from nti.app.products.courseware_reports.interfaces import IInstructorReport
 
@@ -52,15 +50,9 @@ from nti.contenttypes.presentation.interfaces import INTIQuestionSetRef
 
 from nti.dataserver.interfaces import SYSTEM_USER_NAME
 
-from nti.dataserver.interfaces import IUser
-
 from nti.dataserver.users.users import User
 
-from nti.dataserver.users.interfaces import IFriendlyNamed
-
 from nti.ntiids.ntiids import find_object_with_ntiid
-
-from nti.schema.eqhash import EqHash
 
 from nti.schema.fieldproperty import createDirectFieldProperties
 
@@ -108,58 +100,6 @@ def _get_self_assessments_for_course(course):
 
 _CommonBuckets = namedtuple('_CommonBuckets',
                             ('count_by_day', 'count_by_week_number', 'top_creators', 'group_dates'))
-
-
-def _get_name_values( user, username ):
-    if isinstance(user, six.string_types):
-        user = User.get_user(user)
-
-    if user and IUser.providedBy( user ):
-        named_user = IFriendlyNamed(user)
-        display = named_user.realname or named_user.alias or named_user.username
-        # We may be given a username to override the actual username; use it.
-        username = username or user.username
-
-        if named_user.realname and '@' not in named_user.realname:
-            human_name = nameparser.HumanName(named_user.realname)
-            last = human_name.last or ''
-            first = human_name.first or ''
-        else:
-            first = last = ''
-    else:
-        # IF a community/sharing scope, show generic.
-        return u'System', u'System', u'', u''
-    return username, display, first, last
-
-
-@total_ordering
-@EqHash("sorting_key")
-class StudentInfo(object):
-    """
-    Holds general student info. 'count' and 'perc' are optional values.
-    """
-
-    def __init__(self, user=None, username=None, display=None, count=None, perc=None):
-
-        if username and display:
-            self.username = username
-            self.display = display
-            self.last_name = ''
-            self.first_name = ''
-        else:
-            self.username, self.display, self.first_name, self.last_name = _get_name_values( user, username )
-
-        self.count = count
-        self.perc = perc
-
-    def __lt__(self, other):
-        return self.sorting_key.lower() < other.sorting_key.lower()
-
-    @Lazy
-    def sorting_key(self):
-        if self.last_name and self.first_name:
-            return self.last_name + ', ' + self.first_name
-        return self.last_name or self.username
 
 
 class TopCreators(object):

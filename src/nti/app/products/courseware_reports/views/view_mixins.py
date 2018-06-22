@@ -8,41 +8,21 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import absolute_import
 
-import six
-import textwrap
-
 from datetime import datetime
-
-from zope import component
-from zope import interface
 
 from pyramid.httpexceptions import HTTPForbidden
 
-from pyramid.view import view_defaults
-
-from z3c.pagelet.browser import BrowserPagelet
-
 from zope.cachedescriptors.property import Lazy
-
-from zope.intid.interfaces import IIntIds
 
 from zope.security.management import checkPermission
 
-import BTrees
-
-from nti.app.base.abstract_views import AbstractAuthenticatedView
-
 from nti.app.products.courseware_reports import MessageFactory as _
 
-from nti.app.products.courseware_reports.interfaces import IPDFReportView
+from nti.app.contenttypes.reports.views.view_mixins import AbstractReportView
 
 from nti.app.products.courseware_reports.interfaces import ACT_VIEW_REPORTS
 
-from nti.app.products.courseware_reports.reports import StudentInfo
-
 from nti.app.products.courseware_reports.views import ALL_USERS
-
-from nti.appserver.interfaces import IDisplayableTimeProvider
 
 from nti.contenttypes.courses.interfaces import ES_PUBLIC
 from nti.contenttypes.courses.interfaces import ES_CREDIT
@@ -52,17 +32,9 @@ from nti.contenttypes.courses.interfaces import ICourseCatalogEntry
 
 from nti.dataserver.authorization import is_admin_or_site_admin
 
-from nti.dataserver.interfaces import IDeletedObjectPlaceholder
 from nti.dataserver.interfaces import IEnumerableEntityContainer
-from nti.dataserver.interfaces import IUsernameSubstitutionPolicy
-
-from nti.dataserver.metadata.index import CATALOG_NAME
 
 from nti.dataserver.users.interfaces import IFriendlyNamed
-
-from nti.dataserver.users.users import User
-
-from nti.zope_catalog.interfaces import IDeferredCatalog
 
 logger = __import__('logging').getLogger(__name__)
 
@@ -107,99 +79,6 @@ def _get_enrollment_scope_dict(course, instructors=set()):
     results['Public'] = all_users - non_public_users - instructors
     results[ALL_USERS] = all_users
     return results
-
-
-@view_defaults(route_name='objects.generic.traversal',
-               renderer="../templates/std_report_layout.rml",
-               request_method='GET')
-@interface.implementer(IPDFReportView)
-class AbstractReportView(AbstractAuthenticatedView,
-                         BrowserPagelet):
-    """
-    An abstract report view that provides basic data.
-    """
-
-    family = BTrees.family64
-
-    def __init__(self, context, request):
-        self.options = {}
-        # Our two parents take different arguments
-        AbstractAuthenticatedView.__init__(self, request)
-        BrowserPagelet.__init__(self, context, request)
-
-        if request.view_name:
-            self.filename = request.view_name
-
-    @Lazy
-    def timezone_util(self):
-        return component.queryMultiAdapter((self.remoteUser, self.request),
-                                           IDisplayableTimeProvider)
-
-    def _adjust_date(self, date):
-        """
-        Takes a date and returns a timezoned datetime.
-        """
-        return self.timezone_util.adjust_date(date)
-
-    def _adjust_timestamp(self, timestamp):
-        """
-        Takes a timestamp and returns a timezoned datetime
-        """
-        date = datetime.utcfromtimestamp(timestamp)
-        return self._adjust_date(date)
-
-    def _format_datetime(self, local_date):
-        """
-        Returns a string formatted datetime object
-        """
-        return local_date.strftime(u"%Y-%m-%d %H:%M")
-
-    @Lazy
-    def report_date_str(self):
-        date = self._adjust_date(datetime.utcnow())
-        return date.strftime('%b %d, %Y %I:%M %p')
-
-    @Lazy
-    def timezone_info_str(self):
-        tz_display = self.timezone_util.get_timezone_display_name()
-        return '(Times in %s)' % tz_display
-
-    def generate_footer(self):
-        title = self.report_title
-        return "%s %s %s" % (title, self.report_date_str, self.timezone_info_str)
-
-    @Lazy
-    def md_catalog(self):
-        return component.getUtility(IDeferredCatalog, CATALOG_NAME)
-
-    @Lazy
-    def uidutil(self):
-        return component.getUtility(IIntIds)
-
-    def _replace_username(self, username):
-        policy = component.queryUtility(IUsernameSubstitutionPolicy)
-        result = policy.replace(username) if policy else username
-        return result
-
-    def build_user_info(self, user, **kwargs):
-        if isinstance(user, six.string_types):
-            username = user
-            user = User.get_user(user)
-        else:
-            username = user.username
-        username = self._replace_username(username)
-        return StudentInfo(user, username=username, **kwargs)
-
-    def filter_objects(self, objects):
-        """
-        Returns a set of filtered objects
-        """
-        return [
-            x for x in objects if not IDeletedObjectPlaceholder.providedBy(x)
-        ]
-
-    def wrap_text(self, text, size):
-        return textwrap.fill(text, size)
 
 
 class AbstractCourseReportView(AbstractReportView):

@@ -22,24 +22,6 @@
 		root_interfaces=".interfaces.IInstructorReport"
 		modules=".reports" />
 
-	<!-- This should happen early -->
-	<include package="nti.app.pyramid_zope" />
-
-	<include package="z3c.macro" file="meta.zcml" /> <!-- z3c:macro -->
-	<include package="z3c.macro" />
-
-	<!-- z3c:template/layout -->
-	<include package="z3c.template" file="meta.zcml" />
-
-	<!-- It has no standard configure.zcml -->
-	<include package="z3c.pagelet" /> <!-- pagelet contentprovider -->
-
-	<include package="zope.viewlet" file="meta.zcml" /> <!-- zope:viewlet/Manager -->
-	<include package="zope.viewlet" />
-
-	<!-- I18N -->
-	<i18n:registerTranslations directory="locales" />
-
 	<permission
 		id="nti.actions.courseware_reports.view_reports"
 		title="View reports" />
@@ -51,7 +33,6 @@
 					 nti.dataserver.interfaces.IUser" />
 
 	<!-- Report Registration -->
-	<include package="nti.contenttypes.reports"/>
 	<include package="nti.app.contenttypes.reports"/>
 	<include file="meta.zcml" package="nti.contenttypes.reports"/>
 
@@ -83,10 +64,6 @@
 	<subscriber factory=".decorators.UserEnrollmentPredicate"
 				provides="nti.contenttypes.reports.interfaces.IReportAvailablePredicate"
 				for="nti.dataserver.interfaces.IUser" />
-
-	<subscriber factory=".predicates.UserTranscriptPredicate"
-                provides="nti.contenttypes.reports.interfaces.IReportAvailablePredicate"
-                for="nti.dataserver.interfaces.IUser" />
 
     <!-- Workspace -->
     <subscriber factory=".decorators._CourseWorkspaceReportDecorator"
@@ -174,13 +151,6 @@
 						permission="zope.View"
 						supported_types="application/pdf text/csv" />
 
-	<rep:registerReport name="UserTranscriptReport"
-                        title="User Transcript Report"
-                        description="View a user's transcript."
-                        contexts="nti.coremetadata.interfaces.IUser"
-                        permission="zope.View"
-                        supported_types="application/pdf text/csv" />
-
 	<!--
 		The instructors/TA of a course (locally added to this role
 		for the course) can view reports
@@ -207,11 +177,6 @@
 		permission="nti.actions.courseware_reports.view_reports"
 		role="nti.roles.courseware.report_viewer" />
 
-	<adapter name="reports"
-			 for="nti.dataserver.interfaces.IDataserverFolder pyramid.interfaces.IRequest"
-			 factory=".views.ReportAdapter"
-			 provides="zope.traversing.interfaces.IPathAdapter" />
-
 	<!-- A subscriber for getting the video views summary report from analytics records -->
 	<!-- <subscriber factory=".decorators._VideoViewsReport"
 				provides="nti.externalization.interfaces.IExternalMappingDecorator" /> -->
@@ -227,31 +192,6 @@
 				for="nti.contenttypes.presentation.interfaces.INTIInquiryRef
 					 pyramid.interfaces.IRequest" /> -->
 
-	<!-- Default layout for reports -->
-	<!--
-		NOTE: Not really necessary, each report view is going to have to
-		specify this as its view template, unfortunately. We should work
-		towards being able to use the normal template/layout rendering
-		steps.
-	-->
-	<z3c:layout
-		template="templates/std_report_layout.rml"
-		for=".interfaces.IPDFReportView"
-		layer="pyramid.interfaces.IRequest"
-		/>
-
-	<!--
-		Report views must extend BrowserPagelet or implement IPagelet
-		and provide a render() method. If they extend BrowserPagelet
-		they can define a template attribute that is callable (often
-		template = getViewTemplate() as a class attribute) or they can
-		have a content template registered.
-	-->
-	<browser:viewletManager
-		name="header_manager"
-		permission="zope.Public"
-		provides=".interfaces.IPDFReportHeaderManager" />
-
 	<!-- Student participation report -->
 	<z3c:template
 		template="templates/student_participation_report.rml"
@@ -264,7 +204,7 @@
 		view=".views.participation_views.StudentParticipationReportPdf"
 		layer="pyramid.interfaces.IRequest"
 		permission="zope.Public"
-		manager=".interfaces.IPDFReportHeaderManager" />
+		manager="nti.app.contenttypes.reports.interfaces.IPDFReportHeaderManager" />
 
 	<!-- Forum participation report -->
 	<z3c:template
@@ -278,7 +218,7 @@
 		view=".views.participation_views.ForumParticipationReportPdf"
 		layer="pyramid.interfaces.IRequest"
 		permission="zope.Public"
-		manager=".interfaces.IPDFReportHeaderManager" />
+		manager="nti.app.contenttypes.reports.interfaces.IPDFReportHeaderManager" />
 
 	<!-- Topic participation report -->
 	<z3c:template
@@ -292,7 +232,7 @@
 		view=".views.participation_views.TopicParticipationReportPdf"
 		layer="pyramid.interfaces.IRequest"
 		permission="zope.Public"
-		manager=".interfaces.IPDFReportHeaderManager" />
+		manager="nti.app.contenttypes.reports.interfaces.IPDFReportHeaderManager" />
 
 	<!-- Course summary report -->
 
@@ -307,7 +247,7 @@
 		view=".views.summary_views.CourseSummaryReportPdf"
 		layer="pyramid.interfaces.IRequest"
 		permission="zope.Public"
-		manager=".interfaces.IPDFReportHeaderManager" />
+		manager="nti.app.contenttypes.reports.interfaces.IPDFReportHeaderManager" />
 
 	<!-- SelfAssessment summary report -->
 	<z3c:template
@@ -321,7 +261,7 @@
 		view=".views.self_assessment_views.SelfAssessmentSummaryReportPdf"
 		layer="pyramid.interfaces.IRequest"
 		permission="zope.Public"
-		manager=".interfaces.IPDFReportHeaderManager" />
+		manager="nti.app.contenttypes.reports.interfaces.IPDFReportHeaderManager" />
 
 	<!-- Assignment summary report -->
 	<z3c:template
@@ -335,7 +275,7 @@
 		view=".views.assignment_views.AssignmentSummaryReportPdf"
 		layer="pyramid.interfaces.IRequest"
 		permission="zope.Public"
-		manager=".interfaces.IPDFReportHeaderManager" />
+		manager="nti.app.contenttypes.reports.interfaces.IPDFReportHeaderManager" />
 
 	<!-- Video views report -->
 	<z3c:template
@@ -349,7 +289,7 @@
 		view=".views.usage_views.VideoUsageReportPdf"
 		layer="pyramid.interfaces.IRequest"
 		permission="zope.Public"
-		manager=".interfaces.IPDFReportHeaderManager" />
+		manager="nti.app.contenttypes.reports.interfaces.IPDFReportHeaderManager" />
 
 	<!-- Inquiry report(s) -->
 	<z3c:template
@@ -363,7 +303,7 @@
 		view=".views.inquiry_views.SurveyReportPDF"
 		layer="pyramid.interfaces.IRequest"
 		permission="zope.Public"
-		manager=".interfaces.IPDFReportHeaderManager" />
+		manager="nti.app.contenttypes.reports.interfaces.IPDFReportHeaderManager" />
 
 	<z3c:template
 		template="templates/inquiry_report.rml"
@@ -376,7 +316,7 @@
 		view=".views.inquiry_views.PollReportPDF"
 		layer="pyramid.interfaces.IRequest"
 		permission="zope.Public"
-		manager=".interfaces.IPDFReportHeaderManager" />
+		manager="nti.app.contenttypes.reports.interfaces.IPDFReportHeaderManager" />
 
 	<!-- User Enrollment report -->
 	<z3c:template
@@ -390,7 +330,7 @@
 		view=".views.user_views.UserEnrollmentReportPdf"
 		layer="pyramid.interfaces.IRequest"
 		permission="zope.Public"
-		manager=".interfaces.IPDFReportHeaderManager" />
+		manager="nti.app.contenttypes.reports.interfaces.IPDFReportHeaderManager" />
 
 	<!-- Course Roster report -->
 	<z3c:template
@@ -404,7 +344,7 @@
 		view=".views.course_roster_views.CourseRosterReportPdf"
 		layer="pyramid.interfaces.IRequest"
 		permission="zope.Public"
-		manager=".interfaces.IPDFReportHeaderManager" />
+		manager="nti.app.contenttypes.reports.interfaces.IPDFReportHeaderManager" />
 
 	<!-- All Course Roster report -->
     <z3c:template
@@ -418,109 +358,6 @@
         view=".views.course_roster_views.AllCourseRosterReportPdf"
         layer="pyramid.interfaces.IRequest"
         permission="zope.Public"
-        manager=".interfaces.IPDFReportHeaderManager" />
-
-    <!-- Transcript reports -->
-    <z3c:template
-        template="templates/UserTranscriptReport.rml"
-        for=".views.transcript_views.UserTranscriptReportPdf"
-        layer="pyramid.interfaces.IRequest" />
-
-    <browser:viewlet
-        name="user_transcript_provider"
-        template="templates/user_transcript_provider.rml"
-        view=".views.transcript_views.UserTranscriptReportPdf"
-        layer="pyramid.interfaces.IRequest"
-        permission="zope.Public"
-        manager=".interfaces.IPDFReportHeaderManager" />
-
-	<!-- Default macros for the reports -->
-	<!--
-		 NOTE: There is probably a better, more modern way
-		 with z3c.layout, content providers and the like. I may switch
-		 over to that before too long.
-	-->
-	<z3c:macro
-		template="templates/std_report_macros.pt"
-		name="header_graphic"
-		for="zope.interface.Interface"
-		view=".interfaces.IPDFReportView"
-		layer="pyramid.interfaces.IRequest" />
-	<!--
-		 The name `header` is already taken with a registration that
-		 conflicts with ours in sub-sites (ou, mathcounts). It should be made more
-		 specific...
-	-->
-	<z3c:macro
-		template="templates/std_report_macros.pt"
-		name="rpt_header"
-		macro="header"
-		for="zope.interface.Interface"
-		view=".interfaces.IPDFReportView"
-		layer="pyramid.interfaces.IRequest" />
-
-	<z3c:macro
-		template="templates/std_report_macros.pt"
-		name="stylesheet"
-		for="zope.interface.Interface"
-		view=".interfaces.IPDFReportView"
-		layer="pyramid.interfaces.IRequest" />
-
-	<z3c:macro
-		template="templates/std_report_macros.pt"
-		name="template"
-		for="zope.interface.Interface"
-		view=".interfaces.IPDFReportView"
-		layer="pyramid.interfaces.IRequest" />
-
-	<z3c:macro
-		template="templates/std_report_macros.pt"
-		name="forum_participation_over_time"
-		for="zope.interface.Interface"
-		view="zope.interface.Interface"
-		layer="pyramid.interfaces.IRequest" />
-
-	<z3c:macro
-		template="templates/std_report_macros.pt"
-		name="forum_top_commenters"
-		for="zope.interface.Interface"
-		view="zope.interface.Interface"
-		layer="pyramid.interfaces.IRequest" />
-
-	<z3c:macro
-		template="templates/std_report_macros.pt"
-		name="comment_table"
-		for="zope.interface.Interface"
-		view="zope.interface.Interface"
-		layer="pyramid.interfaces.IRequest" />
-
-	<z3c:macro
-		template="templates/std_report_macros.pt"
-		name="engagement_stats_table"
-		for="zope.interface.Interface"
-		view="zope.interface.Interface"
-		layer="pyramid.interfaces.IRequest" />
-
-	<z3c:macro
-		template="templates/std_report_macros.pt"
-		name="engagement_stats_pie"
-		for="zope.interface.Interface"
-		view="zope.interface.Interface"
-		layer="pyramid.interfaces.IRequest" />
-
-	<z3c:macro
-		template="templates/std_report_macros.pt"
-		name="section_page_templates"
-		for="zope.interface.Interface"
-		view="zope.interface.Interface"
-		layer="pyramid.interfaces.IRequest" />
-
-	<!-- A default header_table that does nothing -->
-	<adapter name="header_table"
-			 for="zope.interface.Interface
-				  pyramid.interfaces.IRequest
-				  zope.interface.Interface"
-			 provides="zope.contentprovider.interfaces.IContentProvider"
-			 factory=".contentproviders.DummyContentProvider" />
+        manager="nti.app.contenttypes.reports.interfaces.IPDFReportHeaderManager" />
 
 </configure>

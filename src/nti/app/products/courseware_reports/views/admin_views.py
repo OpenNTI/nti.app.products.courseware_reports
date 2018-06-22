@@ -42,7 +42,7 @@ from nti.app.products.courseware.workspaces import CourseInstanceEnrollment
 from nti.app.products.courseware_reports.reports import _do_get_containers_in_course
 from nti.app.products.courseware_reports.reports import _get_self_assessments_for_course
 
-from nti.app.products.courseware_reports.views import parse_datetime
+from nti.app.contenttypes.reports.views import parse_datetime
 
 from nti.app.products.courseware_reports.views.participation_views import StudentParticipationReportPdf
 
