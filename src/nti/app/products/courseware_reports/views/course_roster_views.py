@@ -44,6 +44,8 @@ from nti.contenttypes.courses.interfaces import ICourseInstance
 from nti.contenttypes.courses.interfaces import ICourseEnrollments
 from nti.contenttypes.courses.interfaces import ICourseCatalogEntry
 
+from nti.coremetadata.interfaces import ILastSeenProvider
+
 from nti.dataserver.authorization import is_admin_or_site_admin
 
 from nti.dataserver.users.interfaces import IFriendlyNamed
@@ -116,14 +118,12 @@ class RosterReportMixin(AbstractReportView):
             if record.createdTime:
                 time = datetime.fromtimestamp(record.createdTime)
                 enrollment_time = self._adjust_date(time)
-                enrollment_time = enrollment_time.strftime(u"%Y-%m-%d")
-                enrollRecord["enrollmentTime"] = enrollment_time
+                enrollRecord["enrollmentTime"] = enrollment_time.strftime(u"%Y-%m-%d")
 
-            accessed_time = enrollment_time
-            activity_source = component.queryMultiAdapter((user, course), IActivitySource)
-            if activity_source:
-                latest = activity_source.activity(limit=1, order_by='timestamp')
-                accessed_time = latest[0].timestamp if latest else None
+            provider = component.getMultiAdapter((user, course), ILastSeenProvider)
+            accessed_time = provider.lastSeenTime
+            if accessed_time is None:
+                accessed_time = enrollment_time
 
             enrollRecord["lastAccessed"] = self._format_datetime(accessed_time) if accessed_time else None
 
