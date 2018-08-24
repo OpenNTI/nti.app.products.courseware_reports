@@ -120,7 +120,8 @@ class RosterReportMixin(AbstractReportView):
                 enrollment_time = self._adjust_date(time)
                 enrollRecord["enrollmentTime"] = enrollment_time.strftime(u"%Y-%m-%d")
 
-            accessed_time = component.queryMultiAdapter((user, course), ILastSeenProvider)
+            provider = component.getMultiAdapter((user, course), ILastSeenProvider)
+            accessed_time = provider.lastSeenTime
             if accessed_time is None:
                 accessed_time = enrollment_time
 
