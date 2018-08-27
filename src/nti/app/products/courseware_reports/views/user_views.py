@@ -23,6 +23,8 @@ from pyramid.view import view_config
 
 from zope import component
 
+from nti.coremetadata.interfaces import ILastSeenProvider
+
 from nti.dataserver.interfaces import IUser
 from nti.dataserver.interfaces import ISiteAdminUtility
 
@@ -92,15 +94,12 @@ class AbstractUserEnrollmentView(AbstractReportView):
             if record.createdTime:
                 time = datetime.fromtimestamp(record.createdTime)
                 enrollment_time = self._adjust_date(time)
-                enrollment_time = enrollment_time.strftime("%Y-%m-%d")
-                enrollment["enrollmentTime"] = enrollment_time
+                enrollment["enrollmentTime"] = enrollment_time.strftime("%Y-%m-%d")
 
-            accessed_time = enrollment_time
-            activity_source = component.queryMultiAdapter((self.context, course),
-                                                          IActivitySource)
-            if activity_source:
-                latest = activity_source.activity(limit=1, order_by='timestamp')
-                accessed_time = latest[0].timestamp if latest else None
+            provider = component.getMultiAdapter((self.context, course), ILastSeenProvider)
+            accessed_time = self._adjust_date(provider.lastSeenTime) if provider.lastSeenTime else None
+            if accessed_time is None:
+                accessed_time = enrollment_time
 
             enrollment["lastAccessed"] = self._format_datetime(accessed_time) if accessed_time else None
 
