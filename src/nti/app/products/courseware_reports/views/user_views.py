@@ -97,7 +97,7 @@ class AbstractUserEnrollmentView(AbstractReportView):
                 enrollment["enrollmentTime"] = enrollment_time.strftime("%Y-%m-%d")
 
             provider = component.getMultiAdapter((self.context, course), ILastSeenProvider)
-            accessed_time = self._adjust_date(provider.lastSeenTime) if provider.lastSeenTime is not None else None
+            accessed_time = self._adjust_date(provider.lastSeenTime) if provider.lastSeenTime else None
             if accessed_time is None:
                 accessed_time = enrollment_time
 
