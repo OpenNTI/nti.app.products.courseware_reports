@@ -54,9 +54,12 @@ from nti.app.products.courseware_reports.views.view_mixins import _get_enrollmen
 from nti.app.products.gradebook.interfaces import IGrade
 from nti.app.products.gradebook.assignments import get_course_assignments
 
+from nti.assessment.interfaces import IQAssignment
 from nti.assessment.interfaces import IQAssignmentDateContext
 
 from nti.contentlibrary.indexed_data import get_catalog
+
+from nti.contenttypes.completion.utils import get_completable_items_for_user
 
 from nti.contenttypes.courses.interfaces import ICourseEnrollments
 from nti.contenttypes.courses.interfaces import ICourseSubInstance
@@ -66,6 +69,7 @@ from nti.contenttypes.presentation import RELATED_WORK
 
 from nti.contenttypes.presentation.interfaces import INTIRelatedWorkRef
 from nti.contenttypes.presentation.interfaces import INTIVideo
+
 
 from nti.dataserver.interfaces import IUser
 from nti.dataserver.interfaces import IDeletedObjectPlaceholder
@@ -219,14 +223,13 @@ class StudentParticipationReportPdf(AbstractCourseReportView):
             title_to_count.items())
 
     def _build_assignment_data(self, options):
-        assignment_catalog = get_course_assignments(self.course)
         histories = component.getMultiAdapter((self.course, self.student_user),
                                               IUsersCourseAssignmentHistory)
 
         asg_data = list()
         date_context = IQAssignmentDateContext(self.course)
 
-        for assignment in assignment_catalog:
+        for assignment in self._visible_assignments:
             history_item = histories.get(assignment.ntiid)
             if history_item:
                 grade_value = getattr(IGrade(history_item, None), 'value', '')
@@ -273,7 +276,11 @@ class StudentParticipationReportPdf(AbstractCourseReportView):
         viewed_resource_ntiids = set()
         if resource_usage_stats is not None:
             resources = resource_usage_stats.get_stats()
+
         for resource in resources:
+            if resource.ntiid not in self._visible_resources:
+                continue
+
             data = {}
             data['title'] = resource.title
             data['view_count'] = resource.view_event_count
@@ -283,9 +290,7 @@ class StudentParticipationReportPdf(AbstractCourseReportView):
             viewed_resource_ntiids.add(resource.ntiid)
             resource_data.append(data)
 
-        non_viewed_objects = self._get_non_viewed_objects_from_catalog(INTIRelatedWorkRef,
-                                                                       viewed_resource_ntiids)
-        non_viewed_resources = [{'title': x.label} for x in non_viewed_objects]
+        non_viewed_resources = [{'title': getattr(v,'title','') or getattr(v,'label','')} for k,v in self._visible_resources.items() if k not in viewed_resource_ntiids]
 
         resource_data = resource_data + non_viewed_resources
         resource_data = sorted(resource_data, key=lambda x: x['title'])
@@ -295,7 +300,11 @@ class StudentParticipationReportPdf(AbstractCourseReportView):
         viewed_video_ntiids = set()
         if video_usage_stats is not None:
             videos = video_usage_stats.get_stats()
+
         for video in videos:
+            if video.ntiid not in self._visible_videos:
+                continue
+
             data = {}
             data['title'] = video.title
             data['view_count'] = video.view_event_count
@@ -309,26 +318,29 @@ class StudentParticipationReportPdf(AbstractCourseReportView):
             viewed_video_ntiids.add(video.ntiid)
             video_data.append(data)
 
-        non_viewed_videos = [
-            {'title': x.title} for x in self._get_non_viewed_objects_from_catalog(INTIVideo, viewed_video_ntiids)]
+        non_viewed_videos = [{'title': v.title} for k,v in self._visible_videos.items() if k not in viewed_video_ntiids]
+
         video_data = video_data + non_viewed_videos
         video_data = sorted(video_data, key=lambda x: x['title'])
 
         options['resource_completion'] = resource_data
         options['video_completion'] = video_data
 
-    def _get_non_viewed_objects_from_catalog(self, interface, viewed_object_ntiids):
-        catalog = get_catalog()
-        rs = catalog.search_objects(container_ntiids=(ICourseCatalogEntry(self.context).ntiid,),
-                                    sites=get_component_hierarchy_names(),
-                                    provided=interface)
-        results = []
-        for resource in rs:
-            if not is_ntiid_of_type(resource.ntiid, RELATED_WORK) \
-              and resource.ntiid not in viewed_object_ntiids \
-              and (not getattr(resource, 'target', None) or resource.target not in viewed_object_ntiids):
-                results.append(resource)
-        return results
+    @Lazy
+    def _completable_items(self):
+        return get_completable_items_for_user(self.student_user, self.course)
+
+    @Lazy
+    def _visible_assignments(self):
+        return [x for x in self._completable_items if IQAssignment.providedBy(x)]
+
+    @Lazy
+    def _visible_resources(self):
+        return {x.ntiid:x for x in self._completable_items if not IQAssignment.providedBy(x) and not INTIVideo.providedBy(x)}
+
+    @Lazy
+    def _visible_videos(self):
+        return {x.ntiid:x for x in self._completable_items if INTIVideo.providedBy(x)}
 
     def __call__(self):
         """
