@@ -28,6 +28,8 @@ import csv
 import fudge
 from six import StringIO
 
+from zope import interface
+
 from nti.app.analytics.usage_stats import _VideoInfo
 from nti.app.analytics.usage_stats import _AverageWatchTimes
 
@@ -69,6 +71,8 @@ from nti.app.testing.request_response import DummyRequest
 from nti.assessment.survey import QPollSubmission
 
 from nti.contenttypes.courses.interfaces import ICourseInstance
+
+from nti.contenttypes.presentation.interfaces import INTIVideo
 
 from nti.dataserver.tests import mock_dataserver
 
@@ -135,11 +139,13 @@ class TestStudentParticipationReport(ApplicationLayerTest):
 
     @WithSharedApplicationMockDS(users=True, testapp=True, default_authenticate=True)
     @fudge.patch('nti.app.products.courseware_reports.views.view_mixins.AbstractCourseReportView._check_access',
-                 'nti.app.analytics.usage_stats.UserCourseVideoUsageStats.get_stats')
-    def test_report_completion_data(self, fake_check_access, fake_video_stats):
+                 'nti.app.analytics.usage_stats.UserCourseVideoUsageStats.get_stats',
+                 'nti.app.products.courseware_reports.views.participation_views.get_completable_items_for_user')
+    def test_report_completion_data(self, fake_check_access, fake_video_stats, fake_completables):
 
         fake_check_access.is_callable().returns(True)
         fake_video_stats.is_callable().returns([])
+        fake_completables.is_callable().returns([])
 
         with mock_dataserver.mock_db_trans(self.ds, site_name='platform.ou.edu'):
             obj = find_object_with_ntiid(self.course_ntiid)
@@ -183,6 +189,15 @@ class TestStudentParticipationReport(ApplicationLayerTest):
                                                                '100',
                                                                1,
                                                                None),))
+            _video = fudge.Fake('Video').has_attr(ntiid=video_ntiid)
+            interface.alsoProvides(_video, INTIVideo)
+            fake_completables.is_callable().returns([_video])
+
+            participation_report = StudentParticipationReportPdf(course, request)
+            participation_report.getRemoteUser = lambda: student_user
+            participation_report.student_user = student_user
+            course.Username = student_user.username
+
             options = participation_report()
 
             assert_that(
