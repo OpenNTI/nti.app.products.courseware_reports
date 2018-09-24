@@ -320,7 +320,7 @@
 							<td>Last Updated</td>
 						</tr>
 						<tr tal:repeat="item options/forum_stats">
-							<td tal:content="item/forum/title">Title</td>
+							<td><para tal:content="item/forum/title" style="data">Forum title</para></td>
 							<td tal:content="item/discussion_count">Notes</td>
 							<td tal:content="item/total_comments">25</td>
 							<td tal:content="item/last_modified">25</td>
