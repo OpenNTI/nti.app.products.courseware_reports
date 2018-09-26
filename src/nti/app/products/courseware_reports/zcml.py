@@ -7,7 +7,6 @@
 from __future__ import division
 from __future__ import print_function
 from __future__ import absolute_import
-__docformat__ = "restructuredtext en"
 
 from zope.security.zcml import Permission
 
@@ -29,6 +28,7 @@ class IRegisterInstructorReport(IRegisterReport):
 
     permission = Permission(title=u"The permission level required to access this report",
                             required=False)
+
 
 def registerInstructorReport(_context, name, title, description, contexts,
                              supported_types, registration_name=None):
