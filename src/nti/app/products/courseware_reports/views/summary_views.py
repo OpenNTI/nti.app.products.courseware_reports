@@ -39,6 +39,7 @@ from nti.app.products.courseware_reports.views.view_mixins import AbstractCourse
 
 from nti.app.products.gradebook.interfaces import IGradeBook
 from nti.app.products.gradebook.assignments import get_course_assignments
+from nti.app.products.gradebook.gradebook import get_assignment_due_date
 
 from nti.contenttypes.courses.interfaces import ICourseInstance
 from nti.contenttypes.courses.common import get_course_content_units
@@ -66,6 +67,19 @@ _EngagementStat = \
 
 _NoteStat = namedtuple('_NoteStat',
                        ('shared_public', 'shared_course', 'shared_other'))
+
+
+class _EmptyGradeBookEntry(object):
+
+    def __init__(self, assignment, course):
+        self.displayName = getattr(assignment, 'title', '')
+        self.DueDate = get_assignment_due_date(assignment, course)
+
+    def __len__(self):
+        return 0
+
+    def items(self):
+        return ()
 
 
 @view_config(context=ICourseInstance,
@@ -318,7 +332,7 @@ class CourseSummaryReportPdf(AbstractCourseReportView):
 
     def _build_assignment_data(self, predicate=None):
         gradebook = IGradeBook(self.course)
-        assignment_catalog = get_course_assignments(self.course)
+        assignment_catalog = get_course_assignments(self.course, parent_course=True)
 
         stats = list()
         for asg in assignment_catalog:
@@ -328,9 +342,13 @@ class CourseSummaryReportPdf(AbstractCourseReportView):
             if not asg.is_published():
                 continue
             column = gradebook.getColumnForAssignmentId(asg.ntiid)
-            if column is not None:
-                stats.append(
-                    _assignment_stat_for_column(self, column, predicate, assignment=asg))
+            if column is None:
+                # Currently if an assignement is created in parent course, and
+                # after that if no submissions submitted for the assignment or other assignments that have no GradeBookEntry in child course,
+                # then we don't have a GradeBookEntry for that assignment in child course.
+                column = _EmptyGradeBookEntry(asg, self.course)
+
+            stats.append(_assignment_stat_for_column(self, column, predicate, assignment=asg))
 
         stats.sort(key=lambda x: (x.due_date is None, x.due_date, x.title))
         return stats

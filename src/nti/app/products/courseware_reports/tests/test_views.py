@@ -55,6 +55,8 @@ from nti.app.products.courseware_reports.views.admin_views import StudentPartici
 
 from nti.app.products.courseware_reports.views.self_assessment_views import SelfAssessmentReportCSV
 
+from nti.app.products.courseware_reports.views.summary_views import CourseSummaryReportPdf
+
 from nti.ntiids.ntiids import find_object_with_ntiid
 
 from nti.app.assessment.tests import RegisterAssignmentLayerMixin
@@ -371,6 +373,63 @@ class TestCourseSummaryReport(ApplicationLayerTest):
         site_admin_environ = self._make_extra_environ(username='harp4162')
         res = self.testapp.get(report_href, extra_environ=site_admin_environ)
         assert_that(res, has_property('content_type', 'application/pdf'))
+
+    @WithSharedApplicationMockDS(users=True, testapp=True, default_authenticate=True)
+    def testCourseSummaryReportPdf(self):
+        course_url = '/dataserver2/%2B%2Betc%2B%2Bhostsites/platform.ou.edu/%2B%2Betc%2B%2Bsite/Courses/Fall2013/CLC3403_LawAndJustice'
+        res = self.testapp.get(course_url)
+        course_ntiid = res.json_body['NTIID']
+
+        # create assignment in parent course
+        evaluations_url = course_url + '/CourseEvaluations'
+        params = {
+            "MimeType": "application/vnd.nextthought.assessment.assignment",
+            "title": "created_by_parent"
+        }
+        res = self.testapp.post_json(evaluations_url, params=params, status=201)
+        assignment1_ntiid = res.json_body['NTIID']
+
+        # create assignment in child course
+        section_evaluations_url = course_url + '/SubInstances/01/CourseEvaluations'
+        params = {
+            "MimeType": "application/vnd.nextthought.assessment.assignment",
+            "title": "created_by_child"
+        }
+        res = self.testapp.post_json(section_evaluations_url, params=params, status=201)
+        assignment2_ntiid = res.json_body['NTIID']
+
+        report_href = course_url + "/@@" + VIEW_COURSE_SUMMARY
+        res = self.testapp.get(report_href)
+        assert_that(res, has_property('content_type', 'application/pdf'))
+
+        # verify assignments
+        with mock_dataserver.mock_db_trans(self.ds, site_name='platform.ou.edu'):
+            # parent course
+            course = find_object_with_ntiid(course_ntiid)
+            view = CourseSummaryReportPdf(course, self.request)
+
+            stats = view._build_assignment_data()
+            assert_that(stats, has_length(0))
+
+            assignmetn1 = find_object_with_ntiid(assignment1_ntiid)
+            assignmetn1.publish()
+
+            stats = view._build_assignment_data()
+            assert_that(stats, has_length(1))
+
+            # child course
+            child_course = course.SubInstances['01']
+            view = CourseSummaryReportPdf(child_course, self.request)
+
+            stats = view._build_assignment_data()
+            assert_that(stats, has_length(1))
+
+            assignmetn2 = find_object_with_ntiid(assignment2_ntiid)
+            assignmetn2.publish()
+
+            stats = view._build_assignment_data()
+            assert_that(stats, has_length(2))
+
 
 from nti.assessment.submission import AssignmentSubmission
 from nti.assessment.submission import QuestionSetSubmission
