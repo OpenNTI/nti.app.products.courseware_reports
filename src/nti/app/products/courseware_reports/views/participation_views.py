@@ -107,6 +107,11 @@ class StudentParticipationReportPdf(AbstractCourseReportView):
     TopicCreated = namedtuple('TopicCreated',
                               ('topic', 'topic_name', 'forum_name', 'created'))
 
+    @property
+    def filename(self):
+        user_prefix = self.user_as_affix(self.student_user, user_info=self.user_info)
+        return "%s_%s_%s" % (user_prefix, self.course_name(), self.request.view_name)
+
     @Lazy
     def student_user(self):
         return IUser(self.context)
@@ -115,8 +120,12 @@ class StudentParticipationReportPdf(AbstractCourseReportView):
     def intids_created_by_student(self):
         return self.md_catalog['creator'].apply({'any_of': (self.context.Username,)})
 
+    @Lazy
+    def user_info(self):
+        return self.build_user_info(self.student_user)
+
     def _build_user_info(self, options):
-        options['user'] = self.build_user_info(self.student_user)
+        options['user'] = self.user_info
 
     def _build_forum_data(self, options):
         course = self.course
