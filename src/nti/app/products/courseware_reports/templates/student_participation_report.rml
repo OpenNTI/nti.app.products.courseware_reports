@@ -181,11 +181,12 @@
 
 			<blockTable style='default'
 						alignment="left"
-						colWidths="54% 10% 15% 25% 10%"
+						colWidths="34% 10% 14% 14% 18% 10%"
 						tal:condition="options/video_completion"
 						repeatRows="1">
 				<tr>
 					<td>Video Title</td>
+					<td>Video Duration</td>
 					<td>View sessions</td>
 					<td>Total watch time</td>
 					<td>Average time/session</td>
@@ -193,6 +194,7 @@
 				</tr>
 				<tr tal:repeat="item options/video_completion">
 					<td><para style="data" tal:content="python:item['title']">The Video Title</para></td>
+					<td tal:content="item/video_duration|default">-</td>
 					<td tal:content="item/session_count|default">-</td>
 					<td tal:content="item/total_watch_time|default">-</td>
 					<td tal:content="item/average_session_watch_time|default">-</td>
@@ -208,7 +210,7 @@
 
 			<blockTable style='default'
 						alignment="left"
-						colWidths="54% 10% 15% 25%"
+						colWidths="45% 15% 20% 20%"
 						tal:condition="options/resource_completion"
 						repeatRows="1">
 				<tr>
