@@ -280,7 +280,7 @@ class CourseRosterReportCSV(AbstractCourseRosterReport):
         response.content_encoding = 'identity'
         response.content_type = 'text/csv; charset=UTF-8'
         filename = '%s_course_roster_report.csv' % self.course_name()
-        response.content_disposition = 'attachment; filename=\"%s\"' % filename
+        response.content_disposition = 'attachment; filename="%s"' % filename
 
         stream = BytesIO()
         writer = csv.writer(stream)
