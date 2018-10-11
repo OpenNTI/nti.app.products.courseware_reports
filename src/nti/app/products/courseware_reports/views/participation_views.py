@@ -307,6 +307,7 @@ class StudentParticipationReportPdf(AbstractCourseReportView):
 
             data = {}
             data['title'] = video.title
+            data['video_duration'] = video.video_duration
             data['view_count'] = video.view_event_count
             data['session_count'] = video.session_count
             data['total_watch_time'] = video.watch_times.average_total_watch_time
