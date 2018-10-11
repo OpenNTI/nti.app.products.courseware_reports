@@ -140,7 +140,7 @@ class UserEnrollmentReportPdf(AbstractUserEnrollmentView):
 
     @property
     def filename(self):
-        return '%s_%s.pdf' % (self.user_as_affix(self.context, self.request), self.request.view_name)
+        return '%s_%s.pdf' % (self.user_as_affix(self.context), self.request.view_name)
 
     def generate_footer(self):
         date = self._adjust_date(datetime.utcnow())
