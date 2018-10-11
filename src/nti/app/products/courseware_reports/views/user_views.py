@@ -61,9 +61,6 @@ class AbstractUserEnrollmentView(AbstractReportView):
 
         self.options = {}
 
-        if request.view_name:
-            self.filename = request.view_name
-
     def get_user_info(self):
         return self.build_user_info(self.context)
 
@@ -141,6 +138,10 @@ class UserEnrollmentReportPdf(AbstractUserEnrollmentView):
 
     report_title = _(u'User Enrollment Report')
 
+    @property
+    def filename(self):
+        return '%s_%s.pdf' % (self.user_as_affix(self.context, self.request), self.request.view_name)
+
     def generate_footer(self):
         date = self._adjust_date(datetime.utcnow())
         date = date.strftime('%b %d, %Y %I:%M %p')
@@ -174,7 +175,7 @@ class UserEnrollmentReportCSV(AbstractUserEnrollmentView):
         response = self.request.response
         response.content_encoding = 'identity'
         response.content_type = 'text/csv; charset=UTF-8'
-        filename = "%s_enrollment_report.csv" % self.context.username
+        filename = "%s_%s.csv" % (self.user_as_affix(self.context), self.request.view_name)
         response.content_disposition = 'attachment; filename="%s"' % filename
 
         stream = BytesIO()

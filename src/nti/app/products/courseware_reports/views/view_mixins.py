@@ -86,6 +86,10 @@ class AbstractCourseReportView(AbstractReportView):
     An abstract report view that can be used on something that can be adapted
     to an :class:`ICourseInstance`.
     """
+    @property
+    def filename(self):
+        course_name = self.course_name()
+        return "%s_%s" % (course_name, self.request.view_name) if course_name else self.request.view_name
 
     def _check_access(self):
         if is_admin_or_site_admin(self.remoteUser):
