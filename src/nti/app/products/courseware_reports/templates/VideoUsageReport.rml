@@ -20,7 +20,7 @@
 		</h2>
 
 			<para style="subdesc" spaceAfter=".2in"
-				tal:condition="options/top_video_usage">
+				tal:condition="options/top_video_usage | nothing">
 					The following tables show user resource activity in ${view/course_name}. Top videos are sorted by view
 					count, and the table of all videos is sorted by title. 'Average Session Length' is the average amount of
 					time a user spends on a particular video in one session, and 'Average Time Spent on Video' refers to the
@@ -45,7 +45,7 @@
 					<td><para style="header_r">76-100%</para></td>
 				</tr>
 
-				<tr tal:repeat="item options/top_videos">
+				<tr tal:repeat="item options/top_video_usage | nothing">
 					<td><para tal:content="item/title" style="data">Video Title</para></td>
 					<td tal:content="item/video_duration" style="data">Video Duration</td>
 					<td tal:content="item/session_count" style="data">Session Count</td>
@@ -79,7 +79,7 @@
 					<td><para style="header_r">76-100%</para></td>
 				</tr>
 
-				<tr tal:repeat="item options/all_videos">
+				<tr tal:repeat="item options/all_video_usage | nothing">
 					<td><para tal:content="item/title" style="data">Video Title</para></td>
 					<td tal:content="item/video_duration" style="data">Video Duration</td>
 					<td tal:content="item/session_count" style="data">Session Count</td>

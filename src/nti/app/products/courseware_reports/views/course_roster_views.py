@@ -144,9 +144,6 @@ class AbstractCourseRosterReport(AbstractCourseReportView,
 
         self.options = {}
 
-        if request.view_name:
-            self.filename = request.view_name
-
 
 @view_config(context=ICourseInstance,
              request_method='GET',
@@ -282,7 +279,8 @@ class CourseRosterReportCSV(AbstractCourseRosterReport):
         response = self.request.response
         response.content_encoding = 'identity'
         response.content_type = 'text/csv; charset=UTF-8'
-        response.content_disposition = 'attachment; filename="course_roster_report.csv"'
+        filename = '%s_course_roster_report.csv' % self.course_name()
+        response.content_disposition = 'attachment; filename="%s"' % filename
 
         stream = BytesIO()
         writer = csv.writer(stream)
