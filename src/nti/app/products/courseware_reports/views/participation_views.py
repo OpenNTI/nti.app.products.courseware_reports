@@ -12,7 +12,9 @@ logger = __import__('logging').getLogger(__name__)
 import operator
 
 from numbers import Number
+
 from six import string_types
+
 from collections import namedtuple
 from collections import OrderedDict
 from collections import defaultdict
@@ -26,7 +28,7 @@ from zope.cachedescriptors.property import Lazy
 from pyramid.view import view_config
 from pyramid.traversal import find_interface
 
-from nti.app.assessment.interfaces import IUsersCourseAssignmentHistory
+from nti.app.assessment.common.history import get_most_recent_history_item
 
 from nti.app.products.courseware.interfaces import ICourseInstanceEnrollment
 from nti.app.products.courseware.interfaces import IResourceUsageStats
@@ -52,24 +54,16 @@ from nti.app.products.courseware_reports.views.view_mixins import AbstractCourse
 from nti.app.products.courseware_reports.views.view_mixins import _get_enrollment_scope_dict
 
 from nti.app.products.gradebook.interfaces import IGrade
-from nti.app.products.gradebook.assignments import get_course_assignments
 
 from nti.assessment.interfaces import IQAssignment
 from nti.assessment.interfaces import IQAssignmentDateContext
-
-from nti.contentlibrary.indexed_data import get_catalog
 
 from nti.contenttypes.completion.utils import get_completable_items_for_user
 
 from nti.contenttypes.courses.interfaces import ICourseEnrollments
 from nti.contenttypes.courses.interfaces import ICourseSubInstance
-from nti.contenttypes.courses.interfaces import ICourseCatalogEntry
 
-from nti.contenttypes.presentation import RELATED_WORK
-
-from nti.contenttypes.presentation.interfaces import INTIRelatedWorkRef
 from nti.contenttypes.presentation.interfaces import INTIVideo
-
 
 from nti.dataserver.interfaces import IUser
 from nti.dataserver.interfaces import IDeletedObjectPlaceholder
@@ -79,10 +73,6 @@ from nti.dataserver.contenttypes.forums.interfaces import ICommunityBoard
 from nti.dataserver.contenttypes.forums.interfaces import ICommunityForum
 from nti.dataserver.contenttypes.forums.interfaces import IGeneralForumComment
 from nti.dataserver.contenttypes.forums.interfaces import ICommunityHeadlineTopic
-
-from nti.ntiids.ntiids import is_ntiid_of_type
-
-from nti.site.site import get_component_hierarchy_names
 
 from nti.zope_catalog.catalog import ResultSet
 
@@ -232,14 +222,14 @@ class StudentParticipationReportPdf(AbstractCourseReportView):
             title_to_count.items())
 
     def _build_assignment_data(self, options):
-        histories = component.getMultiAdapter((self.course, self.student_user),
-                                              IUsersCourseAssignmentHistory)
-
         asg_data = list()
         date_context = IQAssignmentDateContext(self.course)
 
         for assignment in self._visible_assignments:
-            history_item = histories.get(assignment.ntiid)
+            # XXX: Not ideal...
+            history_item = get_most_recent_history_item(self.student_user,
+                                                        self.course,
+                                                        assignment)
             if history_item:
                 grade_value = getattr(IGrade(history_item, None), 'value', '')
                 # Convert the webapp's "number - letter" scheme to a number, iff
@@ -255,8 +245,7 @@ class StudentParticipationReportPdf(AbstractCourseReportView):
             else:
                 grade_value = ''
                 submitted = ''
-            due_date = date_context.of(
-                assignment).available_for_submission_ending
+            due_date = date_context.of(assignment).available_for_submission_ending
             submitted_late = submitted > due_date if due_date and submitted else False
 
             asg_data.append(_AssignmentInfo(assignment.title, submitted,
