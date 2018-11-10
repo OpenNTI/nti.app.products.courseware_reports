@@ -284,7 +284,7 @@ class TestForumParticipationReport(ApplicationLayerTest):
                                status=201,
                                extra_environ=self._make_extra_environ(username='harp4162'))
 
-        
+
         forum_href = board_href + '/Forum'
         instructor_environ = self._make_extra_environ(username='harp4162')
 
@@ -313,7 +313,7 @@ class TestTopicParticipationReport(ApplicationLayerTest):
         course_res = self.testapp.get(course_rel).json_body
         board_href = course_res['Discussions']['href']
 
-        
+
         instructor_environ = self._make_extra_environ(username='harp4162')
 
         forum_href = board_href + '/Forum'
@@ -322,8 +322,8 @@ class TestTopicParticipationReport(ApplicationLayerTest):
                                             'title':'Forum'},
                                status=201,
                                extra_environ=instructor_environ)
-        
-        
+
+
 
         # Create a topic
         res = self.testapp.post_json(forum_href,
@@ -485,6 +485,10 @@ class TestAssignmentSummaryReport(RegisterAssignmentLayerMixin,
                                'tag:nextthought.com,2011-10:NTI-CourseInfo-Fall2013_CLC3403_LawAndJustice',
                                status=201)
 
+        assignment_res = self.testapp.get(assignment_href)
+        start_href = self.require_link_href_with_rel(assignment_res.json_body,
+                                                     'Commence')
+        self.testapp.post(start_href)
         self.testapp.post_json(assignment_href, ext_obj)
 
         # Now we have proper link
