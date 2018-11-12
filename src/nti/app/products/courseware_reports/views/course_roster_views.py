@@ -161,6 +161,10 @@ class CourseRosterReportPdf(AbstractCourseRosterReport):
 
     report_title = _(u'Course Roster Report')
 
+    @property
+    def filename(self):
+        return '%s_course_roster_report.pdf' % self.course_name()
+
     def __call__(self):
         self._check_access()
         options = self.options
