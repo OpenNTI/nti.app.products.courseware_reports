@@ -28,8 +28,6 @@ from nti.coremetadata.interfaces import ILastSeenProvider
 from nti.dataserver.interfaces import IUser
 from nti.dataserver.interfaces import ISiteAdminUtility
 
-from nti.analytics.stats.interfaces import IActivitySource
-
 from nti.app.products.courseware_reports import MessageFactory as _
 from nti.app.products.courseware_reports import VIEW_USER_ENROLLMENT
 
@@ -44,6 +42,8 @@ from nti.contenttypes.courses.utils import get_context_enrollment_records
 
 from nti.dataserver.authorization import is_admin
 from nti.dataserver.authorization import is_site_admin
+
+from nti.namedfile.file import safe_filename
 
 logger = __import__('logging').getLogger(__name__)
 
@@ -140,7 +140,8 @@ class UserEnrollmentReportPdf(AbstractUserEnrollmentView):
 
     @property
     def filename(self):
-        return '%s_%s.pdf' % (self.user_as_affix(self.context), self.request.view_name)
+        result = '%s_%s.pdf' % (self.user_as_affix(self.context), self.request.view_name)
+        return safe_filename(result)
 
     def generate_footer(self):
         date = self._adjust_date(datetime.utcnow())

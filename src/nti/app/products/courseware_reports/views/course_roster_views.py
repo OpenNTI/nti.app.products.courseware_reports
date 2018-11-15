@@ -27,8 +27,6 @@ from zc.displayname.interfaces import IDisplayNameGenerator
 
 from zope import component
 
-from nti.analytics.stats.interfaces import IActivitySource
-
 from nti.app.contenttypes.completion.adapters import CompletionContextProgressFactory
 
 from nti.app.products.courseware_reports import MessageFactory as _
@@ -53,6 +51,8 @@ from nti.dataserver.users.interfaces import IFriendlyNamed
 from nti.dataserver.users.users import User
 
 from nti.mailer.interfaces import IEmailAddressable
+
+from nti.namedfile.file import safe_filename
 
 logger = __import__('logging').getLogger(__name__)
 
@@ -163,7 +163,8 @@ class CourseRosterReportPdf(AbstractCourseRosterReport):
 
     @property
     def filename(self):
-        return '%s_course_roster_report.pdf' % self.course_name()
+        result = '%s_course_roster_report.pdf' % self.course_name()
+        return safe_filename(result)
 
     def __call__(self):
         self._check_access()

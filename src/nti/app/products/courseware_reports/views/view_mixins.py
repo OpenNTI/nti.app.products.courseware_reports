@@ -36,6 +36,8 @@ from nti.dataserver.interfaces import IEnumerableEntityContainer
 
 from nti.dataserver.users.interfaces import IFriendlyNamed
 
+from nti.namedfile.file import safe_filename
+
 logger = __import__('logging').getLogger(__name__)
 
 
@@ -89,7 +91,8 @@ class AbstractCourseReportView(AbstractReportView):
     @property
     def filename(self):
         course_name = self.course_name()
-        return "%s_%s" % (course_name, self.request.view_name) if course_name else self.request.view_name
+        result = "%s_%s" % (course_name, self.request.view_name) if course_name else self.request.view_name
+        return safe_filename(result)
 
     def _check_access(self):
         if is_admin_or_site_admin(self.remoteUser):

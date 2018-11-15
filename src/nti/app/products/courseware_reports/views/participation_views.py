@@ -74,6 +74,8 @@ from nti.dataserver.contenttypes.forums.interfaces import ICommunityForum
 from nti.dataserver.contenttypes.forums.interfaces import IGeneralForumComment
 from nti.dataserver.contenttypes.forums.interfaces import ICommunityHeadlineTopic
 
+from nti.namedfile.file import safe_filename
+
 from nti.zope_catalog.catalog import ResultSet
 
 
@@ -100,7 +102,8 @@ class StudentParticipationReportPdf(AbstractCourseReportView):
     @property
     def filename(self):
         user_prefix = self.user_as_affix(self.student_user, user_info=self.user_info)
-        return "%s_%s_%s" % (user_prefix, self.course_name(), self.request.view_name)
+        result = "%s_%s_%s" % (user_prefix, self.course_name(), self.request.view_name)
+        return safe_filename(result)
 
     @Lazy
     def student_user(self):
