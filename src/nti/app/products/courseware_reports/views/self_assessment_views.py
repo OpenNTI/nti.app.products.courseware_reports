@@ -32,6 +32,8 @@ from nti.dataserver.users.interfaces import IFriendlyNamed
 
 from nti.dataserver.users.users import User
 
+from nti.namedfile.file import safe_filename
+
 logger = __import__('logging').getLogger(__name__)
 
 
@@ -315,7 +317,7 @@ class SelfAssessmentReportCSV(AbstractSelfAssessmentReport):
         response.content_encoding = 'identity'
         response.content_type = 'text/csv; charset=UTF-8'
         filename = "%s_self_assessment_report.csv" % self.course_name()
-        response.content_disposition = 'attachment; filename="%s"' % filename
+        response.content_disposition = 'attachment; filename="%s"' % safe_filename(filename)
 
         stream = BytesIO()
         writer = csv.writer(stream)

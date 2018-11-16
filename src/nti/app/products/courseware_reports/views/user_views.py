@@ -177,7 +177,7 @@ class UserEnrollmentReportCSV(AbstractUserEnrollmentView):
         response.content_encoding = 'identity'
         response.content_type = 'text/csv; charset=UTF-8'
         filename = "%s_%s.csv" % (self.user_as_affix(self.context), self.request.view_name)
-        response.content_disposition = 'attachment; filename="%s"' % filename
+        response.content_disposition = 'attachment; filename="%s"' % safe_filename(filename)
 
         stream = BytesIO()
         writer = csv.writer(stream)
