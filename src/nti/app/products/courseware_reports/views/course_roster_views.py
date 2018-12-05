@@ -37,12 +37,16 @@ from nti.app.products.courseware_reports import VIEW_ALL_COURSE_ROSTER
 from nti.app.products.courseware_reports.views.view_mixins import AbstractReportView
 from nti.app.products.courseware_reports.views.view_mixins import AbstractCourseReportView
 
+from nti.appserver.pyramid_authorization import has_permission
+
 from nti.contenttypes.courses.interfaces import ICourseCatalog
 from nti.contenttypes.courses.interfaces import ICourseInstance
 from nti.contenttypes.courses.interfaces import ICourseEnrollments
 from nti.contenttypes.courses.interfaces import ICourseCatalogEntry
 
 from nti.coremetadata.interfaces import ILastSeenProvider
+
+from nti.dataserver.authorization import ACT_READ
 
 from nti.dataserver.authorization import is_admin_or_site_admin
 
@@ -205,6 +209,10 @@ class AbstractAllCourseReport(RosterReportMixin):
                                   start_date,
                                   instructors)
 
+    def _is_entry_visible(self, entry):
+        # XXX: Should this be in the catalog iterator itself?
+        return has_permission(ACT_READ, entry)
+
     def _get_entries_and_courses(self):
         """
         Return a sorted, deduped set of course objects.
@@ -213,7 +221,8 @@ class AbstractAllCourseReport(RosterReportMixin):
         catalog = component.queryUtility(ICourseCatalog)
         if catalog is not None:
             for entry in catalog.iterCatalogEntries():
-                entries.add(entry)
+                if self._is_entry_visible(entry):
+                    entries.add(entry)
 
         def sort_key(entry_obj):
             title = entry_obj.title

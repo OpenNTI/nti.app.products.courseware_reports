@@ -291,7 +291,9 @@ class StudentParticipationReportPdf(AbstractCourseReportView):
             viewed_resource_ntiids.add(resource.ntiid)
             resource_data.append(data)
 
-        non_viewed_resources = [{'title': getattr(v,'title','') or getattr(v,'label','')} for k,v in self._visible_resources.items() if k not in viewed_resource_ntiids]
+        non_viewed_resources = [{'title': getattr(v,'title','') or getattr(v,'label','')}
+                                for k,v in self._visible_resources.items()
+                                if k not in viewed_resource_ntiids]
 
         resource_data = resource_data + non_viewed_resources
         resource_data = sorted(resource_data, key=lambda x: x['title'])
