@@ -27,12 +27,16 @@ from zc.displayname.interfaces import IDisplayNameGenerator
 
 from zope import component
 
+from zope.cachedescriptors.property import Lazy
+
 from nti.app.contenttypes.completion.adapters import CompletionContextProgressFactory
 
 from nti.app.products.courseware_reports import MessageFactory as _
 
 from nti.app.products.courseware_reports import VIEW_COURSE_ROSTER
 from nti.app.products.courseware_reports import VIEW_ALL_COURSE_ROSTER
+
+from nti.app.products.courseware_reports.interfaces import IRosterReportSupplementalFields
 
 from nti.app.products.courseware_reports.views.view_mixins import AbstractReportView
 from nti.app.products.courseware_reports.views.view_mixins import AbstractCourseReportView
@@ -78,6 +82,10 @@ class RosterReportMixin(AbstractReportView):
         if friendly_named.realname and displayname != friendly_named.realname:
             displayname = '%s (%s)' % (friendly_named.realname, displayname)
         return displayname
+
+    @Lazy
+    def supplemental_field_utility(self):
+        return component.queryUtility(IRosterReportSupplementalFields)
 
     def _build_enrollment_info(self, course):
         enrollments = []
@@ -128,6 +136,10 @@ class RosterReportMixin(AbstractReportView):
             accessed_time = self._adjust_date(provider.lastSeenTime) if provider.lastSeenTime else enrollment_time
 
             enrollRecord["lastAccessed"] = self._format_datetime(accessed_time) if accessed_time else None
+            if self.supplemental_field_utility:
+                user_supp_data = self.supplemental_field_utility.get_user_fields(user)
+                if user_supp_data:
+                    enrollRecord.update(user_supp_data)
 
             enrollments.append(enrollRecord)
 
@@ -303,6 +315,11 @@ class CourseRosterReportCSV(AbstractCourseRosterReport):
                       'Date Enrolled',
                       'Last Seen',
                       'Completion']
+        if self.supplemental_field_utility:
+            display_dict = self.supplemental_field_utility.get_field_display_values()
+            supp_fields = self.supplemental_field_utility.get_ordered_fields()
+            for supp_field in supp_fields:
+                header_row.append(display_dict.get(supp_field))
 
         def _tx_string(s):
             if s is not None and isinstance(s, six.text_type):
@@ -322,6 +339,11 @@ class CourseRosterReportCSV(AbstractCourseRosterReport):
                         record['enrollmentTime'],
                         record['lastAccessed'],
                         record['completion']]
+
+            if self.supplemental_field_utility:
+                supp_fields = self.supplemental_field_utility.get_ordered_fields()
+                for supp_field in supp_fields:
+                    data_row.append(record.get(supp_field))
             _write(data_row, writer, stream)
 
         stream.flush()
@@ -361,6 +383,12 @@ class AllCourseRosterReportCSV(AbstractAllCourseReport):
                       'Last Seen',
                       'Completion']
 
+        if self.supplemental_field_utility:
+            display_dict = self.supplemental_field_utility.get_field_display_values()
+            supp_fields = self.supplemental_field_utility.get_ordered_fields()
+            for supp_field in supp_fields:
+                header_row.append(display_dict.get(supp_field))
+
         def _tx_string(s):
             if s is not None and isinstance(s, six.text_type):
                 s = s.encode('utf-8')
@@ -385,6 +413,11 @@ class AllCourseRosterReportCSV(AbstractAllCourseReport):
                             record['enrollmentTime'],
                             record['lastAccessed'],
                             record['completion']]
+
+                if self.supplemental_field_utility:
+                    supp_fields = self.supplemental_field_utility.get_ordered_fields()
+                    for supp_field in supp_fields:
+                        data_row.append(record.get(supp_field))
                 _write(data_row, writer, stream)
 
         stream.flush()
