@@ -37,17 +37,17 @@ class IRosterReportSupplementalFields(interface.Interface):
     reports.
     """
 
-    def get_user_fields(self, user):
+    def get_user_fields(user):
         """
         Returns a dict of field_name -> value.
         """
 
-    def get_field_display_values(self):
+    def get_field_display_values():
         """
         Returns a dict of field_name -> field_display_name.
         """
 
-    def get_ordered_fields(self):
+    def get_ordered_fields():
         """
         The list of field names in order.
         """
