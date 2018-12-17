@@ -69,7 +69,11 @@ class AbstractFromCourseEvaluator(object):
         pass
 
     def _course_from_context(self, context, user):
-        self.course = find_interface(context, ICourseInstance, strict=False)
+        self.course = component.queryMultiAdapter((context, user), ICourseInstance)
+        if self.course is None:
+            self.course = ICourseInstance(context, None)
+        if self.course is None:
+            self.course = find_interface(context, ICourseInstance, strict=False)
         if self.course is None:
             self.course = find_course_for_user(context, user)
         return self.course
