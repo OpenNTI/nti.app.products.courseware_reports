@@ -13,7 +13,7 @@
         <tal:block tal:define="enrollments python: course_record[1]">
 
         <h2 style="h2" spaceAfter=".2in" spaceBefore=".1in"
-            tal:content="entry_record/title">
+            tal:content="string:${entry_record/title} (${entry_record/provider_unique_id})">
              Course Title
         </h2>
         <h3 style="h3" spaceAfter=".1in" spaceBefore=".1in"

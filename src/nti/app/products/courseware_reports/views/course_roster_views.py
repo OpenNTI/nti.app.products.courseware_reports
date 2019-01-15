@@ -67,7 +67,7 @@ logger = __import__('logging').getLogger(__name__)
 
 CatalogEntryRecord = \
     namedtuple('CatalogEntryRecord',
-               ('title', 'start_date', 'instructors'))
+               ('title', 'start_date', 'instructors', 'provider_unique_id'))
 
 
 class RosterReportMixin(AbstractReportView):
@@ -219,7 +219,8 @@ class AbstractAllCourseReport(RosterReportMixin):
         title = self._get_title(entry)
         return CatalogEntryRecord(title,
                                   start_date,
-                                  instructors)
+                                  instructors,
+                                  provider_unique_id=entry.ProviderUniqueID)
 
     def _is_entry_visible(self, entry):
         # XXX: Should this be in the catalog iterator itself?
@@ -376,7 +377,7 @@ class AllCourseRosterReportCSV(AbstractAllCourseReport):
         stream = BytesIO()
         writer = csv.writer(stream)
 
-        header_row = ['Course Name', 'Course Start Date',
+        header_row = ['Course Name', 'Course Provider Unique ID', 'Course Start Date',
                       'Course Instructors',
                       'Name', 'User Name', 'Email',
                       'Date Enrolled',
@@ -405,6 +406,7 @@ class AllCourseRosterReportCSV(AbstractAllCourseReport):
             enrollments = self._build_enrollment_info(course)
             for record in enrollments:
                 data_row = [entry.title,
+                            entry.provider_unique_id,
                             entry.start_date,
                             entry.instructors,
                             record['displayname'],
