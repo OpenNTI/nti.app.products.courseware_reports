@@ -22,6 +22,7 @@ from hamcrest import none
 from hamcrest import described_as
 from hamcrest import has_length
 from hamcrest import equal_to
+from hamcrest import greater_than_or_equal_to
 
 
 import csv
@@ -30,8 +31,15 @@ from six import StringIO
 
 from zope import interface
 
+from zope import lifecycleevent
+
 from nti.app.analytics.usage_stats import _VideoInfo
 from nti.app.analytics.usage_stats import _AverageWatchTimes
+
+from nti.contentfragments.interfaces import SanitizedHTMLContentFragment
+
+from nti.app.products.courseware.discussions import _extract_content
+from nti.app.products.courseware.discussions import create_topics
 
 from nti.app.products.courseware_reports import VIEW_COURSE_SUMMARY
 from nti.app.products.courseware_reports import VIEW_ASSIGNMENT_SUMMARY
@@ -72,11 +80,27 @@ from nti.app.testing.request_response import DummyRequest
 
 from nti.assessment.survey import QPollSubmission
 
+from nti.contenttypes.courses.discussions.interfaces import ICourseDiscussions
+from nti.contenttypes.courses.discussions.interfaces import NTI_COURSE_BUNDLE
+
+from nti.contenttypes.courses.discussions.model import CourseDiscussion
+
+from nti.contenttypes.courses.discussions.utils import get_topic_key
+
+from nti.contenttypes.courses.interfaces import ES_ALL
+from nti.contenttypes.courses.interfaces import ICourseEnrollmentManager
 from nti.contenttypes.courses.interfaces import ICourseInstance
+
+from nti.dataserver.contenttypes.forums.post import GeneralForumComment
+
+from nti.dataserver.users.common import set_user_creation_site
 
 from nti.contenttypes.presentation.interfaces import INTIVideo
 
 from nti.dataserver.tests import mock_dataserver
+
+GIF_DATAURL = 'data:image/gif;base64,R0lGODlhCwALAIAAAAAA3pn/ZiH5BAEAAAEALAAAAAALAAsAAAIUhA+hkcuO4lmNVindo7qyrIXiGBYAOw=='
+
 
 def _require_link_with_title(item, title):
     assert_that(item,
@@ -340,6 +364,23 @@ class TestCourseSummaryReport(ApplicationLayerTest):
 
     default_origin = b'http://janux.ou.edu'
 
+    contents = u"""
+    	This is the contents of the headline post
+
+    	Notice --- it has leading and trailing spaces, and even
+    	commas and blank lines. You can\u2019t ignore the special apostrophe.
+    	"""
+
+    vendor_info = {
+        "NTI": {
+            "Forums": {
+                "AutoCreate": True,
+                "HasInClassDiscussions": True,
+                "HasOpenDiscussions": True
+            },
+        }
+    }
+
     @WithSharedApplicationMockDS(users=True, testapp=True, default_authenticate=True)
     def test_application_view_empty_report(self):
         # Trivial test to make sure we can fetch the report even with
@@ -375,7 +416,8 @@ class TestCourseSummaryReport(ApplicationLayerTest):
         assert_that(res, has_property('content_type', 'application/pdf'))
 
     @WithSharedApplicationMockDS(users=True, testapp=True, default_authenticate=True)
-    def testCourseSummaryReportPdf(self):
+    @fudge.patch('nti.app.products.courseware.discussions.get_vendor_info')
+    def testCourseSummaryReportPdf(self, mock_gvi):
         course_url = '/dataserver2/%2B%2Betc%2B%2Bhostsites/platform.ou.edu/%2B%2Betc%2B%2Bsite/Courses/Fall2013/CLC3403_LawAndJustice'
         res = self.testapp.get(course_url)
         course_ntiid = res.json_body['NTIID']
@@ -430,6 +472,109 @@ class TestCourseSummaryReport(ApplicationLayerTest):
             stats = view._build_assignment_data()
             assert_that(stats, has_length(2))
 
+        janux_user = u'janux_user'
+        mock_gvi.is_callable().with_args().returns(self.vendor_info)
+
+        def new_discussion():
+            discussion = CourseDiscussion()
+            content = _extract_content((self.contents,))[0]
+            discussion.body = (SanitizedHTMLContentFragment(content),)
+            discussion.scopes = (ES_ALL,)
+            discussion.title = u'title'
+            discussion.id = u"%s://%s" % (NTI_COURSE_BUNDLE, 'foo')
+            return discussion
+
+        def new_note():
+            ext_file = {
+                'MimeType': 'application/vnd.nextthought.contentfile',
+                'value': GIF_DATAURL,
+                'filename': r'/Users/ichigo/file.gif',
+                'name': 'ichigo'
+            }
+            ext_obj = {"Class": "Note",
+                       "ContainerId": 'tag:nextthought.com,2011-10:OU-HTML-CLC3403_LawAndJustice.course_summary',
+                       "MimeType": "application/vnd.nextthought.note",
+                       "applicableRange": {"Class": "ContentRangeDescription",
+                                           "MimeType": "application/vnd.nextthought.contentrange.contentrangedescription"},
+                       "body": ['janux_user', ext_file],
+                       "title": "bleach"}
+
+            path = '/dataserver2/users/janux_user/Objects/'
+            self.testapp.post_json(path, ext_obj,
+                                   extra_environ=janux_user_environ,
+                                   headers={"Content-Type": b"application/json"},
+                                   status=201)
+
+        def new_highlight():
+            self.testapp.post_json('/dataserver2/users/janux_user/Pages',
+                                   {'Class': 'Highlight',
+                                    'MimeType': 'application/vnd.nextthought.highlight',
+                                    'ContainerId': 'tag:nextthought.com,2011-10:OU-HTML-CLC3403_LawAndJustice.course_summary',
+                                    'selectedText': "This is the selected text",
+                                    'applicableRange': {'Class': 'ContentRangeDescription'}
+                                    },
+                                   status=201,
+                                   extra_environ=janux_user_environ)
+
+
+        # verify engagement data
+        with mock_dataserver.mock_db_trans(self.ds, site_name='janux.ou.edu'):
+            user = self._create_user(janux_user, external_value={'realname': 'Test User',
+                                                                 'email': 'test@user.com'})
+            set_user_creation_site(user, 'janux.ou.edu')
+            lifecycleevent.modified(user)
+            course = find_object_with_ntiid(course_ntiid)
+            enrollment_manager = ICourseEnrollmentManager(course)
+            enrollment_manager.enroll(user)
+
+        janux_user_environ = self._make_extra_environ(janux_user)
+
+        new_note()
+        new_highlight()
+
+        with mock_dataserver.mock_db_trans(self.ds, site_name='janux.ou.edu'):
+            course = find_object_with_ntiid(course_ntiid)
+            discussions = ICourseDiscussions(course)
+            discussion = discussions[u'foo'] = new_discussion()
+            create_topics(discussion)
+            key = get_topic_key(discussion)
+            forum = course.Discussions.values()[0]
+            topic = forum[key]
+            post = GeneralForumComment()
+            post.title = 'Janux User Comment'
+            post.description = 'A comment by janux user'
+            user = self._get_user(janux_user)
+            post.creator = user
+            post.body = ['Janux User Comment Body']
+            post.__parent__ = topic
+            topic['janux_user_post'] = post
+            lifecycleevent.created(post)
+            lifecycleevent.added(post)
+        added_stats = ('Notes', 'Highlights', 'Discussion Comments')
+
+        with mock_dataserver.mock_db_trans(self.ds, site_name='janux.ou.edu'):
+            # Check child site stats exist as expected
+            course = find_object_with_ntiid(course_ntiid)
+            view = CourseSummaryReportPdf(course, self.request)
+            stats = {}
+            view._build_engagement_data(stats)
+            engagement_data = stats['engagement_data']
+            for stat in engagement_data.for_credit:
+                assert_that(stat.count, equal_to(0))
+            for stat in engagement_data.non_credit:
+                if stat.name in added_stats:
+                    assert_that(stat.count, greater_than_or_equal_to(1))
+
+        # assert parent site doesn't show child site data
+        with mock_dataserver.mock_db_trans(self.ds, site_name='platform.ou.edu'):
+            view = CourseSummaryReportPdf(course, self.request)
+            stats = {}
+            view._build_engagement_data(stats)
+            engagement_data = stats['engagement_data']
+            for stat in engagement_data.for_credit:
+                assert_that(stat.count, equal_to(0))
+            for stat in engagement_data.non_credit:
+                assert_that(stat.count, equal_to(0))
 
 from nti.assessment.submission import AssignmentSubmission
 from nti.assessment.submission import QuestionSetSubmission

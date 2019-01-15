@@ -14,6 +14,8 @@ from pyramid.httpexceptions import HTTPForbidden
 
 from zope.cachedescriptors.property import Lazy
 
+from zope.component.hooks import getSite
+
 from zope.security.management import checkPermission
 
 from nti.app.products.courseware_reports import MessageFactory as _
@@ -35,6 +37,8 @@ from nti.dataserver.authorization import is_admin_or_site_admin
 from nti.dataserver.interfaces import IEnumerableEntityContainer
 
 from nti.dataserver.users.interfaces import IFriendlyNamed
+
+from nti.dataserver.users.utils import get_users_by_sites
 
 from nti.namedfile.file import safe_filename
 
@@ -149,6 +153,10 @@ class AbstractCourseReportView(AbstractReportView):
     def intids_created_by_everyone(self):
         return self.md_catalog['creator'].apply({'any_of': self.all_usernames})
 
+    @Lazy
+    def intids_created_by_everyone_in_current_site(self):
+        return self.md_catalog['creator'].apply({'any_of': self.all_usernames_in_current_site})
+
     def for_credit_scope_name(self):
         return self._scope_alias_dict[ES_CREDIT]
 
@@ -177,6 +185,13 @@ class AbstractCourseReportView(AbstractReportView):
     @Lazy
     def all_usernames(self):
         return self._get_users_for_scope(ALL_USERS)
+
+    @Lazy
+    def all_usernames_in_current_site(self):
+        usernames = self.all_usernames
+        current_site = getSite().__name__
+        users_in_site = set([user.username for user in get_users_by_sites((current_site,))])
+        return users_in_site.intersection(usernames)
 
     @Lazy
     def count_all_students(self):
