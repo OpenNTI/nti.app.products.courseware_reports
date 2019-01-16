@@ -48,9 +48,11 @@ from nti.contenttypes.courses.interfaces import ICourseInstance
 from nti.contenttypes.courses.interfaces import ICourseEnrollments
 from nti.contenttypes.courses.interfaces import ICourseCatalogEntry
 
+from nti.contenttypes.courses.utils import is_course_instructor
+
 from nti.coremetadata.interfaces import ILastSeenProvider
 
-from nti.dataserver.authorization import ACT_READ
+from nti.dataserver.authorization import ACT_CONTENT_EDIT
 
 from nti.dataserver.authorization import is_admin_or_site_admin
 
@@ -224,7 +226,8 @@ class AbstractAllCourseReport(RosterReportMixin):
 
     def _is_entry_visible(self, entry):
         # XXX: Should this be in the catalog iterator itself?
-        return has_permission(ACT_READ, entry)
+        # Instructor (who is also child site admin) in section course has read permission to its parent course.
+        return has_permission(ACT_CONTENT_EDIT, entry) or is_course_instructor(entry, self.remoteUser)
 
     def _get_entries_and_courses(self):
         """
