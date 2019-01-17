@@ -14,8 +14,6 @@ from pyramid.httpexceptions import HTTPForbidden
 
 from zope.cachedescriptors.property import Lazy
 
-from zope.component.hooks import getSite
-
 from zope.security.management import checkPermission
 
 from nti.app.products.courseware_reports import MessageFactory as _
@@ -32,13 +30,13 @@ from nti.contenttypes.courses.interfaces import ES_CREDIT
 from nti.contenttypes.courses.interfaces import ICourseInstance
 from nti.contenttypes.courses.interfaces import ICourseCatalogEntry
 
+from nti.contenttypes.courses.utils import get_course_enrollments
+
 from nti.dataserver.authorization import is_admin_or_site_admin
 
 from nti.dataserver.interfaces import IEnumerableEntityContainer
 
 from nti.dataserver.users.interfaces import IFriendlyNamed
-
-from nti.dataserver.users.utils import get_users_by_sites
 
 from nti.namedfile.file import safe_filename
 
@@ -154,8 +152,8 @@ class AbstractCourseReportView(AbstractReportView):
         return self.md_catalog['creator'].apply({'any_of': self.all_usernames})
 
     @Lazy
-    def intids_created_by_everyone_in_current_site(self):
-        return self.md_catalog['creator'].apply({'any_of': self.all_usernames_in_current_site})
+    def intids_created_by_everyone_enrolled_in_course(self):
+        return self.md_catalog['creator'].apply({'any_of': self.all_usernames_enrolled_in_course})
 
     def for_credit_scope_name(self):
         return self._scope_alias_dict[ES_CREDIT]
@@ -187,11 +185,10 @@ class AbstractCourseReportView(AbstractReportView):
         return self._get_users_for_scope(ALL_USERS)
 
     @Lazy
-    def all_usernames_in_current_site(self):
-        usernames = self.all_usernames
-        current_site = getSite().__name__
-        users_in_site = set([user.username for user in get_users_by_sites((current_site,))])
-        return users_in_site.intersection(usernames)
+    def all_usernames_enrolled_in_course(self):
+        enrollments = get_course_enrollments(self.course)
+        usernames = [enrollment.Principal.username for enrollment in enrollments]
+        return usernames
 
     @Lazy
     def count_all_students(self):

@@ -516,7 +516,6 @@ class TestCourseSummaryReport(ApplicationLayerTest):
                                    status=201,
                                    extra_environ=janux_user_environ)
 
-
         # verify engagement data
         with mock_dataserver.mock_db_trans(self.ds, site_name='janux.ou.edu'):
             user = self._create_user(janux_user, external_value={'realname': 'Test User',
@@ -553,7 +552,7 @@ class TestCourseSummaryReport(ApplicationLayerTest):
         added_stats = ('Notes', 'Highlights', 'Discussion Comments')
 
         with mock_dataserver.mock_db_trans(self.ds, site_name='janux.ou.edu'):
-            # Check child site stats exist as expected
+            # Check course stats are correct
             course = find_object_with_ntiid(course_ntiid)
             view = CourseSummaryReportPdf(course, self.request)
             stats = {}
@@ -565,16 +564,6 @@ class TestCourseSummaryReport(ApplicationLayerTest):
                 if stat.name in added_stats:
                     assert_that(stat.count, greater_than_or_equal_to(1))
 
-        # assert parent site doesn't show child site data
-        with mock_dataserver.mock_db_trans(self.ds, site_name='platform.ou.edu'):
-            view = CourseSummaryReportPdf(course, self.request)
-            stats = {}
-            view._build_engagement_data(stats)
-            engagement_data = stats['engagement_data']
-            for stat in engagement_data.for_credit:
-                assert_that(stat.count, equal_to(0))
-            for stat in engagement_data.non_credit:
-                assert_that(stat.count, equal_to(0))
 
 from nti.assessment.submission import AssignmentSubmission
 from nti.assessment.submission import QuestionSetSubmission
