@@ -30,6 +30,8 @@ from nti.contenttypes.courses.interfaces import ES_CREDIT
 from nti.contenttypes.courses.interfaces import ICourseInstance
 from nti.contenttypes.courses.interfaces import ICourseCatalogEntry
 
+from nti.contenttypes.courses.utils import get_course_enrollments
+
 from nti.dataserver.authorization import is_admin_or_site_admin
 
 from nti.dataserver.interfaces import IEnumerableEntityContainer
@@ -149,6 +151,10 @@ class AbstractCourseReportView(AbstractReportView):
     def intids_created_by_everyone(self):
         return self.md_catalog['creator'].apply({'any_of': self.all_usernames})
 
+    @Lazy
+    def intids_created_by_everyone_enrolled_in_course(self):
+        return self.md_catalog['creator'].apply({'any_of': self.all_usernames_enrolled_in_course})
+
     def for_credit_scope_name(self):
         return self._scope_alias_dict[ES_CREDIT]
 
@@ -177,6 +183,12 @@ class AbstractCourseReportView(AbstractReportView):
     @Lazy
     def all_usernames(self):
         return self._get_users_for_scope(ALL_USERS)
+
+    @Lazy
+    def all_usernames_enrolled_in_course(self):
+        enrollments = get_course_enrollments(self.course)
+        usernames = [enrollment.Principal.username for enrollment in enrollments]
+        return usernames
 
     @Lazy
     def count_all_students(self):
