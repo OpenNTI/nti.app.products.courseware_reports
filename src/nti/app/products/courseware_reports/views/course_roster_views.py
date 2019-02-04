@@ -10,6 +10,7 @@ from __future__ import absolute_import
 
 import csv
 import six
+import gevent
 
 from collections import namedtuple
 
@@ -227,7 +228,8 @@ class AbstractAllCourseReport(RosterReportMixin):
     def _is_entry_visible(self, entry):
         # XXX: Should this be in the catalog iterator itself?
         # Instructor (who is also child site admin) in section course has read permission to its parent course.
-        return has_permission(ACT_CONTENT_EDIT, entry) or is_course_instructor(entry, self.remoteUser)
+        return has_permission(ACT_CONTENT_EDIT, entry) \
+            or is_course_instructor(entry, self.remoteUser)
 
     def _get_entries_and_courses(self):
         """
@@ -281,6 +283,7 @@ class AllCourseRosterReportPdf(AbstractAllCourseReport):
         records = []
         entries_courses = self._get_entries_and_courses()
         for entry, course in entries_courses:
+            gevent.sleep(.01)
             enrollments = self._build_enrollment_info(course)
             records.append((entry, enrollments))
         options["course_records"] = records
@@ -406,6 +409,7 @@ class AllCourseRosterReportCSV(AbstractAllCourseReport):
 
         entries_courses = self._get_entries_and_courses()
         for entry, course in entries_courses:
+            gevent.sleep(.01)
             enrollments = self._build_enrollment_info(course)
             for record in enrollments:
                 data_row = [entry.title,
