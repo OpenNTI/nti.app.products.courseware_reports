@@ -5,6 +5,7 @@
 """
 
 from __future__ import print_function, unicode_literals, absolute_import, division
+
 __docformat__ = "restructuredtext en"
 
 logger = __import__('logging').getLogger(__name__)
@@ -37,12 +38,17 @@ from nti.app.products.courseware_reports.views.participation_views import ForumP
 
 from nti.app.products.courseware_reports.views.view_mixins import AbstractCourseReportView
 
-from nti.app.products.gradebook.interfaces import IGradeBook
 from nti.app.products.gradebook.assignments import get_course_assignments
+
 from nti.app.products.gradebook.gradebook import get_assignment_due_date
 
-from nti.contenttypes.courses.interfaces import ICourseInstance
+from nti.app.products.gradebook.interfaces import IGradeBook
+
 from nti.contenttypes.courses.common import get_course_content_units
+
+from nti.contenttypes.courses.interfaces import ICourseInstance
+
+from nti.contenttypes.courses.utils import is_enrolled
 
 from nti.dataserver.interfaces import IDeletedObjectPlaceholder
 
@@ -185,9 +191,9 @@ class CourseSummaryReportPdf(AbstractCourseReportView):
             {'any_of': ('application/vnd.nextthought.highlight',)})
 
         intids_of_notes = intersection(intids_of_notes,
-                                       self.intids_created_by_everyone)
+                                       self.intids_created_by_everyone_enrolled_in_course)
         intids_of_hls = intersection(intids_of_hls,
-                                     self.intids_created_by_everyone)
+                                     self.intids_created_by_everyone_enrolled_in_course)
 
         # all_notes = intids_of_notes
         # all_hls = intids_of_hls
@@ -246,14 +252,16 @@ class CourseSummaryReportPdf(AbstractCourseReportView):
         # Discussions/comments
         discussion_creators = _TopCreators(self)
         comment_creators = _TopCreators(self)
-
         for forum in self.course.Discussions.values():
             for discussion in forum.values():
-                discussion_creators.incr_username(discussion.creator.username)
-                for comment in discussion.values():
-                    if not IDeletedObjectPlaceholder.providedBy(comment):
-                        comment_creators.incr_username(
-                            comment.creator.username)
+                    discussion_creator = discussion.creator
+                    # Empty list if not enrolled
+                    if is_enrolled(self.course, discussion_creator):
+                        discussion_creators.incr_username(discussion_creator.username)
+                    for comment in discussion.values():
+                        if not IDeletedObjectPlaceholder.providedBy(comment):
+                            if is_enrolled(self.course, comment.creator):
+                                comment_creators.incr_username(comment.creator.username)
 
         # Discussions
         for_credit_discussion_count = discussion_creators.for_credit_total
