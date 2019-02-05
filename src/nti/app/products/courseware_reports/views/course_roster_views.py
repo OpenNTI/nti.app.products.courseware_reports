@@ -283,7 +283,7 @@ class AllCourseRosterReportPdf(AbstractAllCourseReport):
         records = []
         entries_courses = self._get_entries_and_courses()
         for entry, course in entries_courses:
-            gevent.sleep(.01)
+            gevent.sleep()
             enrollments = self._build_enrollment_info(course)
             records.append((entry, enrollments))
         options["course_records"] = records
@@ -409,7 +409,7 @@ class AllCourseRosterReportCSV(AbstractAllCourseReport):
 
         entries_courses = self._get_entries_and_courses()
         for entry, course in entries_courses:
-            gevent.sleep(.01)
+            gevent.sleep()
             enrollments = self._build_enrollment_info(course)
             for record in enrollments:
                 data_row = [entry.title,
