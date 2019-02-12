@@ -50,7 +50,7 @@ HEAD_ZCML_STRING = u"""
                             title="Test Report"
                             description="TestDescription"
                             contexts="nti.contenttypes.reports.tests.ITestReportContext"
-                            supported_types="text/csv pdf" />
+                            supported_types="text/csv application/pdf" />
     </configure>
 </configure>
 """
