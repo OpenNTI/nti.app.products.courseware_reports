@@ -219,8 +219,7 @@ class AbstractCourseReportView(AbstractReportView):
         date = date.strftime('%b %d, %Y %I:%M %p')
         title = self.report_title
         course = self.course_name()
-        student = getattr(self, 'student_user', '')
-        return "%s %s %s %s %s" % (title, course, student, date, self.timezone_info_str)
+        return "%s %s %s %s" % (title, course, date, self.timezone_info_str)
 
     def generate_semester(self):
         """

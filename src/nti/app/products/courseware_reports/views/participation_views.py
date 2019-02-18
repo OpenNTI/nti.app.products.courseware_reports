@@ -11,6 +11,8 @@ logger = __import__('logging').getLogger(__name__)
 
 import operator
 
+from datetime import datetime
+
 from numbers import Number
 
 from six import string_types
@@ -108,6 +110,19 @@ class StudentParticipationReportPdf(AbstractCourseReportView):
     @Lazy
     def student_user(self):
         return IUser(self.context)
+
+    def generate_footer(self):
+        date = self._adjust_date(datetime.utcnow())
+        date = date.strftime('%b %d, %Y %I:%M %p')
+        title = self.report_title
+        course = self.course_name()
+        # Make sure this isn't too long, or we'll overflow the page
+        result = "%s - %s - %s - %s %s" % (title, course, self.user_info.display, date, self.timezone_info_str)
+        if len(result) > 120:
+            result = "%s - %s - %s %s" % (course, self.user_info.display, date, self.timezone_info_str)
+        if len(result) > 120:
+            result = "%s - %s %s" % (self.user_info.display, date, self.timezone_info_str)
+        return result
 
     @Lazy
     def intids_created_by_student(self):
