@@ -18,6 +18,10 @@ from datetime import datetime
 
 from pyramid.view import view_config
 
+from zc.displayname.interfaces import IDisplayNameGenerator
+
+from zope import component
+
 from nti.app.products.courseware_reports import MessageFactory as _
 
 from nti.app.products.courseware_reports import VIEW_SELF_ASSESSMENT_SUMMARY
@@ -27,6 +31,8 @@ from nti.app.products.courseware_reports.reports import TopCreators
 from nti.app.products.courseware_reports.views.summary_views import CourseSummaryReportPdf
 
 from nti.contenttypes.courses.interfaces import ICourseInstance
+
+from nti.dataserver.interfaces import IUser
 
 from nti.dataserver.users.interfaces import IFriendlyNamed
 
@@ -109,6 +115,37 @@ class SelfAssessmentSummaryReportPdf(AbstractSelfAssessmentReport):
 
     report_title = _(u'Self Assessment Report')
 
+    def _display_name(self, username):
+        """
+        Return `<realname (alias)>`, or `<alias>` if no realname exists, which is like the course roster pdf report.
+        """
+        user = username if IUser.providedBy(username) else User.get_user(username)
+        if user is None:
+            return username
+
+        displayname = component.getMultiAdapter((user, self.request), IDisplayNameGenerator)()
+
+        friendly_named = IFriendlyNamed(user)
+
+        if friendly_named.realname and displayname != friendly_named.realname:
+            displayname = '%s (%s)' % (friendly_named.realname, displayname)
+        return displayname
+
+    def _transform_stats(self, stats):
+        """
+        Update the display name for those coming from TopCreators, like open_stats, credit_stats.
+        """
+        for x in stats:
+            x.display = x.sorting_key = self._display_name(x.username)
+
+    def build_user_info(self, username, count=None, perc=None):
+        stu_info = super(SelfAssessmentSummaryReportPdf, self).build_user_info(username,
+                                                                               display=self._display_name(username),
+                                                                               count=count,
+                                                                               perc=perc)
+        stu_info.sorting_key = stu_info.display
+        return stu_info
+
     def _get_by_student_stats(self, stats, assessment_usernames, student_names,
                               user_submission_sets, assessment_count):
         """
@@ -117,10 +154,11 @@ class SelfAssessmentSummaryReportPdf(AbstractSelfAssessmentReport):
         """
         assessment_usernames = {x.lower() for x in assessment_usernames}
         missing_usernames = student_names - assessment_usernames
+
         stats.extend(
             self.build_user_info(username) for username in missing_usernames
         )
-        stats = sorted(stats)
+
         result = []
         for user_stats in sorted(stats):
             username = user_stats.username.lower()
@@ -137,11 +175,13 @@ class SelfAssessmentSummaryReportPdf(AbstractSelfAssessmentReport):
         """
         Get our by student stats for open and credit students.
         """
+        self._transform_stats(self.assessment_aggregator.open_stats)
         open_stats = self._get_by_student_stats(self.assessment_aggregator.open_stats,
                                                 self.assessment_aggregator.non_credit_keys(),
                                                 self.open_student_usernames,
                                                 user_submission_sets,
                                                 assessment_count)
+        self._transform_stats(self.assessment_aggregator.credit_stats)
         credit_stats = self._get_by_student_stats(self.assessment_aggregator.credit_stats,
                                                   self.assessment_aggregator.for_credit_keys(),
                                                   self.for_credit_student_usernames,
