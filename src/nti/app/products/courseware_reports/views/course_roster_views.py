@@ -113,13 +113,16 @@ class RosterReportMixin(AbstractReportView):
                 completed_date = self._adjust_date(progress.CompletedDate)
                 completed_date = completed_date.strftime(u"%Y-%m-%d")
                 enrollRecord["completion"] = completed_date
+                enrollRecord["completionSuccess"] = u'Yes' if progress.CompletedItem.Success else u'No'
             elif progress.PercentageProgress is not None:
                 percent = int(progress.PercentageProgress * 100)
                 enrollRecord["completion"] = u'%s%%' % percent
+                enrollRecord["completionSuccess"] = u''
             # PercentageProgress returns None if the MaxPossibleProgress is 0
             # or there is no defined MaxPossibleProgress
             else:
                 enrollRecord["completion"] = u'N/A'
+                enrollRecord["completionSuccess"] = u''
 
             enrollRecord["username"] = user.username
 
@@ -321,7 +324,8 @@ class CourseRosterReportCSV(AbstractCourseRosterReport):
         header_row = ['Name', 'User Name', 'Email',
                       'Date Enrolled',
                       'Last Seen',
-                      'Completion']
+                      'Completion',
+                      'Completed Successfully']
         if self.supplemental_field_utility:
             display_dict = self.supplemental_field_utility.get_field_display_values()
             supp_fields = self.supplemental_field_utility.get_ordered_fields()
@@ -345,7 +349,8 @@ class CourseRosterReportCSV(AbstractCourseRosterReport):
                         record['email'],
                         record['enrollmentTime'],
                         record['lastAccessed'],
-                        record['completion']]
+                        record['completion'],
+                        record['completionSuccess']]
 
             if self.supplemental_field_utility:
                 supp_fields = self.supplemental_field_utility.get_ordered_fields()
@@ -388,7 +393,8 @@ class AllCourseRosterReportCSV(AbstractAllCourseReport):
                       'Name', 'User Name', 'Email',
                       'Date Enrolled',
                       'Last Seen',
-                      'Completion']
+                      'Completion',
+                      'Completed Successfully']
 
         if self.supplemental_field_utility:
             display_dict = self.supplemental_field_utility.get_field_display_values()
@@ -421,7 +427,8 @@ class AllCourseRosterReportCSV(AbstractAllCourseReport):
                             record['email'],
                             record['enrollmentTime'],
                             record['lastAccessed'],
-                            record['completion']]
+                            record['completion'],
+                            record['completionSuccess']]
 
                 if self.supplemental_field_utility:
                     supp_fields = self.supplemental_field_utility.get_ordered_fields()
