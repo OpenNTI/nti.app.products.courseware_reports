@@ -106,13 +106,16 @@ class AbstractUserEnrollmentView(AbstractReportView):
                 completed_date = self._adjust_date(progress.CompletedDate)
                 completed_date = completed_date.strftime("%Y-%m-%d")
                 enrollment["completion"] = completed_date
+                enrollment["completionSuccess"] = u'Yes' if progress.CompletedItem.Success else u'No'
             elif progress.PercentageProgress is not None:
                 percent = int(progress.PercentageProgress * 100)
                 enrollment["completion"] = '%s%%' % percent
+                enrollment["completionSuccess"] = u''
             # PercentageProgress returns None if the MaxPossibleProgress is 0
             # or there is no defined MaxPossibleProgress
             else:
                 enrollment["completion"] = u'N/A'
+                enrollment["completionSuccess"] = u''
 
             enrollments.append(enrollment)
         return enrollments
@@ -185,7 +188,8 @@ class UserEnrollmentReportCSV(AbstractUserEnrollmentView):
         header_row = ['Course Title',
                       'Date Enrolled',
                       'Last Seen',
-                      'Completion']
+                      'Completion',
+                      'Completed Successfully']
 
         def _tx_string(s):
             if s is not None and isinstance(s, six.text_type):
@@ -202,7 +206,8 @@ class UserEnrollmentReportCSV(AbstractUserEnrollmentView):
             data_row = [record['title'],
                         record['enrollmentTime'],
                         record['lastAccessed'],
-                        record['completion']]
+                        record['completion'],
+                        record['completionSuccess']]
             _write(data_row, writer, stream)
 
         stream.flush()
