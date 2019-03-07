@@ -24,7 +24,12 @@
 			<td><para style="data" tal:content="item/title">The Course Title</para></td>
 			<td align="left" tal:content="item/enrollmentTime | default">The Enrolled Time</td>
 			<td align="left" tal:content="item/lastAccessed | default">The Last Seen Time</td>
-			<td align="right" tal:content="item/completion">Completion</td>
+            <tal:block tal:condition="item/completionSuccess">
+                <td align="right" tal:content="item/completion" tal:attributes="fontColor python: '#3FB34F' if item['completionSuccess']=='Yes' else '#FF0000'">Completion</td>
+            </tal:block>
+            <tal:block tal:condition="not:item/completionSuccess">
+                <td align="right" tal:content="item/completion">Completion</td>
+            </tal:block>
 		</tr>
 	</blockTable>
 
