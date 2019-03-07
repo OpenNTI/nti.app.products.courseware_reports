@@ -187,7 +187,7 @@ class UserEnrollmentReportCSV(AbstractUserEnrollmentView):
 
         header_row = ['Course Title',
                       'Date Enrolled',
-                      'Last Seen',
+                      'Last Seen (%s)' % self.timezone_util.get_timezone_display_name(),
                       'Completion',
                       'Completed Successfully']
 
