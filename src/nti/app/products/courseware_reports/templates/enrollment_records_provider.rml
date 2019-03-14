@@ -1,0 +1,46 @@
+<tal:block tal:omit-tag=""
+		   tal:condition="view/__parent__/groupByCourse"
+		   tal:define="total_count view/__parent__/options/TotalRecordsCount">
+	<tal:block tal:omit-tag="" tal:condition="python: total_count!=1">
+		<tr>
+			<td>This report presents the roster of ${total_count} courses.</td>
+		</tr>
+	</tal:block>
+
+	<tal:block tal:omit-tag="" tal:condition="python: total_count==1">
+		<tr tal:define="records view/__parent__/options/records;
+						title python: records[0][0].title;
+						semester python: records[0][0].semester">
+			<td>Course:</td>
+			<td>${title}${semester}</td>
+		</tr>
+	</tal:block>
+</tal:block> <!-- group by course -->
+
+
+<tal:block tal:omit-tag=""
+		   tal:condition="not:view/__parent__/groupByCourse"
+		   tal:define="total_count view/__parent__/options/TotalRecordsCount">
+	<tal:block tal:omit-tag="" tal:condition="python: total_count!=1">
+		<tr>
+			<td>This report presents the enrollment of ${total_count} users.</td>
+		</tr>
+	</tal:block>
+
+	<tal:block tal:omit-tag="" tal:condition="python: total_count==1"
+			   tal:define="records view/__parent__/options/records;
+						   user python: records[0][0]">
+
+		<tr tal:condition="user/display" tal:define="display_name user/display">
+			<td>Name:</td>
+			<td tal:content="display_name">Display name</td>
+		</tr>
+
+		<tr tal:condition="user/username" tal:define="username user/username" >
+			<td>Login:</td>
+			<td tal:content="username">Username</td>
+		</tr>
+
+	</tal:block>
+</tal:block> <!-- group by user -->
+

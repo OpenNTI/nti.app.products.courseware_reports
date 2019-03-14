@@ -71,15 +71,15 @@ def _get_enrollment_scope_dict(course, instructors=set()):
             # If our scope is not 'public'-ish, store it separately.
             # All credit-type users should end up in ForCredit.
             scope_users = {
-				x.lower() for x in IEnumerableEntityContainer(scope).iter_usernames()
-			}
+                x.lower() for x in IEnumerableEntityContainer(scope).iter_usernames()
+            }
             scope_users = scope_users - instructors
             results[scope_name] = scope_users
             non_public_users = non_public_users.union(scope_users)
 
     all_users = {
-		x.lower() for x in IEnumerableEntityContainer(public_scope).iter_usernames()
-	}
+        x.lower() for x in IEnumerableEntityContainer(public_scope).iter_usernames()
+    }
     results['Public'] = all_users - non_public_users - instructors
     results[ALL_USERS] = all_users
     return results
@@ -225,14 +225,21 @@ class AbstractCourseReportView(AbstractReportView):
         """
         Generate the semester suffix used in report metadata.
         """
-        start_date = self.course_start_date
-        start_month = start_date.month if start_date else None
-        if start_month < 5:
-            semester = _(u'Spring')
-        elif start_month < 8:
-            semester = _(u'Summer')
-        else:
-            semester = _(u'Fall')
+        return generate_semester(start_date=self.course_start_date)
 
-        start_year = start_date.year if start_date else None
-        return u'- %s %s' % (semester, start_year) if start_date else ''
+
+def generate_semester(entry=None, start_date=None):
+    """
+    Generate the semester suffix used in report metadata.
+    """
+    start_date = entry.StartDate if not start_date and entry else start_date
+    start_month = start_date.month if start_date else None
+    if start_month < 5:
+        semester = _(u'Spring')
+    elif start_month < 8:
+        semester = _(u'Summer')
+    else:
+        semester = _(u'Fall')
+
+    start_year = start_date.year if start_date else None
+    return u'- %s %s' % (semester, start_year) if start_date else ''

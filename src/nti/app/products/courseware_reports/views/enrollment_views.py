@@ -1,0 +1,658 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+"""
+.. $Id$
+"""
+
+from __future__ import division
+from __future__ import print_function
+from __future__ import absolute_import
+
+import csv
+import six
+import gevent
+
+from collections import namedtuple
+
+from datetime import datetime
+
+from io import BytesIO
+
+from pyramid.config import not_
+
+from pyramid import httpexceptions as hexc
+
+from pyramid.view import view_config
+from pyramid.view import view_defaults
+
+from zc.displayname.interfaces import IDisplayNameGenerator
+
+from requests.structures import CaseInsensitiveDict
+
+from zope import component
+
+from zope.cachedescriptors.property import Lazy
+
+from zope.intid.interfaces import IIntIds
+
+from zope.security.management import checkPermission
+
+from nti.app.contenttypes.reports.utils import UserInfo
+
+from nti.app.contenttypes.completion.adapters import CompletionContextProgressFactory
+
+from nti.app.externalization.error import raise_json_error
+
+from nti.app.products.courseware_reports import VIEW_ENROLLMENT_RECORDS_REPORT
+
+from nti.app.products.courseware_reports import MessageFactory as _
+
+from nti.app.products.courseware_reports.interfaces import ACT_VIEW_REPORTS
+from nti.app.products.courseware_reports.interfaces import IRosterReportSupplementalFields
+
+from nti.app.products.courseware_reports.views.view_mixins import AbstractReportView
+from nti.app.products.courseware_reports.views.view_mixins import generate_semester
+
+from nti.appserver.pyramid_authorization import has_permission
+
+from nti.common.string import is_true
+
+from nti.contenttypes.completion.interfaces import IProgress
+
+from nti.contenttypes.courses.interfaces import ICourseCatalog
+from nti.contenttypes.courses.interfaces import ICourseInstance
+from nti.contenttypes.courses.interfaces import ICourseCatalogEntry
+from nti.contenttypes.courses.interfaces import ICourseEnrollments
+
+from nti.contenttypes.courses.utils import is_course_instructor
+from nti.contenttypes.courses.utils import get_enrollments
+from nti.contenttypes.courses.utils import get_enrollment_records
+
+from nti.coremetadata.interfaces import ILastSeenProvider
+
+from nti.dataserver.authorization import ACT_CONTENT_EDIT
+from nti.dataserver.authorization import is_admin
+from nti.dataserver.authorization import is_site_admin
+from nti.dataserver.authorization import is_admin_or_site_admin
+
+from nti.dataserver.interfaces import IDataserverFolder
+from nti.dataserver.interfaces import IUser
+from nti.dataserver.interfaces import ICommunity
+from nti.dataserver.interfaces import IDynamicSharingTargetFriendsList
+from nti.dataserver.interfaces import ISiteAdminUtility
+
+from nti.dataserver.users.interfaces import IFriendlyNamed
+
+from nti.dataserver.users import User
+from nti.dataserver.users import Entity
+
+from nti.dataserver.users.utils import get_users_by_site
+
+from nti.namedfile.file import safe_filename
+
+from nti.mailer.interfaces import IEmailAddressable
+
+from nti.ntiids.ntiids import find_object_with_ntiid
+
+from nti.traversal.traversal import find_interface
+
+logger = __import__('logging').getLogger(__name__)
+
+
+def _tx_string(s):
+    if s is not None and isinstance(s, six.text_type):
+        s = s.encode('utf-8')
+    return s
+
+
+CatalogEntryRecord = \
+    namedtuple('CatalogEntryRecord',
+               ('title', 'start_date', 'instructors', 'provider_unique_id', 'semester'))
+
+
+class EnrollmentViewMixin(object):
+
+    def __init__(self):
+        self._cache_required_item_providers = dict()
+
+    @Lazy
+    def intids(self):
+        return component.getUtility(IIntIds)
+
+    @Lazy
+    def show_supplemental_info(self):
+        return False
+
+    def _name(self, user, friendly_named=None):
+        displayname = component.getMultiAdapter((user, self.request),
+                                                IDisplayNameGenerator)()
+
+        if not friendly_named:
+            friendly_named = IFriendlyNamed(user)
+
+        if friendly_named.realname and displayname != friendly_named.realname:
+            displayname = '%s (%s)' % (friendly_named.realname, displayname)
+        return displayname
+
+    def _get_title(self, entry):
+        return entry.title or u'<Empty title>'
+
+    def _get_instructors_str(self, entry):
+        names = [x.Name for x in entry.Instructors or ()]
+        return u', '.join(names)
+
+    def _get_start_date(self, entry):
+        result = entry.StartDate
+        if result is not None:
+            result = result.strftime('%b %d, %Y')
+        return result
+
+    def _make_entry_record(self, entry):
+        start_date = self._get_start_date(entry)
+        instructors = self._get_instructors_str(entry)
+        title = self._get_title(entry)
+        return CatalogEntryRecord(title,
+                                  start_date,
+                                  instructors,
+                                  provider_unique_id=entry.ProviderUniqueID,
+                                  semester=generate_semester(entry))
+
+    def _add_course_info(self, result, entry):
+        result["title"] = self._get_title(entry)
+        result['start_date'] = self._get_start_date(entry)
+        result['instructors'] = self._get_instructors_str(entry)
+        result['provider_unique_id'] = entry.ProviderUniqueID
+
+    def _add_user_info(self, result, user):
+        result["username"] = user.username
+
+        fn_user = IFriendlyNamed(user)
+        result["displayname"] = self._name(user, friendly_named=fn_user)
+
+        email_addressable = IEmailAddressable(user, None)
+        result["email"] = email_addressable.email if email_addressable else None
+
+    def _add_activity_info(self, result, user, course, record):
+        # Enrollment time
+        enrollment_time = None
+        if record.createdTime:
+            time = datetime.utcfromtimestamp(record.createdTime)
+            enrollment_time = self._adjust_date(time)
+            result["enrollmentTime"] = enrollment_time.strftime(u"%Y-%m-%d")
+        # Last accessed
+        provider = component.getMultiAdapter((user, course), ILastSeenProvider)
+        accessed_time = self._adjust_date(provider.lastSeenTime) if provider.lastSeenTime else enrollment_time
+        result["lastAccessed"] = self._format_datetime(accessed_time) if accessed_time else None
+
+    def _add_completion_info(self, result, progress):
+        if progress.Completed:
+            completed_date = self._adjust_date(progress.CompletedDate)
+            completed_date = completed_date.strftime("%Y-%m-%d")
+            result["completion"] = completed_date
+            result["completionSuccess"] = u'Yes' if progress.CompletedItem.Success else u'No'
+        elif progress.PercentageProgress is not None:
+            percent = int(progress.PercentageProgress * 100)
+            result["completion"] = '%s%%' % percent
+            result["completionSuccess"] = u''
+        else:
+            # PercentageProgress returns None if the MaxPossibleProgress is 0
+            # or there is no defined MaxPossibleProgress
+            result["completion"] = u'N/A'
+            result["completionSuccess"] = u''
+
+    def _add_supplemental_info(self, result, user):
+        if self.show_supplemental_info and self.supplemental_field_utility:
+            user_supp_data = self.supplemental_field_utility.get_user_fields(user)
+            if user_supp_data:
+                result.update(user_supp_data)
+
+    def build_enrollment_info_for_course(self, course, included_users=None, _should_include_record=None):
+        """
+        Return course's user enrollment info for users that are visible to the requesting user.
+        """
+        required_item_providers = None
+        entry = ICourseCatalogEntry(course, None)
+        enrollments = []
+        course_enrollments = ICourseEnrollments(course)
+        records = course_enrollments.iter_enrollments()
+        for record in records:
+            enrollment = {}
+
+            user = User.get_user(record.Principal)
+            if      user is None \
+                or (included_users and user not in included_users) \
+                or (_should_include_record and not _should_include_record(user, entry, course)):
+                continue
+
+            # user info
+            self._add_user_info(enrollment, user)
+
+            # enrolled time and last Accessed
+            self._add_activity_info(enrollment, user, course, record)
+
+            # completion
+            progress_factory = CompletionContextProgressFactory(user, course, required_item_providers)
+            progress = progress_factory()
+            if required_item_providers is None:
+                required_item_providers = progress_factory.required_item_providers
+
+            self._add_completion_info(enrollment, progress)
+
+            # supplemental info
+            self._add_supplemental_info(enrollment, user)
+
+            enrollments.append(enrollment)
+        return enrollments
+
+    def build_enrollment_info_for_user(self, user, included_entries=None, _should_include_record=None):
+        """
+        Return user's course enrollment info for courses that are visible to the requesting user.
+        """
+        enrollments = []
+        entry_ntiids = tuple([x.ntiid for x in included_entries]) if included_entries else None
+        records = get_enrollment_records(usernames=(user.username,),
+                                         entry_ntiids=entry_ntiids,
+                                         intids=self.intids)
+        records = sorted(records, key=lambda x:x.createdTime)
+        for record in records:
+            enrollment = {}
+
+            course = ICourseInstance(record)
+            entry = ICourseCatalogEntry(course)
+            if     (included_entries and entry not in included_entries) \
+                or (_should_include_record and not _should_include_record(user, entry, course)):
+                continue
+
+            # course info
+            self._add_course_info(enrollment, entry)
+
+            # enrolled time and last Accessed
+            self._add_activity_info(enrollment, user, course, record)
+
+            # completion
+            required_item_providers = self._cache_required_item_providers.get(course)
+            progress_factory = CompletionContextProgressFactory(user, course, required_item_providers)
+            progress = progress_factory()
+            if required_item_providers is None:
+                self._cache_required_item_providers[course] = progress_factory.required_item_providers
+
+            self._add_completion_info(enrollment, progress)
+
+            # supplemental info
+            self._add_supplemental_info(enrollment, user)
+
+            enrollments.append(enrollment)
+        return enrollments
+
+
+class AbstractEnrollmentReport(AbstractReportView, EnrollmentViewMixin):
+
+    def __init__(self, context, request):
+        AbstractReportView.__init__(self, context, request)
+        EnrollmentViewMixin.__init__(self)
+        self._cache_always_visible_entries = dict()
+        self._cache_administered_users = dict()
+
+    def _check_access(self):
+        pass
+
+    @Lazy
+    def course_catalog(self):
+        return self.context
+
+    @Lazy
+    def supplemental_field_utility(self):
+        return component.queryUtility(IRosterReportSupplementalFields)
+
+    @Lazy
+    def is_admin(self):
+        return is_admin(self.remoteUser)
+
+    @Lazy
+    def is_site_admin(self):
+        return is_site_admin(self.remoteUser)
+
+    @Lazy
+    def _admin_utility(self):
+        return component.getUtility(ISiteAdminUtility)
+
+    @Lazy
+    def enrolled_courses_for_requesting_user(self):
+        res = set()
+        for x in get_enrollments(self.remoteUser) or ():
+            course = ICourseInstance(x, None)
+            entry = ICourseCatalogEntry(course, None)
+            if entry is not None and entry not in res:
+                res.add(entry)
+        return res
+
+    def _is_enrolled_by_requesting_user(self, entry):
+        return bool(entry in self.enrolled_courses_for_requesting_user)
+
+    def _include_all_records(self, entry, course, cache=True):
+        """
+        Return True if the requesting user can access to all enrollment records in the given course, or False otherwise.
+        """
+        if entry in self._cache_always_visible_entries:
+            return self._cache_always_visible_entries[entry]
+        result = False
+        # Instructor (who is also child site admin) in section course has read permission to its parent course.
+        if self.is_admin or has_permission(ACT_CONTENT_EDIT, entry) or is_course_instructor(entry, self.remoteUser):
+            result = True
+        elif course is not None and checkPermission(ACT_VIEW_REPORTS.id, course):
+            result = True
+        if cache:
+            self._cache_always_visible_entries[entry] = result
+        return result
+
+    def _should_include_record(self, user, entry, course):
+        """
+        Return True if the requesting user can access to a user's enrollment record, or False otherwise.
+        """
+        return self._include_all_records(entry, course) or self._can_administer_user(user) 
+
+    def _is_entry_visible(self, entry, course):
+        """
+        Return True if the requesting user can access to the given course, or False otherwise.
+        """
+        if self._include_all_records(entry, course):
+            return True
+        elif self._is_enrolled_by_requesting_user(entry):
+            return True
+        return False
+
+    def _can_administer_user(self, user, cache=True):
+        if user in self._cache_administered_users:
+            return self._cache_administered_users[user]
+
+        result = False
+        if self.is_admin or self.remoteUser is user:
+            result =  True
+        elif self.is_site_admin and self._admin_utility.can_administer_user(self.remoteUser, user):
+            result = True
+        if cache:
+            self._cache_administered_users[user] = result
+        return result
+
+    def _raise_json_error(self, error, message):
+        raise_json_error(self.request,
+                         error,
+                         {'message': message},
+                         None)
+
+    @Lazy
+    def _params(self):
+        try:
+            params = self.request.json_body
+        except ValueError:
+            params = {}
+
+        for field in ('course_ntiids', 'entity_ids'):
+            val = params.get(field, None) or None
+            if val is not None and not isinstance(val, (list, tuple)):
+                self._raise_json_error(hexc.HTTPUnprocessableEntity, "%s must be a list or empty." % field)
+        return params
+
+    @Lazy
+    def groupByCourse(self):
+        return is_true(self._params.get('groupByCourse', True))
+
+    @Lazy
+    def input_users(self):
+        """
+        entity_ids could be ids or ntiids of user, community or group.
+        """
+        entity_ids = self._params.get('entity_ids', None)
+        if entity_ids:
+            res = set()
+            for entity_id in entity_ids:
+                obj = Entity.get_entity(entity_id)
+                if obj is None:
+                    obj = find_object_with_ntiid(entity_id)
+                if obj is None:
+                    self._raise_json_error(hexc.HTTPUnprocessableEntity, "No entity found (id=%s)." % entity_id)
+
+                if IUser.providedBy(obj):
+                    if obj not in res:
+                        res.add(obj)
+                elif ICommunity.providedBy(obj):
+                    for user in obj.iter_members():
+                        if user not in res:
+                            res.add(user)
+                elif IDynamicSharingTargetFriendsList.providedBy(obj):
+                    for user in obj:
+                        if user not in res:
+                            res.add(user)
+                else:
+                    self._raise_json_error(hexc.HTTPUnprocessableEntity, "Unsupported entity (id=%s)" % entity_id)
+            if not res:
+                self._raise_json_error(hexc.HTTPUnprocessableEntity, "No user matched with provided entity_ids.")
+            return res
+        return None
+
+    @Lazy
+    def input_entries(self):
+        """
+        course_ntiids could be either ntiid of course instance or course catalog entry.
+        """
+        ntiids = self._params.get('course_ntiids', None)
+        if ntiids:
+            res = set()
+            for ntiid in ntiids:
+                obj = find_object_with_ntiid(ntiid)
+                entry = ICourseCatalogEntry(obj, None)
+                course = ICourseInstance(entry, None)
+                if entry is None or course is None:
+                    self._raise_json_error(hexc.HTTPUnprocessableEntity, "Can not find course (ntiid=%s)." % ntiid)
+
+                _catalog = find_interface(course, ICourseCatalog, strict=False)
+                if _catalog is not self.course_catalog or not self._is_entry_visible(entry, course):
+                    self._raise_json_error(hexc.HTTPForbidden, "Can not access course (title=%s)." % entry.title)
+
+                res.add(entry)
+            return res
+        return None
+
+    def _get_users(self):
+        if self.input_users is None:
+            return () if self.groupByCourse else get_users_by_site()
+        return self.input_users
+
+    def _get_entries_and_courses(self):
+        """
+        Return a sorted, dedeplicated set of course objects (entry_record, course).
+        """
+        entries = self.input_entries
+        if entries is None:
+            entries = set()
+            catalog = self.course_catalog
+            if catalog is not None:
+                for entry in catalog.iterCatalogEntries():
+                    course = ICourseInstance(entry, None)
+                    if self._is_entry_visible(entry, course):
+                        entries.add(entry)
+
+        def sort_key(entry_obj):
+            title = entry_obj.title
+            start = entry_obj.StartDate
+            return (title is not None, title, start is not None, start)
+        entries = sorted(entries, key=sort_key)
+        result = []
+        for entry in entries:
+            course = ICourseInstance(entry, None)
+            if course is not None:
+                result.append((entry, course))
+        return result
+
+    @Lazy
+    def _enrollment_data_grouping_by_course(self):
+        result = []
+        for entry, course in self._get_entries_and_courses():
+            gevent.sleep()
+            entry_record = self._make_entry_record(entry)
+            enrollments = self.build_enrollment_info_for_course(course,
+                                                                included_users=self.input_users,
+                                                                _should_include_record=self._should_include_record)
+            result.append((entry_record, enrollments))
+        return result
+
+    @Lazy
+    def _enrollment_data_grouping_by_user(self):
+        result = []
+        for user in self._get_users():
+            gevent.sleep()
+            userinfo = self.build_user_info(user)
+            enrollments = self.build_enrollment_info_for_user(user,
+                                                              included_entries=self.input_entries,
+                                                              _should_include_record=self._should_include_record)
+            if not enrollments and not self._can_administer_user(user):
+                # Filter out users that have no availble enrollments and can not be administered.
+                continue
+            result.append((userinfo, enrollments))
+        return result
+
+    def _get_enrollment_data(self):
+        return self._enrollment_data_grouping_by_course if self.groupByCourse \
+                                            else self._enrollment_data_grouping_by_user
+
+    def _do_call(self):
+        raise NotImplementedError()
+
+    def __call__(self):
+        try:
+            self._check_access()
+            return self._do_call()
+        finally:
+            self.request.environ['nti.commit_veto'] = 'abort'
+
+@view_config(context=ICourseCatalog,
+             request_method='POST',
+             name=VIEW_ENROLLMENT_RECORDS_REPORT,
+             accept='application/pdf',
+             request_param=not_('format'))
+@view_config(context=ICourseCatalog,
+             request_method='POST',
+             name=VIEW_ENROLLMENT_RECORDS_REPORT,
+             request_param='format=application/pdf')
+class EnrollmentRecordsReportPdf(AbstractEnrollmentReport):
+    """
+    By default it would return all user enrollment info group by course.
+    """
+    @Lazy
+    def report_title(self):
+        return _(u'Course Roster Report') if self.groupByCourse else _(u'User Enrollment Report')
+
+    def _do_call(self):
+        options = self.options
+        options['groupByCourse'] = self.groupByCourse
+
+        records = self._get_enrollment_data()
+        options["records"] = records
+        options["TotalRecordsCount"] = len(records)
+        return options
+
+
+HEADER_FIELD_MAP = {
+    'Course Title': 'title',
+    'Course Provider Unique ID': 'provider_unique_id',
+    'Course Start Date': 'start_date',
+    'Course Instructors': 'instructors',
+
+    'Name': 'displayname',
+    'User Name': 'username',
+    'Email': 'email',
+
+    'Date Enrolled': 'enrollmentTime',
+    'Last Seen': 'lastAccessed',
+    'Completion': 'completion',
+    'Completed Successfully': 'completionSuccess',
+}
+
+USER_INFO_SECTION = ('Name', 'User Name', 'Email')
+COURSE_INFO_SECTION = ('Course Title', 'Course Provider Unique ID', 'Course Start Date','Course Instructors')
+ENROLLMENT_INFO_SECTION = ('Date Enrolled', 'Last Seen', 'Completion', 'Completed Successfully')
+
+USER_ENROLLMENT_HEADER = COURSE_INFO_SECTION + ENROLLMENT_INFO_SECTION
+USERS_ENROLLMENT_HEADER = USER_INFO_SECTION + USER_ENROLLMENT_HEADER
+
+COURSE_ROSTER_HEADER = USER_INFO_SECTION + ENROLLMENT_INFO_SECTION
+COURSES_ROSTER_HEADER = COURSE_INFO_SECTION + COURSE_ROSTER_HEADER
+
+
+@view_config(context=ICourseCatalog,
+             request_method='POST',
+             name=VIEW_ENROLLMENT_RECORDS_REPORT,
+             request_param=not_('format'))
+@view_config(context=ICourseCatalog,
+             request_method='POST',
+             name=VIEW_ENROLLMENT_RECORDS_REPORT,
+             request_param='format=text/csv')
+class EnrollmentRecordsReportCSV(AbstractEnrollmentReport):
+
+    @Lazy
+    def header_row(self):
+        if self.groupByCourse:
+            return COURSE_ROSTER_HEADER if len(self._enrollment_data_grouping_by_course) == 1 else COURSES_ROSTER_HEADER
+        return USER_ENROLLMENT_HEADER if len(self._enrollment_data_grouping_by_user) == 1 else USERS_ENROLLMENT_HEADER
+
+    @Lazy
+    def show_supplemental_info(self):
+        return is_true(self._params.get('show_supplemental_info')) if 'show_supplemental_info' in self._params else True
+
+    def _context_info_with_obj(self, obj):
+        if self.groupByCourse:
+            return {'title': obj.title,
+                    'provider_unique_id': obj.provider_unique_id,
+                    'start_date': obj.start_date,
+                    'instructors': obj.instructors}
+        else:
+            return {'displayname': obj.display,
+                    'username': obj.username,
+                    'email': obj.email}
+
+    def _do_call(self):
+        response = self.request.response
+        response.content_encoding = 'identity'
+        response.content_type = 'text/csv; charset=UTF-8'
+        response.content_disposition = 'attachment; filename="EnrollmentRecordsReport.csv"'
+
+        stream = BytesIO()
+        writer = csv.writer(stream)
+
+        # Header
+        header_row = list(self.header_row)
+
+        # Supplemental header
+        if self.show_supplemental_info and self.supplemental_field_utility:
+            display_dict = self.supplemental_field_utility.get_field_display_values()
+            supp_fields = self.supplemental_field_utility.get_ordered_fields()
+            for supp_field in supp_fields:
+                header_row.append(display_dict.get(supp_field))
+
+        def _write(data, writer, stream):
+            writer.writerow([_tx_string(x) for x in data])
+            return stream
+
+        _write(header_row, writer, stream)
+
+        # Body
+        records = self._get_enrollment_data()
+
+        for obj, enrollments in records:
+            for enrollment in enrollments:
+                data_row = []
+                enrollment.update(self._context_info_with_obj(obj))
+                for field in self.header_row:
+                    data_row.append(enrollment[HEADER_FIELD_MAP[field]])
+
+                # Supplemental columns.
+                if self.show_supplemental_info and self.supplemental_field_utility:
+                    supp_fields = self.supplemental_field_utility.get_ordered_fields()
+                    for supp_field in supp_fields:
+                        data_row.append(enrollment.get(supp_field))
+                _write(data_row, writer, stream)
+
+        stream.flush()
+        stream.seek(0)
+        response.body_file = stream
+        return response
