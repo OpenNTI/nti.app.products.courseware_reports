@@ -355,11 +355,7 @@ class AbstractEnrollmentReport(AbstractReportView, EnrollmentViewMixin):
         """
         Return True if the requesting user can access to the given course, or False otherwise.
         """
-        if self._include_all_records(entry, course):
-            return True
-        elif self._is_enrolled_by_requesting_user(entry):
-            return True
-        return False
+        return self._include_all_records(entry, course) or self._is_enrolled_by_requesting_user(entry)
 
     def _can_administer_user(self, user, cache=True):
         if user in self._cache_administered_users:
