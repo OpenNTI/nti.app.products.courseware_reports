@@ -391,7 +391,7 @@ class AbstractEnrollmentReport(AbstractReportView, EnrollmentViewMixin):
 
     @Lazy
     def groupByCourse(self):
-        return is_true(self._params.get('groupByCourse', True))
+        return is_true(self._params.get('groupByCourse')) if 'groupByCourse' in self._params else True
 
     @Lazy
     def input_users(self):
@@ -521,12 +521,16 @@ class AbstractEnrollmentReport(AbstractReportView, EnrollmentViewMixin):
         finally:
             self.request.environ['nti.commit_veto'] = 'abort'
 
-@view_config(context=ICourseCatalog,
+@view_config(route_name='objects.generic.traversal',
+			 renderer="../templates/enrollment_records_report.rml",
+			 context=ICourseCatalog,
              request_method='POST',
              name=VIEW_ENROLLMENT_RECORDS_REPORT,
              accept='application/pdf',
              request_param=not_('format'))
-@view_config(context=ICourseCatalog,
+@view_config(route_name='objects.generic.traversal',
+			 renderer="../templates/enrollment_records_report.rml",
+			 context=ICourseCatalog,
              request_method='POST',
              name=VIEW_ENROLLMENT_RECORDS_REPORT,
              request_param='format=application/pdf')
@@ -568,11 +572,8 @@ USER_INFO_SECTION = ('Name', 'User Name', 'Email')
 COURSE_INFO_SECTION = ('Course Title', 'Course Provider Unique ID', 'Course Start Date','Course Instructors')
 ENROLLMENT_INFO_SECTION = ('Date Enrolled', 'Last Seen', 'Completion', 'Completed Successfully')
 
-USER_ENROLLMENT_HEADER = COURSE_INFO_SECTION + ENROLLMENT_INFO_SECTION
-USERS_ENROLLMENT_HEADER = USER_INFO_SECTION + USER_ENROLLMENT_HEADER
-
-COURSE_ROSTER_HEADER = USER_INFO_SECTION + ENROLLMENT_INFO_SECTION
-COURSES_ROSTER_HEADER = COURSE_INFO_SECTION + COURSE_ROSTER_HEADER
+USER_ENROLLMENT_HEADER = USER_INFO_SECTION + COURSE_INFO_SECTION + ENROLLMENT_INFO_SECTION
+COURSE_ROSTER_HEADER = COURSE_INFO_SECTION + USER_INFO_SECTION + ENROLLMENT_INFO_SECTION
 
 
 @view_config(context=ICourseCatalog,
@@ -587,9 +588,7 @@ class EnrollmentRecordsReportCSV(AbstractEnrollmentReport):
 
     @Lazy
     def header_row(self):
-        if self.groupByCourse:
-            return COURSE_ROSTER_HEADER if len(self._enrollment_data_grouping_by_course) == 1 else COURSES_ROSTER_HEADER
-        return USER_ENROLLMENT_HEADER if len(self._enrollment_data_grouping_by_user) == 1 else USERS_ENROLLMENT_HEADER
+        return COURSE_ROSTER_HEADER if self.groupByCourse else USER_ENROLLMENT_HEADER
 
     @Lazy
     def show_supplemental_info(self):

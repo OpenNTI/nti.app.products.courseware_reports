@@ -1,0 +1,238 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE document SYSTEM "rml_1_0.dtd">
+<document filename="Report.pdf"
+		  invariant="1"
+		  compression="1"
+		  title="Report"
+		  creator="NextThought"
+		  author="NextThought"
+		  xmlns:tal="http://xml.zope.org/namespaces/tal"
+		  xmlns:metal="http://xml.zope.org/namespaces/metal"
+		  tal:attributes="filename view/filename; title view/report_title">
+
+	<docinit>
+		<registerTTFont faceName="OpenSans" fileName="[nti.app.contenttypes.reports]/fonts/OpenSans-Regular.ttf" />
+		<registerTTFont faceName="OpenSansSemiBold" fileName="[nti.app.contenttypes.reports]/fonts/OpenSans-Semibold.ttf" />
+		<registerTTFont faceName="OpenSansBold" fileName="[nti.app.contenttypes.reports]/fonts/OpenSans-Bold.ttf" />
+		<registerTTFont faceName="OpenSansLight" fileName="[nti.app.contenttypes.reports]/fonts/OpenSans-Light.ttf" />
+	</docinit>
+
+	<template pagesize="(842,595)" leftMargin="72" showBoundary="0">
+		<pageTemplate id="cover" autoNextTemplate="main">
+			<pageGraphics>
+				<image metal:use-macro="macro:header_graphic" />
+			</pageGraphics>
+			<frame id="main_header"
+				   x1="7in" y1="6.8in"
+				   width="4in" height="1.3in"
+				   showBoundary="0" />
+			<frame id="first" x1="0.5in" y1="0.5in" width="10in" height="6in"/>
+		</pageTemplate>
+
+		<pageTemplate id="first" autoNextTemplate="main">
+			<pageGraphics>
+				<image metal:use-macro="macro:header_graphic" />
+			</pageGraphics>
+			<frame id="main_header"
+				   x1="7in" y1="6.8in"
+				   width="4in" height="1.3in"
+				   showBoundary="0" />
+			<frame id="first" x1="0.5in" y1="0.5in" width="10in" height="6in"/>
+
+			<pageGraphics>
+				<place x=".5in" y="0.1in" width="7in" height=".3in">
+					<para   style="footer"
+							tal:attributes="fontSize python: '8' if len( view.generate_footer() ) > 100 else '10'"
+							tal:content="view/generate_footer">
+							Student Participation Report - jzuech - CHEM4970 - Apr 11, 2014 01:06 PM
+					</para>
+				</place>
+				<drawCentredString x="10.8in" y="0.3in">
+					<pageNumber/>
+				</drawCentredString>
+			</pageGraphics>
+		</pageTemplate>
+
+		<pageTemplate id="main">
+			<frame id="first" x1="0.5in" y1="0.5in" width="10in" height="7.5in" showBoundary="0"/>
+			<pageGraphics>
+				<place x=".5in" y="0.1in" width="7in" height=".3in">
+					<para   style="footer"
+							tal:attributes="fontSize python: '8' if len( view.generate_footer() ) > 100 else '10'"
+							tal:content="view/generate_footer">
+							Student Participation Report - jzuech - CHEM4970 - Apr 11, 2014 01:06 PM
+					</para>
+				</place>
+				<drawCentredString x="10.8in" y="0.3in">
+					<pageNumber/>
+				</drawCentredString>
+			</pageGraphics>
+		</pageTemplate>
+
+	</template>
+
+	<stylesheet metal:use-macro="macro:stylesheet">
+		<paraStyle name="h1" fontSize="30" textColor="#494949" fontName="Helvetica"/>
+		<paraStyle name="h2" fontSize="15" textColor="#494949" fontName="Helvetica"/>
+		<paraStyle name="normal" fontName="Helvetica" fontSize="11"
+				   leading="12" spaceBefore="10"/>
+		<paraStyle name="sendTo" leftIndent="0.5in" parent="normal"
+				   spaceBefore="10" spaceAfter="2"/>
+		<blockTableStyle id="default">
+			<lineStyle start="0,0" stop="-1,-1" kind="innergrid" thickness="0.25"
+					   colorName="black"/>
+			<blockRightPadding start="0,0" stop="-1,-1" length="3mm"/>
+		</blockTableStyle>
+	</stylesheet>
+
+	<story firstPageTemplate="cover">
+		<tal:block tal:condition="options/groupByCourse">
+
+			<tal:block tal:condition="not:options/records">
+				<title  style="report_title" alignment="left" leftIndent=".07in" tal:content="view/report_title" >Report Title</title>
+				<para style="normal" spaceAfter=".1in">
+					There are no courses.
+				</para>
+			</tal:block>
+
+			<tal:block tal:repeat="record options/records">
+				<tal:block tal:define="entry_record python: record[0];
+									   enrollments python: record[1]">
+					<title  style="report_title" alignment="left" leftIndent=".07in" tal:content="view/report_title" >Report Title</title>
+					<blockTable alignment='left' style="header_table">
+						<tr>
+							<td>Course:</td>
+							<td>${entry_record/title}${entry_record/semester}</td>
+						</tr>
+					</blockTable>
+
+					<nextFrame />
+
+					<h2 style="h2" spaceAfter=".2in" spaceBefore=".1in"
+						tal:content="string:${entry_record/title} (${entry_record/provider_unique_id})">
+						 Course Title
+					</h2>
+					<h3 style="h3" spaceAfter=".1in" spaceBefore=".1in"
+						tal:condition="entry_record/start_date">
+						Start Date: ${entry_record/start_date}
+					</h3>
+					<h3 style="h3" spaceAfter=".3in" spaceBefore=".1in"
+						tal:condition="entry_record/instructors">
+						Instructors: ${entry_record/instructors}
+					</h3>
+
+					<para   style="subdesc"
+							tal:condition="not:enrollments">
+						This course does not have any users enrolled.
+					</para>
+
+					<blockTable style='default'
+								colWidths="15% 15% 25% 12% 15% 18%"
+								tal:condition="enrollments"
+								repeatRows="1">
+						<tr>
+							<td><para style="header">Name</para></td>
+							<td><para style="header">Username</para></td>
+							<td><para style="header">Email</para></td>
+							<td><para style="header">Date Enrolled</para></td>
+							<td><para style="header">Last Seen</para></td>
+							<td><para style="header_r">Completed</para></td>
+						</tr>
+						<tr tal:repeat="item enrollments">
+							<td><para style="data" tal:content="item/displayname">Name</para></td>
+							<td><para style="data" tal:content="item/username">Username</para></td>
+							<td><para style="data" tal:content="item/email">Email</para></td>
+
+							<td align="left" tal:content="item/enrollmentTime | default">Enrollment Time</td>
+							<td align="left" tal:content="item/lastAccessed | default">Last Seen</td>
+							<tal:block tal:condition="item/completionSuccess">
+								<td align="right" tal:content="item/completion" tal:attributes="fontColor python: '#3FB34F' if item['completionSuccess']=='Yes' else '#FF0000'">Completion</td>
+							</tal:block>
+							<tal:block tal:condition="not: item/completionSuccess">
+								<td align="right" tal:content="item/completion">Completion</td>
+							</tal:block>
+
+						</tr>
+					</blockTable>
+
+				</tal:block> <!-- defs -->
+				<setNextTemplate name="first"/>
+				<nextPage />
+			</tal:block> <!-- loop of courses-->
+
+		</tal:block>  <!--  end of group by course -->
+
+
+		<tal:block tal:condition="not:options/groupByCourse">
+			<tal:block tal:condition="not:options/records">
+				<title  style="report_title" alignment="left" leftIndent=".07in" tal:content="view/report_title" >Report Title</title>
+				<para style="normal" spaceAfter=".1in" alignment='left' leftIndent=".07in">
+					There are no users.
+				</para>
+			</tal:block>
+
+			<tal:block tal:repeat="record options/records">
+				<tal:block tal:define="user_record python: record[0];
+									   enrollments python: record[1]">
+
+					<!-- header -->
+					<title  style="report_title" alignment="left" leftIndent=".07in" tal:content="view/report_title" >Report Title</title>
+					<blockTable alignment='left' style="header_table">
+						<tr tal:condition="user_record/display" tal:define="display_name user_record/display">
+							<td>Name:</td>
+							<td tal:content="display_name">Display name</td>
+						</tr>
+
+						<tr tal:condition="user_record/username" tal:define="username user_record/username" >
+							<td>Login:</td>
+							<td tal:content="username">Username</td>
+						</tr>
+					</blockTable>
+
+					<nextFrame />
+
+					<!-- body -->
+					<h2 style="h2" spaceAfter=".2in" spaceBefore=".1in"
+						tal:content="string:${user_record/display} (${user_record/username})">
+						 User Name
+					</h2>
+
+					<para style="subdesc" tal:condition="not:enrollments">
+						This user is not enrolled in any courses.
+					</para>
+
+					<blockTable style='default'
+								colWidths="40% 20% 20% 20%"
+								tal:condition="enrollments"
+								repeatRows="1">
+						<tr>
+							<td><para style="header">Course Title</para></td>
+							<td><para style="header">Date Enrolled</para></td>
+							<td><para style="header">Last Seen</para></td>
+							<td><para style="header_r">Completed</para></td>
+						</tr>
+						<tr tal:repeat="item enrollments">
+							<td><para style="data" tal:content="item/title">Course Title</para></td>
+
+							<td align="left" tal:content="item/enrollmentTime | default">The Enrolled Time</td>
+							<td align="left" tal:content="item/lastAccessed | default">The Last Seen Time</td>
+							<tal:block tal:condition="item/completionSuccess">
+								<td align="right" tal:content="item/completion" tal:attributes="fontColor python: '#3FB34F' if item['completionSuccess']=='Yes' else '#FF0000'">Completion</td>
+							</tal:block>
+							<tal:block tal:condition="not:item/completionSuccess">
+								<td align="right" tal:content="item/completion">Completion</td>
+							</tal:block>
+
+						</tr>
+					</blockTable>
+
+				</tal:block> <!-- defs -->
+				<setNextTemplate name="first"/>
+				<nextPage />
+			</tal:block> <!-- loop -->
+
+		</tal:block> <!-- end of group by user -->
+
+
+	</story>
+</document>
