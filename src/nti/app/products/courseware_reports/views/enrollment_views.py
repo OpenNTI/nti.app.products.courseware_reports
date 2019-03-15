@@ -294,7 +294,8 @@ class AbstractEnrollmentReport(AbstractReportView, EnrollmentViewMixin):
         self._cache_administered_users = dict()
 
     def _check_access(self):
-        pass
+        if not self.remoteUser:
+            raise hexc.HTTPForbidden()
 
     @Lazy
     def course_catalog(self):
