@@ -524,15 +524,15 @@ class AbstractEnrollmentReport(AbstractReportView, EnrollmentViewMixin):
 
 @view_config(route_name='objects.generic.traversal',
 			 renderer="../templates/enrollment_records_report.rml",
-			 context=ICourseCatalog,
              request_method='POST',
+             context=ICourseCatalog,
              name=VIEW_ENROLLMENT_RECORDS_REPORT,
              accept='application/pdf',
              request_param=not_('format'))
 @view_config(route_name='objects.generic.traversal',
 			 renderer="../templates/enrollment_records_report.rml",
-			 context=ICourseCatalog,
              request_method='POST',
+             context=ICourseCatalog,
              name=VIEW_ENROLLMENT_RECORDS_REPORT,
              request_param='format=application/pdf')
 class EnrollmentRecordsReportPdf(AbstractEnrollmentReport):
@@ -577,12 +577,15 @@ USER_ENROLLMENT_HEADER = USER_INFO_SECTION + COURSE_INFO_SECTION + ENROLLMENT_IN
 COURSE_ROSTER_HEADER = COURSE_INFO_SECTION + USER_INFO_SECTION + ENROLLMENT_INFO_SECTION
 
 
-@view_config(context=ICourseCatalog,
+@view_config(route_name='objects.generic.traversal',
              request_method='POST',
+             context=ICourseCatalog,
              name=VIEW_ENROLLMENT_RECORDS_REPORT,
+             accept='text/csv',
              request_param=not_('format'))
-@view_config(context=ICourseCatalog,
+@view_config(route_name='objects.generic.traversal',
              request_method='POST',
+             context=ICourseCatalog,
              name=VIEW_ENROLLMENT_RECORDS_REPORT,
              request_param='format=text/csv')
 class EnrollmentRecordsReportCSV(AbstractEnrollmentReport):
