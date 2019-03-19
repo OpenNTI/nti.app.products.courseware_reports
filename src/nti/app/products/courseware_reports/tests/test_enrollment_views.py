@@ -19,13 +19,10 @@ from hamcrest import assert_that
 from hamcrest import has_entries
 from hamcrest import has_entry
 from hamcrest import has_properties
-from hamcrest import contains_string
-from hamcrest import has_items
 from hamcrest import none
-from hamcrest import described_as
 from hamcrest import has_length
 from hamcrest import contains_inanyorder
-
+from hamcrest import ends_with
 
 import csv
 import fudge
@@ -39,6 +36,8 @@ from zope import lifecycleevent
 from nti.dataserver.users.users import User
 from nti.dataserver.users.communities import Community
 from nti.dataserver.users.friends_lists import DynamicFriendsList
+
+from nti.app.products.courseware_reports.interfaces import IRosterReportSupplementalFields
 
 from nti.app.products.courseware_reports.views.enrollment_views import AbstractEnrollmentReport
 from nti.app.products.courseware_reports.views.enrollment_views import EnrollmentRecordsReportPdf
@@ -113,6 +112,9 @@ class TestEnrollmentRecordsReport(ApplicationLayerTest):
         self.extra_environ_instructor001 = self._make_extra_environ(username="instructor001")
         self.extra_environ_admin = self._make_extra_environ(username='test@nextthought.com')
 
+        self.HEADER_GROUP_BY_COURSE = 'Course Title,Course Provider Unique ID,Course Start Date,Course Instructors,Name,User Name,Email,Date Enrolled,Last Seen,Completion,Completed Successfully'
+        self.HEADER_GROUP_BY_USER = 'Name,User Name,Email,Course Title,Course Provider Unique ID,Course Start Date,Course Instructors,Date Enrolled,Last Seen,Completion,Completed Successfully'
+
     def _assert_csv_reports(self, groupByCourse, course_ntiids):
         params = {'groupByCourse': groupByCourse}
         result = self.testapp.post_json(self.csv_url, params, status=200, extra_environ=self.extra_environ_admin)
@@ -158,6 +160,44 @@ class TestEnrollmentRecordsReport(ApplicationLayerTest):
         result = self.testapp.post_json(self.csv_url, params, status=200, extra_environ=self.extra_environ_user002)
         assert_that(result.body.splitlines(), has_length(1))
 
+    def _assert_supplemental_info(self):
+        @interface.implementer(IRosterReportSupplementalFields)
+        class _TestReportSupplementalFields(object):
+
+            def get_user_fields(self, user):
+                return {'username': user.username, 'lastLoginTime': user.lastLoginTime}
+
+            def get_field_display_values(self):
+                return {'username': "UserName", 'lastLoginTime': "LastLogin"}
+
+            def get_ordered_fields(self):
+                return ['username', 'lastLoginTime']
+
+        fields_utility = _TestReportSupplementalFields()
+        component.getGlobalSiteManager().registerUtility(fields_utility, IRosterReportSupplementalFields)
+
+        result = self.testapp.post_json(self.csv_url, {'groupByCourse': True}, status=200, extra_environ=self.extra_environ_user002)
+        result = result.body.splitlines()
+        assert_that(result[0], is_(self.HEADER_GROUP_BY_COURSE + ',UserName,LastLogin'))
+        assert_that(result[1], ends_with('N/A,,user002,0'))
+
+        result = self.testapp.post_json(self.csv_url, {'groupByCourse': False}, status=200, extra_environ=self.extra_environ_user002)
+        result = result.body.splitlines()
+        assert_that(result[0], is_(self.HEADER_GROUP_BY_USER))
+        assert_that(result[1], ends_with('N/A,'))
+
+        component.getGlobalSiteManager().unregisterUtility(fields_utility)
+
+        result = self.testapp.post_json(self.csv_url, {'groupByCourse': True}, status=200, extra_environ=self.extra_environ_user002)
+        result = result.body.splitlines()
+        assert_that(result[0], is_(self.HEADER_GROUP_BY_COURSE))
+        assert_that(result[1], ends_with('N/A,'))
+
+        result = self.testapp.post_json(self.csv_url, {'groupByCourse': False}, status=200, extra_environ=self.extra_environ_user002)
+        result = result.body.splitlines()
+        assert_that(result[0], is_(self.HEADER_GROUP_BY_USER))
+        assert_that(result[1], ends_with('N/A,'))
+
     @WithSharedApplicationMockDS(users=(u'user001', u'user002', u'user003', u'user004', u'instructor001', u'siteadmin001', u'test@nextthought.com'), testapp=True, default_authenticate=False)
     def testEnrollmentRecordsReportCSV(self):
         self._init_data()
@@ -181,11 +221,11 @@ class TestEnrollmentRecordsReport(ApplicationLayerTest):
         # no enrollments, just header
         result = self.testapp.post_json(self.csv_url, {'groupByCourse': True}, status=200, extra_environ=self.extra_environ_admin)
         assert_that(result.body.splitlines(), has_length(1))
-        assert_that(result.body.splitlines()[0], is_('Course Title,Course Provider Unique ID,Course Start Date,Course Instructors,Name,User Name,Email,Date Enrolled,Last Seen,Completion,Completed Successfully'))
+        assert_that(result.body.splitlines()[0], is_(self.HEADER_GROUP_BY_COURSE))
 
         result = self.testapp.post_json(self.csv_url, {'groupByCourse': False}, status=200, extra_environ=self.extra_environ_admin)
         assert_that(result.body.splitlines(), has_length(1))
-        assert_that(result.body.splitlines()[0], is_('Name,User Name,Email,Course Title,Course Provider Unique ID,Course Start Date,Course Instructors,Date Enrolled,Last Seen,Completion,Completed Successfully'))
+        assert_that(result.body.splitlines()[0], is_(self.HEADER_GROUP_BY_USER))
 
         with mock_dataserver.mock_db_trans(self.ds, site_name='platform.ou.edu'):
             user1 = User.get_user('user001')
@@ -204,6 +244,8 @@ class TestEnrollmentRecordsReport(ApplicationLayerTest):
         self._assert_csv_reports(groupByCourse=True, course_ntiids=[course_ntiid1, course_ntiid2])
         # Group by user
         self._assert_csv_reports(groupByCourse=False, course_ntiids=[course_ntiid1, course_ntiid2])
+
+        self._assert_supplemental_info()
 
 
 class TestEnrollmentRecordsReportPdf(ApplicationLayerTest):
