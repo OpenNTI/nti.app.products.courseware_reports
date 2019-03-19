@@ -25,6 +25,7 @@ from hamcrest import contains_inanyorder
 from hamcrest import ends_with
 
 import csv
+import datetime
 import fudge
 
 from pyramid import httpexceptions as hexc
@@ -183,8 +184,8 @@ class TestEnrollmentRecordsReport(ApplicationLayerTest):
 
         result = self.testapp.post_json(self.csv_url, {'groupByCourse': False}, status=200, extra_environ=self.extra_environ_user002)
         result = result.body.splitlines()
-        assert_that(result[0], is_(self.HEADER_GROUP_BY_USER))
-        assert_that(result[1], ends_with('N/A,'))
+        assert_that(result[0], is_(self.HEADER_GROUP_BY_USER + ',UserName,LastLogin'))
+        assert_that(result[1], ends_with('N/A,,user002,0'))
 
         component.getGlobalSiteManager().unregisterUtility(fields_utility)
 
@@ -259,14 +260,31 @@ class TestEnrollmentRecordsReportPdf(ApplicationLayerTest):
                                               'groupByCourse': True,
                                               'show_supplemental_info': False,
                                               'input_users': None,
-                                              'input_entries': None}))
+                                              'input_entries': None,
+                                              'completionNotBefore': None,
+                                              'completionNotAfter': None}))
 
-            request = DummyRequest(json_body={'groupByCourse': False, 'entity_ids': ['user001'], 'course_ntiids': None, 'show_supplemental_info':True}, method='POST')
+            params = {'groupByCourse': False,
+                      'entity_ids': ['user001'],
+                      'course_ntiids': None,
+                      'completionNotBefore': 1545091200,
+                      'completionNotAfter': 1545112800}
+            request = DummyRequest(json_body=params, method='POST')
             view = EnrollmentRecordsReportPdf(catalog, request)
-            assert_that(view._params, has_entries({'groupByCourse': False, 'entity_ids': ['user001'], 'course_ntiids': None, 'show_supplemental_info': True}))
+            # For PDF report, we don't show supplemental info now.
+            assert_that(view, has_properties({'groupByCourse': False, 'show_supplemental_info': False}))
+            assert_that(view._params, has_entries({'entity_ids': ['user001'], 'course_ntiids': None}))
+            assert_that(view.completionNotBefore.strftime('%Y-%m-%d %H:%M:%S'), is_('2018-12-18 00:00:00'))
+            assert_that(view.completionNotAfter.strftime('%Y-%m-%d %H:%M:%S'), is_('2018-12-18 06:00:00'))
 
             view = EnrollmentRecordsReportPdf(catalog, DummyRequest(json_body={'course_ntiids': 'abc'}, method='POST'))
             assert_that(calling(getattr).with_args(view, '_params'), raises(hexc.HTTPUnprocessableEntity))
+
+            view = EnrollmentRecordsReportPdf(catalog, DummyRequest(json_body={'completionNotBefore': 'abc'}, method='POST'))
+            assert_that(calling(getattr).with_args(view, 'completionNotBefore'), raises(hexc.HTTPUnprocessableEntity))
+
+            view = EnrollmentRecordsReportPdf(catalog, DummyRequest(json_body={'completionNotAfter': ''}, method='POST'))
+            assert_that(calling(getattr).with_args(view, 'completionNotAfter'), raises(hexc.HTTPUnprocessableEntity))
 
     @WithSharedApplicationMockDS(users=(u'user001', u'user002',u'user003',u'user004',u'user005',u'user006'), testapp=True, default_authenticate=False)
     def test_input_users(self):
@@ -331,3 +349,40 @@ class TestEnrollmentRecordsReportPdf(ApplicationLayerTest):
             view = EnrollmentRecordsReportPdf(catalog, DummyRequest(json_body={'entity_ids':['user003', 'community1', dfl.NTIID]}, method='POST'))
             assert_that(view.input_users, contains_inanyorder(user1, user2, user3, user4, user5))
             assert_that(view._get_users(), contains_inanyorder(user1, user2, user3, user4, user5))
+
+    @WithSharedApplicationMockDS(users=True, testapp=True, default_authenticate=True)
+    def test_predicate_with_progress(self):
+        # notBefore is inclusive, notAfter is exclusive.
+        with mock_dataserver.mock_db_trans(self.ds):
+            catalog = component.getUtility(ICourseCatalog)
+            now = datetime.datetime.utcfromtimestamp(100)
+            complete_progress = fudge.Fake('Progress').has_attr(Completed=True, CompletedDate=now)
+            incomplete_progress = fudge.Fake('Progress').has_attr(Completed=False)
+
+            view = EnrollmentRecordsReportPdf(catalog, DummyRequest(json_body={'completionNotBefore': None, 'completionNotAfter': None}))
+            assert_that(view._predicate_with_progress(complete_progress), is_(True))
+            assert_that(view._predicate_with_progress(incomplete_progress), is_(True))
+
+            view = EnrollmentRecordsReportPdf(catalog, DummyRequest(json_body={'completionNotBefore': None, 'completionNotAfter': 100}))
+            assert_that(view._predicate_with_progress(complete_progress), is_(False))
+            assert_that(view._predicate_with_progress(incomplete_progress), is_(False))
+
+            view = EnrollmentRecordsReportPdf(catalog, DummyRequest(json_body={'completionNotBefore': None, 'completionNotAfter': 101}))
+            assert_that(view._predicate_with_progress(complete_progress), is_(True))
+            assert_that(view._predicate_with_progress(incomplete_progress), is_(False))
+
+            view = EnrollmentRecordsReportPdf(catalog, DummyRequest(json_body={'completionNotBefore': 100, 'completionNotAfter': 100}))
+            assert_that(view._predicate_with_progress(complete_progress), is_(False))
+            assert_that(view._predicate_with_progress(incomplete_progress), is_(False))
+
+            view = EnrollmentRecordsReportPdf(catalog, DummyRequest(json_body={'completionNotBefore': 100, 'completionNotAfter': 101}))
+            assert_that(view._predicate_with_progress(complete_progress), is_(True))
+            assert_that(view._predicate_with_progress(incomplete_progress), is_(False))
+
+            view = EnrollmentRecordsReportPdf(catalog, DummyRequest(json_body={'completionNotBefore': 100, 'completionNotAfter': None}))
+            assert_that(view._predicate_with_progress(complete_progress), is_(True))
+            assert_that(view._predicate_with_progress(incomplete_progress), is_(False))
+
+            view = EnrollmentRecordsReportPdf(catalog, DummyRequest(json_body={'completionNotBefore': 101, 'completionNotAfter': None}))
+            assert_that(view._predicate_with_progress(complete_progress), is_(False))
+            assert_that(view._predicate_with_progress(incomplete_progress), is_(False))
