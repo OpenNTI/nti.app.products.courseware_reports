@@ -443,7 +443,7 @@ class AbstractEnrollmentReport(AbstractReportView, EnrollmentViewMixin):
             if val is not None and not isinstance(val, (list, tuple)):
                 self._raise_json_error(hexc.HTTPUnprocessableEntity, "%s must be a list or empty." % field)
 
-        for field in ('notBefore', 'notAfter'):
+        for field in ('completionNotBefore', 'completionNotAfter'):
             val = params.get(field, None)
             if val is not None:
                 try:
@@ -520,22 +520,22 @@ class AbstractEnrollmentReport(AbstractReportView, EnrollmentViewMixin):
         return self.input_users
 
     @Lazy
-    def not_before(self):
-        return self._params.get('notBefore')
+    def completionNotBefore(self):
+        return self._params.get('completionNotBefore')
 
     @Lazy
-    def not_after(self):
-        return self._params.get('notAfter')
+    def completionNotAfter(self):
+        return self._params.get('completionNotAfter')
 
     def _predicate_with_progress(self, progress):
         """
         Return a boolean if this progress record falls within our boundaries.
         """
-        if not self.not_before and not self.not_after:
+        if not self.completionNotBefore and not self.completionNotAfter:
             return True
         return  progress.Completed \
-                and (self.not_before is None or progress.CompletedDate >= self.not_before) \
-                and (self.not_after is None or progress.CompletedDate < self.not_after)
+                and (self.completionNotBefore is None or progress.CompletedDate >= self.completionNotBefore) \
+                and (self.completionNotAfter is None or progress.CompletedDate < self.completionNotAfter)
 
     @Lazy
     def _enrollment_data_grouping_by_course(self):
