@@ -323,7 +323,7 @@ class CourseRosterReportCSV(AbstractCourseRosterReport):
 
         header_row = ['Name', 'User Name', 'Email',
                       'Date Enrolled',
-                      'Last Seen',
+                      'Last Seen (%s)' % self.timezone_util.get_timezone_display_name(),
                       'Completion',
                       'Completed Successfully']
         if self.supplemental_field_utility:
@@ -392,7 +392,7 @@ class AllCourseRosterReportCSV(AbstractAllCourseReport):
                       'Course Instructors',
                       'Name', 'User Name', 'Email',
                       'Date Enrolled',
-                      'Last Seen',
+                      'Last Seen (%s)' % self.timezone_util.get_timezone_display_name(),
                       'Completion',
                       'Completed Successfully']
 

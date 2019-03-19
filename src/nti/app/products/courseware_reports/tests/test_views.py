@@ -1092,7 +1092,7 @@ class TestCourseRosterCSVReport(ApplicationLayerTest):
             assert_that(response_reader.fieldnames, has_items(
                 'Name', 'User Name', 'Email',
                 'Date Enrolled',
-                'Last Seen',
+                'Last Seen (UTC)',
                 'Completion'))
 
     @WithSharedApplicationMockDS(users=True, testapp=True, default_authenticate=True)
@@ -1121,7 +1121,7 @@ class TestCourseRosterCSVReport(ApplicationLayerTest):
             assert_that(response_reader.fieldnames, has_items(
                 'Name', 'User Name', 'Email',
                 'Date Enrolled',
-                'Last Seen',
+                'Last Seen (UTC)',
                 'Completion'))
 
             response_rows = [row for row in response_reader]
