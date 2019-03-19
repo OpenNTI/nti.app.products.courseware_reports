@@ -392,7 +392,7 @@ class AbstractEnrollmentReport(AbstractReportView, EnrollmentViewMixin):
         """
         Return True if the requesting user can access to a user's enrollment record, or False otherwise.
         """
-        return self._include_all_records(entry, course) or self._can_administer_user(user) 
+        return self._include_all_records(entry, course) or self._can_administer_user(user)
 
     def _is_entry_visible(self, entry, course=None):
         """
@@ -568,23 +568,6 @@ class EnrollmentRecordsReportPdf(AbstractEnrollmentReport):
         return options
 
 
-HEADER_FIELD_MAP = {
-    'Course Name': 'title', # all course roster report.
-    'Course Title': 'title',
-    'Course Provider Unique ID': 'provider_unique_id',
-    'Course Start Date': 'start_date',
-    'Course Instructors': 'instructors',
-
-    'Name': 'displayname',
-    'User Name': 'username',
-    'Email': 'email',
-
-    'Date Enrolled': 'enrollmentTime',
-    'Last Seen': 'lastAccessed',
-    'Completion': 'completion',
-    'Completed Successfully': 'completionSuccess',
-}
-
 USER_INFO_SECTION = ('Name', 'User Name', 'Email')
 COURSE_INFO_SECTION = ('Course Title', 'Course Provider Unique ID', 'Course Start Date','Course Instructors')
 ENROLLMENT_INFO_SECTION = ('Date Enrolled', 'Last Seen', 'Completion', 'Completed Successfully')
@@ -658,7 +641,7 @@ class EnrollmentReportCSVMixin(object):
                 data_row = []
                 enrollment.update(self._context_info_with_obj(obj))
                 for field in self.header_row:
-                    data_row.append(enrollment[HEADER_FIELD_MAP[field]])
+                    data_row.append(enrollment[self.header_field_map[field]])
 
                 # Optional supplemental data.
                 data_row.extend(self._get_supplemental_data(enrollment))
@@ -668,6 +651,7 @@ class EnrollmentReportCSVMixin(object):
         stream.seek(0)
         response.body_file = stream
         return response
+
 
 @view_config(route_name='objects.generic.traversal',
              request_method='POST',
@@ -681,6 +665,25 @@ class EnrollmentReportCSVMixin(object):
              name=VIEW_ENROLLMENT_RECORDS_REPORT,
              request_param='format=text/csv')
 class EnrollmentRecordsReportCSV(AbstractEnrollmentReport, EnrollmentReportCSVMixin):
+
+    @Lazy
+    def header_field_map(self):
+        return {
+            'Course Name': 'title', # all course roster report.
+            'Course Title': 'title',
+            'Course Provider Unique ID': 'provider_unique_id',
+            'Course Start Date': 'start_date',
+            'Course Instructors': 'instructors',
+
+            'Name': 'displayname',
+            'User Name': 'username',
+            'Email': 'email',
+
+            'Date Enrolled': 'enrollmentTime',
+            'Last Seen': 'lastAccessed',
+            'Completion': 'completion',
+            'Completed Successfully': 'completionSuccess',
+        }
 
     @Lazy
     def header_row(self):

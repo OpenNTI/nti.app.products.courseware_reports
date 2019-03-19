@@ -150,6 +150,26 @@ class CourseRosterReportCSV(AbstractCourseRosterReport, EnrollmentReportCSVMixin
     """
     A CSV report of a course roster.
     """
+
+    @Lazy
+    def header_field_map(self):
+        return {
+            'Course Name': 'title', # all course roster report.
+            'Course Title': 'title',
+            'Course Provider Unique ID': 'provider_unique_id',
+            'Course Start Date': 'start_date',
+            'Course Instructors': 'instructors',
+
+            'Name': 'displayname',
+            'User Name': 'username',
+            'Email': 'email',
+
+            'Date Enrolled': 'enrollmentTime',
+            'Last Seen (%s)' % self.timezone_util.get_timezone_display_name(): 'lastAccessed',
+            'Completion': 'completion',
+            'Completed Successfully': 'completionSuccess',
+        }
+
     @Lazy
     def header_row(self):
         return ['Name', 'User Name', 'Email',
@@ -191,6 +211,26 @@ class AllCourseRosterReportCSV(AbstractAllCourseReport, EnrollmentReportCSVMixin
     """
     A CSV report of all course rosters.
     """
+
+    @Lazy
+    def header_field_map(self):
+        return {
+            'Course Name': 'title', # all course roster report.
+            'Course Title': 'title',
+            'Course Provider Unique ID': 'provider_unique_id',
+            'Course Start Date': 'start_date',
+            'Course Instructors': 'instructors',
+
+            'Name': 'displayname',
+            'User Name': 'username',
+            'Email': 'email',
+
+            'Date Enrolled': 'enrollmentTime',
+            'Last Seen (%s)' % self.timezone_util.get_timezone_display_name(): 'lastAccessed',
+            'Completion': 'completion',
+            'Completed Successfully': 'completionSuccess',
+        }
+
     @Lazy
     def header_row(self):
         return ['Course Name', 'Course Provider Unique ID', 'Course Start Date',
