@@ -23,8 +23,6 @@ from pyramid.view import view_config
 
 from zope import component
 
-from nti.coremetadata.interfaces import ILastSeenProvider
-
 from nti.dataserver.interfaces import IUser
 from nti.dataserver.interfaces import ISiteAdminUtility
 
@@ -33,10 +31,7 @@ from nti.app.products.courseware_reports import VIEW_USER_ENROLLMENT
 
 from nti.app.products.courseware_reports.views.view_mixins import AbstractReportView
 
-from nti.contenttypes.completion.interfaces import IProgress
-
-from nti.contenttypes.courses.interfaces import ICourseInstance
-from nti.contenttypes.courses.interfaces import ICourseCatalogEntry
+from nti.app.products.courseware_reports.views.enrollment_views import EnrollmentViewMixin
 
 from nti.contenttypes.courses.utils import get_context_enrollment_records
 
@@ -48,9 +43,10 @@ from nti.namedfile.file import safe_filename
 logger = __import__('logging').getLogger(__name__)
 
 
-class AbstractUserEnrollmentView(AbstractReportView):
+class AbstractUserEnrollmentView(AbstractReportView, EnrollmentViewMixin):
 
     def __init__(self, context, request):
+        EnrollmentViewMixin.__init__(self)
         self.context = context
         self.request = request
 
@@ -80,45 +76,7 @@ class AbstractUserEnrollmentView(AbstractReportView):
     def _get_enrollment_data(self):
         records = self.get_context_enrollment_records()
         records = sorted(records, key=lambda x:x.createdTime)
-        enrollments = []
-        for record in records:
-            enrollment = {}
-            course = ICourseInstance(record)
-            catalog_entry = ICourseCatalogEntry(course)
-            enrollment["title"] = catalog_entry.title
-
-            enrollment_time = None
-            if record.createdTime:
-                time = datetime.fromtimestamp(record.createdTime)
-                enrollment_time = self._adjust_date(time)
-                enrollment["enrollmentTime"] = enrollment_time.strftime("%Y-%m-%d")
-
-            provider = component.getMultiAdapter((self.context, course), ILastSeenProvider)
-            accessed_time = self._adjust_date(provider.lastSeenTime) if provider.lastSeenTime else None
-            if accessed_time is None:
-                accessed_time = enrollment_time
-
-            enrollment["lastAccessed"] = self._format_datetime(accessed_time) if accessed_time else None
-
-            progress = component.queryMultiAdapter((self.context, course),
-                                                   IProgress)
-            if progress.Completed:
-                completed_date = self._adjust_date(progress.CompletedDate)
-                completed_date = completed_date.strftime("%Y-%m-%d")
-                enrollment["completion"] = completed_date
-                enrollment["completionSuccess"] = u'Yes' if progress.CompletedItem.Success else u'No'
-            elif progress.PercentageProgress is not None:
-                percent = int(progress.PercentageProgress * 100)
-                enrollment["completion"] = '%s%%' % percent
-                enrollment["completionSuccess"] = u''
-            # PercentageProgress returns None if the MaxPossibleProgress is 0
-            # or there is no defined MaxPossibleProgress
-            else:
-                enrollment["completion"] = u'N/A'
-                enrollment["completionSuccess"] = u''
-
-            enrollments.append(enrollment)
-        return enrollments
+        return self.build_enrollment_info_for_user(self.context, records=records)
 
     def __call__(self):
         self._check_access()

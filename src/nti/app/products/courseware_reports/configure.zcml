@@ -151,6 +151,12 @@
 						permission="zope.View"
 						supported_types="application/pdf text/csv" />
 
+    <rep:registerReport name="EnrollmentRecordsReport"
+                    title="Course Enrollment Records Report"
+                    description="Summary of specified student enrollments for specified courses"
+                    contexts="nti.contenttypes.courses.interfaces.ICourseCatalog"
+                    supported_types="application/pdf text/csv" />
+
 	<!--
 		The instructors/TA of a course (locally added to this role
 		for the course) can view reports
