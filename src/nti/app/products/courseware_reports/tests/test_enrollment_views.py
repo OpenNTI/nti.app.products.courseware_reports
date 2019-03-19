@@ -73,10 +73,13 @@ class TestEnrollmentRecordsReport(ApplicationLayerTest):
     pdf_url = '/dataserver2/++etc++hostsites/janux.ou.edu/++etc++site/Courses/@@EnrollmentRecordsReport?format=application%2Fpdf'
     csv_url = '/dataserver2/++etc++hostsites/janux.ou.edu/++etc++site/Courses/@@EnrollmentRecordsReport?format=text%2Fcsv'
 
-    @WithSharedApplicationMockDS(users=True, testapp=True, default_authenticate=True)
+    @WithSharedApplicationMockDS(users=(u'test@nextthought.com',), testapp=True, default_authenticate=False)
     def testEnrollmentRecordsReport(self):
-        self.testapp.post_json(self.pdf_url, status=200)
-        self.testapp.post_json(self.csv_url, status=200)
+        self.testapp.post_json(self.pdf_url, status=401, extra_environ=self._make_extra_environ(username=None))
+        self.testapp.post_json(self.pdf_url, status=200, extra_environ=self._make_extra_environ(username='test@nextthought.com'))
+
+        self.testapp.post_json(self.csv_url, status=401, extra_environ=self._make_extra_environ(username=None))
+        self.testapp.post_json(self.csv_url, status=200, extra_environ=self._make_extra_environ(username='test@nextthought.com'))
 
     def _add_site_admin(self, username):
         url = '/dataserver2/SiteAdmins'

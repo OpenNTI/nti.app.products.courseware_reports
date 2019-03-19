@@ -113,7 +113,12 @@ CatalogEntryRecord = \
 class EnrollmentViewMixin(object):
 
     def __init__(self):
+        # Cache required item providers for a course.
         self._cache_required_item_providers = dict()
+
+    @Lazy
+    def course_catalog(self):
+        return component.queryUtility(ICourseCatalog)
 
     @Lazy
     def intids(self):
@@ -121,7 +126,15 @@ class EnrollmentViewMixin(object):
 
     @Lazy
     def show_supplemental_info(self):
+        """
+        Currently we only show additional user information in the CSV CourseRosterReport grouping by course,
+        this will determine if we should calculate additional information combining with the supplemental_field_utility.
+        """
         return False
+
+    @Lazy
+    def supplemental_field_utility(self):
+        return component.queryUtility(IRosterReportSupplementalFields)
 
     def _name(self, user, friendly_named=None):
         displayname = component.getMultiAdapter((user, self.request),
@@ -156,6 +169,34 @@ class EnrollmentViewMixin(object):
                                   instructors,
                                   provider_unique_id=entry.ProviderUniqueID,
                                   semester=generate_semester(entry))
+
+    def _is_entry_visible(self, entry, course=None):
+        return NotImplementedError()
+
+    def _get_entries_and_courses(self, entries=None):
+        """
+        Return a sorted, dedeplicated set of course objects (entry_record, course).
+        """
+        if entries is None:
+            entries = set()
+            catalog = self.course_catalog
+            if catalog is not None:
+                for entry in catalog.iterCatalogEntries():
+                    if self._is_entry_visible(entry):
+                        entries.add(entry)
+
+        def sort_key(entry_obj):
+            title = entry_obj.title
+            start = entry_obj.StartDate
+            return (title is not None, title, start is not None, start)
+        entries = sorted(entries, key=sort_key)
+        result = []
+        for entry in entries:
+            course = ICourseInstance(entry, None)
+            if course is not None:
+                entry_record = self._make_entry_record(entry)
+                result.append((entry_record, course))
+        return result
 
     def _add_course_info(self, result, entry):
         result["title"] = self._get_title(entry)
@@ -244,16 +285,18 @@ class EnrollmentViewMixin(object):
             enrollments.append(enrollment)
         return enrollments
 
-    def build_enrollment_info_for_user(self, user, included_entries=None, _should_include_record=None):
+    def build_enrollment_info_for_user(self, user, included_entries=None, _should_include_record=None, records=None):
         """
         Return user's course enrollment info for courses that are visible to the requesting user.
         """
         enrollments = []
-        entry_ntiids = tuple([x.ntiid for x in included_entries]) if included_entries else None
-        records = get_enrollment_records(usernames=(user.username,),
-                                         entry_ntiids=entry_ntiids,
-                                         intids=self.intids)
-        records = sorted(records, key=lambda x:x.createdTime)
+        if records is None:
+            entry_ntiids = tuple([x.ntiid for x in included_entries]) if included_entries else None
+            records = get_enrollment_records(usernames=(user.username,),
+                                             entry_ntiids=entry_ntiids,
+                                             intids=self.intids)
+            records = sorted(records, key=lambda x:x.createdTime)
+
         for record in records:
             enrollment = {}
 
@@ -302,10 +345,6 @@ class AbstractEnrollmentReport(AbstractReportView, EnrollmentViewMixin):
         return self.context
 
     @Lazy
-    def supplemental_field_utility(self):
-        return component.queryUtility(IRosterReportSupplementalFields)
-
-    @Lazy
     def is_admin(self):
         return is_admin(self.remoteUser)
 
@@ -330,7 +369,7 @@ class AbstractEnrollmentReport(AbstractReportView, EnrollmentViewMixin):
     def _is_enrolled_by_requesting_user(self, entry):
         return bool(entry in self.enrolled_courses_for_requesting_user)
 
-    def _include_all_records(self, entry, course, cache=True):
+    def _include_all_records(self, entry, course=None, cache=True):
         """
         Return True if the requesting user can access to all enrollment records in the given course, or False otherwise.
         """
@@ -340,19 +379,22 @@ class AbstractEnrollmentReport(AbstractReportView, EnrollmentViewMixin):
         # Instructor (who is also child site admin) in section course has read permission to its parent course.
         if self.is_admin or has_permission(ACT_CONTENT_EDIT, entry) or is_course_instructor(entry, self.remoteUser):
             result = True
-        elif course is not None and checkPermission(ACT_VIEW_REPORTS.id, course):
-            result = True
+        else:
+            if course is None:
+                course = ICourseInstance(entry, None)
+            if course is not None and checkPermission(ACT_VIEW_REPORTS.id, course):
+                result = True
         if cache:
             self._cache_always_visible_entries[entry] = result
         return result
 
-    def _should_include_record(self, user, entry, course):
+    def _should_include_record(self, user, entry, course=None):
         """
         Return True if the requesting user can access to a user's enrollment record, or False otherwise.
         """
         return self._include_all_records(entry, course) or self._can_administer_user(user) 
 
-    def _is_entry_visible(self, entry, course):
+    def _is_entry_visible(self, entry, course=None):
         """
         Return True if the requesting user can access to the given course, or False otherwise.
         """
@@ -439,11 +481,11 @@ class AbstractEnrollmentReport(AbstractReportView, EnrollmentViewMixin):
                 obj = find_object_with_ntiid(ntiid)
                 entry = ICourseCatalogEntry(obj, None)
                 course = ICourseInstance(entry, None)
-                if entry is None or course is None:
+                if course is None:
                     self._raise_json_error(hexc.HTTPUnprocessableEntity, "Can not find course (ntiid=%s)." % ntiid)
 
                 _catalog = find_interface(course, ICourseCatalog, strict=False)
-                if _catalog is not self.course_catalog or not self._is_entry_visible(entry, course):
+                if _catalog is not self.course_catalog or not self._is_entry_visible(entry, course=course):
                     self._raise_json_error(hexc.HTTPForbidden, "Can not access course (title=%s)." % entry.title)
 
                 res.add(entry)
@@ -455,38 +497,11 @@ class AbstractEnrollmentReport(AbstractReportView, EnrollmentViewMixin):
             return () if self.groupByCourse else get_users_by_site()
         return self.input_users
 
-    def _get_entries_and_courses(self):
-        """
-        Return a sorted, dedeplicated set of course objects (entry_record, course).
-        """
-        entries = self.input_entries
-        if entries is None:
-            entries = set()
-            catalog = self.course_catalog
-            if catalog is not None:
-                for entry in catalog.iterCatalogEntries():
-                    course = ICourseInstance(entry, None)
-                    if self._is_entry_visible(entry, course):
-                        entries.add(entry)
-
-        def sort_key(entry_obj):
-            title = entry_obj.title
-            start = entry_obj.StartDate
-            return (title is not None, title, start is not None, start)
-        entries = sorted(entries, key=sort_key)
-        result = []
-        for entry in entries:
-            course = ICourseInstance(entry, None)
-            if course is not None:
-                result.append((entry, course))
-        return result
-
     @Lazy
     def _enrollment_data_grouping_by_course(self):
         result = []
-        for entry, course in self._get_entries_and_courses():
+        for entry_record, course in self._get_entries_and_courses(entries=self.input_entries):
             gevent.sleep()
-            entry_record = self._make_entry_record(entry)
             enrollments = self.build_enrollment_info_for_course(course,
                                                                 included_users=self.input_users,
                                                                 _should_include_record=self._should_include_record)
@@ -523,14 +538,14 @@ class AbstractEnrollmentReport(AbstractReportView, EnrollmentViewMixin):
             self.request.environ['nti.commit_veto'] = 'abort'
 
 @view_config(route_name='objects.generic.traversal',
-			 renderer="../templates/enrollment_records_report.rml",
+             renderer="../templates/enrollment_records_report.rml",
              request_method='POST',
              context=ICourseCatalog,
              name=VIEW_ENROLLMENT_RECORDS_REPORT,
              accept='application/pdf',
              request_param=not_('format'))
 @view_config(route_name='objects.generic.traversal',
-			 renderer="../templates/enrollment_records_report.rml",
+             renderer="../templates/enrollment_records_report.rml",
              request_method='POST',
              context=ICourseCatalog,
              name=VIEW_ENROLLMENT_RECORDS_REPORT,
@@ -554,6 +569,7 @@ class EnrollmentRecordsReportPdf(AbstractEnrollmentReport):
 
 
 HEADER_FIELD_MAP = {
+    'Course Name': 'title', # all course roster report.
     'Course Title': 'title',
     'Course Provider Unique ID': 'provider_unique_id',
     'Course Start Date': 'start_date',
@@ -577,26 +593,31 @@ USER_ENROLLMENT_HEADER = USER_INFO_SECTION + COURSE_INFO_SECTION + ENROLLMENT_IN
 COURSE_ROSTER_HEADER = COURSE_INFO_SECTION + USER_INFO_SECTION + ENROLLMENT_INFO_SECTION
 
 
-@view_config(route_name='objects.generic.traversal',
-             request_method='POST',
-             context=ICourseCatalog,
-             name=VIEW_ENROLLMENT_RECORDS_REPORT,
-             accept='text/csv',
-             request_param=not_('format'))
-@view_config(route_name='objects.generic.traversal',
-             request_method='POST',
-             context=ICourseCatalog,
-             name=VIEW_ENROLLMENT_RECORDS_REPORT,
-             request_param='format=text/csv')
-class EnrollmentRecordsReportCSV(AbstractEnrollmentReport):
+class EnrollmentReportCSVMixin(object):
 
     @Lazy
     def header_row(self):
-        return COURSE_ROSTER_HEADER if self.groupByCourse else USER_ENROLLMENT_HEADER
+        raise NotImplementedError()
 
-    @Lazy
-    def show_supplemental_info(self):
-        return is_true(self._params.get('show_supplemental_info')) if 'show_supplemental_info' in self._params else True
+    def _get_enrollment_data(self):
+        raise NotImplementedError()
+
+    def _get_supplemental_header(self):
+        result = []
+        if self.show_supplemental_info and self.supplemental_field_utility:
+            display_dict = self.supplemental_field_utility.get_field_display_values()
+            supp_fields = self.supplemental_field_utility.get_ordered_fields()
+            for supp_field in supp_fields:
+                result.append(display_dict.get(supp_field))
+        return result
+
+    def _get_supplemental_data(self, enrollment):
+        data = []
+        if self.show_supplemental_info and self.supplemental_field_utility:
+            supp_fields = self.supplemental_field_utility.get_ordered_fields()
+            for supp_field in supp_fields:
+                data.append(enrollment.get(supp_field))
+        return data
 
     def _context_info_with_obj(self, obj):
         if self.groupByCourse:
@@ -609,32 +630,27 @@ class EnrollmentRecordsReportCSV(AbstractEnrollmentReport):
                     'username': obj.username,
                     'email': obj.email}
 
-    def _do_call(self):
+    def _do_create_response(self, filename):
         response = self.request.response
         response.content_encoding = 'identity'
         response.content_type = 'text/csv; charset=UTF-8'
-        response.content_disposition = 'attachment; filename="EnrollmentRecordsReport.csv"'
+        response.content_disposition = 'attachment; filename="%s"' % filename
 
         stream = BytesIO()
         writer = csv.writer(stream)
-
-        # Header
-        header_row = list(self.header_row)
-
-        # Supplemental header
-        if self.show_supplemental_info and self.supplemental_field_utility:
-            display_dict = self.supplemental_field_utility.get_field_display_values()
-            supp_fields = self.supplemental_field_utility.get_ordered_fields()
-            for supp_field in supp_fields:
-                header_row.append(display_dict.get(supp_field))
 
         def _write(data, writer, stream):
             writer.writerow([_tx_string(x) for x in data])
             return stream
 
+        # Header
+        header_row = list(self.header_row)
+
+        # Optional supplemental header
+        header_row.extend(self._get_supplemental_header())
+
         _write(header_row, writer, stream)
 
-        # Body
         records = self._get_enrollment_data()
 
         for obj, enrollments in records:
@@ -644,14 +660,35 @@ class EnrollmentRecordsReportCSV(AbstractEnrollmentReport):
                 for field in self.header_row:
                     data_row.append(enrollment[HEADER_FIELD_MAP[field]])
 
-                # Supplemental columns.
-                if self.show_supplemental_info and self.supplemental_field_utility:
-                    supp_fields = self.supplemental_field_utility.get_ordered_fields()
-                    for supp_field in supp_fields:
-                        data_row.append(enrollment.get(supp_field))
+                # Optional supplemental data.
+                data_row.extend(self._get_supplemental_data(enrollment))
                 _write(data_row, writer, stream)
 
         stream.flush()
         stream.seek(0)
         response.body_file = stream
         return response
+
+@view_config(route_name='objects.generic.traversal',
+             request_method='POST',
+             context=ICourseCatalog,
+             name=VIEW_ENROLLMENT_RECORDS_REPORT,
+             accept='text/csv',
+             request_param=not_('format'))
+@view_config(route_name='objects.generic.traversal',
+             request_method='POST',
+             context=ICourseCatalog,
+             name=VIEW_ENROLLMENT_RECORDS_REPORT,
+             request_param='format=text/csv')
+class EnrollmentRecordsReportCSV(AbstractEnrollmentReport, EnrollmentReportCSVMixin):
+
+    @Lazy
+    def header_row(self):
+        return COURSE_ROSTER_HEADER if self.groupByCourse else USER_ENROLLMENT_HEADER
+
+    @Lazy
+    def show_supplemental_info(self):
+        return self.groupByCourse
+
+    def _do_call(self):
+        return self._do_create_response(filename="EnrollmentRecordsReport.csv")
