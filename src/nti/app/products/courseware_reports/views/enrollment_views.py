@@ -127,8 +127,8 @@ class EnrollmentViewMixin(object):
     @Lazy
     def show_supplemental_info(self):
         """
-        Currently we only show additional user information in the CSV CourseRosterReport grouping by course,
-        this will determine if we should calculate additional information combining with the supplemental_field_utility.
+        Currently we only show additional user information in the CSV Reports, this will determine
+        if we should calculate additional information combining with the supplemental_field_utility.
         """
         return False
 
@@ -247,6 +247,9 @@ class EnrollmentViewMixin(object):
             if user_supp_data:
                 result.update(user_supp_data)
 
+    def _predicate_with_progress(self, progress):
+        return True
+
     def build_enrollment_info_for_course(self, course, included_users=None, _should_include_record=None):
         """
         Return course's user enrollment info for users that are visible to the requesting user.
@@ -265,19 +268,22 @@ class EnrollmentViewMixin(object):
                 or (_should_include_record and not _should_include_record(user, entry, course)):
                 continue
 
-            # user info
-            self._add_user_info(enrollment, user)
-
-            # enrolled time and last Accessed
-            self._add_activity_info(enrollment, user, course, record)
-
             # completion
             progress_factory = CompletionContextProgressFactory(user, course, required_item_providers)
             progress = progress_factory()
             if required_item_providers is None:
                 required_item_providers = progress_factory.required_item_providers
 
+            if not self._predicate_with_progress(progress):
+                continue
+
             self._add_completion_info(enrollment, progress)
+
+            # user info
+            self._add_user_info(enrollment, user)
+
+            # enrolled time and last Accessed
+            self._add_activity_info(enrollment, user, course, record)
 
             # supplemental info
             self._add_supplemental_info(enrollment, user)
@@ -306,12 +312,6 @@ class EnrollmentViewMixin(object):
                 or (_should_include_record and not _should_include_record(user, entry, course)):
                 continue
 
-            # course info
-            self._add_course_info(enrollment, entry)
-
-            # enrolled time and last Accessed
-            self._add_activity_info(enrollment, user, course, record)
-
             # completion
             required_item_providers = self._cache_required_item_providers.get(course)
             progress_factory = CompletionContextProgressFactory(user, course, required_item_providers)
@@ -319,7 +319,16 @@ class EnrollmentViewMixin(object):
             if required_item_providers is None:
                 self._cache_required_item_providers[course] = progress_factory.required_item_providers
 
+            if not self._predicate_with_progress(progress):
+                continue
+
             self._add_completion_info(enrollment, progress)
+
+            # course info
+            self._add_course_info(enrollment, entry)
+
+            # enrolled time and last Accessed
+            self._add_activity_info(enrollment, user, course, record)
 
             # supplemental info
             self._add_supplemental_info(enrollment, user)
@@ -419,10 +428,13 @@ class AbstractEnrollmentReport(AbstractReportView, EnrollmentViewMixin):
                          {'message': message},
                          None)
 
+    def _to_datetime(self, timestamp):
+        return datetime.utcfromtimestamp(timestamp)
+
     @Lazy
     def _params(self):
         try:
-            params = self.request.json_body
+            params = CaseInsensitiveDict(self.request.json_body)
         except ValueError:
             params = {}
 
@@ -430,6 +442,16 @@ class AbstractEnrollmentReport(AbstractReportView, EnrollmentViewMixin):
             val = params.get(field, None) or None
             if val is not None and not isinstance(val, (list, tuple)):
                 self._raise_json_error(hexc.HTTPUnprocessableEntity, "%s must be a list or empty." % field)
+
+        for field in ('notBefore', 'notAfter'):
+            val = params.get(field, None)
+            if val is not None:
+                try:
+                    val = float(val)
+                    params[field] = self._to_datetime(val)
+                except ValueError:
+                    self._raise_json_error(hexc.HTTPUnprocessableEntity, "Invalid %s: %s" % (field, val))
+
         return params
 
     @Lazy
@@ -496,6 +518,24 @@ class AbstractEnrollmentReport(AbstractReportView, EnrollmentViewMixin):
         if self.input_users is None:
             return () if self.groupByCourse else get_users_by_site()
         return self.input_users
+
+    @Lazy
+    def not_before(self):
+        return self._params.get('notBefore')
+
+    @Lazy
+    def not_after(self):
+        return self._params.get('notAfter')
+
+    def _predicate_with_progress(self, progress):
+        """
+        Return a boolean if this progress record falls within our boundaries.
+        """
+        if not self.not_before and not self.not_after:
+            return True
+        return  progress.Completed \
+                and (self.not_before is None or progress.CompletedDate >= self.not_before) \
+                and (self.not_after is None or progress.CompletedDate < self.not_after)
 
     @Lazy
     def _enrollment_data_grouping_by_course(self):
@@ -691,7 +731,7 @@ class EnrollmentRecordsReportCSV(AbstractEnrollmentReport, EnrollmentReportCSVMi
 
     @Lazy
     def show_supplemental_info(self):
-        return self.groupByCourse
+        return True
 
     def _do_call(self):
         return self._do_create_response(filename="EnrollmentRecordsReport.csv")
