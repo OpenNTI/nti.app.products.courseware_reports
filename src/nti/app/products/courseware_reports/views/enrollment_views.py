@@ -23,11 +23,10 @@ from pyramid.config import not_
 from pyramid import httpexceptions as hexc
 
 from pyramid.view import view_config
-from pyramid.view import view_defaults
-
-from zc.displayname.interfaces import IDisplayNameGenerator
 
 from requests.structures import CaseInsensitiveDict
+
+from zc.displayname.interfaces import IDisplayNameGenerator
 
 from zope import component
 
@@ -36,8 +35,6 @@ from zope.cachedescriptors.property import Lazy
 from zope.intid.interfaces import IIntIds
 
 from zope.security.management import checkPermission
-
-from nti.app.contenttypes.reports.utils import UserInfo
 
 from nti.app.contenttypes.completion.adapters import CompletionContextProgressFactory
 
@@ -57,8 +54,6 @@ from nti.appserver.pyramid_authorization import has_permission
 
 from nti.common.string import is_true
 
-from nti.contenttypes.completion.interfaces import IProgress
-
 from nti.contenttypes.courses.interfaces import ICourseCatalog
 from nti.contenttypes.courses.interfaces import ICourseInstance
 from nti.contenttypes.courses.interfaces import ICourseCatalogEntry
@@ -73,9 +68,7 @@ from nti.coremetadata.interfaces import ILastSeenProvider
 from nti.dataserver.authorization import ACT_CONTENT_EDIT
 from nti.dataserver.authorization import is_admin
 from nti.dataserver.authorization import is_site_admin
-from nti.dataserver.authorization import is_admin_or_site_admin
 
-from nti.dataserver.interfaces import IDataserverFolder
 from nti.dataserver.interfaces import IUser
 from nti.dataserver.interfaces import ICommunity
 from nti.dataserver.interfaces import IDynamicSharingTargetFriendsList
@@ -87,8 +80,6 @@ from nti.dataserver.users import User
 from nti.dataserver.users import Entity
 
 from nti.dataserver.users.utils import get_users_by_site
-
-from nti.namedfile.file import safe_filename
 
 from nti.mailer.interfaces import IEmailAddressable
 
@@ -380,13 +371,17 @@ class AbstractEnrollmentReport(AbstractReportView, EnrollmentViewMixin):
 
     def _include_all_records(self, entry, course=None, cache=True):
         """
-        Return True if the requesting user can access to all enrollment records in the given course, or False otherwise.
+        Return True if the requesting user can access to all enrollment
+        records in the given course, or False otherwise.
         """
         if entry in self._cache_always_visible_entries:
             return self._cache_always_visible_entries[entry]
         result = False
-        # Instructor (who is also child site admin) in section course has read permission to its parent course.
-        if self.is_admin or has_permission(ACT_CONTENT_EDIT, entry) or is_course_instructor(entry, self.remoteUser):
+        # Instructor (who is also child site admin) in section course has
+        # read permission to its parent course.
+        if     self.is_admin \
+            or has_permission(ACT_CONTENT_EDIT, entry) \
+            or is_course_instructor(entry, self.remoteUser):
             result = True
         else:
             if course is None:
@@ -399,15 +394,18 @@ class AbstractEnrollmentReport(AbstractReportView, EnrollmentViewMixin):
 
     def _should_include_record(self, user, entry, course=None):
         """
-        Return True if the requesting user can access to a user's enrollment record, or False otherwise.
+        Return True if the requesting user can access to a user's enrollment
+        record, or False otherwise.
         """
         return self._include_all_records(entry, course) or self._can_administer_user(user)
 
     def _is_entry_visible(self, entry, course=None):
         """
-        Return True if the requesting user can access to the given course, or False otherwise.
+        Return True if the requesting user can access to the given course, or
+        False otherwise.
         """
-        return self._include_all_records(entry, course) or self._is_enrolled_by_requesting_user(entry)
+        return self._include_all_records(entry, course) \
+            or self._is_enrolled_by_requesting_user(entry)
 
     def _can_administer_user(self, user, cache=True):
         if user in self._cache_administered_users:
@@ -548,10 +546,10 @@ class AbstractEnrollmentReport(AbstractReportView, EnrollmentViewMixin):
             result.append((entry_record, enrollments))
         return result
 
-    @Lazy
-    def _enrollment_data_grouping_by_user(self):
+    def _enrollment_data_grouping_by_user(self, users=None):
         result = []
-        for user in self._get_users():
+        users = self._get_users() if users is None else users
+        for user in users:
             gevent.sleep()
             userinfo = self.build_user_info(user)
             enrollments = self.build_enrollment_info_for_user(user,
@@ -565,7 +563,7 @@ class AbstractEnrollmentReport(AbstractReportView, EnrollmentViewMixin):
 
     def _get_enrollment_data(self):
         return self._enrollment_data_grouping_by_course if self.groupByCourse \
-                                            else self._enrollment_data_grouping_by_user
+                                            else self._enrollment_data_grouping_by_user()
 
     def _do_call(self):
         raise NotImplementedError()
@@ -576,6 +574,7 @@ class AbstractEnrollmentReport(AbstractReportView, EnrollmentViewMixin):
             return self._do_call()
         finally:
             self.request.environ['nti.commit_veto'] = 'abort'
+
 
 @view_config(route_name='objects.generic.traversal',
              renderer="../templates/enrollment_records_report.rml",
@@ -653,13 +652,7 @@ class EnrollmentReportCSVMixin(object):
                     'username': obj.username,
                     'email': obj.email}
 
-    def _do_create_response(self, filename):
-        response = self.request.response
-        response.content_encoding = 'identity'
-        response.content_type = 'text/csv; charset=UTF-8'
-        response.content_disposition = 'attachment; filename="%s"' % filename
-
-        stream = BytesIO()
+    def _create_csv_file(self, stream, enrollment_data=None):
         writer = csv.writer(stream)
 
         def _write(data, writer, stream):
@@ -674,7 +667,8 @@ class EnrollmentReportCSVMixin(object):
 
         _write(header_row, writer, stream)
 
-        records = self._get_enrollment_data()
+        if enrollment_data is None:
+            records = self._get_enrollment_data()
 
         for obj, enrollments in records:
             for enrollment in enrollments:
@@ -686,9 +680,16 @@ class EnrollmentReportCSVMixin(object):
                 # Optional supplemental data.
                 data_row.extend(self._get_supplemental_data(enrollment))
                 _write(data_row, writer, stream)
-
         stream.flush()
         stream.seek(0)
+
+    def _do_create_response(self, filename):
+        response = self.request.response
+        response.content_encoding = 'identity'
+        response.content_type = 'text/csv; charset=UTF-8'
+        response.content_disposition = 'attachment; filename="%s"' % filename
+        stream = BytesIO()
+        self._create_csv_file(stream)
         response.body_file = stream
         return response
 
