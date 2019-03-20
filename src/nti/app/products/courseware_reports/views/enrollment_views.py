@@ -437,7 +437,9 @@ class AbstractEnrollmentReport(AbstractReportView,
     def _params(self):
         try:
             params = CaseInsensitiveDict(self.readInput())
-        except ValueError:
+        except hexc.HTTPBadRequest as e:
+            if self.request.body:
+                raise e
             params = {}
 
         for field in ('course_ntiids', 'entity_ids'):
