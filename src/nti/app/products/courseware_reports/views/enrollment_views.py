@@ -40,6 +40,8 @@ from nti.app.contenttypes.completion.adapters import CompletionContextProgressFa
 
 from nti.app.externalization.error import raise_json_error
 
+from nti.app.externalization.view_mixins import ModeledContentUploadRequestUtilsMixin
+
 from nti.app.products.courseware_reports import VIEW_ENROLLMENT_RECORDS_REPORT
 
 from nti.app.products.courseware_reports import MessageFactory as _
@@ -328,7 +330,9 @@ class EnrollmentViewMixin(object):
         return enrollments
 
 
-class AbstractEnrollmentReport(AbstractReportView, EnrollmentViewMixin):
+class AbstractEnrollmentReport(AbstractReportView,
+                               EnrollmentViewMixin,
+                               ModeledContentUploadRequestUtilsMixin):
 
     def __init__(self, context, request):
         AbstractReportView.__init__(self, context, request)
@@ -432,7 +436,7 @@ class AbstractEnrollmentReport(AbstractReportView, EnrollmentViewMixin):
     @Lazy
     def _params(self):
         try:
-            params = CaseInsensitiveDict(self.request.json_body)
+            params = CaseInsensitiveDict(self.readInput())
         except ValueError:
             params = {}
 
