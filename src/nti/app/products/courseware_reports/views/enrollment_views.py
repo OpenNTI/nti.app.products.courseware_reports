@@ -674,9 +674,9 @@ class EnrollmentReportCSVMixin(object):
         _write(header_row, writer, stream)
 
         if enrollment_data is None:
-            records = self._get_enrollment_data()
+            enrollment_data = self._get_enrollment_data()
 
-        for obj, enrollments in records:
+        for obj, enrollments in enrollment_data:
             for enrollment in enrollments:
                 data_row = []
                 enrollment.update(self._context_info_with_obj(obj))
