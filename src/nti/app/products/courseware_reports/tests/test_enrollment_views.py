@@ -4,29 +4,23 @@
 from __future__ import division
 from __future__ import print_function
 from __future__ import absolute_import
-__docformat__ = "restructuredtext en"
 
 # disable: accessing protected members, too many methods
 # pylint: disable=W0212,R0904
 
+from hamcrest import is_
 from hamcrest import calling
 from hamcrest import raises
-from hamcrest import is_
-from hamcrest import is_not
-from hamcrest import has_key
-from hamcrest import has_item
+from hamcrest import ends_with
+from hamcrest import has_length
 from hamcrest import assert_that
 from hamcrest import has_entries
-from hamcrest import has_entry
 from hamcrest import has_properties
-from hamcrest import none
-from hamcrest import has_length
 from hamcrest import contains_inanyorder
-from hamcrest import ends_with
 
-import csv
-import datetime
 import fudge
+import shutil
+import datetime
 
 from pyramid import httpexceptions as hexc
 
@@ -34,16 +28,9 @@ from zope import component
 from zope import interface
 from zope import lifecycleevent
 
-from nti.dataserver.users.users import User
-from nti.dataserver.users.communities import Community
-from nti.dataserver.users.friends_lists import DynamicFriendsList
-
 from nti.app.products.courseware_reports.interfaces import IRosterReportSupplementalFields
 
-from nti.app.products.courseware_reports.views.enrollment_views import AbstractEnrollmentReport
 from nti.app.products.courseware_reports.views.enrollment_views import EnrollmentRecordsReportPdf
-
-from nti.ntiids.ntiids import find_object_with_ntiid
 
 from nti.app.products.courseware.tests import PersistentInstructedCourseApplicationTestLayer
 
@@ -53,14 +40,21 @@ from nti.app.testing.decorators import WithSharedApplicationMockDS
 
 from nti.app.testing.request_response import DummyRequest
 
+from nti.contentlibrary.interfaces import IContentPackageLibrary
+from nti.contentlibrary.interfaces import IDelimitedHierarchyContentPackageEnumeration
+
 from nti.contenttypes.courses.interfaces import ICourseCatalog
-from nti.contenttypes.courses.interfaces import ICourseCatalogEntry
 from nti.contenttypes.courses.interfaces import ICourseEnrollmentManager
-from nti.contenttypes.courses.interfaces import ICourseInstance
+
+from nti.dataserver.users.users import User
+from nti.dataserver.users.communities import Community
+from nti.dataserver.users.friends_lists import DynamicFriendsList
 
 from nti.dataserver.users.common import set_user_creation_site
 
 from nti.dataserver.tests import mock_dataserver
+
+from nti.ntiids.ntiids import find_object_with_ntiid
 
 
 class TestEnrollmentRecordsReport(ApplicationLayerTest):
@@ -72,6 +66,17 @@ class TestEnrollmentRecordsReport(ApplicationLayerTest):
 
     pdf_url = '/dataserver2/++etc++hostsites/janux.ou.edu/++etc++site/Courses/@@EnrollmentRecordsReport?format=application%2Fpdf'
     csv_url = '/dataserver2/++etc++hostsites/janux.ou.edu/++etc++site/Courses/@@EnrollmentRecordsReport?format=text%2Fcsv'
+
+    @WithSharedApplicationMockDS(testapp=True, users=True)
+    def tearDown(self):
+        """
+        Our janux.ou.edu site should have no courses in it.
+        """
+        with mock_dataserver.mock_db_trans(site_name='janux.ou.edu'):
+            library = component.getUtility(IContentPackageLibrary)
+            enumeration = IDelimitedHierarchyContentPackageEnumeration(library)
+            # pylint: disable=no-member
+            shutil.rmtree(enumeration.root.absolute_path, True)
 
     @WithSharedApplicationMockDS(users=(u'test@nextthought.com',), testapp=True, default_authenticate=False)
     def testEnrollmentRecordsReport(self):
@@ -236,7 +241,7 @@ class TestEnrollmentRecordsReport(ApplicationLayerTest):
             enrollment_manager = ICourseEnrollmentManager(course)
             enrollment_manager.enroll(user1)
             enrollment_manager.enroll(user2)
-         
+
             course2 = find_object_with_ntiid(course_ntiid2)
             ICourseEnrollmentManager(course2).enroll(user1)
             ICourseEnrollmentManager(course2).enroll(user3)
