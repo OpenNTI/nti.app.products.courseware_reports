@@ -36,4 +36,7 @@ class VideoUsageReportPdf(AbstractCourseReportView):
 		if video_usage is not None:
 			options['top_video_usage'] = video_usage.get_top_stats()
 			options['all_video_usage'] = video_usage.get_stats()
+
+		header_options = self._get_top_header_options()
+		options.update(header_options)
 		return options

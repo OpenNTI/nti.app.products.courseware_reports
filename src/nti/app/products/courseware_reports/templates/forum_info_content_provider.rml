@@ -1,18 +1,1 @@
-
-<metal:block
-	tal:define="map view/__parent__/options" >
-
-	<tr tal:condition="python: 'topic_info' in map">
-		<td>Discussion:</td>
-		<td tal:define="topic_info map/topic_info">${topic_info/topic_shortened_name}</td>
-	</tr>
-	<tr tal:condition="python: 'topic_info' not in map">
-		<td>Forum:</td>
-		<td tal:content="context/title|context/__name__">title</td>
-	</tr>
-	<tr>
-		<td>Course:</td>
-		<td>${view/__parent__/course_name}${view/__parent__/generate_semester}</td>
-	</tr>
-
-</metal:block>
+<tal:block metal:use-macro="macro:header_table_2_content"/>

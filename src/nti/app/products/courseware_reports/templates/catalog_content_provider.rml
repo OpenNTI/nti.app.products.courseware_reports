@@ -1,3 +1,1 @@
-<tr>
-	<td>${view/__parent__/report_description}</td>
-</tr>
+<tal:block metal:use-macro="macro:header_table_2_content"/>

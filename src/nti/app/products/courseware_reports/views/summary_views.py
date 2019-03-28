@@ -437,4 +437,6 @@ class CourseSummaryReportPdf(AbstractCourseReportView):
             options['top_resource_usage'] = resource_usage.get_top_stats()
             options['all_resource_usage'] = resource_usage.get_stats()
 
+        header_options = self._get_top_header_options()
+        options.update(header_options)
         return options

@@ -88,6 +88,9 @@ class CourseRosterReportPdf(AbstractCourseRosterReport):
         enrollments = self.build_enrollment_info_for_course(self.course)
         options["enrollments"] = enrollments
         options["TotalEnrolledCount"] = len(enrollments)
+
+        header_options = self._get_top_header_options()
+        options.update(header_options)
         return options
 
 
@@ -134,6 +137,12 @@ class AllCourseRosterReportPdf(AbstractAllCourseReport):
             records.append((entry, enrollments))
         options["course_records"] = records
         options["TotalCourseCount"] = len(records)
+
+        data = [(self.report_description(),),
+                (self.timezone_header_str,)]
+        header_options = self.get_top_header_options(data=data,
+                                                     col_widths=[1])
+        options.update(header_options)
         return options
 
 

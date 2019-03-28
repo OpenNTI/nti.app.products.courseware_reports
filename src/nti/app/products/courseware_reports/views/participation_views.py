@@ -361,6 +361,10 @@ class StudentParticipationReportPdf(AbstractCourseReportView):
     def _visible_videos(self):
         return {x.ntiid:x for x in self._completable_items if INTIVideo.providedBy(x)}
 
+    def _get_additional_header_data(self):
+        return [('Name:', self.user_info.display or u''),
+                ('Login:', self.user_info.username or u'')]
+
     def __call__(self):
         """
         Return the `options` dictionary for formatting. The dictionary
@@ -406,6 +410,8 @@ class StudentParticipationReportPdf(AbstractCourseReportView):
         # Completion data for this user
         self._build_completion_data(options)
 
+        header_options = self._get_top_header_options()
+        options.update(header_options)
         self.options = options
         return options
 
@@ -687,6 +693,9 @@ class ForumParticipationReportPdf(AbstractCourseReportView):
         user_stats.sort()
         return (user_stats, only_one, unique_count)
 
+    def _get_additional_header_data(self):
+        return [('Forum:', self.context.title or self.context.__name__ or u'')]
+
     def __call__(self):
         """
         Return the `options` dictionary for formatting. The dictionary will
@@ -721,6 +730,8 @@ class ForumParticipationReportPdf(AbstractCourseReportView):
         self._build_comment_count_by_topic(options)
         self._build_user_stats(options)
 
+        header_options = self._get_top_header_options()
+        options.update(header_options)
         return options
 
 _TopicInfo = namedtuple('_TopicInfo',
@@ -763,6 +774,9 @@ class TopicParticipationReportPdf(ForumParticipationReportPdf):
             else topic_name
         return _TopicInfo(topic_name, forum_name, topic_shortened_name)
 
+    def _get_additional_header_data(self):
+        return [('Discussion:', self.context.title or self.context.__name__ or u'')]
+
     def __call__(self):
         """
         Return the `options` dictionary for formatting. The dictionary will
@@ -779,4 +793,7 @@ class TopicParticipationReportPdf(ForumParticipationReportPdf):
         options['top_creators'] = _TopCreators(self)
         options['topic_info'] = self._build_topic_info()
         self._build_user_stats(options)
+
+        header_options = self._get_top_header_options()
+        options.update(header_options)
         return options

@@ -271,10 +271,16 @@ class AssignmentSummaryReportPdf(AbstractCourseReportView):
 			source = IPlainTextContentFragment(source)
 		return source
 
+	def _get_additional_header_data(self):
+		return [('Assignment:', self.context.displayName or u'')]
+
 	def __call__(self):
 		self._check_access()
 		options = self.options
 		self._build_enrollment_info(options)
 		self._build_assignment_data(options)
 		self._build_question_data(options)
+
+		header_options = self._get_top_header_options(col_widths=[0.22, 0.78])
+		options.update(header_options)
 		return options

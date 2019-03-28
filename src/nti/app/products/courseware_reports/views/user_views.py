@@ -115,6 +115,12 @@ class UserEnrollmentReportPdf(AbstractUserEnrollmentView):
         options = self.options
         options["user"] = self.get_user_info()
         options['enrollments'] = self._get_enrollment_data()
+
+        header_data = (('Name:', options['user'].display or u''),
+                       ('Login:', options['user'].username or u''),
+                       (self.table_cell(self.timezone_header_str, colspan=2), 'NTI_COLSPAN'))
+        header_options = self.get_top_header_options(data=header_data, col_widths=[0.15, 0.85])
+        options.update(header_options)
         return options
 
 

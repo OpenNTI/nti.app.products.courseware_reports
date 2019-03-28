@@ -1,4 +1,1 @@
-<tr>
-	<td>Course:</td>
-	<td>${view/__parent__/course_name}${view/__parent__/generate_semester}</td>
-</tr>
+<tal:block metal:use-macro="macro:header_table_2_content"/>
