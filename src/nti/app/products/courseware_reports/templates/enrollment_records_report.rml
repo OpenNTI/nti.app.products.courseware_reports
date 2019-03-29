@@ -27,6 +27,16 @@
 				   width="4in" height="1.3in"
 				   showBoundary="0" />
 			<frame id="first" x1="0.5in" y1="0.5in" width="10in" height="6in"/>
+
+            <pageGraphics>
+                <place x=".5in" y="0.1in" width="7in" height=".3in">
+                    <para   style="footer"
+                            tal:attributes="fontSize python: '8' if len( view.generate_footer() ) > 100 else '10'"
+                            tal:content="view/generate_footer">
+                            Student Participation Report - jzuech - CHEM4970 - Apr 11, 2014 01:06 PM
+                    </para>
+                </place>
+            </pageGraphics>
 		</pageTemplate>
 
 		<pageTemplate id="first" autoNextTemplate="main">
@@ -90,6 +100,7 @@
 
 			<tal:block tal:condition="not:options/records">
 				<title  style="report_title" alignment="left" leftIndent=".07in" tal:content="view/report_title" >Report Title</title>
+				<nextFrame />
 				<para style="normal" spaceAfter=".1in">
 					There are no courses.
 				</para>
@@ -166,6 +177,7 @@
 		<tal:block tal:condition="not:options/groupByCourse">
 			<tal:block tal:condition="not:options/records">
 				<title  style="report_title" alignment="left" leftIndent=".07in" tal:content="view/report_title" >Report Title</title>
+				<nextFrame />
 				<para style="normal" spaceAfter=".1in" alignment='left' leftIndent=".07in">
 					There are no users.
 				</para>
