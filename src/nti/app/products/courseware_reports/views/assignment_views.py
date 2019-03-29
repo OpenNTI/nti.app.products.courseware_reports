@@ -73,7 +73,7 @@ class AssignmentSummaryReportPdf(AbstractCourseReportView):
 
 	@Lazy
 	def displayName(self):
-		return self.assignment.title if self.assignment is not None else self.context.displayName or u''
+		return (self.assignment.title if self.assignment is not None else self.context.displayName) or u''
 
 	def _build_question_data(self, options):
 		if self.assignment is None:
