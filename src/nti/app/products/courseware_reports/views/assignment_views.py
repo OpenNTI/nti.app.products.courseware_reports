@@ -71,6 +71,10 @@ class AssignmentSummaryReportPdf(AbstractCourseReportView):
 	def assignment(self):
 		return component.queryUtility(IQAssignment, name=self.context.AssignmentId)
 
+	@Lazy
+	def displayName(self):
+		return (self.assignment.title if self.assignment is not None else self.context.displayName) or u''
+
 	def _build_question_data(self, options):
 		if self.assignment is None:
 			# Maybe this is something without an assignment, like Attendance?
@@ -271,10 +275,16 @@ class AssignmentSummaryReportPdf(AbstractCourseReportView):
 			source = IPlainTextContentFragment(source)
 		return source
 
+	def _get_additional_header_data(self):
+		return [('Assignment:', self.displayName)]
+
 	def __call__(self):
 		self._check_access()
 		options = self.options
 		self._build_enrollment_info(options)
 		self._build_assignment_data(options)
 		self._build_question_data(options)
+
+		header_options = self._get_top_header_options(col_widths=[0.22, 0.78])
+		options.update(header_options)
 		return options

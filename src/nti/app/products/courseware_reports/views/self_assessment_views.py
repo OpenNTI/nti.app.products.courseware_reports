@@ -256,6 +256,9 @@ class SelfAssessmentSummaryReportPdf(AbstractSelfAssessmentReport):
         options['self_assessment_non_credit'] = open_stats
         options['self_assessment_for_credit'] = credit_stats
         self._build_enrollment_info(options)
+
+        header_options = self._get_top_header_options()
+        options.update(header_options)
         return options
 
 

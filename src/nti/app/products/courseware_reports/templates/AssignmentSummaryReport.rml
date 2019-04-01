@@ -6,7 +6,7 @@
 
 		<para style="normal" fontSize="12" spaceAfter=".1in">
 			This report includes information about the assignment submission, assignment results, and a
-			breakdown of answers per question for the assignment <u>${context/displayName}</u>.
+			breakdown of answers per question for the assignment <u>${view/displayName}</u>.
 		</para>
 		<hr width="100%" />
 
