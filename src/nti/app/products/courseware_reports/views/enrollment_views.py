@@ -18,6 +18,8 @@ from datetime import datetime
 
 from io import BytesIO
 
+from nameparser import HumanName
+
 from pyramid.config import not_
 
 from pyramid import httpexceptions as hexc
@@ -129,7 +131,7 @@ class EnrollmentViewMixin(object):
     def supplemental_field_utility(self):
         return component.queryUtility(IRosterReportSupplementalFields)
 
-    def _name(self, user, friendly_named=None):
+    def _add_name_info(self, user, user_dict, friendly_named=None):
         displayname = component.getMultiAdapter((user, self.request),
                                                 IDisplayNameGenerator)()
 
@@ -138,7 +140,14 @@ class EnrollmentViewMixin(object):
 
         if friendly_named.realname and displayname != friendly_named.realname:
             displayname = '%s (%s)' % (friendly_named.realname, displayname)
-        return displayname
+        user_dict["displayname"] = displayname
+        if friendly_named.realname:
+            human_name = HumanName(friendly_named.realname)
+            user_dict["last_name"] = human_name.last
+            user_dict["first_name"] = human_name.first
+        else:
+            user_dict["last_name"] = ''
+            user_dict["first_name"] = ''
 
     def _get_title(self, entry):
         return entry.title or u'<Empty title>'
@@ -201,7 +210,7 @@ class EnrollmentViewMixin(object):
         result["username"] = user.username
 
         fn_user = IFriendlyNamed(user)
-        result["displayname"] = self._name(user, friendly_named=fn_user)
+        self._add_name_info(user, result, friendly_named=fn_user)
 
         email_addressable = IEmailAddressable(user, None)
         result["email"] = email_addressable.email if email_addressable else None
@@ -316,6 +325,8 @@ class EnrollmentViewMixin(object):
                 continue
 
             self._add_completion_info(enrollment, progress)
+
+            self._add_user_info(enrollment, user)
 
             # course info
             self._add_course_info(enrollment, entry)
@@ -681,7 +692,14 @@ class EnrollmentReportCSVMixin(object):
                 data_row = []
                 enrollment.update(self._context_info_with_obj(obj))
                 for field in self.header_row:
-                    data_row.append(enrollment[self.header_field_map[field]])
+                    # Some users for this class may have placeholder columns
+                    # that we do not have info for.
+                    # If we have a field in our field_map, we *must* have a value
+                    # in our user data dict or it's a code error.
+                    if field in self.header_field_map:
+                        data_row.append(enrollment[self.header_field_map[field]])
+                    else:
+                        data_row.append('')
 
                 # Optional supplemental data.
                 data_row.extend(self._get_supplemental_data(enrollment))
