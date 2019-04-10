@@ -446,12 +446,7 @@ class AbstractEnrollmentReport(AbstractReportView,
 
     @Lazy
     def _params(self):
-        try:
-            params = CaseInsensitiveDict(self.readInput())
-        except hexc.HTTPBadRequest as e:
-            if self.request.body:
-                raise e
-            params = {}
+        params = CaseInsensitiveDict(self.readInput()) if self.request.body else {}
 
         for field in ('course_ntiids', 'entity_ids'):
             val = params.get(field, None) or None

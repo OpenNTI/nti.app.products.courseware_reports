@@ -23,6 +23,7 @@ import shutil
 import datetime
 
 from pyramid import httpexceptions as hexc
+from pyramid.request import Request
 
 from zope import component
 from zope import interface
@@ -37,8 +38,6 @@ from nti.app.products.courseware.tests import PersistentInstructedCourseApplicat
 from nti.app.testing.application_webtest import ApplicationLayerTest
 
 from nti.app.testing.decorators import WithSharedApplicationMockDS
-
-from nti.app.testing.request_response import DummyRequest
 
 from nti.contentlibrary.interfaces import IContentPackageLibrary
 from nti.contentlibrary.interfaces import IDelimitedHierarchyContentPackageEnumeration
@@ -254,6 +253,11 @@ class TestEnrollmentRecordsReport(ApplicationLayerTest):
         self._assert_supplemental_info()
 
 
+class _MockRequest(Request):
+    def __init__(self, body, method='POST'):
+        super(_MockRequest, self).__init__({}, body=str(body), method=method)
+
+
 class TestEnrollmentRecordsReportPdf(ApplicationLayerTest):
 
     @WithSharedApplicationMockDS(users=True, testapp=True, default_authenticate=True)
@@ -262,7 +266,7 @@ class TestEnrollmentRecordsReportPdf(ApplicationLayerTest):
         with mock_dataserver.mock_db_trans(self.ds):
             catalog = component.getUtility(ICourseCatalog)
             mock_input.is_callable().returns({})
-            view = EnrollmentRecordsReportPdf(catalog, DummyRequest(json_body={}, method='POST'))
+            view = EnrollmentRecordsReportPdf(catalog, _MockRequest(body={}, method='POST'))
             assert_that(view, has_properties({'_params': has_length(0),
                                               'groupByCourse': True,
                                               'show_supplemental_info': False,
@@ -276,7 +280,7 @@ class TestEnrollmentRecordsReportPdf(ApplicationLayerTest):
                       'course_ntiids': None,
                       'completionNotBefore': 1545091200,
                       'completionNotAfter': 1545112800}
-            request = DummyRequest(json_body=params, method='POST')
+            request = _MockRequest(body=params, method='POST')
             mock_input.is_callable().returns(params)
             view = EnrollmentRecordsReportPdf(catalog, request)
             # For PDF report, we don't show supplemental info now.
@@ -286,17 +290,17 @@ class TestEnrollmentRecordsReportPdf(ApplicationLayerTest):
             assert_that(view.completionNotAfter.strftime('%Y-%m-%d %H:%M:%S'), is_('2018-12-18 06:00:00'))
 
             params = {'course_ntiids': 'abc'}
-            view = EnrollmentRecordsReportPdf(catalog, DummyRequest(json_body={'course_ntiids': 'abc'}, method='POST'))
+            view = EnrollmentRecordsReportPdf(catalog, _MockRequest(body={'course_ntiids': 'abc'}, method='POST'))
             mock_input.is_callable().returns(params)
             assert_that(calling(getattr).with_args(view, '_params'), raises(hexc.HTTPUnprocessableEntity))
 
             params ={'completionNotBefore': 'abc'}
-            view = EnrollmentRecordsReportPdf(catalog, DummyRequest(json_body={'completionNotBefore': 'abc'}, method='POST'))
+            view = EnrollmentRecordsReportPdf(catalog, _MockRequest(body={'completionNotBefore': 'abc'}, method='POST'))
             mock_input.is_callable().returns(params)
             assert_that(calling(getattr).with_args(view, 'completionNotBefore'), raises(hexc.HTTPUnprocessableEntity))
 
             params = {'completionNotAfter': ''}
-            view = EnrollmentRecordsReportPdf(catalog, DummyRequest(json_body={'completionNotAfter': ''}, method='POST'))
+            view = EnrollmentRecordsReportPdf(catalog, _MockRequest(body={'completionNotAfter': ''}, method='POST'))
             mock_input.is_callable().returns(params)
             assert_that(calling(getattr).with_args(view, 'completionNotAfter'), raises(hexc.HTTPUnprocessableEntity))
 
@@ -316,40 +320,40 @@ class TestEnrollmentRecordsReportPdf(ApplicationLayerTest):
             catalog = component.getUtility(ICourseCatalog)
             params = {'entity_ids':[]}
             mock_input.is_callable().returns(params)
-            view = EnrollmentRecordsReportPdf(catalog, DummyRequest(json_body={'entity_ids':[]}, method='POST'))
+            view = EnrollmentRecordsReportPdf(catalog, _MockRequest(body={'entity_ids':[]}, method='POST'))
             assert_that(view.input_users, is_(None))
             assert_that(view._get_users(), has_length(0))
 
             # should return all site users if entity_ids is not provided and groupByGroup is False.
             params = {'entity_ids':[], 'groupByCourse': 'false'}
             mock_input.is_callable().returns(params)
-            view = EnrollmentRecordsReportPdf(catalog, DummyRequest(json_body={'entity_ids':[], 'groupByCourse': 'false'}, method='POST'))
+            view = EnrollmentRecordsReportPdf(catalog, _MockRequest(body={'entity_ids':[], 'groupByCourse': 'false'}, method='POST'))
             assert_that(view.input_users, is_(None))
             assert_that(view._get_users(), has_length(7))
 
             # should return all site users if entity_ids is not provided and groupByGroup is False.
             params = {'groupByCourse': 'false'}
             mock_input.is_callable().returns(params)
-            view = EnrollmentRecordsReportPdf(catalog, DummyRequest(json_body={'groupByCourse': 'false'}, method='POST'))
+            view = EnrollmentRecordsReportPdf(catalog, _MockRequest(body={'groupByCourse': 'false'}, method='POST'))
             assert_that(view.input_users, is_(None))
             assert_that(view._get_users(), has_length(7))
 
             # user00x not found
             params = {'entity_ids':['user001', 'user00x', 'user002']}
             mock_input.is_callable().returns(params)
-            view = EnrollmentRecordsReportPdf(catalog, DummyRequest(json_body={'entity_ids':['user001', 'user00x', 'user002']}, method='POST'))
+            view = EnrollmentRecordsReportPdf(catalog, _MockRequest(body={'entity_ids':['user001', 'user00x', 'user002']}, method='POST'))
             assert_that(calling(getattr).with_args(view, 'input_users'), raises(hexc.HTTPUnprocessableEntity))
 
             # all users found
             params = {'entity_ids':['user001', 'user002']}
             mock_input.is_callable().returns(params)
-            view = EnrollmentRecordsReportPdf(catalog, DummyRequest(json_body={'entity_ids':['user001', 'user002']}, method='POST'))
+            view = EnrollmentRecordsReportPdf(catalog, _MockRequest(body={'entity_ids':['user001', 'user002']}, method='POST'))
             assert_that(view.input_users, has_length(2))
 
             # both communities have no members
             params = {'entity_ids':['community1', 'community2']}
             mock_input.is_callable().returns(params)
-            view = EnrollmentRecordsReportPdf(catalog, DummyRequest(json_body={'entity_ids':['community1', 'community2']}, method='POST'))
+            view = EnrollmentRecordsReportPdf(catalog, _MockRequest(body={'entity_ids':['community1', 'community2']}, method='POST'))
             assert_that(calling(getattr).with_args(view, 'input_users'), raises(hexc.HTTPUnprocessableEntity))
 
             user1.record_dynamic_membership(community1)
@@ -360,13 +364,13 @@ class TestEnrollmentRecordsReportPdf(ApplicationLayerTest):
 
             params = {'entity_ids':['community1']}
             mock_input.is_callable().returns(params)
-            view = EnrollmentRecordsReportPdf(catalog, DummyRequest(json_body={'entity_ids':['community1']}, method='POST'))
+            view = EnrollmentRecordsReportPdf(catalog, _MockRequest(body={'entity_ids':['community1']}, method='POST'))
             assert_that(view.input_users, contains_inanyorder(user1, user2))
             assert_that(view._get_users(), contains_inanyorder(user1, user2))
 
             params = {'entity_ids':['community1', 'community2']}
             mock_input.is_callable().returns(params)
-            view = EnrollmentRecordsReportPdf(catalog, DummyRequest(json_body={'entity_ids':['community1', 'community2']}, method='POST'))
+            view = EnrollmentRecordsReportPdf(catalog, _MockRequest(body={'entity_ids':['community1', 'community2']}, method='POST'))
             assert_that(view.input_users, contains_inanyorder(user1, user2, user3))
 
             dfl = DynamicFriendsList(username=u'dfl001')
@@ -376,12 +380,12 @@ class TestEnrollmentRecordsReportPdf(ApplicationLayerTest):
             dfl.addFriend(user5)
             params = {'entity_ids':[dfl.NTIID]}
             mock_input.is_callable().returns(params)
-            view = EnrollmentRecordsReportPdf(catalog, DummyRequest(json_body={'entity_ids':[dfl.NTIID]}, method='POST'))
+            view = EnrollmentRecordsReportPdf(catalog, _MockRequest(body={'entity_ids':[dfl.NTIID]}, method='POST'))
             assert_that(view.input_users, contains_inanyorder(user4, user5))
 
             params = {'entity_ids':['user003', 'community1', dfl.NTIID]}
             mock_input.is_callable().returns(params)
-            view = EnrollmentRecordsReportPdf(catalog, DummyRequest(json_body={'entity_ids':['user003', 'community1', dfl.NTIID]}, method='POST'))
+            view = EnrollmentRecordsReportPdf(catalog, _MockRequest(body={'entity_ids':['user003', 'community1', dfl.NTIID]}, method='POST'))
             assert_that(view.input_users, contains_inanyorder(user1, user2, user3, user4, user5))
             assert_that(view._get_users(), contains_inanyorder(user1, user2, user3, user4, user5))
 
@@ -397,42 +401,42 @@ class TestEnrollmentRecordsReportPdf(ApplicationLayerTest):
 
             params = {'completionNotBefore': None, 'completionNotAfter': None}
             mock_input.is_callable().returns(params)
-            view = EnrollmentRecordsReportPdf(catalog, DummyRequest(json_body={'completionNotBefore': None, 'completionNotAfter': None}))
+            view = EnrollmentRecordsReportPdf(catalog, _MockRequest(body={'completionNotBefore': None, 'completionNotAfter': None}))
             assert_that(view._predicate_with_progress(complete_progress), is_(True))
             assert_that(view._predicate_with_progress(incomplete_progress), is_(True))
 
             params = {'completionNotBefore': None, 'completionNotAfter': 100}
             mock_input.is_callable().returns(params)
-            view = EnrollmentRecordsReportPdf(catalog, DummyRequest(json_body={'completionNotBefore': None, 'completionNotAfter': 100}))
+            view = EnrollmentRecordsReportPdf(catalog, _MockRequest(body={'completionNotBefore': None, 'completionNotAfter': 100}))
             assert_that(view._predicate_with_progress(complete_progress), is_(False))
             assert_that(view._predicate_with_progress(incomplete_progress), is_(False))
 
             params = {'completionNotBefore': None, 'completionNotAfter': 101}
             mock_input.is_callable().returns(params)
-            view = EnrollmentRecordsReportPdf(catalog, DummyRequest(json_body={'completionNotBefore': None, 'completionNotAfter': 101}))
+            view = EnrollmentRecordsReportPdf(catalog, _MockRequest(body={'completionNotBefore': None, 'completionNotAfter': 101}))
             assert_that(view._predicate_with_progress(complete_progress), is_(True))
             assert_that(view._predicate_with_progress(incomplete_progress), is_(False))
 
             params = {'completionNotBefore': 100, 'completionNotAfter': 100}
             mock_input.is_callable().returns(params)
-            view = EnrollmentRecordsReportPdf(catalog, DummyRequest(json_body={'completionNotBefore': 100, 'completionNotAfter': 100}))
+            view = EnrollmentRecordsReportPdf(catalog, _MockRequest(body={'completionNotBefore': 100, 'completionNotAfter': 100}))
             assert_that(view._predicate_with_progress(complete_progress), is_(False))
             assert_that(view._predicate_with_progress(incomplete_progress), is_(False))
 
             params = {'completionNotBefore': 100, 'completionNotAfter': 101}
             mock_input.is_callable().returns(params)
-            view = EnrollmentRecordsReportPdf(catalog, DummyRequest(json_body={'completionNotBefore': 100, 'completionNotAfter': 101}))
+            view = EnrollmentRecordsReportPdf(catalog, _MockRequest(body={'completionNotBefore': 100, 'completionNotAfter': 101}))
             assert_that(view._predicate_with_progress(complete_progress), is_(True))
             assert_that(view._predicate_with_progress(incomplete_progress), is_(False))
 
             params = {'completionNotBefore': 100, 'completionNotAfter': None}
             mock_input.is_callable().returns(params)
-            view = EnrollmentRecordsReportPdf(catalog, DummyRequest(json_body={'completionNotBefore': 100, 'completionNotAfter': None}))
+            view = EnrollmentRecordsReportPdf(catalog, _MockRequest(body={'completionNotBefore': 100, 'completionNotAfter': None}))
             assert_that(view._predicate_with_progress(complete_progress), is_(True))
             assert_that(view._predicate_with_progress(incomplete_progress), is_(False))
 
             params = {'completionNotBefore': 101, 'completionNotAfter': None}
             mock_input.is_callable().returns(params)
-            view = EnrollmentRecordsReportPdf(catalog, DummyRequest(json_body={'completionNotBefore': 101, 'completionNotAfter': None}))
+            view = EnrollmentRecordsReportPdf(catalog, _MockRequest(body={'completionNotBefore': 101, 'completionNotAfter': None}))
             assert_that(view._predicate_with_progress(complete_progress), is_(False))
             assert_that(view._predicate_with_progress(incomplete_progress), is_(False))
