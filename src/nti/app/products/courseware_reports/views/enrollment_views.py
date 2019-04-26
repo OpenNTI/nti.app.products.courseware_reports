@@ -232,15 +232,21 @@ class EnrollmentViewMixin(object):
             completed_date = self._adjust_date(progress.CompletedDate)
             completed_date = completed_date.strftime("%Y-%m-%d")
             result["completion"] = completed_date
+            result["completionDate"] = completed_date
+            result["completionPercentage"] = u'100%'
             result["completionSuccess"] = u'Yes' if progress.CompletedItem.Success else u'No'
         elif progress.PercentageProgress is not None:
             percent = int(progress.PercentageProgress * 100)
             result["completion"] = '%s%%' % percent
+            result["completionDate"] = u''
+            result["completionPercentage"] = '%s%%' % percent
             result["completionSuccess"] = u''
         else:
             # PercentageProgress returns None if the MaxPossibleProgress is 0
             # or there is no defined MaxPossibleProgress
             result["completion"] = u'N/A'
+            result["completionDate"] = u''
+            result["completionPercentage"] = u'0%'
             result["completionSuccess"] = u''
 
     def _add_supplemental_info(self, result, user):
