@@ -177,6 +177,8 @@ class CourseRosterReportCSV(AbstractCourseRosterReport, EnrollmentReportCSVMixin
             'Last Seen (%s)' % self.timezone_util.get_timezone_display_name(): 'lastAccessed',
             'Completion': 'completion',
             'Completed Successfully': 'completionSuccess',
+            'Completion Percentage': 'completionPercentage',
+            'Completion Date': 'completionDate'
         }
 
     @Lazy
@@ -185,7 +187,9 @@ class CourseRosterReportCSV(AbstractCourseRosterReport, EnrollmentReportCSVMixin
                 'Date Enrolled',
                 'Last Seen (%s)' % self.timezone_util.get_timezone_display_name(),
                 'Completion',
-                'Completed Successfully']
+                'Completed Successfully',
+                'Completion Percentage',
+                'Completion Date']
 
     @Lazy
     def groupByCourse(self):
@@ -238,6 +242,8 @@ class AllCourseRosterReportCSV(AbstractAllCourseReport, EnrollmentReportCSVMixin
             'Last Seen (%s)' % self.timezone_util.get_timezone_display_name(): 'lastAccessed',
             'Completion': 'completion',
             'Completed Successfully': 'completionSuccess',
+            'Completion Percentage': 'completionPercentage',
+            'Completion Date': 'completionDate'
         }
 
     @Lazy
@@ -248,7 +254,9 @@ class AllCourseRosterReportCSV(AbstractAllCourseReport, EnrollmentReportCSVMixin
                 'Date Enrolled',
                 'Last Seen (%s)' % self.timezone_util.get_timezone_display_name(),
                 'Completion',
-                'Completed Successfully']
+                'Completed Successfully',
+                'Completion Percentage',
+                'Completion Date']
 
     @Lazy
     def groupByCourse(self):
