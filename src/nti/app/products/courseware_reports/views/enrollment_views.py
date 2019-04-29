@@ -246,7 +246,7 @@ class EnrollmentViewMixin(object):
             # or there is no defined MaxPossibleProgress
             result["completion"] = u'N/A'
             result["completionDate"] = u''
-            result["completionPercentage"] = u'0%'
+            result["completionPercentage"] = u'N/A'
             result["completionSuccess"] = u''
 
     def _add_supplemental_info(self, result, user):
