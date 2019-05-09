@@ -8,7 +8,7 @@ __docformat__ = "restructuredtext en"
 # pylint: disable=W0212,R0904
 
 
-from hamcrest import is_
+from hamcrest import is_, all_of, contains, not_, ends_with
 from hamcrest import is_not
 from hamcrest import has_key
 from hamcrest import has_item
@@ -415,6 +415,14 @@ class TestCourseSummaryReport(ApplicationLayerTest):
         res = self.testapp.get(report_href, extra_environ=site_admin_environ)
         assert_that(res, has_property('content_type', 'application/pdf'))
 
+    @fudge.patch('nti.app.contenttypes.reports.views.view_mixins.AbstractReportView.timezone_displayname')
+    def _testCourseSummaryReportPdf_topHeaderData(self, view, timezone_displayname):
+        timezone_displayname.is_callable().returns('UTC')
+        options = view._get_top_header_options()
+
+        assert_that(options, has_entry('top_header_data', has_item(contains('Course:', not_(ends_with('Fall 2013'))))))
+
+
     @WithSharedApplicationMockDS(users=True, testapp=True, default_authenticate=True)
     @fudge.patch('nti.app.products.courseware.discussions.get_vendor_info')
     def testCourseSummaryReportPdf(self, mock_gvi):
@@ -471,6 +479,8 @@ class TestCourseSummaryReport(ApplicationLayerTest):
 
             stats = view._build_assignment_data()
             assert_that(stats, has_length(2))
+
+            self._testCourseSummaryReportPdf_topHeaderData(view)
 
         janux_user = u'janux_user'
         mock_gvi.is_callable().with_args().returns(self.vendor_info)

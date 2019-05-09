@@ -233,7 +233,7 @@ class AbstractCourseReportView(AbstractReportView):
     def _get_top_header_options(self, col_widths=[0.2, 0.8]):
         data = []
         data.extend(self._get_additional_header_data())
-        data.extend([('Course:', self.course_name() + self.generate_semester()),
+        data.extend([('Course:', self.course_name()),
                      (self.table_cell(self.timezone_header_str, colspan=2), 'NTI_COLSPAN')])
         return self.get_top_header_options(data=data,
                                            col_widths=col_widths)
