@@ -104,8 +104,7 @@ class StudentParticipationReportPdf(AbstractCourseReportView):
     @property
     def filename(self):
         user_prefix = self.user_as_affix(self.student_user, user_info=self.user_info)
-        result = "%s_%s_%s" % (user_prefix, self.course_name(), self.request.view_name)
-        return safe_filename(result)
+        return self._build_filename([user_prefix, self.course_name(), self.report_title])
 
     @Lazy
     def student_user(self):
@@ -432,6 +431,10 @@ class ForumParticipationReportPdf(AbstractCourseReportView):
                            ('username', 'topics_created',
                             'total_comment_count', 'instructor_reply_count'))
 
+    @property
+    def filename(self):
+        return self._build_filename([self.context_title, self.course_name(), self.report_title])
+
     def _course_from_forum(self, forum):
         return course_from_forum(forum)
 
@@ -694,7 +697,11 @@ class ForumParticipationReportPdf(AbstractCourseReportView):
         return (user_stats, only_one, unique_count)
 
     def _get_additional_header_data(self):
-        return [('Forum:', self.context.title or self.context.__name__ or u'')]
+        return [('Forum:', self.context_title)]
+
+    @Lazy
+    def context_title(self):
+        return self.context.title or self.context.__name__ or u''
 
     def __call__(self):
         """

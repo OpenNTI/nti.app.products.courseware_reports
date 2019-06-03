@@ -759,5 +759,9 @@ class EnrollmentRecordsReportCSV(AbstractEnrollmentReport, EnrollmentReportCSVMi
     def show_supplemental_info(self):
         return True
 
+    @Lazy
+    def report_title(self):
+        return _(u'Course Roster Report') if self.groupByCourse else _(u'User Enrollment Report')
+
     def _do_call(self):
-        return self._do_create_response(filename="EnrollmentRecordsReport.csv")
+        return self._do_create_response(filename=self.filename)

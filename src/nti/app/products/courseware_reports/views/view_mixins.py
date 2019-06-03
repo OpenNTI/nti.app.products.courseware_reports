@@ -92,9 +92,7 @@ class AbstractCourseReportView(AbstractReportView):
     """
     @property
     def filename(self):
-        course_name = self.course_name()
-        result = "%s_%s" % (course_name, self.request.view_name) if course_name else self.request.view_name
-        return safe_filename(result)
+        return self._build_filename([self.course_name(), self.report_title])
 
     def _check_access(self):
         if is_admin_or_site_admin(self.remoteUser):
