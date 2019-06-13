@@ -145,7 +145,7 @@ class TestStudentParticipationReport(ApplicationLayerTest):
         view_href = self.require_link_href_with_rel(sj_enrollment,
                                                     'report-%s' % VIEW_STUDENT_PARTICIPATION)
 
-        _require_link_with_title(sj_enrollment, "Student Participation Report")
+        _require_link_with_title(sj_enrollment, "Course User Participation Report")
 
         res = self.testapp.get(view_href, extra_environ=instructor_environ)
         assert_that(res, has_property('content_type', 'application/pdf'))
