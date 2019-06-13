@@ -91,7 +91,7 @@
 	<!-- Report Registrations -->
 	<rep:registerInstructorReport name="CourseSummaryReport.pdf"
 								  title="Course Summary Report"
-								  description="Course summary of student engagement and assessment"
+								  description="Course summary of user engagement and assessment"
 								  contexts="nti.contenttypes.courses.interfaces.ICourseInstance"
 								  supported_types="application/pdf" />
 
@@ -103,13 +103,13 @@
 
 	<rep:registerInstructorReport name="SelfAssessmentSummaryReport.pdf"
 								  title="Self Assessment Summary Report"
-								  description="Summary of assessments"
+								  description="Summary of self-assessment usage in a particular course"
 								  contexts="nti.contenttypes.courses.interfaces.ICourseInstance"
 								  supported_types="application/pdf" />
 
 	<rep:registerInstructorReport name="StudentParticipationReport.pdf"
-								  title="Student Participation Report"
-								  description="Summary of student participation in this course"
+								  title="Course User Participation Report"
+								  description="Summary of user participation in this course"
 								  contexts="nti.app.products.courseware.interfaces.ICourseInstanceEnrollment"
 								  supported_types="application/pdf" />
 
@@ -134,26 +134,26 @@
 
 	<rep:registerInstructorReport name="CourseRosterReport"
 								  title="Course Roster Report"
-								  description="Course summary of student enrollment"
+								  description="A summary of user enrollments in a particular course"
 								  contexts="nti.contenttypes.courses.interfaces.ICourseInstance"
 								  supported_types="application/pdf text/csv" />
 
     <rep:registerReport name="AllCourseRosterReport"
                     title="All Course Roster Report"
-                    description="Summary of student enrollment for all courses"
+                    description="Summary of user enrollment for all courses"
                     contexts="nti.contenttypes.courses.interfaces.ICourseCatalog"
                     supported_types="application/pdf text/csv" />
 
 	<rep:registerReport name="UserEnrollmentReport"
 						title="User Enrollment Report"
-						description="Summary user enrolled of report"
+						description="Summary of a user's enrollments"
 						contexts="nti.coremetadata.interfaces.IUser"
 						permission="zope.View"
 						supported_types="application/pdf text/csv" />
 
     <rep:registerReport name="EnrollmentRecordsReport"
                     title="Course Enrollment Records Report"
-                    description="Summary of specified student enrollments for specified courses"
+                    description="Summary of specified user enrollments for specified courses"
                     contexts="nti.contenttypes.courses.interfaces.ICourseCatalog"
                     supported_types="application/pdf text/csv" />
 
