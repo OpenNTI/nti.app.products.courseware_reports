@@ -8,11 +8,11 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import absolute_import
 
-from zope import interface
-
 from zope.security.permission import Permission
 
 from nti.contenttypes.reports.interfaces import IReport
+
+from nti.dataserver.users.interfaces import IProfileDisplayableSupplementalFields
 
 from nti.schema.field import Choice
 
@@ -31,23 +31,8 @@ class IInstructorReport(IReport):
                         required=False)
 
 
-class IRosterReportSupplementalFields(interface.Interface):
+class IRosterReportSupplementalFields(IProfileDisplayableSupplementalFields):
     """
-    A utility that can add additional (profile) fields to roster CSV
-    reports.
+    A IProfileDisplayableSupplementalFields utility that can add additional
+    (profile) fields to roster CSV reports.
     """
-
-    def get_user_fields(user):
-        """
-        Returns a dict of field_name -> value.
-        """
-
-    def get_field_display_values():
-        """
-        Returns a dict of field_name -> field_display_name.
-        """
-
-    def get_ordered_fields():
-        """
-        The list of field names in order.
-        """
