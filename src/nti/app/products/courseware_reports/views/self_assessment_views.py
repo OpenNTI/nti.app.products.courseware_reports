@@ -113,7 +113,7 @@ class SelfAssessmentSummaryReportPdf(AbstractSelfAssessmentReport):
     overall self-assessment usage and per self-assessment completion data.
     """
 
-    report_title = _(u'Self Assessment Report')
+    report_title = _(u'Self Assessment Summary Report')
 
     def _display_name(self, username):
         """
@@ -359,7 +359,7 @@ class SelfAssessmentReportCSV(AbstractSelfAssessmentReport):
         response = self.request.response
         response.content_encoding = 'identity'
         response.content_type = 'text/csv; charset=UTF-8'
-        filename = "%s_self_assessment_report.csv" % self.course_name()
+        filename = "%s_self_assessment_completion_report.csv" % self.course_name()
         response.content_disposition = 'attachment; filename="%s"' % safe_filename(filename)
 
         stream = BytesIO()
