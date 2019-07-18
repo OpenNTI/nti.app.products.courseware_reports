@@ -113,7 +113,7 @@ class SelfAssessmentSummaryReportPdf(AbstractSelfAssessmentReport):
     overall self-assessment usage and per self-assessment completion data.
     """
 
-    report_title = _(u'Self Assessment Summary Report')
+    report_title = _(u'Self Assessment Report')
 
     def _display_name(self, username):
         """
