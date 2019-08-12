@@ -670,11 +670,17 @@ class EnrollmentReportCSVMixin(object):
                     'username': obj.username,
                     'email': obj.email}
 
-    def _create_csv_file(self, stream, enrollment_data=None):
+    def _create_csv_file(self, stream, enrollment_data=None, in_bytes=True):
+        """
+        bytes - write the data in bytes
+        """
         writer = csv.writer(stream)
 
         def _write(data, writer, stream):
-            writer.writerow([_tx_string(x) for x in data])
+            if in_bytes:
+                writer.writerow([_tx_string(x) for x in data])
+            else:
+                writer.writerow(data)
             return stream
 
         # Header
