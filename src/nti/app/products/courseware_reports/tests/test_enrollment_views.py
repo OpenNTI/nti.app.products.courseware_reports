@@ -206,12 +206,13 @@ class TestEnrollmentRecordsReport(ApplicationLayerTest):
     @WithSharedApplicationMockDS(users=(u'user001', u'user002', u'user003', u'user004', u'instructor001', u'siteadmin001', u'test@nextthought.com'), testapp=True, default_authenticate=False)
     def testEnrollmentRecordsReportCSV(self):
         self._init_data()
-        admin_level = u'test_admin_key'
         with mock_dataserver.mock_db_trans(self.ds, site_name='janux.ou.edu'):
-            for username in (u'user001', u'user002', u'user003', u'user004', u'instructor001', u'siteadmin001', u'test@nextthought.com'):
+            for username in (u'user001', u'user002', u'user003', u'user004', u"instructor001", u'siteadmin001', u'test@nextthought.com'):
                 user = User.get_user(username)
                 set_user_creation_site(user, 'janux.ou.edu')
                 lifecycleevent.modified(user)
+
+        bleh = ' ’’'
 
         self._create_admin_level()
         self._add_site_admin(u'siteadmin001')
