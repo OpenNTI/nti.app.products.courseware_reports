@@ -8,9 +8,8 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import absolute_import
 
-import csv
-import six
 import gevent
+import unicodecsv as csv
 
 from collections import namedtuple
 
@@ -92,12 +91,6 @@ from nti.ntiids.ntiids import find_object_with_ntiid
 from nti.traversal.traversal import find_interface
 
 logger = __import__('logging').getLogger(__name__)
-
-
-def _tx_string(s):
-    if s is not None and isinstance(s, six.text_type):
-        s = s.encode('utf-8')
-    return s
 
 
 CatalogEntryRecord = \
@@ -674,19 +667,13 @@ class EnrollmentReportCSVMixin(object):
         """
         bytes - write the data in bytes
         """
-        writer = csv.writer(stream)
-
-        def _write(data, writer, stream):
-            writer.writerow([_tx_string(x) for x in data])
-            return stream
-
+        writer = csv.writer(stream, encoding='utf-8')
         # Header
         header_row = list(self.header_row)
 
         # Optional supplemental header
         header_row.extend(self._get_supplemental_header())
-
-        _write(header_row, writer, stream)
+        writer.writerow(header_row)
 
         if enrollment_data is None:
             enrollment_data = self._get_enrollment_data()
@@ -707,7 +694,7 @@ class EnrollmentReportCSVMixin(object):
 
                 # Optional supplemental data.
                 data_row.extend(self._get_supplemental_data(enrollment))
-                _write(data_row, writer, stream)
+                writer.writerow(data_row)
         stream.flush()
         stream.seek(0)
 
