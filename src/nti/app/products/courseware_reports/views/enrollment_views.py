@@ -62,7 +62,7 @@ from nti.contenttypes.courses.interfaces import ICourseInstance
 from nti.contenttypes.courses.interfaces import ICourseCatalogEntry
 from nti.contenttypes.courses.interfaces import ICourseEnrollments
 
-from nti.contenttypes.courses.utils import is_course_instructor
+from nti.contenttypes.courses.utils import is_course_instructor, is_hidden_tag
 from nti.contenttypes.courses.utils import get_enrollments
 from nti.contenttypes.courses.utils import get_enrollment_records
 
@@ -219,6 +219,18 @@ class EnrollmentViewMixin(object):
         provider = component.getMultiAdapter((user, course), ILastSeenProvider)
         accessed_time = self._adjust_date(provider.lastSeenTime) if provider.lastSeenTime else enrollment_time
         result["lastAccessed"] = self._format_datetime(accessed_time) if accessed_time else None
+
+    def _get_entry_completion_tags(self, entry):
+        """
+        Look for special hidden tags of the form .<key>=<value>
+        """
+        result = {}
+        for tag in entry.tags or ():
+            if tag and is_hidden_tag(tag):
+                key_val = tag.split('=')
+                if len(key_val) == 2:
+                    result[key_val[0]] = key_val[1]
+        return result
 
     def _add_completion_info(self, result, progress):
         if progress.Completed:
@@ -663,6 +675,9 @@ class EnrollmentReportCSVMixin(object):
                     'username': obj.username,
                     'email': obj.email}
 
+    def _get_entry_tag_headers(self):
+        pass
+
     def _create_csv_file(self, stream, enrollment_data=None):
         """
         bytes - write the data in bytes
@@ -673,10 +688,11 @@ class EnrollmentReportCSVMixin(object):
 
         # Optional supplemental header
         header_row.extend(self._get_supplemental_header())
-        writer.writerow(header_row)
 
         if enrollment_data is None:
             enrollment_data = self._get_enrollment_data()
+
+        writer.writerow(header_row)
 
         for obj, enrollments in enrollment_data:
             for enrollment in enrollments:

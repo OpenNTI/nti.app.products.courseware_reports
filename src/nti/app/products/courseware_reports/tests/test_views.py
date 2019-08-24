@@ -547,7 +547,7 @@ class TestCourseSummaryReport(ApplicationLayerTest):
             discussion = discussions[u'foo'] = new_discussion()
             create_topics(discussion)
             key = get_topic_key(discussion)
-            forum = course.Discussions.values()[0]
+            forum = next(x for x in course.Discussions.values() if x.__name__ == u'In_Class_Discussions')
             topic = forum[key]
             post = GeneralForumComment()
             post.title = 'Janux User Comment'
