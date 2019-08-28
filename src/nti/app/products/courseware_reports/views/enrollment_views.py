@@ -198,6 +198,7 @@ class EnrollmentViewMixin(object):
         result['start_date'] = self._get_start_date(entry)
         result['instructors'] = self._get_instructors_str(entry)
         result['provider_unique_id'] = entry.ProviderUniqueID
+        result['catalog_entry_ntiid'] = entry.ntiid
 
     def _add_user_info(self, result, user):
         result["username"] = user.username
@@ -674,9 +675,6 @@ class EnrollmentReportCSVMixin(object):
             return {'displayname': obj.display,
                     'username': obj.username,
                     'email': obj.email}
-
-    def _get_entry_tag_headers(self):
-        pass
 
     def _create_csv_file(self, stream, enrollment_data=None):
         """
