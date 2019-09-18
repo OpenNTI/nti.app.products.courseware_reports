@@ -100,7 +100,10 @@ class ForumParticipationPredicate():
         pass
 
     def evaluate(self, unused_report, context, unused_user):
-        return (bool(context) and any(bool(x.values()) for x in context.values()))
+        course = find_interface(context, ICourseInstance, strict=False)
+        return  course is not None \
+            and bool(context) \
+            and any(bool(x.values()) for x in context.values())
 
 
 @interface.implementer(IReportAvailablePredicate)
@@ -110,7 +113,8 @@ class TopicParticipationPredicate():
         pass
 
     def evaluate(self, unused_report, context, unused_user):
-        return bool(context.values())
+        course = find_interface(context, ICourseInstance, strict=False)
+        return course is not None and bool(context.values())
 
 
 class CourseInstancePredicate(AbstractFromCoursePredicate):
