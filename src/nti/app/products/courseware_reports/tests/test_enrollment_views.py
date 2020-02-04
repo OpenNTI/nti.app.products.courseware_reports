@@ -330,14 +330,14 @@ class TestEnrollmentRecordsReportPdf(ApplicationLayerTest):
             mock_input.is_callable().returns(params)
             view = EnrollmentRecordsReportPdf(catalog, _MockRequest(body={'entity_ids':[], 'groupByCourse': 'false'}, method='POST'))
             assert_that(view.input_users, is_(None))
-            assert_that(view._get_users(), has_length(7))
+            assert_that(view._get_users(), has_length(8))
 
             # should return all site users if entity_ids is not provided and groupByGroup is False.
             params = {'groupByCourse': 'false'}
             mock_input.is_callable().returns(params)
             view = EnrollmentRecordsReportPdf(catalog, _MockRequest(body={'groupByCourse': 'false'}, method='POST'))
             assert_that(view.input_users, is_(None))
-            assert_that(view._get_users(), has_length(7))
+            assert_that(view._get_users(), has_length(8))
 
             # user00x not found
             params = {'entity_ids':['user001', 'user00x', 'user002']}
