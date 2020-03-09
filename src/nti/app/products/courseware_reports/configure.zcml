@@ -101,6 +101,12 @@
 								  contexts="nti.assessment.interfaces.IQAssignment"
 								  supported_types="application/pdf" />
 
+    <rep:registerInstructorReport name="AssignmentSubmissionsReport"
+                        		  title="Assignment Submissions Report"
+                        		  description="View users' submissions for an assignment."
+                        		  contexts="nti.assessment.interfaces.IQAssignment"
+                        		  supported_types="text/csv" />
+
 	<rep:registerInstructorReport name="SelfAssessmentSummaryReport.pdf"
 								  title="Self Assessment Summary Report"
 								  description="Summary of self-assessment usage in a particular course"
