@@ -45,7 +45,10 @@ from nti.contentlibrary.interfaces import IDelimitedHierarchyContentPackageEnume
 from nti.contenttypes.courses.interfaces import ICourseCatalog
 from nti.contenttypes.courses.interfaces import ICourseEnrollmentManager
 
+from nti.dataserver.users.interfaces import IUserProfile
+
 from nti.dataserver.users.users import User
+
 from nti.dataserver.users.communities import Community
 from nti.dataserver.users.friends_lists import DynamicFriendsList
 
@@ -212,8 +215,6 @@ class TestEnrollmentRecordsReport(ApplicationLayerTest):
                 set_user_creation_site(user, 'janux.ou.edu')
                 lifecycleevent.modified(user)
 
-        bleh = ' ’’'
-
         self._create_admin_level()
         self._add_site_admin(u'siteadmin001')
 
@@ -310,9 +311,21 @@ class TestEnrollmentRecordsReportPdf(ApplicationLayerTest):
     def test_input_users(self, mock_input):
         with mock_dataserver.mock_db_trans(self.ds):
             user1 = User.get_user('user001')
+            prof = IUserProfile(user1)
+            prof.alias = u'user001'
+            prof.affiliation = u'group1'
             user2 = User.get_user('user002')
+            prof = IUserProfile(user2)
+            prof.alias = u'user002'
+            prof.affiliation = u'group1'
             user3 = User.get_user('user003')
+            prof = IUserProfile(user3)
+            prof.alias = u'user003'
+            prof.affiliation = u'group2'
             user4 = User.get_user('user004')
+            prof = IUserProfile(user4)
+            prof.alias = u'user004'
+            prof.affiliation = u'group2'
             user5 = User.get_user('user005')
             community1 = Community.create_community( username='community1' )
             community2 = Community.create_community( username='community2' )
@@ -389,6 +402,53 @@ class TestEnrollmentRecordsReportPdf(ApplicationLayerTest):
             view = EnrollmentRecordsReportPdf(catalog, _MockRequest(body={'entity_ids':['user003', 'community1', dfl.NTIID]}, method='POST'))
             assert_that(view.input_users, contains_inanyorder(user1, user2, user3, user4, user5))
             assert_that(view._get_users(), contains_inanyorder(user1, user2, user3, user4, user5))
+
+            # Test report user profile filtering
+            view = EnrollmentRecordsReportPdf(catalog, _MockRequest(body={'entity_ids':[]}, method='POST'))
+            params = {'entity_ids':[], 'groupByCourse': 'false', 'profileFields': 'alias', 'alias': 'missing_user'}
+            mock_input.is_callable().returns(params)
+            assert_that(view.input_users, is_(None))
+            assert_that(view._get_users(), has_length(0))
+
+            view = EnrollmentRecordsReportPdf(catalog, _MockRequest(body={'entity_ids':[]}, method='POST'))
+            params = {'entity_ids':[], 'groupByCourse': 'false', 'profileFields': 'alias', 'alias': 'user001'}
+            mock_input.is_callable().returns(params)
+            assert_that(view.input_users, is_(None))
+            assert_that(view._get_users(), has_length(1))
+
+            view = EnrollmentRecordsReportPdf(catalog, _MockRequest(body={'entity_ids':[]}, method='POST'))
+            params = {'entity_ids':[], 'groupByCourse': 'false',
+                      'profileFields': 'affiliation',
+                      'affiliation': 'group1'}
+            mock_input.is_callable().returns(params)
+            assert_that(view.input_users, is_(None))
+            assert_that(view._get_users(), has_length(2))
+
+            view = EnrollmentRecordsReportPdf(catalog, _MockRequest(body={'entity_ids':[]}, method='POST'))
+            params = {'entity_ids':[], 'groupByCourse': 'false',
+                      'profileFields': ['affiliation', 'alias'],
+                      'affiliation': 'group1',
+                      'alias': 'missing_user'}
+            mock_input.is_callable().returns(params)
+            assert_that(view.input_users, is_(None))
+            assert_that(view._get_users(), has_length(0))
+
+            view = EnrollmentRecordsReportPdf(catalog, _MockRequest(body={'entity_ids':[]}, method='POST'))
+            params = {'entity_ids':[], 'groupByCourse': 'false',
+                      'profileFields': ['affiliation', 'alias'],
+                      'affiliation': 'group1',
+                      'alias': 'user001'}
+            mock_input.is_callable().returns(params)
+            assert_that(view.input_users, is_(None))
+            assert_that(view._get_users(), has_length(1))
+
+            view = EnrollmentRecordsReportPdf(catalog, _MockRequest(body={'entity_ids':[]}, method='POST'))
+            params = {'entity_ids':[], 'groupByCourse': 'false',
+                      'profileFields': ['affiliation',],
+                      'affiliation': ['group1', 'group2']}
+            mock_input.is_callable().returns(params)
+            assert_that(view.input_users, is_(None))
+            assert_that(view._get_users(), has_length(4))
 
     @WithSharedApplicationMockDS(users=True, testapp=True, default_authenticate=True)
     @fudge.patch('nti.app.products.courseware_reports.views.enrollment_views.EnrollmentRecordsReportPdf.readInput')
