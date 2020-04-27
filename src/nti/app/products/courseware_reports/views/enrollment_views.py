@@ -8,6 +8,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import absolute_import
 
+import six
 import gevent
 import unicodecsv as csv
 
@@ -62,8 +63,9 @@ from nti.contenttypes.courses.interfaces import ICourseInstance
 from nti.contenttypes.courses.interfaces import ICourseCatalogEntry
 from nti.contenttypes.courses.interfaces import ICourseEnrollments
 
-from nti.contenttypes.courses.utils import is_course_instructor, is_hidden_tag
+from nti.contenttypes.courses.utils import is_hidden_tag
 from nti.contenttypes.courses.utils import get_enrollments
+from nti.contenttypes.courses.utils import is_course_instructor
 from nti.contenttypes.courses.utils import get_enrollment_records
 
 from nti.coremetadata.interfaces import ILastSeenProvider
@@ -83,6 +85,7 @@ from nti.dataserver.users import User
 from nti.dataserver.users import Entity
 
 from nti.dataserver.users.utils import get_users_by_site
+from nti.dataserver.users.utils import get_filtered_users_by_site
 
 from nti.mailer.interfaces import IEmailAddressable
 
@@ -356,6 +359,15 @@ class EnrollmentViewMixin(object):
 class AbstractEnrollmentReport(AbstractReportView,
                                EnrollmentViewMixin,
                                ModeledContentUploadRequestUtilsMixin):
+    """
+    <More docs>
+
+    `profileFields` - only applicable in grouping by user. This will look for
+                     a corresponding query param tied to this value. For example,
+                     a `profileFields` of 'alias' will look for an 'alias' query
+                     param. Only users with matching values will be in the resulting
+                     report.
+    """
 
     def __init__(self, context, request):
         AbstractReportView.__init__(self, context, request)
@@ -536,10 +548,26 @@ class AbstractEnrollmentReport(AbstractReportView,
             return res
         return None
 
+    @Lazy
+    def profile_fields(self):
+        result = self._params.get('profileFields')
+        if isinstance(result, six.string_types):
+            result = result.split(',')
+        return result
+
     def _get_users(self):
-        if self.input_users is None:
-            return () if self.groupByCourse else get_users_by_site()
-        return self.input_users
+        result = self.input_users
+        if result is None:
+            if self.groupByCourse:
+                result = ()
+            elif self.profile_fields:
+                field_values = {}
+                for key in self.profile_fields:
+                    field_values[key] = self._params.get(key, '')
+                result = get_filtered_users_by_site(field_values)
+            else:
+                result = get_users_by_site()
+        return result
 
     @Lazy
     def completionNotBefore(self):
