@@ -57,6 +57,7 @@ from nti.dataserver.users.common import set_user_creation_site
 from nti.dataserver.tests import mock_dataserver
 
 from nti.ntiids.ntiids import find_object_with_ntiid
+from nti.dataserver.users.index import get_entity_catalog
 
 
 class TestEnrollmentRecordsReport(ApplicationLayerTest):
@@ -310,6 +311,7 @@ class TestEnrollmentRecordsReportPdf(ApplicationLayerTest):
     @fudge.patch('nti.app.products.courseware_reports.views.enrollment_views.EnrollmentRecordsReportPdf.readInput')
     def test_input_users(self, mock_input):
         with mock_dataserver.mock_db_trans(self.ds):
+            entity_catalog = get_entity_catalog()
             user1 = User.get_user('user001')
             prof = IUserProfile(user1)
             prof.alias = u'user001'
@@ -329,6 +331,8 @@ class TestEnrollmentRecordsReportPdf(ApplicationLayerTest):
             user5 = User.get_user('user005')
             community1 = Community.create_community( username='community1' )
             community2 = Community.create_community( username='community2' )
+            for user in (user1, user2, user3, user4, user5):
+                entity_catalog.index_doc(user._ds_intid, user)
 
             # no entity_ids
             catalog = component.getUtility(ICourseCatalog)
