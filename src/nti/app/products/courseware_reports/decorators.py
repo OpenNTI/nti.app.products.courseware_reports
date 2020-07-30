@@ -35,9 +35,8 @@ from nti.assessment.interfaces import IQInquiry
 
 from nti.contenttypes.courses.interfaces import ICourseCatalog
 from nti.contenttypes.courses.interfaces import ICourseInstance
+from nti.contenttypes.courses.interfaces import ICourseEnrollments
 from nti.contenttypes.courses.interfaces import IGlobalCourseCatalog
-
-from nti.contenttypes.courses.utils import get_course_enrollments
 
 from nti.contenttypes.reports.interfaces import IReportAvailablePredicate
 
@@ -121,7 +120,11 @@ class CourseInstancePredicate(AbstractFromCoursePredicate):
 
     def evaluate(self, unused_report, context, user):
         course = self._course_from_context(context, user)
-        return course is not None and get_course_enrollments(course) is not None
+        result = False
+        if course is not None:
+            enrollments = ICourseEnrollments(context)
+            result = bool(enrollments.count_enrollments())
+        return result
 
 
 class AssignmentPredicate(AbstractFromCoursePredicate):
