@@ -2,13 +2,12 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import print_function, unicode_literals, absolute_import, division
-__docformat__ = "restructuredtext en"
 
 # disable: accessing protected members, too many methods
 # pylint: disable=W0212,R0904
 
 
-from hamcrest import is_, all_of, contains, not_, ends_with
+from hamcrest import is_, contains, not_, ends_with
 from hamcrest import is_not
 from hamcrest import has_key
 from hamcrest import has_item
@@ -385,6 +384,16 @@ class TestCourseSummaryReport(ApplicationLayerTest):
     def test_application_view_empty_report(self):
         # Trivial test to make sure we can fetch the report even with
         # no data.
+        with mock_dataserver.mock_db_trans(self.ds):
+            self._create_user(username='test_empty_summary_report')
+
+        with mock_dataserver.mock_db_trans(self.ds, site_name='platform.ou.edu'):
+            course_obj = find_object_with_ntiid('tag:nextthought.com,2011-10:OU-HTML-CLC3403_LawAndJustice.course_info')
+            course_instance_obj = ICourseInstance(course_obj)
+            user = User.get_user('test_empty_summary_report')
+            enrollment_manager = ICourseEnrollmentManager(course_instance_obj)
+            enrollment_manager.enroll(user)
+
         instructor_environ = self._make_extra_environ(username='harp4162')
         admin_courses = self.testapp.get('/dataserver2/users/harp4162/Courses/AdministeredCourses/',
                                          extra_environ=instructor_environ)
@@ -870,6 +879,9 @@ class TestCourseRosterPDFReport(ApplicationLayerTest):
 
     @WithSharedApplicationMockDS(users=True, testapp=True, default_authenticate=True)
     def test_application_view_empty_report(self):
+        with mock_dataserver.mock_db_trans(self.ds):
+            self._create_user(username='test_empty_roster_report')
+
         def report_with_rel(ext_obj, rel):
             for lnk in ext_obj.get('Reports', ()):
                 if lnk['rel'] == rel:
@@ -881,8 +893,17 @@ class TestCourseRosterPDFReport(ApplicationLayerTest):
         admin_courses = self.testapp.get('/dataserver2/users/sjohnson@nextthought.com/Courses/AdministeredCourses/',
                                          extra_environ=admin_environ)
 
-        entry_res = admin_courses.json_body.get('Items')[0]
-        course_rel = self.require_link_href_with_rel(entry_res,
+        role_res = admin_courses.json_body.get('Items')[0]
+        entry_ntiid = role_res.get('CatalogEntry').get('NTIID')
+
+        with mock_dataserver.mock_db_trans(self.ds, site_name='platform.ou.edu'):
+            course_obj = find_object_with_ntiid(entry_ntiid)
+            course_instance_obj = ICourseInstance(course_obj)
+            user = User.get_user('test_empty_roster_report')
+            enrollment_manager = ICourseEnrollmentManager(course_instance_obj)
+            enrollment_manager.enroll(user)
+
+        course_rel = self.require_link_href_with_rel(role_res,
                                                      'CourseInstance')
         course_instance = self.testapp.get(course_rel).json_body
 
@@ -902,8 +923,17 @@ class TestCourseRosterPDFReport(ApplicationLayerTest):
         admin_courses = self.testapp.get('/dataserver2/users/harp4162/Courses/AdministeredCourses/',
                                          extra_environ=instructor_environ)
 
-        entry_res = admin_courses.json_body.get('Items')[0]
-        course_rel = self.require_link_href_with_rel(entry_res,
+        role_res = admin_courses.json_body.get('Items')[0]
+        entry_ntiid = role_res.get('CatalogEntry').get('NTIID')
+
+        with mock_dataserver.mock_db_trans(self.ds, site_name='platform.ou.edu'):
+            course_obj = find_object_with_ntiid(entry_ntiid)
+            course_instance_obj = ICourseInstance(course_obj)
+            user = User.get_user('test_empty_roster_report')
+            enrollment_manager = ICourseEnrollmentManager(course_instance_obj)
+            enrollment_manager.enroll(user)
+
+        course_rel = self.require_link_href_with_rel(role_res,
                                                      'CourseInstance')
         course_instance = self.testapp.get(course_rel, extra_environ=instructor_environ).json_body
 
@@ -918,7 +948,8 @@ class TestCourseRosterPDFReport(ApplicationLayerTest):
         self.testapp.post_json('/dataserver2/SiteAdmins/harp4162',
                                status=200)
         site_admin_environ = self._make_extra_environ(username='harp4162')
-        res = self.testapp.get(admin_view_href, extra_environ=site_admin_environ, headers={'accept': str('application/pdf')})
+        res = self.testapp.get(admin_view_href, extra_environ=site_admin_environ,
+                               headers={'accept': str('application/pdf')})
         assert_that(res, has_property('content_type', 'application/pdf'))
 
     @WithSharedApplicationMockDS(users=True, testapp=True, default_authenticate=True)
@@ -1016,9 +1047,11 @@ class TestCourseRosterCSVReport(ApplicationLayerTest):
     default_origin = b'http://janux.ou.edu'
     course_ntiid = 'tag:nextthought.com,2011-10:OU-HTML-CLC3403_LawAndJustice.course_info'
 
-    @WithSharedApplicationMockDS(
-        users=True, testapp=True, default_authenticate=True)
+    @WithSharedApplicationMockDS(users=True, testapp=True, default_authenticate=True)
     def test_application_view_empty_report(self):
+        with mock_dataserver.mock_db_trans(self.ds):
+            self._create_user(username='test_empty_course_roster_report')
+
         def report_with_rel(ext_obj, rel):
             for lnk in ext_obj.get('Reports', ()):
                 if lnk['rel'] == rel:
@@ -1030,8 +1063,17 @@ class TestCourseRosterCSVReport(ApplicationLayerTest):
         admin_courses = self.testapp.get('/dataserver2/users/sjohnson@nextthought.com/Courses/AdministeredCourses/',
                                          extra_environ=admin_environ)
 
-        entry_res = admin_courses.json_body.get('Items')[0]
-        course_rel = self.require_link_href_with_rel(entry_res,
+        role_res = admin_courses.json_body.get('Items')[0]
+        entry_ntiid = role_res.get('CatalogEntry').get('NTIID')
+
+        with mock_dataserver.mock_db_trans(self.ds, site_name='platform.ou.edu'):
+            course_obj = find_object_with_ntiid(entry_ntiid)
+            course_instance_obj = ICourseInstance(course_obj)
+            user = User.get_user('test_empty_course_roster_report')
+            enrollment_manager = ICourseEnrollmentManager(course_instance_obj)
+            enrollment_manager.enroll(user)
+
+        course_rel = self.require_link_href_with_rel(role_res,
                                                      'CourseInstance')
         course_instance = self.testapp.get(course_rel, extra_environ=admin_environ).json_body
 
@@ -1051,8 +1093,17 @@ class TestCourseRosterCSVReport(ApplicationLayerTest):
         admin_courses = self.testapp.get('/dataserver2/users/harp4162/Courses/AdministeredCourses/',
                                          extra_environ=instructor_environ)
 
-        entry_res = admin_courses.json_body.get('Items')[0]
-        course_rel = self.require_link_href_with_rel(entry_res,
+        role_res = admin_courses.json_body.get('Items')[0]
+        entry_ntiid = role_res.get('CatalogEntry').get('NTIID')
+
+        with mock_dataserver.mock_db_trans(self.ds, site_name='platform.ou.edu'):
+            course_obj = find_object_with_ntiid(entry_ntiid)
+            course_instance_obj = ICourseInstance(course_obj)
+            user = User.get_user('test_empty_course_roster_report')
+            enrollment_manager = ICourseEnrollmentManager(course_instance_obj)
+            enrollment_manager.enroll(user)
+
+        course_rel = self.require_link_href_with_rel(role_res,
                                                      'CourseInstance')
         course_instance = self.testapp.get(course_rel, extra_environ=instructor_environ).json_body
 

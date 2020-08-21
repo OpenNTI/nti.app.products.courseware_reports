@@ -8,6 +8,7 @@ from __future__ import absolute_import
 # disable: accessing protected members, too many methods
 # pylint: disable=W0212,R0904
 
+from hamcrest import is_not
 from hamcrest import equal_to
 from hamcrest import has_item
 from hamcrest import not_none
@@ -15,6 +16,7 @@ from hamcrest import has_entry
 from hamcrest import assert_that
 from hamcrest import has_entries
 from hamcrest import contains_inanyorder
+does_not = is_not
 
 import json
 
@@ -29,6 +31,7 @@ from nti.app.products.courseware.tests import PersistentInstructedCourseApplicat
 from nti.app.testing.decorators import WithSharedApplicationMockDS
 
 from nti.contenttypes.courses.interfaces import ICourseInstance
+from nti.contenttypes.courses.interfaces import ICourseEnrollmentManager
 
 from nti.contenttypes.reports.reports import evaluate_permission
 
@@ -71,7 +74,6 @@ class TestInstructorReport(ReportsLayerTest):
         """
 
         with mock_dataserver.mock_db_trans(self.ds, site_name='platform.ou.edu'):
-
             course_obj = find_object_with_ntiid(self.course_ntiid)
             course_instance_obj = ICourseInstance(course_obj)
 
@@ -98,9 +100,10 @@ class TestInstructorReport(ReportsLayerTest):
     @WithSharedApplicationMockDS(testapp=True, users=True, default_authenticate=True)
     def test_instructor_decoration(self):
         """
-        Test that instructor report links are
-        decorated correctly
+        Test that instructor report links are decorated correctly
         """
+        with mock_dataserver.mock_db_trans(self.ds):
+            self._create_user(username='test_instructor_decoration')
 
         instructor_environ = self._make_extra_environ(username='harp4162')
         admin_courses = self.testapp.get('/dataserver2/users/harp4162/Courses/AdministeredCourses/',
@@ -111,6 +114,21 @@ class TestInstructorReport(ReportsLayerTest):
         assert_that(response_dict, has_entry("Items", not_none()))
         entry_res = response_dict["Items"][0]
         course_rel = self.require_link_href_with_rel(entry_res, 'CourseInstance')
+        course_res = self.testapp.get(course_rel, extra_environ=instructor_environ)
+        course_res = course_res.json_body
+
+        assert_that(course_res,
+                    has_entry("Links",
+                              does_not(has_item(has_entry("rel", "report-AnotherTestReport")))))
+
+        # Now enroll and re-check
+        with mock_dataserver.mock_db_trans(self.ds, site_name='platform.ou.edu'):
+            course_obj = find_object_with_ntiid(self.course_ntiid)
+            course_instance_obj = ICourseInstance(course_obj)
+            user = User.get_user('test_instructor_decoration')
+            enrollment_manager = ICourseEnrollmentManager(course_instance_obj)
+            enrollment_manager.enroll(user)
+
         course_res = self.testapp.get(course_rel, extra_environ=instructor_environ)
         course_res = course_res.json_body
 
@@ -137,6 +155,6 @@ class TestInstructorReport(ReportsLayerTest):
                                 "title", "Test",
                                 "description", "TestDescription",
                                 "contexts", has_entry(ITEMS,
-                                                               contains_inanyorder(ICourseInstance.__name__)),
+                                                      contains_inanyorder(ICourseInstance.__name__)),
                                 "permission", equal_to(None),
                                 "supported_types", contains_inanyorder("csv", "pdf")))
