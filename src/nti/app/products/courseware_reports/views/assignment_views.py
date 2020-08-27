@@ -120,15 +120,11 @@ class AssignmentSummaryReportPdf(AbstractCourseReportView):
 						response = question_submission.parts[idx]
 						answer_stat = question_part_stats[idx].answer_stats
 
-						# Add to our responses; mark randomized if question
-						# set is a randomized parts container.
-						try:
-							if IRandomizedPartsContainer.providedBy( qset ):
-								interface.alsoProvides( question_part, IQRandomizedPart )
-							self._accumulate_response(question_part, response, submission, answer_stat)
-						finally:
-							if IRandomizedPartsContainer.providedBy( qset ):
-								interface.noLongerProvides(question_part, IQRandomizedPart)
+						# Add to our responses
+						contextually_randomized = IRandomizedPartsContainer.providedBy(qset)
+						self._accumulate_response(question_part, response,
+												  submission, answer_stat,
+												  contextually_randomized=contextually_randomized)
 
 			pending = history.pendingAssessment
 
@@ -169,11 +165,12 @@ class AssignmentSummaryReportPdf(AbstractCourseReportView):
 
 		return question_stat
 
-	def _accumulate_response(self, question_part, response, submission, answer_stat):
+	def _accumulate_response(self, question_part, response, submission, answer_stat, contextually_randomized=False):
 		"""
 		Adds the response information to our answer_stats
 		"""
-		if 		IQRandomizedPart.providedBy(question_part) \
+		if 		(	contextually_randomized
+				 or IQRandomizedPart.providedBy(question_part)) \
 			and response is not None:
 			# First de-randomize our question part, if necessary.
 			grader = grader_for_response(question_part, response)
