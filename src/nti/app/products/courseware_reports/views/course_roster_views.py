@@ -31,7 +31,7 @@ from nti.app.products.courseware_reports.views.enrollment_views import Enrollmen
 
 from nti.appserver.pyramid_authorization import has_permission
 
-from nti.contenttypes.courses.interfaces import ICourseCatalog
+from nti.contenttypes.courses.interfaces import ICourseCatalog, IDeletedCourse
 from nti.contenttypes.courses.interfaces import ICourseInstance
 from nti.contenttypes.courses.interfaces import ICourseCatalogEntry
 
@@ -106,8 +106,10 @@ class AbstractAllCourseReport(AbstractReportView, EnrollmentViewMixin):
     def _is_entry_visible(self, entry, course=None):
         # XXX: Should this be in the catalog iterator itself?
         # Instructor (who is also child site admin) in section course has read permission to its parent course.
-        return has_permission(ACT_CONTENT_EDIT, entry) \
-            or is_course_instructor(entry, self.remoteUser)
+        course = course or ICourseInstance(entry, None)
+        return not IDeletedCourse.providedBy(course) \
+            and (   has_permission(ACT_CONTENT_EDIT, entry) \
+                 or is_course_instructor(entry, self.remoteUser))
 
 
 @view_config(context=ICourseCatalog,
