@@ -36,7 +36,7 @@ from nti.app.products.courseware_reports.views.view_mixins import AbstractCourse
 from nti.assessment.interfaces import IQPoll
 from nti.assessment.interfaces import IQSurvey
 from nti.assessment.interfaces import IQNonGradableConnectingPart
-from nti.assessment.interfaces import IQAggregatedFreeResponsePart
+from nti.assessment.interfaces import IQNonGradableFreeResponsePart
 from nti.assessment.interfaces import IQNonGradableMultipleChoicePart
 from nti.assessment.interfaces import IQNonGradableModeledContentPart
 from nti.assessment.interfaces import IQNonGradableMultipleChoiceMultipleAnswerPart
@@ -152,7 +152,7 @@ class InquiryReportPDF(AbstractCourseReportView):
 										count,
 										(count / total) * 100 if total else 0)
 						responses.append(response)
-				elif IQAggregatedFreeResponsePart.providedBy(part):
+				elif IQNonGradableFreeResponsePart.providedBy(part):
 					kind = 1
 					responses = []
 					for text, count in sorted(results.items(), key=lambda x: x[1]):
