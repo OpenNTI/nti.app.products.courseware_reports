@@ -132,6 +132,13 @@
 								  			nti.contenttypes.presentation.interfaces.INTIInquiryRef"
 								  supported_types="application/pdf" />
 
+	<rep:registerInstructorReport name="InquiryReport.csv"
+								  title="Inquiry Report Export"
+								  description="Inquiry Submission Export"
+								  contexts="nti.assessment.interfaces.IQInquiry
+								  			nti.contenttypes.presentation.interfaces.INTIInquiryRef"
+								  supported_types="text/csv" />
+
 	<rep:registerInstructorReport name="CourseRosterReport"
 								  title="Course Roster Report"
 								  description="A summary of user enrollments in a particular course"
