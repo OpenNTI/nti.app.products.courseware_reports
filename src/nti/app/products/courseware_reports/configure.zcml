@@ -133,8 +133,8 @@
 								  supported_types="application/pdf" />
 
 	<rep:registerInstructorReport name="InquiryReport.csv"
-								  title="Inquiry Report Export"
-								  description="Inquiry Submission Export"
+								  title="Inquiry Submission Export"
+								  description="Export of all user-submitted responses."
 								  contexts="nti.assessment.interfaces.IQInquiry
 								  			nti.contenttypes.presentation.interfaces.INTIInquiryRef"
 								  supported_types="text/csv" />
