@@ -88,6 +88,12 @@
 			 for="nti.app.products.courseware_reports.interfaces.IInstructorReport
 				  pyramid.interfaces.IRequest" />
 
+	<adapter name="InquiryReport.csv"
+             factory=".decorators.InquiryLinkProvider"
+             provides="nti.app.contenttypes.reports.interfaces.IReportLinkProvider"
+             for="nti.app.products.courseware_reports.interfaces.IInstructorReport
+                  pyramid.interfaces.IRequest" />
+
 	<!-- Report Registrations -->
 	<rep:registerInstructorReport name="CourseSummaryReport.pdf"
 								  title="Course Summary Report"
