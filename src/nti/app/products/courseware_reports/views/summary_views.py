@@ -6,8 +6,6 @@
 
 from __future__ import print_function, unicode_literals, absolute_import, division
 
-__docformat__ = "restructuredtext en"
-
 logger = __import__('logging').getLogger(__name__)
 
 from itertools import chain
@@ -124,9 +122,6 @@ class CourseSummaryReportPdf(AbstractCourseReportView):
         Return the self-assessments and submission for the course.
         """
         md_catalog = self.md_catalog
-        self_assessment_containerids = {x.__parent__.ntiid for x in self._self_assessments
-                                        if hasattr(x.__parent__, 'ntiid')}
-
         # We can find the self-assessments the student submitted in a few ways
         # one would be to look at the user's contained data for each containerID
         # of the self assessment and see if there is an IQAssessedQuestionSet.
@@ -148,8 +143,7 @@ class CourseSummaryReportPdf(AbstractCourseReportView):
         content_unit_ids = [x.ntiid for x in content_units]
 
         intids_of_objects_in_content_units = \
-            md_catalog['containerId'].apply(
-                {'any_of': content_unit_ids})
+            md_catalog['containerId'].apply({'any_of': content_unit_ids})
 
         intids_in_content_units = md_catalog.family.IF.intersection(intids_of_objects_in_content_units,
                                                                     intids_of_submitted_qsets_by_students)
@@ -161,19 +155,20 @@ class CourseSummaryReportPdf(AbstractCourseReportView):
     def _build_self_assessment_data(self, options):
         title_to_count = dict()
 
-        for asm in self._self_assessments:
-            accum = _TopCreators(self)
-            accum.aggregate_creators = self.assessment_aggregator
-            accum.title = asm.title or getattr(asm.__parent__, 'title', None)
-            title_to_count[asm.ntiid] = accum
+        if self._self_assessments:
+            for asm in self._self_assessments:
+                accum = _TopCreators(self)
+                accum.aggregate_creators = self.assessment_aggregator
+                accum.title = asm.title or getattr(asm.__parent__, 'title', None)
+                title_to_count[asm.ntiid] = accum
 
-        for submission in self._self_assessment_submissions:
-            # Content may have changed such that we have an orphaned question
-            # set; move on.
-            if submission.questionSetId in self._self_assessment_qsids:
-                asm = self._self_assessment_qsids[submission.questionSetId]
-                title_to_count[asm.ntiid].incr_username(
-                    submission.creator.username)
+            for submission in self._self_assessment_submissions:
+                # Content may have changed such that we have an orphaned question
+                # set; move on.
+                if submission.questionSetId in self._self_assessment_qsids:
+                    asm = self._self_assessment_qsids[submission.questionSetId]
+                    title_to_count[asm.ntiid].incr_username(
+                        submission.creator.username)
 
         options['self_assessment_data'] = sorted(title_to_count.values(),
                                                  key=lambda x: x.title)
@@ -197,16 +192,17 @@ class CourseSummaryReportPdf(AbstractCourseReportView):
 
         # all_notes = intids_of_notes
         # all_hls = intids_of_hls
-        containers_in_course = self._get_containers_in_course()
+        if intids_of_notes or intids_of_hls:
+            containers_in_course = self._get_containers_in_course()
 
-        # Now we should have our whole tree of ntiids, intersect with our vals
-        intids_of_objects_in_course_containers = md_catalog[
-            'containerId'].apply({'any_of': containers_in_course})
+            # Now we should have our whole tree of ntiids, intersect with our vals
+            intids_of_objects_in_course_containers = md_catalog[
+                'containerId'].apply({'any_of': containers_in_course})
 
-        intids_of_notes = intersection(intids_of_notes,
-                                       intids_of_objects_in_course_containers)
-        intids_of_hls = intersection(intids_of_hls,
-                                     intids_of_objects_in_course_containers)
+            intids_of_notes = intersection(intids_of_notes,
+                                           intids_of_objects_in_course_containers)
+            intids_of_hls = intersection(intids_of_hls,
+                                         intids_of_objects_in_course_containers)
 
         # We could filter notes and highlights (exclude deleted)
         notes = ResultSet(intids_of_notes, self.uidutil)
