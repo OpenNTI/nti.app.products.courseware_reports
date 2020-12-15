@@ -705,7 +705,7 @@ class EnrollmentReportCSVMixin(object):
             return {'displayname': obj.display,
                     'username': obj.username,
                     'email': obj.email,
-                    'deactivated': u'Yes' if IDeactivatedUser.providedBy(obj) else u'No'}
+                    'deactivated': obj.deactivated}
 
     def _create_csv_file(self, stream, enrollment_data=None):
         """
