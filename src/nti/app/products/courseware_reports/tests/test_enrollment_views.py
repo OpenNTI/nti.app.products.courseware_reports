@@ -121,8 +121,8 @@ class TestEnrollmentRecordsReport(ApplicationLayerTest):
         self.extra_environ_instructor001 = self._make_extra_environ(username="instructor001")
         self.extra_environ_admin = self._make_extra_environ(username='test@nextthought.com')
 
-        self.HEADER_GROUP_BY_COURSE = 'Course Title,Course Provider Unique ID,Course Start Date,Course Instructors,Name,User Name,Email,Date Enrolled,Last Seen,Completion,Completed Successfully'
-        self.HEADER_GROUP_BY_USER = 'Name,User Name,Email,Course Title,Course Provider Unique ID,Course Start Date,Course Instructors,Date Enrolled,Last Seen,Completion,Completed Successfully'
+        self.HEADER_GROUP_BY_COURSE = 'Course Title,Course Provider Unique ID,Course Start Date,Course Instructors,Name,User Name,Email,Deactivated,Date Enrolled,Last Seen,Completion,Completed Successfully'
+        self.HEADER_GROUP_BY_USER = 'Name,User Name,Email,Deactivated,Course Title,Course Provider Unique ID,Course Start Date,Course Instructors,Date Enrolled,Last Seen,Completion,Completed Successfully'
 
     def _assert_csv_reports(self, groupByCourse, course_ntiids):
         params = {'groupByCourse': groupByCourse}
