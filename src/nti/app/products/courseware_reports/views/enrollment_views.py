@@ -212,7 +212,7 @@ class EnrollmentViewMixin(object):
 
         email_addressable = IEmailAddressable(user, None)
         result["email"] = email_addressable.email if email_addressable else None
-        result['deactivated'] = u'Yes' if IDeactivatedUser.providedBy(user) else u'No'
+        result['deactivated'] = u'Yes' if IDeactivatedUser.providedBy(user) else u''
 
     def _add_activity_info(self, result, user, course, record):
         # Enrollment time
