@@ -174,6 +174,7 @@ class CourseRosterReportCSV(AbstractCourseRosterReport, EnrollmentReportCSVMixin
             'Name': 'displayname',
             'User Name': 'username',
             'Email': 'email',
+            'Deactivated': 'deactivated',
 
             'Date Enrolled': 'enrollmentTime',
             'Last Seen (%s)' % self.timezone_util.get_timezone_display_name(): 'lastAccessed',
@@ -185,7 +186,7 @@ class CourseRosterReportCSV(AbstractCourseRosterReport, EnrollmentReportCSVMixin
 
     @Lazy
     def header_row(self):
-        return ['Name', 'User Name', 'Email',
+        return ['Name', 'User Name', 'Email', 'Deactivated',
                 'Date Enrolled',
                 'Last Seen (%s)' % self.timezone_util.get_timezone_display_name(),
                 'Completion',
@@ -239,6 +240,7 @@ class AllCourseRosterReportCSV(AbstractAllCourseReport, EnrollmentReportCSVMixin
             'Name': 'displayname',
             'User Name': 'username',
             'Email': 'email',
+            'Deactivated': 'deactivated',
 
             'Date Enrolled': 'enrollmentTime',
             'Last Seen (%s)' % self.timezone_util.get_timezone_display_name(): 'lastAccessed',
@@ -252,7 +254,7 @@ class AllCourseRosterReportCSV(AbstractAllCourseReport, EnrollmentReportCSVMixin
     def header_row(self):
         return ['Course Name', 'Course Provider Unique ID', 'Course Start Date',
                 'Course Instructors',
-                'Name', 'User Name', 'Email',
+                'Name', 'User Name', 'Email', 'Deactivated',
                 'Date Enrolled',
                 'Last Seen (%s)' % self.timezone_util.get_timezone_display_name(),
                 'Completion',

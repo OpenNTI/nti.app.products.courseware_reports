@@ -68,6 +68,7 @@ from nti.contenttypes.courses.utils import get_enrollments
 from nti.contenttypes.courses.utils import is_course_instructor
 from nti.contenttypes.courses.utils import get_enrollment_records
 
+from nti.coremetadata.interfaces import IDeactivatedUser
 from nti.coremetadata.interfaces import ILastSeenProvider
 
 from nti.dataserver.authorization import ACT_CONTENT_EDIT
@@ -211,6 +212,7 @@ class EnrollmentViewMixin(object):
 
         email_addressable = IEmailAddressable(user, None)
         result["email"] = email_addressable.email if email_addressable else None
+        result['deactivated'] = u'Yes' if IDeactivatedUser.providedBy(user) else u'No'
 
     def _add_activity_info(self, result, user, course, record):
         # Enrollment time
@@ -659,7 +661,7 @@ class EnrollmentRecordsReportPdf(AbstractEnrollmentReport):
         return options
 
 
-USER_INFO_SECTION = ('Name', 'User Name', 'Email')
+USER_INFO_SECTION = ('Name', 'User Name', 'Email', 'Deactivated')
 COURSE_INFO_SECTION = ('Course Title', 'Course Provider Unique ID', 'Course Start Date','Course Instructors')
 ENROLLMENT_INFO_SECTION = ('Date Enrolled', 'Last Seen', 'Completion', 'Completed Successfully')
 
@@ -702,7 +704,8 @@ class EnrollmentReportCSVMixin(object):
         else:
             return {'displayname': obj.display,
                     'username': obj.username,
-                    'email': obj.email}
+                    'email': obj.email,
+                    'deactivated': obj.deactivated}
 
     def _create_csv_file(self, stream, enrollment_data=None):
         """
@@ -776,6 +779,7 @@ class EnrollmentRecordsReportCSV(AbstractEnrollmentReport, EnrollmentReportCSVMi
             'Name': 'displayname',
             'User Name': 'username',
             'Email': 'email',
+            'Deactivated': 'deactivated',
 
             'Date Enrolled': 'enrollmentTime',
             'Last Seen': 'lastAccessed',
