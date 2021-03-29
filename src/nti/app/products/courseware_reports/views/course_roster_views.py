@@ -10,6 +10,9 @@ from __future__ import absolute_import
 
 import gevent
 
+from datetime import datetime
+from datetime import timedelta
+
 from pyramid.config import not_
 
 from pyramid.httpexceptions import HTTPForbidden
@@ -42,6 +45,7 @@ from nti.dataserver.authorization import ACT_CONTENT_EDIT
 from nti.dataserver.authorization import is_admin_or_site_admin
 
 from nti.namedfile.file import safe_filename
+
 
 logger = __import__('logging').getLogger(__name__)
 
@@ -110,6 +114,18 @@ class AbstractAllCourseReport(AbstractReportView, EnrollmentViewMixin):
         return not IDeletedCourse.providedBy(course) \
             and (   has_permission(ACT_CONTENT_EDIT, entry) \
                  or is_course_instructor(entry, self.remoteUser))
+
+
+    DEFULT_COMPLETION_NOT_BEFORE_DAY_COUNT = 365
+
+    @property
+    def default_completion_not_before(self):
+        """
+        By default, limit these all-encompassing reports to the past calendar
+        year.
+        """
+        delta = timedelta(days=self.DEFULT_COMPLETION_NOT_BEFORE_DAY_COUNT)
+        return datetime.utcnow() - delta
 
 
 @view_config(context=ICourseCatalog,

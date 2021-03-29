@@ -371,6 +371,8 @@ class AbstractEnrollmentReport(AbstractReportView,
                      report.
     """
 
+    default_completion_not_before = None
+
     def __init__(self, context, request):
         AbstractReportView.__init__(self, context, request)
         EnrollmentViewMixin.__init__(self)
@@ -472,7 +474,11 @@ class AbstractEnrollmentReport(AbstractReportView,
 
     @Lazy
     def _params(self):
-        params = CaseInsensitiveDict(self.readInput()) if self.request.body else {}
+        if self.request.body:
+            params = self.readInput()
+        else:
+            params = self.request.params
+        params = CaseInsensitiveDict(params)
 
         for field in ('course_ntiids', 'entity_ids'):
             val = params.get(field, None) or None
@@ -488,6 +494,9 @@ class AbstractEnrollmentReport(AbstractReportView,
                 except ValueError:
                     self._raise_json_error(hexc.HTTPUnprocessableEntity, "Invalid %s: %s" % (field, val))
 
+        if      'completionNotBefore' not in params \
+            and self.default_completion_not_before:
+            params['completionNotBefore'] = self.default_completion_not_before
         return params
 
     @Lazy
@@ -566,9 +575,9 @@ class AbstractEnrollmentReport(AbstractReportView,
                 field_values = {}
                 for key in self.profile_fields:
                     field_values[key] = self._params.get(key, '')
-                result = get_filtered_users_by_site(field_values)
+                result = get_filtered_users_by_site(field_values, filter_deactivated=False)
             else:
-                result = get_users_by_site()
+                result = get_users_by_site(filter_deactivated=False)
         return result
 
     @Lazy
