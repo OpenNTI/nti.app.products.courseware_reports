@@ -10,11 +10,18 @@ from __future__ import absolute_import
 
 import gevent
 
+from datetime import datetime
+from datetime import timedelta
+
 from pyramid.config import not_
 
 from pyramid.httpexceptions import HTTPForbidden
 
 from pyramid.view import view_config
+
+from zope import component
+
+from zope.intid.interfaces import IIntIds
 
 from zope.cachedescriptors.property import Lazy
 
@@ -23,15 +30,20 @@ from nti.app.products.courseware_reports import MessageFactory as _
 from nti.app.products.courseware_reports import VIEW_COURSE_ROSTER
 from nti.app.products.courseware_reports import VIEW_ALL_COURSE_ROSTER
 
-from nti.app.products.courseware_reports.views.view_mixins import AbstractReportView
 from nti.app.products.courseware_reports.views.view_mixins import AbstractCourseReportView
 
 from nti.app.products.courseware_reports.views.enrollment_views import EnrollmentViewMixin
+from nti.app.products.courseware_reports.views.enrollment_views import AbstractEnrollmentReport
 from nti.app.products.courseware_reports.views.enrollment_views import EnrollmentReportCSVMixin
 
 from nti.appserver.pyramid_authorization import has_permission
 
-from nti.contenttypes.courses.interfaces import ICourseCatalog, IDeletedCourse
+from nti.contenttypes.completion.interfaces import ICompletionContext
+
+from nti.contenttypes.completion.utils import get_indexed_completed_items_intids
+
+from nti.contenttypes.courses.interfaces import IDeletedCourse
+from nti.contenttypes.courses.interfaces import ICourseCatalog
 from nti.contenttypes.courses.interfaces import ICourseInstance
 from nti.contenttypes.courses.interfaces import ICourseCatalogEntry
 
@@ -41,7 +53,10 @@ from nti.dataserver.authorization import ACT_CONTENT_EDIT
 
 from nti.dataserver.authorization import is_admin_or_site_admin
 
+from nti.dataserver.users import User
+
 from nti.namedfile.file import safe_filename
+
 
 logger = __import__('logging').getLogger(__name__)
 
@@ -94,7 +109,7 @@ class CourseRosterReportPdf(AbstractCourseRosterReport):
         return options
 
 
-class AbstractAllCourseReport(AbstractReportView, EnrollmentViewMixin):
+class AbstractAllCourseReport(AbstractEnrollmentReport):
 
     def report_description(self):
         return u"This report presents the roster of all courses."
@@ -110,6 +125,61 @@ class AbstractAllCourseReport(AbstractReportView, EnrollmentViewMixin):
         return not IDeletedCourse.providedBy(course) \
             and (   has_permission(ACT_CONTENT_EDIT, entry) \
                  or is_course_instructor(entry, self.remoteUser))
+
+    DEFAULT_COMPLETION_NOT_BEFORE_DAY_COUNT = 365
+
+    @property
+    def default_completion_not_before(self):
+        """
+        By default, limit these all-encompassing reports to the past calendar
+        year.
+        """
+        delta = timedelta(days=self.DEFAULT_COMPLETION_NOT_BEFORE_DAY_COUNT)
+        return datetime.utcnow() - delta
+
+    def _get_enrollment_data(self):
+        """
+        As a shortcut, use completed items in our time range as a hint to which
+        users may have completed courses in that window.
+
+        Ideally, we move towards persistent course completion and lookup in the
+        near future.
+        """
+        # Start by getting all completed items within our window
+        completed_intids = get_indexed_completed_items_intids(min_time=self.completionNotBefore,
+                                                              max_time=self.completionNotAfter)
+        intids = component.getUtility(IIntIds)
+        seen = set()
+        entry_ntiid_to_course_users = dict()
+        for completed_intid in completed_intids:
+            completed_item = intids.queryObject(completed_intid)
+            if completed_item is None:
+                continue
+            user_id = completed_item.Principal.id
+            context = ICompletionContext(completed_item, None)
+            course = ICourseInstance(context, None)
+            entry = ICourseCatalogEntry(course, None)
+            if entry is None:
+                continue
+            entry_ntiid = entry.ntiid
+            key = (user_id, entry_ntiid)
+            if key in seen:
+                continue
+            seen.add(key)
+            if entry_ntiid not in entry_ntiid_to_course_users:
+                entry_ntiid_to_course_users[entry_ntiid] = (course, [])
+            user = User.get_user(user_id)
+            entry_ntiid_to_course_users[entry_ntiid][1].append(user)
+        result = []
+        for course_users in entry_ntiid_to_course_users.values():
+            gevent.sleep()
+            course, users = course_users
+            entry = ICourseCatalogEntry(course)
+            entry_record = self._make_entry_record(entry)
+            enrollments = self.build_enrollment_info_for_course(course,
+                                                                included_users=users)
+            result.append((entry_record, enrollments))
+        return result
 
 
 @view_config(context=ICourseCatalog,
@@ -131,12 +201,7 @@ class AllCourseRosterReportPdf(AbstractAllCourseReport):
     def __call__(self):
         self._check_access()
         options = self.options
-        records = []
-        entries_courses = self._get_entries_and_courses()
-        for entry, course in entries_courses:
-            gevent.sleep()
-            enrollments = self.build_enrollment_info_for_course(course)
-            records.append((entry, enrollments))
+        records = self._get_enrollment_data()
         options["course_records"] = records
         options["TotalCourseCount"] = len(records)
 
@@ -269,15 +334,6 @@ class AllCourseRosterReportCSV(AbstractAllCourseReport, EnrollmentReportCSVMixin
     @Lazy
     def show_supplemental_info(self):
         return self.groupByCourse
-
-    def _get_enrollment_data(self):
-        result = []
-        entries_courses = self._get_entries_and_courses()
-        for entry_record, course in entries_courses:
-            gevent.sleep()
-            enrollments = self.build_enrollment_info_for_course(course)
-            result.append((entry_record, enrollments))
-        return result
 
     def __call__(self):
         self._check_access()
