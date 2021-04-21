@@ -596,7 +596,7 @@ class AbstractEnrollmentReport(AbstractReportView,
         filtering params. By default, we'll return in-progress and course
         completion records within those date filters.
         """
-        return is_true(self._params.get('inprogressCompletion'), True)
+        return is_true(self._params.get('inprogressCompletion', True))
 
     def _predicate_with_progress(self, progress):
         """
