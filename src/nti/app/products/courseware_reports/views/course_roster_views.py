@@ -147,7 +147,8 @@ class AbstractAllCourseReport(AbstractEnrollmentReport):
         """
         # Start by getting all completed items within our window
         completed_intids = get_indexed_completed_items_intids(min_time=self.completionNotBefore,
-                                                              max_time=self.completionNotAfter)
+                                                              max_time=self.completionNotAfter,
+                                                              by_day=True)
         intids = component.getUtility(IIntIds)
         seen = set()
         entry_ntiid_to_course_users = dict()
@@ -202,8 +203,10 @@ class AllCourseRosterReportPdf(AbstractAllCourseReport):
         self._check_access()
         options = self.options
         records = self._get_enrollment_data()
-        options["course_records"] = records
         options["TotalCourseCount"] = len(records)
+        # Only those courses with enrollments.
+        records = [x for x in records if x[1]]
+        options["course_records"] = records
 
         data = [(self.report_description(),),
                 (self.timezone_header_str,)]
