@@ -588,11 +588,23 @@ class AbstractEnrollmentReport(AbstractReportView,
     def completionNotAfter(self):
         return self._params.get('completionNotAfter')
 
+    @Lazy
+    def in_progress_completion(self):
+        """
+        Whether we should return in progress completion. This is only applicable
+        when we are supplied `completionNotBefore` or `completionNotAfter`
+        filtering params. By default, we'll return in-progress and course
+        completion records within those date filters.
+        """
+        return is_true(self._params.get('inprogressCompletion'), True)
+
     def _predicate_with_progress(self, progress):
         """
-        Return a boolean if this progress record falls within our boundaries.
+        Return a boolean if this progress record falls within our boundaries,
+        or if the caller wants in-progress completion info.
         """
-        if not self.completionNotBefore and not self.completionNotAfter:
+        if     (not self.completionNotBefore and not self.completionNotAfter) \
+            or self.in_progress_completion:
             return True
         return  progress.Completed \
                 and (self.completionNotBefore is None or progress.CompletedDate >= self.completionNotBefore) \
