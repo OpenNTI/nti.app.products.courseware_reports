@@ -147,7 +147,8 @@ class AbstractAllCourseReport(AbstractEnrollmentReport):
         """
         # Start by getting all completed items within our window
         completed_intids = get_indexed_completed_items_intids(min_time=self.completionNotBefore,
-                                                              max_time=self.completionNotAfter)
+                                                              max_time=self.completionNotAfter,
+                                                              by_day=True)
         intids = component.getUtility(IIntIds)
         seen = set()
         entry_ntiid_to_course_users = dict()
