@@ -603,12 +603,18 @@ class AbstractEnrollmentReport(AbstractReportView,
         Return a boolean if this progress record falls within our boundaries,
         or if the caller wants in-progress completion info.
         """
-        if     (not self.completionNotBefore and not self.completionNotAfter) \
-            or self.in_progress_completion:
+        # If no dates, check we want in-progress (all records) or we
+        # have a completed record
+        if not self.completionNotBefore and not self.completionNotAfter:
+            return self.in_progress_completion or progress.Completed
+        # If in-progress and not complete, return in-progress record
+        if self.in_progress_completion and not progress.Completed:
             return True
+        # Now we just want any completed records that fit within
+        # our given window
         return  progress.Completed \
-                and (self.completionNotBefore is None or progress.CompletedDate >= self.completionNotBefore) \
-                and (self.completionNotAfter is None or progress.CompletedDate < self.completionNotAfter)
+            and (self.completionNotBefore is None or progress.CompletedDate >= self.completionNotBefore) \
+            and (self.completionNotAfter is None or progress.CompletedDate < self.completionNotAfter)
 
     @Lazy
     def _enrollment_data_grouping_by_course(self):
