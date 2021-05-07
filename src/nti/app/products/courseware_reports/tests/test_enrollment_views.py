@@ -474,34 +474,34 @@ class TestEnrollmentRecordsReportPdf(ApplicationLayerTest):
             mock_input.is_callable().returns(params)
             view = EnrollmentRecordsReportPdf(catalog, _MockRequest(body={'completionNotBefore': None, 'completionNotAfter': 100}))
             assert_that(view._predicate_with_progress(complete_progress), is_(False))
-            assert_that(view._predicate_with_progress(incomplete_progress), is_(False))
+            assert_that(view._predicate_with_progress(incomplete_progress), is_(True))
 
             params = {'completionNotBefore': None, 'completionNotAfter': 101}
             mock_input.is_callable().returns(params)
             view = EnrollmentRecordsReportPdf(catalog, _MockRequest(body={'completionNotBefore': None, 'completionNotAfter': 101}))
             assert_that(view._predicate_with_progress(complete_progress), is_(True))
-            assert_that(view._predicate_with_progress(incomplete_progress), is_(False))
+            assert_that(view._predicate_with_progress(incomplete_progress), is_(True))
 
             params = {'completionNotBefore': 100, 'completionNotAfter': 100}
             mock_input.is_callable().returns(params)
             view = EnrollmentRecordsReportPdf(catalog, _MockRequest(body={'completionNotBefore': 100, 'completionNotAfter': 100}))
             assert_that(view._predicate_with_progress(complete_progress), is_(False))
-            assert_that(view._predicate_with_progress(incomplete_progress), is_(False))
+            assert_that(view._predicate_with_progress(incomplete_progress), is_(True))
 
             params = {'completionNotBefore': 100, 'completionNotAfter': 101}
             mock_input.is_callable().returns(params)
             view = EnrollmentRecordsReportPdf(catalog, _MockRequest(body={'completionNotBefore': 100, 'completionNotAfter': 101}))
             assert_that(view._predicate_with_progress(complete_progress), is_(True))
-            assert_that(view._predicate_with_progress(incomplete_progress), is_(False))
+            assert_that(view._predicate_with_progress(incomplete_progress), is_(True))
 
             params = {'completionNotBefore': 100, 'completionNotAfter': None}
             mock_input.is_callable().returns(params)
             view = EnrollmentRecordsReportPdf(catalog, _MockRequest(body={'completionNotBefore': 100, 'completionNotAfter': None}))
             assert_that(view._predicate_with_progress(complete_progress), is_(True))
-            assert_that(view._predicate_with_progress(incomplete_progress), is_(False))
+            assert_that(view._predicate_with_progress(incomplete_progress), is_(True))
 
             params = {'completionNotBefore': 101, 'completionNotAfter': None}
             mock_input.is_callable().returns(params)
             view = EnrollmentRecordsReportPdf(catalog, _MockRequest(body={'completionNotBefore': 101, 'completionNotAfter': None}))
             assert_that(view._predicate_with_progress(complete_progress), is_(False))
-            assert_that(view._predicate_with_progress(incomplete_progress), is_(False))
+            assert_that(view._predicate_with_progress(incomplete_progress), is_(True))
