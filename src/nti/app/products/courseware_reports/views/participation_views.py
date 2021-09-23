@@ -30,11 +30,10 @@ from zope.cachedescriptors.property import Lazy
 from pyramid.view import view_config
 from pyramid.traversal import find_interface
 
-from nti.analytics.progress import get_progress_for_video_views
+from nti.app.analytics.completion import IProgress
 
 from nti.app.assessment.common.history import get_most_recent_history_item
 
-from nti.contenttypes.completion.interfaces import ICompletedItemContainer
 from nti.contenttypes.completion.interfaces import IPrincipalCompletedItemContainer
 
 from nti.app.products.courseware.interfaces import ICourseInstanceEnrollment
@@ -344,7 +343,8 @@ class StudentParticipationReportPdf(AbstractCourseReportView):
             else:
                 data['video_completion'] = False
                 data['completion_date'] = u'N/A'
-                progress = get_progress_for_video_views(video_obj.ntiid, video_obj, self.student_user, self.course)
+                progress = component.queryMultiAdapter(
+                    (self.student_user, video_obj, self.course), IProgress)
                 if progress is None:
                     data['completion_percent'] = u'N/A'
                 else:
