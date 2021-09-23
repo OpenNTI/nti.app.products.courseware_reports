@@ -26,11 +26,22 @@ from hamcrest import greater_than_or_equal_to
 
 import csv
 import fudge
+import time
 from six import StringIO
+
+from datetime import datetime
+
+from zope import component
 
 from zope import interface
 
 from zope import lifecycleevent
+
+from zope.security.interfaces import IPrincipal
+
+from nti.analytics.tests.test_resource_views import create_video_event
+
+from nti.analytics.resource_views import get_watched_segments_for_ntiid
 
 from nti.app.analytics.usage_stats import _VideoInfo
 from nti.app.analytics.usage_stats import _AverageWatchTimes
@@ -78,6 +89,16 @@ from nti.app.testing.decorators import WithSharedApplicationMockDS
 from nti.app.testing.request_response import DummyRequest
 
 from nti.assessment.survey import QPollSubmission
+
+from nti.contenttypes.completion.completion import CompletedItem
+
+from nti.contenttypes.completion.interfaces import ICompletedItem
+from nti.contenttypes.completion.interfaces import ICompletionContext
+from nti.contenttypes.completion.interfaces import ICompletedItemContainer
+from nti.contenttypes.completion.interfaces import ICompletableItemContainer
+from nti.contenttypes.completion.interfaces import IPrincipalCompletedItemContainer
+
+from nti.contenttypes.completion.tests.test_models import MockCompletionContext
 
 from nti.contenttypes.courses.discussions.interfaces import ICourseDiscussions
 from nti.contenttypes.courses.discussions.interfaces import NTI_COURSE_BUNDLE
@@ -203,6 +224,8 @@ class TestStudentParticipationReport(ApplicationLayerTest):
             # Add stats for a video and check that they show up
             # correctly in the report
             video_ntiid = 'tag:nextthought.com,2011-10:OU-NTIVideo-CLC3403_LawAndJustice.ntivideo.video_02.01'
+            video_ntiid_2 = 'tag:nextthought.com,2011-10:OU-NTIVideo-CLC3403_LawAndJustice.ntivideo.video_02.02'
+            video_ntiid_3 = 'tag:nextthought.com,2011-10:OU-NTIVideo-CLC3403_LawAndJustice.ntivideo.video_02.03'
 
             fake_video_stats.is_callable().returns((_VideoInfo('fake title',
                                                                video_ntiid,
@@ -213,10 +236,47 @@ class TestStudentParticipationReport(ApplicationLayerTest):
                                                                '3:30',
                                                                '100',
                                                                1,
+                                                               None),
+                                                    _VideoInfo('fake title completed',
+                                                               video_ntiid_2,
+                                                               1,
+                                                               4,
+                                                               _AverageWatchTimes(
+                                                                   '1:40', '2:20'),
+                                                               '4:30',
+                                                               '100',
+                                                               0,
+                                                               None),
+                                                    _VideoInfo('fake title no progress',
+                                                               video_ntiid_3,
+                                                               1,
+                                                               4,
+                                                               _AverageWatchTimes(
+                                                                   '1:40', '2:20'),
+                                                               '4:30',
+                                                               '100',
+                                                               0,
                                                                None),))
             _video = fudge.Fake('Video').has_attr(ntiid=video_ntiid)
+            _video_completed = fudge.Fake('Video').has_attr(ntiid=video_ntiid_2)
+            _video_no_progress = fudge.Fake('Video').has_attr(ntiid=video_ntiid_3)
             interface.alsoProvides(_video, INTIVideo)
-            fake_completables.is_callable().returns([_video])
+            interface.alsoProvides(_video_completed, INTIVideo)
+            interface.alsoProvides(_video_no_progress, INTIVideo)
+            fake_completables.is_callable().returns([_video, _video_completed, _video_no_progress])
+            
+            timestamp = int(time.time())
+            create_video_event(student_user, video_ntiid, root_context=course, max_time_length=100, start=20, end=40, timestamp=timestamp)
+            
+            user_principal = IPrincipal(student_user.username)
+            user_completion_container = component.queryMultiAdapter(
+                (user_principal, ICompletionContext(course)),
+                IPrincipalCompletedItemContainer)
+
+            completed_video = CompletedItem(Principal=user_principal,
+                                            Item=_video_completed,
+                                            CompletedDate=(datetime.utcnow()))
+            user_completion_container.add_completed_item(completed_video)
 
             participation_report = StudentParticipationReportPdf(course, request)
             participation_report.getRemoteUser = lambda: student_user
@@ -230,8 +290,26 @@ class TestStudentParticipationReport(ApplicationLayerTest):
                                                                   'view_count', 3,
                                                                   'total_watch_time', '1:30',
                                                                   'average_session_watch_time', '2:30',
+                                                                  'video_completion', False,
+                                                                  'title', 'fake title',
+                                                                  'completion_percent', '21%')))
+            assert_that(
+                options['video_completion'], has_item(has_entries('session_count', 1,
+                                                                  'view_count', 4,
+                                                                  'total_watch_time', '1:40',
+                                                                  'average_session_watch_time', '2:20',
                                                                   'video_completion', True,
-                                                                  'title', 'fake title')))
+                                                                  'title', 'fake title completed',
+                                                                  'completion_percent', '100%')))
+            assert_that(
+                options['video_completion'], has_item(has_entries('session_count', 1,
+                                                                  'view_count', 4,
+                                                                  'total_watch_time', '1:40',
+                                                                  'average_session_watch_time', '2:20',
+                                                                  'video_completion', False,
+                                                                  'title', 'fake title no progress',
+                                                                  'completion_percent', '0%')))
+            
 
 
 class TestInquiryReport(ApplicationLayerTest):
