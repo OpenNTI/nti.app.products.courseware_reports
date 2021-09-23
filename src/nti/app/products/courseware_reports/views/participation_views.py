@@ -35,6 +35,7 @@ from nti.analytics.progress import get_progress_for_video_views
 from nti.app.assessment.common.history import get_most_recent_history_item
 
 from nti.contenttypes.completion.interfaces import ICompletedItemContainer
+from nti.contenttypes.completion.interfaces import IPrincipalCompletedItemContainer
 
 from nti.app.products.courseware.interfaces import ICourseInstanceEnrollment
 from nti.app.products.courseware.interfaces import IResourceUsageStats
@@ -292,9 +293,8 @@ class StudentParticipationReportPdf(AbstractCourseReportView):
             (self.course, self.student_user), IResourceUsageStats)
         video_usage_stats = component.queryMultiAdapter(
             (self.course, self.student_user), IVideoUsageStats)
-        
-        completed_item_container = ICompletedItemContainer(self.course)
-        principal_container = completed_item_container.get(self.student_user.username)
+        principal_container = component.queryMultiAdapter(
+            (self.student_user, self.course), IPrincipalCompletedItemContainer)
 
         resources = []
         resource_data = []
@@ -343,10 +343,10 @@ class StudentParticipationReportPdf(AbstractCourseReportView):
                 data['completion_date'] = completed_date
             else:
                 data['video_completion'] = False
-                data['completion_date'] = 'N/A'
+                data['completion_date'] = u'N/A'
                 progress = get_progress_for_video_views(video_obj.ntiid, video_obj, self.student_user, self.course)
                 if progress is None:
-                    data['completion_percent'] = u'0%'
+                    data['completion_percent'] = u'N/A'
                 else:
                     data['completion_percent'] = '%s%%' % int(progress.PercentageProgress * 100)
 
