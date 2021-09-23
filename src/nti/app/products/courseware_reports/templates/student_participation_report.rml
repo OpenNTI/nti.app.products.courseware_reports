@@ -170,9 +170,9 @@
 		<para style="normal" spaceAfter=".1in">
 			The following tables show ${options/user/display}'s activity for videos and resources in ${view/course_name}.
 			'Average Session Length' is the average amount of time spent on a particular resource in a session, and
-			'Total Watch Time' is the total amount of time spent on a resource across all sessions. A video is considered
-			to be 'Completed' if the student has watched at least 90% of the video and has at least one session ending in 
-			the last 10% of the video. Times are shown in minutes:seconds.
+			'Total Watch Time' is the total amount of time spent on a resource across all sessions. If a video has been 
+			completed, the completion date will be displayed. Otherwise, the percentage of the video the user has watched
+			will be shown.
 		</para>
 
 		<h2 style="h2" spaceAfter="0.3in" spaceBefore="0.5in">
