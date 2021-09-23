@@ -41,8 +41,6 @@ from zope.security.interfaces import IPrincipal
 
 from nti.analytics.tests.test_resource_views import create_video_event
 
-from nti.analytics.resource_views import get_watched_segments_for_ntiid
-
 from nti.app.analytics.usage_stats import _VideoInfo
 from nti.app.analytics.usage_stats import _AverageWatchTimes
 
@@ -92,13 +90,8 @@ from nti.assessment.survey import QPollSubmission
 
 from nti.contenttypes.completion.completion import CompletedItem
 
-from nti.contenttypes.completion.interfaces import ICompletedItem
 from nti.contenttypes.completion.interfaces import ICompletionContext
-from nti.contenttypes.completion.interfaces import ICompletedItemContainer
-from nti.contenttypes.completion.interfaces import ICompletableItemContainer
 from nti.contenttypes.completion.interfaces import IPrincipalCompletedItemContainer
-
-from nti.contenttypes.completion.tests.test_models import MockCompletionContext
 
 from nti.contenttypes.courses.discussions.interfaces import ICourseDiscussions
 from nti.contenttypes.courses.discussions.interfaces import NTI_COURSE_BUNDLE
