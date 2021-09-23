@@ -30,8 +30,6 @@ from zope.cachedescriptors.property import Lazy
 from pyramid.view import view_config
 from pyramid.traversal import find_interface
 
-from nti.app.analytics.completion import IProgress
-
 from nti.app.assessment.common.history import get_most_recent_history_item
 
 from nti.contenttypes.completion.interfaces import IPrincipalCompletedItemContainer
@@ -65,6 +63,8 @@ from nti.assessment.interfaces import IQAssignment
 from nti.assessment.interfaces import IQAssignmentDateContext
 
 from nti.contenttypes.completion.utils import get_completable_items_for_user
+
+from nti.contenttypes.completion.interfaces import IProgress
 
 from nti.contenttypes.courses.interfaces import ICourseEnrollments
 from nti.contenttypes.courses.interfaces import ICourseSubInstance
