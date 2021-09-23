@@ -43,6 +43,7 @@ setup(
 		'zope.viewlet',
 		'zope.security',
 		'zope.contentprovider',
+		'nti.analytics',
 		'nti.app.pyramid_zope',
 		'nti.app.products.gradebook',
 		'nti.app.products.courseware',
