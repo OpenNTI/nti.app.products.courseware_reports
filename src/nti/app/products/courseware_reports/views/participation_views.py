@@ -30,7 +30,12 @@ from zope.cachedescriptors.property import Lazy
 from pyramid.view import view_config
 from pyramid.traversal import find_interface
 
+from nti.analytics.progress import get_progress_for_video_views
+
 from nti.app.assessment.common.history import get_most_recent_history_item
+
+from nti.contenttypes.completion.interfaces import ICompletedItemContainer
+from nti.contenttypes.completion.interfaces import IPrincipalCompletedItemContainer
 
 from nti.app.products.courseware.interfaces import ICourseInstanceEnrollment
 from nti.app.products.courseware.interfaces import IResourceUsageStats
@@ -77,6 +82,8 @@ from nti.dataserver.contenttypes.forums.interfaces import IGeneralForumComment
 from nti.dataserver.contenttypes.forums.interfaces import ICommunityHeadlineTopic
 
 from nti.namedfile.file import safe_filename
+
+from nti.ntiids.ntiids import find_object_with_ntiid
 
 from nti.zope_catalog.catalog import ResultSet
 
@@ -279,12 +286,15 @@ class StudentParticipationReportPdf(AbstractCourseReportView):
             if x.submitted:
                 x.submitted = self._format_datetime(self._adjust_date(x.submitted))
         options['assignments'] = asg_data
+        
 
     def _build_completion_data(self, options):
         resource_usage_stats = component.queryMultiAdapter(
             (self.course, self.student_user), IResourceUsageStats)
         video_usage_stats = component.queryMultiAdapter(
             (self.course, self.student_user), IVideoUsageStats)
+        principal_container = component.queryMultiAdapter(
+            (self.student_user, self.course), IPrincipalCompletedItemContainer)
 
         resources = []
         resource_data = []
@@ -321,18 +331,32 @@ class StudentParticipationReportPdf(AbstractCourseReportView):
         for video in videos:
             if video.ntiid not in self._visible_videos:
                 continue
-
             data = {}
+            video_obj = find_object_with_ntiid(video.ntiid)
+            completed_item = principal_container.get_completed_item(video_obj)
+            
+            if completed_item is not None:
+                data['video_completion'] = True
+                data['completion_percent'] = u'100%'
+                completed_date = self._adjust_date(completed_item.CompletedDate)
+                completed_date = completed_date.strftime("%Y-%m-%d")
+                data['completion_date'] = completed_date
+            else:
+                data['video_completion'] = False
+                data['completion_date'] = u'N/A'
+                progress = get_progress_for_video_views(video_obj.ntiid, video_obj, self.student_user, self.course)
+                if progress is None:
+                    data['completion_percent'] = u'N/A'
+                else:
+                    data['completion_percent'] = '%s%%' % int(progress.PercentageProgress * 100)
+
             data['title'] = video.title
             data['video_duration'] = video.video_duration
             data['view_count'] = video.view_event_count
             data['session_count'] = video.session_count
             data['total_watch_time'] = video.watch_times.average_total_watch_time
             data['average_session_watch_time'] = video.watch_times.average_session_watch_time
-            if video.number_watched_completely >= 1:
-                data['video_completion'] = True
-            else:
-                data['video_completion'] = False
+            
             viewed_video_ntiids.add(video.ntiid)
             video_data.append(data)
 

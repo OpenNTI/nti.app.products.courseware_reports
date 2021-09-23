@@ -170,9 +170,9 @@
 		<para style="normal" spaceAfter=".1in">
 			The following tables show ${options/user/display}'s activity for videos and resources in ${view/course_name}.
 			'Average Session Length' is the average amount of time spent on a particular resource in a session, and
-			'Total Watch Time' is the total amount of time spent on a resource across all sessions. A video is considered
-			to be 'Finished' if the student has watched at least 90% of the video and has at least one session ending in
-			the last 10% of the video. Times are shown in minutes:seconds.
+			'Total Watch Time' is the total amount of time spent on a resource across all sessions. If a video has been 
+			completed, the completion date will be displayed. Otherwise, the percentage of the video the user has watched
+			will be shown.
 		</para>
 
 		<h2 style="h2" spaceAfter="0.3in" spaceBefore="0.5in">
@@ -190,7 +190,7 @@
 					<td>View sessions</td>
 					<td>Total watch time</td>
 					<td>Average time/session</td>
-					<td>Finished</td>
+					<td>Completed</td>
 				</tr>
 				<tr tal:repeat="item options/video_completion">
 					<td><para style="data" tal:content="python:item['title']">The Video Title</para></td>
@@ -198,9 +198,13 @@
 					<td tal:content="item/session_count|default">-</td>
 					<td tal:content="item/total_watch_time|default">-</td>
 					<td tal:content="item/average_session_watch_time|default">-</td>
-					<!-- For this column, we need to check both that it exists and that it is true. -->
-					<td tal:condition="exists:item/video_completion" tal:content="python:item['video_completion'] and 'Yes' or '-'">-</td>
-					<td tal:condition="not:exists:item/video_completion">-</td>
+					<!-- For this column, we display the completion date if it was determined to be "Completed", otherwise display the completion percent. -->
+					<tal:block tal:condition="item/video_completion">
+						<td tal:content="item/completion_date" tal:attributes="fontColor python: '#3FB34F' if item['video_completion']==True else '#FF0000'">Completion</td>
+					</tal:block>
+					<tal:block tal:condition="not: item/video_completion">
+						<td tal:content="item/completion_percent">Completion</td>
+					</tal:block>
 				</tr>
 			</blockTable>
 
