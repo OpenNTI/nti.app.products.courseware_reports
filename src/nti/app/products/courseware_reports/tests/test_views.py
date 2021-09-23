@@ -301,7 +301,7 @@ class TestStudentParticipationReport(ApplicationLayerTest):
                                                                   'average_session_watch_time', '2:20',
                                                                   'video_completion', False,
                                                                   'title', 'fake title no progress',
-                                                                  'completion_percent', '0%')))
+                                                                  'completion_percent', 'N/A')))
             
 
 
