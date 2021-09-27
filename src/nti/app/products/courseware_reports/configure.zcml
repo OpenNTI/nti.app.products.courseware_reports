@@ -72,9 +72,6 @@
                      pyramid.interfaces.IRequest" />
 
 	<!-- Decorator Adapters -->
-	<adapter factory="nti.app.contenttypes.reports.reports.DefaultReportLinkProvider"
-			 provides="nti.app.contenttypes.reports.interfaces.IReportLinkProvider"
-			 for="nti.contenttypes.reports.interfaces.IReport" />
 
 	<adapter name="AssignmentSummaryReport.pdf"
 			 factory=".decorators.AssignmentSummaryLinkProvider"
