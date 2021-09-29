@@ -199,12 +199,16 @@
 					<td tal:content="item/total_watch_time|default">-</td>
 					<td tal:content="item/average_session_watch_time|default">-</td>
 					<!-- For this column, we display the completion date if it was determined to be "Completed", otherwise display the completion percent. -->
-					<tal:block tal:condition="item/video_completion">
-						<td tal:content="item/completion_date" tal:attributes="fontColor python: '#3FB34F' if item['video_completion']==True else '#FF0000'">Completion</td>
+					<!-- First we have to check that it exists. -->
+					<tal:block tal:condition="exists:item/video_completion">
+						<tal:block tal:condition="item/video_completion">
+							<td tal:content="item/completion_date" tal:attributes="fontColor python: '#3FB34F' if item['video_completion']==True else '#FF0000'">Completion</td>
+						</tal:block>
+						<tal:block tal:condition="not: item/video_completion">
+							<td tal:content="item/completion_percent">Completion</td>
+						</tal:block>
 					</tal:block>
-					<tal:block tal:condition="not: item/video_completion">
-						<td tal:content="item/completion_percent">Completion</td>
-					</tal:block>
+					<td tal:condition="not:exists:item/video_completion">-</td>
 				</tr>
 			</blockTable>
 
