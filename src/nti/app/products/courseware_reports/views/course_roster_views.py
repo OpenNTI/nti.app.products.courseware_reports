@@ -94,7 +94,7 @@ class CourseRosterReportPdf(AbstractCourseRosterReport):
 
     @property
     def filename(self):
-        return self._build_filename([self.course_name(), self.course_id(), self.report_title])
+        return self._build_filename([self.course_title(), self.course_id(), self.report_title])
 
     def __call__(self):
         self._check_access()
@@ -277,7 +277,7 @@ class CourseRosterReportCSV(AbstractCourseRosterReport, EnrollmentReportCSVMixin
 
     def __call__(self):
         self._check_access()
-        filename = self._build_filename([self.course_name(), self.course_id(), self.report_title], extension=".csv")
+        filename = self._build_filename([self.course_title(), self.course_id(), self.report_title], extension=".csv")
         return self._do_create_response(filename=safe_filename(filename))
 
 

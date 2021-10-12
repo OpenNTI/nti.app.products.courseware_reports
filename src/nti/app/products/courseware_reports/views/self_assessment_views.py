@@ -359,7 +359,7 @@ class SelfAssessmentReportCSV(AbstractSelfAssessmentReport):
         response = self.request.response
         response.content_encoding = 'identity'
         response.content_type = 'text/csv; charset=UTF-8'
-        filename = self._build_filename([self.course_name(), self.course_id(), self.report_title], extension=".csv")
+        filename = self._build_filename([self.course_title(), self.course_id(), self.report_title], extension=".csv")
         response.content_disposition = 'attachment; filename="%s"' % safe_filename(filename)
 
         stream = BytesIO()

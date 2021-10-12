@@ -504,7 +504,7 @@ class TestCourseSummaryReport(ApplicationLayerTest):
         timezone_displayname.is_callable().returns('UTC')
         options = view._get_top_header_options()
 
-        assert_that(options, has_entry('top_header_data', has_item(contains('Course:', not_(ends_with('Fall 2013'))))))
+        assert_that(options, has_entry('top_header_data', has_item(contains('Course Title:', not_(ends_with('Fall 2013'))))))
 
 
     @WithSharedApplicationMockDS(users=True, testapp=True, default_authenticate=True)
@@ -535,6 +535,10 @@ class TestCourseSummaryReport(ApplicationLayerTest):
         report_href = course_url + "/@@" + VIEW_COURSE_SUMMARY
         res = self.testapp.get(report_href)
         assert_that(res, has_property('content_type', 'application/pdf'))
+        
+        #Verify filename
+        report_filename = "Law_and_Justice_CLC_3403_Course_Summary_Report.pdf"
+        assert_that(res.headers['Content-Disposition'], is_('filename="%s"' % report_filename))
 
         # verify assignments
         with mock_dataserver.mock_db_trans(self.ds, site_name='platform.ou.edu'):
@@ -657,14 +661,6 @@ class TestCourseSummaryReport(ApplicationLayerTest):
             for stat in engagement_data.non_credit:
                 if stat.name in added_stats:
                     assert_that(stat.count, greater_than_or_equal_to(1))
-                    
-            #Verify filename
-            catalog_entry = ICourseCatalogEntry(course, None)
-            course_id = catalog_entry.ProviderUniqueID
-            report_title = _('Course Summary Report')
-            basename = "_".join(filter(None, [course.__name__, course_id, report_title]))
-            report_filename = safe_filename((basename or '') + (".pdf"))
-            assert_that(res.headers['Content-Disposition'], is_('filename="%s"' % report_filename))
 
 
 from nti.assessment.submission import AssignmentSubmission

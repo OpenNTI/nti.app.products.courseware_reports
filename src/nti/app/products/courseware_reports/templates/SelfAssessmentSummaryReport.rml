@@ -4,7 +4,7 @@
 	tal:define="options view/options">
 
 		<para style="normal" fontSize="12" spaceAfter=".1in">
-			This report is a self-assessment summary for ${view/course_name}.  The report
+			This report is a self-assessment summary for ${view/course_title}.  The report
 			includes aggregate information per self-assessment, as well as self-assessment
 			statistics per student. There
 			${python:request.localizer.pluralize('is', 'are', options['count_total'])}

@@ -92,7 +92,7 @@ class AbstractCourseReportView(AbstractReportView):
     """
     @property
     def filename(self):
-        return self._build_filename([self.course_name(), self.course_id(), self.report_title])
+        return self._build_filename([self.course_title(), self.course_id(), self.report_title])
 
     def _check_access(self):
         if is_admin_or_site_admin(self.remoteUser):
@@ -209,18 +209,21 @@ class AbstractCourseReportView(AbstractReportView):
     
     def course_id(self):
         catalog_entry = ICourseCatalogEntry(self.course, None)
-        result = catalog_entry.ProviderUniqueID if catalog_entry else ''
+        result = catalog_entry.ProviderUniqueID if catalog_entry else self.course.__name__
         return result
 
-    def course_name(self):
-        return self.course.__name__
+    def course_title(self):
+        catalog_entry = ICourseCatalogEntry(self.course, None)
+        result = catalog_entry.title if catalog_entry else self.course.__name__
+        return result
 
     def generate_footer(self):
         date = self._adjust_date(datetime.utcnow())
         date = date.strftime('%b %d, %Y %I:%M %p')
         title = self.report_title
-        course = self.course_name()
-        return "%s %s %s %s" % (title, course, date, self.timezone_info_str)
+        course_title = self.course_title()
+        course_id = self.course_id()
+        return "%s %s %s %s %s" % (title, course_title, course_id, date, self.timezone_info_str)
 
     def generate_semester(self):
         """
@@ -234,7 +237,9 @@ class AbstractCourseReportView(AbstractReportView):
     def _get_top_header_options(self, col_widths=[0.2, 0.8]):
         data = []
         data.extend(self._get_additional_header_data())
-        data.extend([('Course:', self.course_name()),
+        data.extend([('Course Title:', self.course_title()),
+                     (self.table_cell(self.timezone_header_str, colspan=2), 'NTI_COLSPAN')])
+        data.extend([('Course ID:', self.course_id()),
                      (self.table_cell(self.timezone_header_str, colspan=2), 'NTI_COLSPAN')])
         return self.get_top_header_options(data=data,
                                            col_widths=col_widths)
