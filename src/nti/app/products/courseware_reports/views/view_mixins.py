@@ -92,7 +92,7 @@ class AbstractCourseReportView(AbstractReportView):
     """
     @property
     def filename(self):
-        return self._build_filename([self.course_name(), self.report_title])
+        return self._build_filename([self.course_name(), self.course_id(), self.report_title])
 
     def _check_access(self):
         if is_admin_or_site_admin(self.remoteUser):
@@ -206,11 +206,14 @@ class AbstractCourseReportView(AbstractReportView):
         scope = self.course.SharingScopes['Public']
         ids.update(IEnumerableEntityContainer(scope).iter_intids())
         return ids
+    
+    def course_id(self):
+        catalog_entry = ICourseCatalogEntry(self.course, None)
+        result = catalog_entry.ProviderUniqueID if catalog_entry else ''
+        return result
 
     def course_name(self):
-        catalog_entry = ICourseCatalogEntry(self.course, None)
-        result = catalog_entry.ProviderUniqueID if catalog_entry else self.course.__name__
-        return result
+        return self.course.__name__
 
     def generate_footer(self):
         date = self._adjust_date(datetime.utcnow())

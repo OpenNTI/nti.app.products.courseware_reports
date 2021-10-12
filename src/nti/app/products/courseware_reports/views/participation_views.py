@@ -110,7 +110,7 @@ class StudentParticipationReportPdf(AbstractCourseReportView):
     @property
     def filename(self):
         user_prefix = self.user_as_affix(self.student_user, user_info=self.user_info)
-        return self._build_filename([user_prefix, self.course_name(), self.report_title])
+        return self._build_filename([user_prefix, self.course_id(), self.course_name(), self.report_title])
 
     @Lazy
     def student_user(self):
@@ -457,7 +457,7 @@ class ForumParticipationReportPdf(AbstractCourseReportView):
 
     @property
     def filename(self):
-        return self._build_filename([self.context_title, self.course_name(), self.report_title])
+        return self._build_filename([self.context_title, self.course_id(), self.course_name(), self.report_title])
 
     def _course_from_forum(self, forum):
         return course_from_forum(forum)
@@ -606,7 +606,7 @@ class ForumParticipationReportPdf(AbstractCourseReportView):
             super_scope_dict, user_comment_dict)
         # Store with displayble name; useful for not accidentally
         # calling setNextTemplate with int-convertable index (e.g. '003').
-        results[self.course_name()] = user_comment_dict_by_scope
+        results[self.course_id() or self.course_name()] = user_comment_dict_by_scope
 
         results = OrderedDict(sorted(results.items()))
         return results

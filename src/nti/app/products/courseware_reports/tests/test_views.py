@@ -58,6 +58,8 @@ from nti.app.products.courseware_reports import VIEW_INQUIRY_REPORT
 from nti.app.products.courseware_reports import VIEW_USER_ENROLLMENT
 from nti.app.products.courseware_reports import VIEW_COURSE_ROSTER
 
+from nti.app.products.courseware_reports import MessageFactory as _
+
 from nti.dataserver.users.users import User
 
 from nti.app.products.courseware_reports.views.participation_views import StudentParticipationReportPdf
@@ -103,6 +105,7 @@ from nti.contenttypes.courses.discussions.utils import get_topic_key
 from nti.contenttypes.courses.interfaces import ES_ALL
 from nti.contenttypes.courses.interfaces import ICourseEnrollmentManager
 from nti.contenttypes.courses.interfaces import ICourseInstance
+from nti.contenttypes.courses.interfaces import ICourseCatalogEntry
 
 from nti.dataserver.contenttypes.forums.post import GeneralForumComment
 
@@ -111,6 +114,8 @@ from nti.dataserver.users.common import set_user_creation_site
 from nti.contenttypes.presentation.interfaces import INTIVideo
 
 from nti.dataserver.tests import mock_dataserver
+
+from nti.namedfile.file import safe_filename
 
 GIF_DATAURL = 'data:image/gif;base64,R0lGODlhCwALAIAAAAAA3pn/ZiH5BAEAAAEALAAAAAALAAsAAAIUhA+hkcuO4lmNVindo7qyrIXiGBYAOw=='
 
@@ -154,7 +159,6 @@ class TestStudentParticipationReport(ApplicationLayerTest):
                                          extra_environ=instructor_environ)
 
         sj_enrollment = sj_enrollment.json_body.get('Items')[0]
-
         view_href = self.require_link_href_with_rel(sj_enrollment,
                                                     'report-%s' % VIEW_STUDENT_PARTICIPATION)
 
@@ -162,7 +166,7 @@ class TestStudentParticipationReport(ApplicationLayerTest):
 
         res = self.testapp.get(view_href, extra_environ=instructor_environ)
         assert_that(res, has_property('content_type', 'application/pdf'))
-
+        
         # check admin role fetch report
         admin_environ = self._make_extra_environ(username='sjohnson@nextthought.com')
         res = self.testapp.get(view_href, extra_environ=admin_environ)
@@ -653,6 +657,14 @@ class TestCourseSummaryReport(ApplicationLayerTest):
             for stat in engagement_data.non_credit:
                 if stat.name in added_stats:
                     assert_that(stat.count, greater_than_or_equal_to(1))
+                    
+            #Verify filename
+            catalog_entry = ICourseCatalogEntry(course, None)
+            course_id = catalog_entry.ProviderUniqueID
+            report_title = _('Course Summary Report')
+            basename = "_".join(filter(None, [course.__name__, course_id, report_title]))
+            report_filename = safe_filename((basename or '') + (".pdf"))
+            assert_that(res.headers['Content-Disposition'], is_('filename="%s"' % report_filename))
 
 
 from nti.assessment.submission import AssignmentSubmission
