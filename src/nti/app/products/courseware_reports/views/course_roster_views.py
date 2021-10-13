@@ -63,6 +63,8 @@ logger = __import__('logging').getLogger(__name__)
 
 class AbstractCourseRosterReport(AbstractCourseReportView,
                                  EnrollmentViewMixin):
+    
+    report_title = _(u'Course Roster Report')
 
     def __init__(self, context, request):
         self.context = context
@@ -90,12 +92,9 @@ class CourseRosterReportPdf(AbstractCourseRosterReport):
     A PDF report of a course's roster.
     """
 
-    report_title = _(u'Course Roster Report')
-
     @property
     def filename(self):
-        result = '%s_course_roster_report.pdf' % self.course_name()
-        return safe_filename(result)
+        return self._build_filename([self.course_title(), self.course_id(), self.report_title])
 
     def __call__(self):
         self._check_access()
@@ -278,7 +277,7 @@ class CourseRosterReportCSV(AbstractCourseRosterReport, EnrollmentReportCSVMixin
 
     def __call__(self):
         self._check_access()
-        filename = '%s_course_roster_report.csv' % self.course_name()
+        filename = self._build_filename([self.course_title(), self.course_id(), self.report_title], extension=".csv")
         return self._do_create_response(filename=safe_filename(filename))
 
 

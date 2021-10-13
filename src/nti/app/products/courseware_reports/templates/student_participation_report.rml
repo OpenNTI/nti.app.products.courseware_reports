@@ -168,7 +168,7 @@
 		</h1>
 
 		<para style="normal" spaceAfter=".1in">
-			The following tables show ${options/user/display}'s activity for videos and resources in ${view/course_name}.
+			The following tables show ${options/user/display}'s activity for videos and resources in ${view/course_title}.
 			'Average Session Length' is the average amount of time spent on a particular resource in a session, and
 			'Total Watch Time' is the total amount of time spent on a resource across all sessions. If a video has been 
 			completed, the completion date will be displayed. Otherwise, the percentage of the video the user has watched

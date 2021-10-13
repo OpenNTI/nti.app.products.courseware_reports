@@ -4,7 +4,7 @@
 	tal:define="options view/options">
 
 		<para style="normal" fontSize="12" spaceAfter=".1in">
-			This report is an overview of video usage in ${view/course_name}.  The report
+			This report is an overview of video usage in ${view/course_title}.  The report
 			includes the list of the most viewed videos, and statistics on view counts,
 			fall-off rates, and average watch time.
 		</para>
@@ -21,7 +21,7 @@
 
 			<para style="subdesc" spaceAfter=".2in"
 				tal:condition="options/top_video_usage | nothing">
-					The following tables show user resource activity in ${view/course_name}. Top videos are sorted by view
+					The following tables show user resource activity in ${view/course_title}. Top videos are sorted by view
 					count, and the table of all videos is sorted by title. 'Average Session Length' is the average amount of
 					time a user spends on a particular video in one session, and 'Average Time Spent on Video' refers to the
 					total amount of time a user spends on a video across all their sessions (including users who do not

@@ -58,6 +58,8 @@ from nti.app.products.courseware_reports import VIEW_INQUIRY_REPORT
 from nti.app.products.courseware_reports import VIEW_USER_ENROLLMENT
 from nti.app.products.courseware_reports import VIEW_COURSE_ROSTER
 
+from nti.app.products.courseware_reports import MessageFactory as _
+
 from nti.dataserver.users.users import User
 
 from nti.app.products.courseware_reports.views.participation_views import StudentParticipationReportPdf
@@ -103,6 +105,7 @@ from nti.contenttypes.courses.discussions.utils import get_topic_key
 from nti.contenttypes.courses.interfaces import ES_ALL
 from nti.contenttypes.courses.interfaces import ICourseEnrollmentManager
 from nti.contenttypes.courses.interfaces import ICourseInstance
+from nti.contenttypes.courses.interfaces import ICourseCatalogEntry
 
 from nti.dataserver.contenttypes.forums.post import GeneralForumComment
 
@@ -111,6 +114,8 @@ from nti.dataserver.users.common import set_user_creation_site
 from nti.contenttypes.presentation.interfaces import INTIVideo
 
 from nti.dataserver.tests import mock_dataserver
+
+from nti.namedfile.file import safe_filename
 
 GIF_DATAURL = 'data:image/gif;base64,R0lGODlhCwALAIAAAAAA3pn/ZiH5BAEAAAEALAAAAAALAAsAAAIUhA+hkcuO4lmNVindo7qyrIXiGBYAOw=='
 
@@ -154,7 +159,6 @@ class TestStudentParticipationReport(ApplicationLayerTest):
                                          extra_environ=instructor_environ)
 
         sj_enrollment = sj_enrollment.json_body.get('Items')[0]
-
         view_href = self.require_link_href_with_rel(sj_enrollment,
                                                     'report-%s' % VIEW_STUDENT_PARTICIPATION)
 
@@ -162,7 +166,7 @@ class TestStudentParticipationReport(ApplicationLayerTest):
 
         res = self.testapp.get(view_href, extra_environ=instructor_environ)
         assert_that(res, has_property('content_type', 'application/pdf'))
-
+        
         # check admin role fetch report
         admin_environ = self._make_extra_environ(username='sjohnson@nextthought.com')
         res = self.testapp.get(view_href, extra_environ=admin_environ)
@@ -500,7 +504,7 @@ class TestCourseSummaryReport(ApplicationLayerTest):
         timezone_displayname.is_callable().returns('UTC')
         options = view._get_top_header_options()
 
-        assert_that(options, has_entry('top_header_data', has_item(contains('Course:', not_(ends_with('Fall 2013'))))))
+        assert_that(options, has_entry('top_header_data', has_item(contains('Course Title:', not_(ends_with('Fall 2013'))))))
 
 
     @WithSharedApplicationMockDS(users=True, testapp=True, default_authenticate=True)
@@ -531,6 +535,10 @@ class TestCourseSummaryReport(ApplicationLayerTest):
         report_href = course_url + "/@@" + VIEW_COURSE_SUMMARY
         res = self.testapp.get(report_href)
         assert_that(res, has_property('content_type', 'application/pdf'))
+        
+        #Verify filename
+        report_filename = "Law_and_Justice_CLC_3403_Course_Summary_Report.pdf"
+        assert_that(res.headers['Content-Disposition'], is_('filename="%s"' % report_filename))
 
         # verify assignments
         with mock_dataserver.mock_db_trans(self.ds, site_name='platform.ou.edu'):
