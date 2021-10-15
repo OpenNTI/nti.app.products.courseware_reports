@@ -110,7 +110,7 @@ class StudentParticipationReportPdf(AbstractCourseReportView):
     @property
     def filename(self):
         user_prefix = self.user_as_affix(self.student_user, user_info=self.user_info)
-        return self._build_filename([user_prefix, self.course_id(), self.course_title(), self.report_title])
+        return self._build_filename([user_prefix, self.course_title(), self.course_id(), self.report_title])
 
     @Lazy
     def student_user(self):
