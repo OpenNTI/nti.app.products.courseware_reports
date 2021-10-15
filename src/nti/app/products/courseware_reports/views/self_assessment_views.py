@@ -272,8 +272,6 @@ class SelfAssessmentReportCSV(AbstractSelfAssessmentReport):
     A Self-Assessment report csv
     """
 
-    report_title = _(u'Self Assessment CSV report')
-
     # pylint: disable=super-init-not-called
     def __init__(self, context, request):
         self.context = context
