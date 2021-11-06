@@ -24,8 +24,6 @@ from numpy import median
 from numpy import asarray
 from numpy import average
 
-from numbers import Number
-
 from zope import interface
 
 from zope.cachedescriptors.property import Lazy
@@ -33,6 +31,9 @@ from zope.cachedescriptors.property import Lazy
 from nti.app.contenttypes.reports.utils import UserInfo as StudentInfo
 
 from nti.app.products.courseware_reports.interfaces import IInstructorReport
+
+from nti.app.products.gradebook.gradebook import numeric_grade_val
+from nti.app.products.gradebook.gradebook import get_applicable_user_grade
 
 from nti.contentfragments.interfaces import IPlainTextContentFragment
 
@@ -465,23 +466,17 @@ def _assignment_stat_for_column(report, column, predicate=None, assignment=None)
     all_grade_points = list()
     for_credit_total = non_credit_total = 0
 
-    for username, grade in column.items():
+    for username in column:
         username = username.lower()
         # Skip if not in predicate
         if predicate is not None and username not in predicate:
             continue
 
+        grade = get_applicable_user_grade(column, username)
         grade_val = None
         # We could have values (19.3), combinations (19.3 A), or strings ('GR');
         # Count the latter case and move on
-        if grade.value is not None:
-            try:
-                if isinstance(grade.value, Number):
-                    grade_val = grade.value
-                elif len( grade.value.split() ) > 1:
-                    grade_val = float( grade.value.split()[0] )
-            except ValueError:
-                pass
+        grade_val = numeric_grade_val(grade.value)
 
         # We still increase count of attempts, even if the assignment is ungraded.
         # We skip any non credit/non-credit students, which should be any
